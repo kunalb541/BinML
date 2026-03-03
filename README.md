@@ -495,21 +495,6 @@ Thesis/
 
 ---
 
-## Citation
-
-```bibtex
-@mastersthesis{bhatia2025microlensing,
-  title={From Light Curves to Labels: Machine Learning in Microlensing Event Classification},
-  author={Bhatia, Kunal},
-  year={2025},
-  school={University of Heidelberg},
-  type={MSc Thesis},
-  note={Advisor: Prof. Dr. Joachim Wambsganß}
-}
-```
-
----
-
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
@@ -522,12 +507,5 @@ MIT License - See [LICENSE](LICENSE) for details.
 - OGLE: http://ogle.astrouw.edu.pl/
 - MOA: https://www.massey.ac.nz/~iabond/moa/
 - Nancy Grace Roman: https://roman.gsfc.nasa.gov/
-
----
-
-## Acknowledgments
-
-- Prof. Dr. Joachim Wambsganß
-- Dr. Yiannis Tsapras
 
 ---
