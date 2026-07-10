@@ -98,7 +98,7 @@ learned linear projection:
 (batch, seq, 2)  ->  (batch, seq, d_model)
 ```
 
-With the default `d_model = 64`, each timestep's `(A, delta_t)` pair becomes a
+With the shipped model's `d_model = 64`, each timestep's `(A, delta_t)` pair becomes a
 64-dimensional feature vector that the downstream convolution and recurrent
 layers refine.
 
@@ -144,7 +144,7 @@ acausal dependency (features added back in were themselves computed causally).
 ## 5. Unidirectional GRU
 
 The convolutional features feed a **unidirectional (forward-only) GRU** with
-`n_layers` recurrent layers (default `n_layers = 4`). The GRU integrates the
+`n_layers` recurrent layers (`n_layers = 4` in the shipped model). The GRU integrates the
 local convolutional features into a running temporal representation, carrying
 information forward along the sequence.
 
@@ -285,14 +285,19 @@ output.
 
 The shipped configuration is:
 
-| Hyperparameter          | Default value | Role                                            |
+| Hyperparameter          | Shipped value | Role                                            |
 |-------------------------|---------------|-------------------------------------------------|
 | `d_model`               | **64**        | Hidden dimension of projection, conv, GRU        |
 | `n_layers`              | **4**         | Number of GRU layers                             |
 | `num_attention_heads`   | 4             | Heads in the attention-pooling stage             |
 | Input channels          | 2             | Magnification `A`, `delta_t`                      |
 | Output classes          | 3             | Flat / PSPL / Binary                             |
-| Total parameters        | **~130K**     | Whole network                                    |
+| Total parameters        | **130,821 (~131K)** | Whole network                             |
+
+> Note: the `ModelConfig` dataclass default is a smaller smoke-test size
+> (`d_model = 16`, `n_layers = 2`). The bundled weights — and all training in
+> `pipeline/` — use the 64 / 4 configuration above, and a loaded `Classifier` always
+> takes its architecture from the checkpoint's stored config.
 
 At roughly **130K parameters** the model is deliberately compact — small enough
 to bundle its weights inside the `binml` package and run inference with only
