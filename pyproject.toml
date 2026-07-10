@@ -5,16 +5,27 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "binml"
 version = "0.2.0"
-description = "Deep-learning microlensing light-curve classifier (Flat / PSPL / Binary)"
+description = "Deep-learning classifier for gravitational microlensing light curves (Flat / PSPL / Binary)"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Kunal Bhatia" }]
-keywords = ["microlensing", "astronomy", "exoplanets", "deep-learning", "roman", "ogle", "classifier"]
+maintainers = [{ name = "Kunal Bhatia" }]
+keywords = [
+    "microlensing", "gravitational-microlensing", "astronomy", "astrophysics",
+    "exoplanets", "deep-learning", "neural-network", "roman-space-telescope",
+    "ogle", "light-curve", "classifier", "time-series",
+]
 classifiers = [
+    "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
@@ -24,13 +35,17 @@ dependencies = [
 
 [project.optional-dependencies]
 plot = ["matplotlib>=3.5"]
-all = ["matplotlib>=3.5", "scipy>=1.7"]
+data = ["h5py>=3.0", "scipy>=1.7"]
+all = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7"]
+dev = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "pytest>=7.0", "build", "twine"]
 
 [project.scripts]
 binml = "binml.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/kunalb541/BinML"
+Repository = "https://github.com/kunalb541/BinML"
+Documentation = "https://github.com/kunalb541/BinML/tree/main/docs"
 Issues = "https://github.com/kunalb541/BinML/issues"
 
 [tool.setuptools]

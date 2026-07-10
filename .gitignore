@@ -94,3 +94,6 @@ binml/__pycache__/
 
 # BinML pip package ships its weights
 !binml/weights/*.pt
+
+# documentation figures
+!docs/figures/*.png
