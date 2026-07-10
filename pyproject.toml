@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "binml"
+version = "0.2.0"
+description = "Deep-learning microlensing light-curve classifier (Flat / PSPL / Binary)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Kunal Bhatia" }]
+keywords = ["microlensing", "astronomy", "exoplanets", "deep-learning", "roman", "ogle", "classifier"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "torch>=1.13",
+    "numpy>=1.21",
+]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.5"]
+all = ["matplotlib>=3.5", "scipy>=1.7"]
+
+[project.scripts]
+binml = "binml.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/kunalb541/BinML"
+Issues = "https://github.com/kunalb541/BinML/issues"
+
+[tool.setuptools]
+packages = ["binml"]
+
+[tool.setuptools.package-data]
+binml = ["weights/*.pt"]

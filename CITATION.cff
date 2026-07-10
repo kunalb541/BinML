@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "BinML: Deep-learning microlensing light-curve classifier"
+message: "If you use BinML, please cite it."
+type: software
+authors:
+  - given-names: Kunal
+    family-names: Bhatia
+    affiliation: "University of Heidelberg"
+version: 0.2.0
+date-released: "2026-07-09"
+license: MIT
+keywords:
+  - microlensing
+  - exoplanets
+  - deep-learning
+  - Roman Space Telescope
+repository-code: "https://github.com/kunalb541/BinML"

@@ -1,0 +1,2 @@
+include README.md LICENSE CHANGELOG.md CITATION.cff
+recursive-include binml/weights *.pt

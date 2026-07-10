@@ -21,14 +21,42 @@ The model uses depthwise separable convolutions, flash attention pooling, **hier
 
 ---
 
-## Installation
+## Use the trained model — `pip install binml`
+
+For **inference on your own light curves**, BinML ships as a pip-installable package with the
+trained weights bundled (only needs `torch` + `numpy`, no downloads):
+
+```bash
+pip install binml            # or: pip install .   (from this repo)
+```
+
+```python
+import binml
+clf = binml.Classifier()                                 # fine-tuned model, CPU
+t, mag, err = binml.surveys.fetch_ogle_ews(2014, 289)    # a real OGLE event
+print(clf.predict(t, mag, err))
+# <BinML Binary (conf 1.00) | Flat 0.000 PSPL 0.000 Binary 1.000 | microlensing=1.00 anomalous=1.00>
+```
+
+- 3-class output; `r.is_microlensing` (= P(PSPL)+P(Binary)) and `r.is_anomalous` (= P(Binary))
+- **CLI**: `binml classify phot.dat --format ogle` · `binml ogle 2017 482` · `binml evolution phot.dat -o evo.png`
+- **Honest evaluation**: `binml evaluate test.h5` reports binary recall *conditioned on
+  detectability* (Δχ²), not the misleading raw population number
+- OGLE / MOA / generic loaders, probability-evolution plots, two bundled models (fine-tuned + base)
+
+The rest of this repository is the **research pipeline** (simulation → training → evaluation)
+used to build the model.
+
+---
+
+## Installation (research pipeline)
 
 ### Quick Start
 
 ```bash
 # Clone repository
-git clone https://github.com/kunalb541/Thesis.git
-cd Thesis
+git clone https://github.com/kunalb541/BinML.git
+cd BinML
 
 # Create conda environment (PyTorch CUDA 12.1 included)
 conda env create -f environment.yml

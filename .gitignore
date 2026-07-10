@@ -89,3 +89,8 @@ data/test/*.h5
 !data/raw
 !data/test
 !code/logs
+binml/__pycache__/
+.pytest_cache/
+
+# BinML pip package ships its weights
+!binml/weights/*.pt
