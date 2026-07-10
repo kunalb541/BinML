@@ -27,10 +27,6 @@ So every prediction answers two questions: **detection** — is this a microlens
 (`P(PSPL) + P(Binary)`)? — and **characterization** — is it anomalous, i.e. binary/planetary
 rather than a plain single lens (`P(Binary)`)?
 
-It's a modern take on tools like [MicroLIA](https://github.com/Professor-G/MicroLIA): a
-causal CNN–GRU trained on Roman-quality cadence, with the weights bundled so it runs out of
-the box.
-
 ## Install
 
 ```bash
