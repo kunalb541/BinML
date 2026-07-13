@@ -128,6 +128,7 @@ needle far more than additional base training.
 - [Data format](docs/data_format.md) — the compact HDF5 dataset
 - [Evaluation](docs/evaluation.md) — detectability-conditioned, honest metrics
 - [Leakage audit](docs/leakage_audit.md)
+- [v5 design (roadmap)](docs/design/v5_multiband_multiclass.md) — generic N-band, extensible multi-class
 
 ## Citing BinML
 
