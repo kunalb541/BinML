@@ -128,6 +128,36 @@ Steps 3–7 are local/free. Figures and both drafts can be produced now; the bas
 ablation results are the only hard prerequisites that need running before the Results section
 is final.
 
+## Thesis feedback (round 2) — must carry into the paper
+
+The MSc thesis examiner's round-2 comments (34 substantive notes) map directly onto paper
+actions. The paper must not repeat these weaknesses:
+
+1. **Motivation first.** Open with the *science* (exoplanet demographics, the Roman bulge
+   survey) before the method (p5).
+2. **Physics correctness** — get these exactly right and cite sources:
+   - caustics are in the **source plane**, critical curves on the **lens/image plane**
+     (Schneider, Ehlers & Falco); Roman covers the **bulge**, not the whole sky (p16);
+   - binary caustic topology + **close / intermediate / wide** regimes (Tsapras 2018) (p25);
+   - `α` = angle between source trajectory and the binary axis; high magnification arises
+     from the trajectory approaching a caustic (p26);
+   - **redo or replace the caustic figure** — the thesis one "does not show caustics"; either
+     compute properly (Bozza 2010, Green's theorem/contour integration) or borrow-with-citation
+     (p26, p28);
+   - re-check the KMTNet-vs-OGLE resolution/precision claim (p34).
+3. **Cite thoroughly.** The thesis was under-referenced. Required: Paczyński; Schneider &
+   Weiss 1986; Witt 1990; Griest & Safizadeh 1998; Bozza 2010; Tsapras 2016 & 2018;
+   Dominik 2007 & 2008 and Tsapras 2009 (alert systems); MACHO & EROS surveys.
+4. **No overclaiming.** Drop/soften unsupported claims (e.g. "precision sufficient to
+   constrain planetary formation scenarios") unless directly defensible (p27).
+5. **tE distribution (ML-relevant!).** The examiner notes the real `tE` distribution peaks
+   ~25 d and long-timescale events were missed (Tsapras 2016) — **verify the simulator's `tE`
+   sampling matches reality**; if biased, note it as a limitation or re-simulate. This affects
+   the training distribution and must be addressed in the Data section.
+6. **Reproducibility.** State where training/sims ran (Modal L4; local GPU), compute cost, any
+   restrictions, and link the public repo — exactly what the examiner asked for (p52).
+7. **Define abbreviations at first use**; consider a glossary/notation table (p17).
+
 ## What I can start immediately (no compute, no blockers)
 - The **architecture schematic** and **example-light-curve / parameter-distribution** figures.
 - A **detailed section-by-section methods-paper skeleton** in LaTeX (`paper/methods/`) with the
