@@ -794,8 +794,9 @@ class BinaryPresets:
     # t0 in middle 50% of season ensures event fully observed
     SHARED_T0_MIN: float = 0.25 * SimConfig.TIME_MAX  # 18 days
     SHARED_T0_MAX: float = 0.75 * SimConfig.TIME_MAX  # 54 days
-    SHARED_TE_MIN: float = 3.0   # days
-    SHARED_TE_MAX: float = 18.0  # days (ensures completion: 2*18 = 36 days < 72-18=54)
+    SHARED_TE_MIN: float = 3.0    # days (lower truncation of the t_E log-normal)
+    SHARED_TE_MAX: float = 100.0  # days (upper truncation; long events' wings are truncated by
+                                  # the 72-day window -- exactly what a single Roman season sees)
     SHARED_U0_MIN: float = 0.001   # Matches PSPL to prevent bias
     SHARED_U0_MAX: float = 1.0    # Matches PSPL to prevent bias
 
@@ -848,6 +849,29 @@ class BinaryPresets:
             'require_caustic': False        # Full parameter space includes non-crossing
         }
     }
+
+
+# Realistic Einstein-timescale distribution.
+# The observed t_E distribution (e.g. Mroz et al. 2017; Tsapras 2016) is roughly log-normal,
+# peaking near ~20-25 days with a long tail to ~100 d. Earlier versions drew t_E uniformly
+# from [3, 18] d, which biased training toward short events and excluded the bulk of the real
+# population (most real events, and every OGLE event we validated on, have t_E > 18 d). We now
+# draw from a truncated log-normal; long events simply have their wings truncated by the
+# 72-day window -- exactly what a single Roman observing season sees of a long event.
+TE_LOGNORM_MEDIAN: float = 25.0   # days (median of the log-normal)
+TE_LOGNORM_SIGMA: float = 0.55    # width in ln-space
+
+
+def sample_realistic_tE() -> float:
+    """Draw t_E (days) from a truncated log-normal matching the observed distribution."""
+    lo, hi = BinaryPresets.SHARED_TE_MIN, BinaryPresets.SHARED_TE_MAX
+    mu = math.log(TE_LOGNORM_MEDIAN)
+    v = float(np.random.lognormal(mu, TE_LOGNORM_SIGMA))
+    for _ in range(50):
+        if lo <= v <= hi:
+            return v
+        v = float(np.random.lognormal(mu, TE_LOGNORM_SIGMA))
+    return min(max(v, lo), hi)
 
 
 class PSPLParams:
@@ -1297,7 +1321,7 @@ def simulate_event(params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
         for attempt in range(PSPL_MAX_ATTEMPTS):
             t0 = np.random.uniform(PSPLParams.T0_MIN, PSPLParams.T0_MAX)
-            tE = np.random.uniform(PSPLParams.TE_MIN, PSPLParams.TE_MAX)
+            tE = sample_realistic_tE()   # realistic log-normal t_E (was uniform[3,18])
             u0 = np.random.uniform(PSPLParams.U0_MIN, PSPLParams.U0_MAX)
             A_candidate = pspl_magnification(t_grid, tE, u0, t0)
 
@@ -1334,7 +1358,7 @@ def simulate_event(params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         require_caustic = p.get('require_caustic', False) or bool(params.get('force_caustic'))
 
         t0 = np.random.uniform(*p['t0_range'])
-        tE = np.random.uniform(*p['tE_range'])
+        tE = sample_realistic_tE()   # realistic log-normal t_E (was uniform[3,18])
 
         # Initialize binary parameters to None to detect failure
         s: Optional[float] = None
