@@ -97,3 +97,6 @@ binml/__pycache__/
 
 # documentation figures
 !docs/figures/*.png
+*.f16
+data.nosync/
+v5runs/

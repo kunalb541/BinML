@@ -42,7 +42,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-__all__ = ["Band", "ROMAN_BANDS", "ExtinctionLaw", "BulgeExtinction",
+__all__ = ["Band", "ROMAN_BANDS", "ExtinctionLaw", "BulgeExtinction", "observe",
            "photometric_sigma", "apply_detectability", "self_test"]
 
 
@@ -142,13 +142,75 @@ def photometric_sigma(band: Band, mag_ab: np.ndarray) -> np.ndarray:
     return np.sqrt(shot ** 2 + band.sys_floor_mag ** 2)
 
 
+def observe(band: Band, mag_true: np.ndarray, rng: np.random.Generator,
+            snr_threshold: float = 3.0
+            ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Turn a noise-free light curve into what the telescope actually records.
+
+    Returns ``(usable, mag_obs, mag_err)``. ``mag_obs`` / ``mag_err`` are meaningful only
+    where ``usable`` is True; elsewhere they are NaN.
+
+    Two things here are easy to get wrong, and an earlier version got both wrong:
+
+    1. **The noise is Gaussian in FLUX, not in magnitude.** Magnitude error diverges as
+       flux -> 0 (139 mag at F087 = 32), so an unbounded symmetric draw in log space
+       fabricates absurdly bright epochs for undetectable sources -- and the fainter the
+       source, the bigger the upward excursion. Drawing in flux space (and allowing a
+       non-positive flux draw, which simply fails the cut) is the physically correct
+       treatment and bounds the problem automatically.
+
+    2. **Detectability is a property of the INCIDENT flux, not of the noise realisation.**
+       Judging SNR from the noisy flux made detection probability *increase* with
+       faintness, asymptoting to 50% -- a pure selection artefact that injected
+       constant stars with 11-magnitude "variability" into the training set. Detection
+       and saturation are therefore both evaluated on ``mag_true``.
+
+    The reported ``mag_err`` is derived from the MEASURED flux, as a real pipeline's is.
+    Deriving it from the noise-free flux (as an earlier version did) made the error column
+    an invertible encoding of the true light curve -- a perfect shortcut for a classifier
+    to read the answer off the uncertainties instead of the morphology.
+    """
+    mag_true = np.asarray(mag_true, dtype=float)
+    F_true = band.flux_e(mag_true)
+
+    # detectability from the TRUE flux
+    sigma_true = photometric_sigma(band, mag_true)
+    detected = (1.0857 / np.maximum(sigma_true, 1e-12)) >= snr_threshold
+    saturated = mag_true < band.saturation_ab
+    usable = detected & (~saturated)
+
+    # noise in FLUX space; a non-positive draw is a legitimate non-detection
+    noise_e = np.sqrt(np.maximum(F_true, 0.0) + band.background_e2)
+    F_obs = F_true + rng.normal(0.0, noise_e)
+
+    # A real pipeline also cannot REPORT a magnitude for a measurement that is not itself
+    # significant, so require the MEASURED flux to clear the threshold too. Without this,
+    # an epoch whose flux happened to scatter to ~0 yields an arbitrarily faint magnitude,
+    # and constant stars acquired multi-magnitude excursions in the shallow colour bands.
+    # Note this is a genuine (and physical) Eddington bias near the limit -- unlike the
+    # earlier version, it cannot manufacture detections for sources that are undetectable
+    # in truth, because the true-flux cut above is applied first.
+    usable = usable & (F_obs / noise_e >= snr_threshold)
+
+    mag_obs = np.full_like(mag_true, np.nan)
+    mag_err = np.full_like(mag_true, np.nan)
+    if usable.any():
+        Fo = F_obs[usable]
+        mag_obs[usable] = band.zeropoint - 2.5 * np.log10(Fo / band.exposure_s)
+        # uncertainty from the MEASURED flux, plus the systematic floor
+        shot = 1.0857 * np.sqrt(Fo + band.background_e2) / Fo
+        mag_err[usable] = np.sqrt(shot ** 2 + band.sys_floor_mag ** 2)
+    return usable, mag_obs, mag_err
+
+
 def apply_detectability(band: Band, mag_ab: np.ndarray, snr_threshold: float = 3.0
                         ) -> Tuple[np.ndarray, np.ndarray]:
-    """Decide which epochs are usable in this band.
+    """Detected / saturated masks for a set of TRUE (model) magnitudes.
 
-    Returns ``(detected, saturated)`` boolean masks. An epoch is *usable* when it is
-    detected and not saturated. Because ``mag_ab`` varies during the event, this is
-    genuinely time-dependent: a band can be blank at baseline and detected near peak.
+    Returns ``(detected, saturated)``. ``mag_ab`` must be the noise-free model magnitude:
+    passing a noisy realisation makes detection probability rise with faintness. Prefer
+    :func:`observe`, which handles noise and detectability together and cannot be misused
+    this way.
     """
     mag_ab = np.asarray(mag_ab, dtype=float)
     sigma = photometric_sigma(band, mag_ab)

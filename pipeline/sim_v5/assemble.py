@@ -32,7 +32,7 @@ import numpy as np
 
 from .classes import CLASS_REGISTRY, label_of
 from .generators import GENERATORS, pspl_magnification
-from .photometry import (ROMAN_BANDS, BulgeExtinction, apply_detectability,
+from .photometry import (ROMAN_BANDS, BulgeExtinction, observe,
                          blend_fraction_in_band, photometric_sigma)
 
 __all__ = ["SurveyConfig", "BandObs", "Event", "simulate_event", "self_test"]
@@ -44,12 +44,42 @@ class SurveyConfig:
     window_days: float = 72.0
     reference_band: str = "F146"
     # label thresholds, computed against the KNOWN baseline
-    dchi2_event: float = 500.0      # Flat vs event (Penny+2019 use ~500 for detection)
-    dchi2_anomaly: float = 160.0    # PSPL vs NonPSPL (Penny+2019 anomaly threshold)
+    # Detection thresholds at their literature values. Read the amplitude floor below
+    # before changing either: at Roman's sampling BOTH chi^2 cuts are effectively
+    # vestigial, and it is the floor that actually decides the labels.
+    dchi2_event: float = 500.0
+    dchi2_anomaly: float = 160.0
+    # Both delta-chi^2 statistics are computed on NOISE-FREE curves, so neither is a
+    # likelihood-ratio statistic: under the null each is identically 0 rather than
+    # chi^2-distributed, and each grows in direct proportion to the epoch count. With ~6912
+    # F146 epochs, delta-chi^2 = 500 corresponds to a peak amplitude well under 1 mmag, and
+    # the same event can cross the anomaly cut on cadence alone (delta-chi^2 4927 at 15 min
+    # vs 84 at 24 h for one fixed binary). A fixed chi^2 cut is therefore NOT sufficient on
+    # its own -- an earlier comment here claimed the anomaly statistic was epoch-independent,
+    # which was simply wrong.
+    #
+    # What limits a real detection is CORRELATED systematics on day-to-week timescales,
+    # which do not average down the way our independent per-epoch noise does; no pipeline
+    # claims a sub-mmag detection. Rather than model a full red-noise process, we require a
+    # peak amplitude of 20x the 1 mmag systematic floor. This applies to BOTH boundaries:
+    # Flat/event, and PSPL/NonPSPL. Omitting it on the latter left 26.9% of NonPSPL-labelled
+    # events with an anomaly below the floor the other boundary already enforced.
+    #
+    # FLAGGED FOR CROSS-CHECK: this is a modelling choice, not a published threshold. Moving
+    # it moves both class boundaries, so it must be justified against a real Roman red-noise
+    # estimate before the production run.
+    min_amplitude_mag: float = 0.02
     snr_threshold: float = 3.0
-    # source baseline magnitude range (AB, intrinsic, before extinction)
+    # OBSERVED F146 baseline magnitude range (AB). This is the magnitude AFTER extinction --
+    # sampling it before extinction (as an earlier version did) pushed sources to 27+ mag,
+    # far below the detection limit, and made every light curve noise-dominated.
     m_base_min: float = 20.0
     m_base_max: float = 25.0
+    # t0 padding beyond the window, in units of t_E. 2.0 put most peaks outside the season
+    # (a high-magnification event rendered as a flat line); 0.5 keeps peaks reachable while
+    # still producing partial rises/falls and out-of-window peaks.
+    t0_pad_tE: float = 0.5
+    t0_pad_max_frac: float = 0.5    # never pad more than half a window
     min_usable_epochs: int = 20     # below this the event is unusable, not "flat"
 
 
@@ -71,7 +101,7 @@ class Event:
     bands: Dict[str, BandObs]
     params: dict
     dchi2_event: float       # vs a flat model, summed over bands
-    dchi2_anomaly: float     # vs the matched PSPL (microlensing only), summed over bands
+    dchi2_anomaly: float     # vs the REFIT PSPL, reference band only (not summed)
     n_usable_bands: int
 
 
@@ -80,6 +110,78 @@ def _epochs(band_name: str, window_days: float) -> np.ndarray:
     step = b.cadence_minutes / (60.0 * 24.0)
     n = max(int(round(window_days / step)), 1)
     return np.arange(n) * step
+
+
+def _band_stride(ref_band: str, band: str) -> int:
+    """How many reference-band epochs there are per ``band`` epoch.
+
+    Roman's colour bands sample on a 360-minute cycle against F146's 15 minutes, an exact
+    factor of 24, so a coarse band's epochs are a strict subset of the reference grid. This
+    is what lets an achromatic signal be evaluated once and indexed down.
+    """
+    step_ref = ROMAN_BANDS[ref_band].cadence_minutes
+    step_b = ROMAN_BANDS[band].cadence_minutes
+    ratio = step_b / step_ref
+    stride = int(round(ratio))
+    if stride < 1 or abs(ratio - stride) > 1e-9:
+        raise ValueError(
+            f"band {band} cadence ({step_b} min) is not an integer multiple of the reference "
+            f"band {ref_band} ({step_ref} min); the achromatic fast path assumes it is")
+    return stride
+
+
+_REFIT_MAX_POINTS = 400     # subsample cap: the fit needs shape, not every epoch
+
+
+def _pspl_refit_dchi2(t: np.ndarray, mag_true: np.ndarray, sigma: np.ndarray,
+                      m_base: float, f_s: float, params: Dict[str, float]
+                      ) -> Tuple[float, float]:
+    """Anomaly statistics from the best-fitting PSPL, against a noise-free curve.
+
+    Returns ``(dchi2, peak_deviation_mag)``: the chi^2 the best PSPL cannot absorb, and the
+    largest single-epoch magnitude deviation from it. Free parameters are
+    (t0, tE, u0, f_s, m_base), seeded from the event's own values -- the right basin, and
+    the fit then absorbs whatever a real modeller would, leaving the anomaly alone.
+
+    **Fit on a subsample, evaluate on every epoch.** An earlier version fit AND evaluated on
+    400 points and rescaled chi^2 by n/400. A caustic crossing can be far narrower than that
+    spacing, so the subsample stepped straight over the anomaly it existed to measure --
+    understating delta-chi^2 by up to ~100x. Finding the best-fit parameters only needs the
+    broad shape, but scoring the residual needs the full-resolution curve.
+    """
+    from scipy.optimize import least_squares
+
+    def model_mag(p: np.ndarray, tt: np.ndarray) -> np.ndarray:
+        t0, log_tE, u0, logit_fs, mb = p
+        tE = math.exp(min(max(log_tE, -20.0), 20.0))       # bounded: LM is unconstrained
+        fs = 1.0 / (1.0 + math.exp(-min(max(logit_fs, -30.0), 30.0)))
+        A = pspl_magnification(tt, t0, tE, max(abs(u0), 1e-6))
+        return mb - 2.5 * np.log10(np.maximum(1.0 + fs * (A - 1.0), 1e-8))
+
+    if t.size > _REFIT_MAX_POINTS:
+        sel = np.linspace(0, t.size - 1, _REFIT_MAX_POINTS).astype(int)
+        t_fit, mag_fit, sig_fit = t[sel], mag_true[sel], sigma[sel]
+    else:
+        t_fit, mag_fit, sig_fit = t, mag_true, sigma
+
+    fs0 = min(max(f_s, 1e-3), 1.0 - 1e-3)
+    p0 = np.array([params["t0"], math.log(max(params["tE"], 1e-3)),
+                   max(abs(params["u0"]), 1e-4),
+                   math.log(fs0 / (1.0 - fs0)), m_base])
+
+    best = p0
+    try:
+        fit = least_squares(lambda p: (mag_fit - model_mag(p, t_fit)) / sig_fit,
+                            p0, method="lm", max_nfev=400)
+        # LM can return a WORSE solution than the seed; keep whichever actually fits better.
+        seed_cost = float(np.sum(((mag_fit - model_mag(p0, t_fit)) / sig_fit) ** 2))
+        if float(np.sum(fit.fun ** 2)) < seed_cost:
+            best = fit.x
+    except (ValueError, FloatingPointError, np.linalg.LinAlgError):
+        pass                                               # keep the seed model
+
+    dev = mag_true - model_mag(best, t)                    # FULL-resolution residual
+    return float(np.sum((dev / sigma) ** 2)), float(np.max(np.abs(dev)))
 
 
 def simulate_event(true_class: str, rng: np.random.Generator,
@@ -91,44 +193,73 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     ref_band = ROMAN_BANDS[cfg.reference_band]
 
     # --- source / line-of-sight properties -------------------------------------
-    m_base_intrinsic = float(rng.uniform(cfg.m_base_min, cfg.m_base_max))
     a_ks = ext.sample_a_ks(rng)
+    # m_base is the OBSERVED baseline in the reference band. Extinction is then applied
+    # DIFFERENTIALLY to the other bands, so the reference band lands exactly in
+    # [m_base_min, m_base_max] regardless of the line-of-sight column. Sampling this
+    # intrinsically and then reddening pushed observed F146 to 27.6 -- below the 26.2
+    # detection limit -- which made every light curve noise-dominated.
+    m_base_ref_obs = float(rng.uniform(cfg.m_base_min, cfg.m_base_max))
+    ext_ref = ext.extinction_mag(ref_band, a_ks)
     f_s_ref = float(10.0 ** rng.uniform(math.log10(0.1), math.log10(1.0)))
     blend_colour = float(rng.normal(0.0, 0.6))   # (blend - source) colour, mag/dex
 
     # --- event parameters, with t0 drawn over a PADDED range (never centred) -----
     params = gen.sample(rng, cfg.window_days)
     if "tE" in params:
-        pad = min(2.0 * params["tE"], 2.0 * cfg.window_days)
+        pad = min(cfg.t0_pad_tE * params["tE"], cfg.t0_pad_max_frac * cfg.window_days)
         params["t0"] = float(rng.uniform(-pad, cfg.window_days + pad))
+
+    # An ACHROMATIC signal is evaluated ONCE on the finest grid and indexed down to the
+    # coarser bands, making "identical in every band" structural rather than a consequence
+    # of the underlying code happening to be deterministic. The colour bands sample every
+    # Nth reference epoch exactly (360 min / 15 min = 24), which _band_stride verifies.
+    fine_t = _epochs(cfg.reference_band, cfg.window_days)
+    fine_delta = gen.delta(fine_t, params, cfg.reference_band) if gen.achromatic else None
 
     bands: Dict[str, BandObs] = {}
     dchi2_event = 0.0
     dchi2_anom = 0.0
+    max_amp_mag = 0.0
+    ref_truth: Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, float, float]] = None
 
     for bname, band in ROMAN_BANDS.items():
         t = _epochs(bname, cfg.window_days)
         f_s_b = blend_fraction_in_band(f_s_ref, band, ref_band, blend_colour, ext, a_ks)
 
-        delta = gen.delta(t, params, bname)               # fractional flux change
+        if fine_delta is not None:
+            stride = _band_stride(cfg.reference_band, bname)
+            delta = fine_delta[::stride][:t.size]         # achromatic: identical by construction
+        else:
+            delta = gen.delta(t, params, bname)           # chromatic: per-band by design
         flux_ratio = 1.0 + f_s_b * delta                  # SHARED dilution machinery
         flux_ratio = np.maximum(flux_ratio, 1e-8)
 
-        m_base_band = m_base_intrinsic + ext.extinction_mag(band, a_ks)
+        # differential extinction relative to the reference band
+        m_base_band = m_base_ref_obs + (ext.extinction_mag(band, a_ks) - ext_ref)
         mag_true = m_base_band - 2.5 * np.log10(flux_ratio)
 
-        sigma = photometric_sigma(band, mag_true)
-        mag_obs = mag_true + rng.normal(0.0, sigma)
+        # Noise in FLUX space, detectability judged on the TRUE flux, reported error
+        # derived from the MEASURED flux -- see photometry.observe for why each of those
+        # three choices matters.
+        usable, mag_obs, mag_err = observe(band, mag_true, rng, cfg.snr_threshold)
+        sigma = photometric_sigma(band, mag_true)      # model sigma, for the chi^2 statistics
 
-        detected, saturated = apply_detectability(band, mag_obs, cfg.snr_threshold)
-        usable = detected & (~saturated)
-
-        # delta-chi^2 of the true signal against a FLAT model at the known baseline
+        # delta-chi^2 of the NOISE-FREE signal against a FLAT model at the known baseline.
+        # Using mag_true (not mag_obs) is essential: an observed-vs-model chi^2 has
+        # expectation n_epochs from photon noise alone and would measure nothing.
         if usable.any():
             resid = (mag_true[usable] - m_base_band) / sigma[usable]
             dchi2_event += float(np.sum(resid ** 2))
+            max_amp_mag = max(max_amp_mag, float(np.max(np.abs(mag_true[usable] - m_base_band))))
 
-        bands[bname] = BandObs(bname, t[usable], mag_obs[usable], sigma[usable],
+        if bname == cfg.reference_band:
+            ref_truth = (t[usable], mag_true[usable], sigma[usable], m_base_band, f_s_b)
+
+        # NOTE: mag_err comes from `observe` (measured flux), NOT from `sigma` (model
+        # flux). Emitting the model sigma would let a classifier invert the error column
+        # to recover the noise-free light curve.
+        bands[bname] = BandObs(bname, t[usable], mag_obs[usable], mag_err[usable],
                                int(t.size), float(f_s_b))
 
     n_usable_bands = sum(1 for b in bands.values() if b.t.size >= 3)
@@ -137,22 +268,29 @@ def simulate_event(true_class: str, rng: np.random.Generator,
         return None                                        # unusable, not a training example
 
     # --- anomaly delta-chi^2: only meaningful for microlensing ------------------
-    if true_class == "NonPSPL":
-        ref_obs = bands[cfg.reference_band]
-        if ref_obs.t.size >= 10:
-            f_s_b = ref_obs.f_s
-            m_base_band = m_base_intrinsic + ext.extinction_mag(ref_band, a_ks)
-            A_pspl = pspl_magnification(ref_obs.t, params["t0"], params["tE"], params["u0"])
-            mag_pspl = m_base_band - 2.5 * np.log10(np.maximum(1.0 + f_s_b * (A_pspl - 1.0), 1e-8))
-            resid = (ref_obs.mag - mag_pspl) / ref_obs.mag_err
-            dchi2_anom = float(np.sum(resid ** 2))
+    # Defined the way a vetting pipeline defines it: fit the BEST PSPL to the anomalous
+    # curve and measure what the fit cannot absorb. Comparing against the PSPL built from
+    # the binary's own (t0, tE, u0) would charge the anomaly for parameter offsets a real
+    # fitter would simply absorb, inflating delta-chi^2 for events with no visible anomaly.
+    anom_amp_mag = 0.0
+    if true_class == "NonPSPL" and ref_truth is not None and ref_truth[0].size >= 10:
+        dchi2_anom, anom_amp_mag = _pspl_refit_dchi2(*ref_truth, params)
 
     # --- LABEL BY WHAT IS OBSERVABLE -------------------------------------------
     label = true_class
-    if dchi2_event < cfg.dchi2_event:
+    if dchi2_event < cfg.dchi2_event or max_amp_mag < cfg.min_amplitude_mag:
         label = "Flat"                                     # nothing detectable happened
-    elif true_class == "NonPSPL" and dchi2_anom < cfg.dchi2_anomaly:
+    elif true_class == "NonPSPL" and (dchi2_anom < cfg.dchi2_anomaly
+                                      or anom_amp_mag < cfg.min_amplitude_mag):
         label = "PSPL"                                     # anomaly not detectable -> it IS a PSPL
+
+    # The achromatic cache is an implementation detail; it holds a full-length array and
+    # must not travel with the event into metadata or the HDF5 writer.
+    params.pop("_delta_cache", None)
+    # Line-of-sight properties are not generator parameters but are needed to reconstruct
+    # the event (and to check the simulated population against the survey's own priors).
+    params["_m_base_ref"] = m_base_ref_obs
+    params["_a_ks"] = a_ks
 
     return Event(true_class=true_class, label=label, label_index=label_of(label),
                  bands=bands, params=params, dchi2_event=dchi2_event,
