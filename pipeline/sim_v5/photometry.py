@@ -66,16 +66,37 @@ class Band:
         return 10.0 ** (-0.4 * (np.asarray(mag_ab, dtype=float) - self.zeropoint)) * self.exposure_s
 
 
-# Primary high-cadence band is F146 (a.k.a. W146/W149). F087/F213 give colour at ~12 hr.
-# NOTE: F087/F213 zeropoint/background are SCALED ESTIMATES -- see VERIFY note above.
+# Primary high-cadence band is F146 (a.k.a. W146/W149); F087 and F213 provide colour.
+#
+# CADENCE (Roman User Documentation, GBTDS): F087 and F213 are interleaved at lower cadence,
+# "each repeats on a 6-hour cycle, staggered so that one or the other is obtained every
+# 3 hours" -> 360 min per colour band (NOT 12 h).
+#
+# EXPOSURE: "the exposure time is the same for all three primary filters, set to the time
+# required to achieve S/N ~ 100 in F146 for a source with F146 = 21.2 mag_AB". The colour
+# bands therefore do NOT get a longer exposure -- an earlier version of this file gave them
+# 286 s, which made them ~2 mag too deep and produced a spuriously optimistic colour
+# availability. Same exposure for all three.
+#
+# STILL ESTIMATED (flagged for verification): the F087/F213 zeropoints and backgrounds are
+# scaled from the published W149 values -- narrower/bluer and thermal-background-dominated
+# filters respectively, so both are shallower than F146. The *relative* ordering is robust;
+# the absolute depths are not published in the detail Penny+2019 gives for W149.
+_EXPOSURE_S = 46.8
+
 ROMAN_BANDS: Dict[str, Band] = {
     "F146": Band("F146", 1.46, cadence_minutes=15.0, zeropoint=27.615,
-                 exposure_s=46.8, background_e2=3218.0, saturation_ab=14.8),
-    "F087": Band("F087", 0.87, cadence_minutes=720.0, zeropoint=26.4,
-                 exposure_s=286.0, background_e2=1200.0, saturation_ab=13.9),
-    "F213": Band("F213", 2.13, cadence_minutes=720.0, zeropoint=26.0,
-                 exposure_s=286.0, background_e2=4000.0, saturation_ab=14.5),
+                 exposure_s=_EXPOSURE_S, background_e2=3218.0, saturation_ab=14.8),
+    "F087": Band("F087", 0.87, cadence_minutes=360.0, zeropoint=26.4,
+                 exposure_s=_EXPOSURE_S, background_e2=1200.0, saturation_ab=13.9),
+    "F213": Band("F213", 2.13, cadence_minutes=360.0, zeropoint=26.0,
+                 exposure_s=_EXPOSURE_S, background_e2=4000.0, saturation_ab=14.5),
 }
+
+# Published calibration anchor used by the self-test.
+SNR_ANCHOR_BAND = "F146"
+SNR_ANCHOR_MAG = 21.2
+SNR_ANCHOR_VALUE = 100.0
 
 
 # ---------------------------------------------------------------------------------
@@ -283,7 +304,30 @@ def self_test(verbose: bool = True) -> None:
     assert np.all(fractional_flux_change(0.3, d) <= fractional_flux_change(1.0, d)), \
         "blending must dilute a variable's fractional change too"
 
-    # --- INVARIANT 8: no NaN/inf anywhere ----------------------------------------
+    # --- INVARIANT 8: the published S/N anchor must reproduce --------------------
+    # Roman GBTDS: exposure set to give S/N ~ 100 in F146 at F146 = 21.2 mag_AB.
+    anchor = ROMAN_BANDS[SNR_ANCHOR_BAND]
+    sig_anchor = float(photometric_sigma(anchor, np.array([SNR_ANCHOR_MAG]))[0])
+    snr_anchor = 1.0857 / sig_anchor
+    assert 70.0 < snr_anchor < 150.0, (
+        f"S/N at {SNR_ANCHOR_BAND}={SNR_ANCHOR_MAG} is {snr_anchor:.0f}, far from the "
+        f"published ~{SNR_ANCHOR_VALUE:.0f} -- the noise model is mis-calibrated")
+
+    # --- INVARIANT 9: colour bands must be SHALLOWER than F146 -------------------
+    # They share F146's exposure time but have lower throughput / higher background.
+    def _depth(bd: Band, snr: float = 3.0) -> float:
+        m = np.linspace(16.0, 30.0, 2000)
+        s = 1.0857 / photometric_sigma(bd, m)
+        ok = np.where(s >= snr)[0]
+        return float(m[ok[-1]]) if ok.size else float("nan")
+    d146, d087, d213 = (_depth(ROMAN_BANDS[b]) for b in ("F146", "F087", "F213"))
+    assert d087 < d146 and d213 < d146, (
+        f"colour bands must be shallower than F146; got F146 {d146:.1f}, "
+        f"F087 {d087:.1f}, F213 {d213:.1f}")
+    assert all(e.exposure_s == ROMAN_BANDS["F146"].exposure_s for e in ROMAN_BANDS.values()), \
+        "all three primary filters share the same exposure time"
+
+    # --- INVARIANT 10: no NaN/inf anywhere ---------------------------------------
     m = observed_magnitude(b, np.array([1.0, 100.0]), 22.0, 0.3, 0.8, ext)
     assert np.all(np.isfinite(m)) and np.all(np.isfinite(photometric_sigma(b, m))), \
         "NaN/inf produced in photometry"

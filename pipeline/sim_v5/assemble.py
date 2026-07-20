@@ -166,7 +166,10 @@ def self_test(verbose: bool = True) -> None:
 
     # --- INVARIANT 1: epoch counts follow the per-band cadence -------------------
     assert _epochs("F146", 72.0).size == 6912, "F146 must give 6912 epochs at 15 min over 72 d"
-    assert abs(_epochs("F087", 72.0).size - 144) <= 1, "F087 ~12 h cadence over 72 d"
+    # colour bands: 6-hour cycle each (staggered so one colour point every 3 h)
+    assert abs(_epochs("F087", 72.0).size - 288) <= 1, "F087 6 h cadence over 72 d -> ~288"
+    assert _epochs("F213", 72.0).size == _epochs("F087", 72.0).size, \
+        "F087 and F213 share the same 6 h cycle"
 
     # --- INVARIANT 2: t0 is NOT centred (the v4 bug) -----------------------------
     t0s = []
