@@ -15,7 +15,7 @@ them at probability ``BYPRODUCT_KEEP`` and record that probability per event as
 discarded: the counts of generated-but-dropped events are written to the shard attributes.
 
 Usage:
-    python -m pipeline.sim_v5.run_shard --shard 0 --n-shards 400 --bucket BUCKET [--out DIR]
+    python -m pipeline.run_shard --shard 0 --n-shards 400 --bucket BUCKET [--out DIR]
 """
 from __future__ import annotations
 

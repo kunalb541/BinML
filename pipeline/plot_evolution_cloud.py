@@ -10,7 +10,7 @@ import argparse, os
 import numpy as np, torch, h5py
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from .model_v5 import BAND_BINS, BinMLv5, ModelConfigV5
+from .model import BAND_BINS, BinMLv5, ModelConfigV5
 from .classes import CLASS_NAMES, N_CLASSES
 
 COL = ["#7f7f7f", "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e", "#9467bd"]

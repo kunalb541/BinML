@@ -2,7 +2,7 @@
 BinML v5 — final report: metrics, baseline comparison, and figures.
 
 Runs the trained model over the independent test set, computes the protocol defined in
-``evaluate_v5``, compares against the classical Delta-chi^2 baseline, and writes the figures.
+``evaluate``, compares against the classical Delta-chi^2 baseline, and writes the figures.
 
 The comparison against the baseline is the scientifically load-bearing part. The baseline
 applies the SAME decision rule the labels were defined by (delta-chi^2 vs flat, then vs a
@@ -19,7 +19,7 @@ import re
 import numpy as np
 
 from .classes import CLASS_NAMES
-from .evaluate_v5 import I_NON, average_precision, evaluate_checkpoint, population_weights
+from .evaluate import I_NON, average_precision, evaluate_checkpoint, population_weights
 
 
 def baseline_pr(npz_path: str):
@@ -154,7 +154,7 @@ def main(argv=None) -> int:
     v5 = os.path.expanduser("~/Desktop/Research/microlensing/v5runs")
     curves = [("stage1", parse_log(sorted(glob.glob(f"{v5}/train_2026*.log"))[-1] if glob.glob(f"{v5}/train_2026*.log") else ""), "-o"),
               ("stage2", parse_log(sorted(glob.glob(f"{v5}/stage2_*.log"))[-1] if glob.glob(f"{v5}/stage2_*.log") else ""), "-s")]
-    figures(res, base or {}, curves, os.path.join(args.out, "binml_v5_report.png"))
+    figures(res, base or {}, curves, os.path.join(args.out, "binml_report.png"))
 
     summary = {"model": res, "baseline": base}
     json.dump(summary, open(os.path.join(args.out, "summary.json"), "w"), indent=2, default=str)

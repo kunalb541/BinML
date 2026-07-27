@@ -2,7 +2,7 @@
 
 ## v5 (current pipeline) — how train/test disjointness is guaranteed
 
-The v5 data (`pipeline/sim_v5/`) makes leakage structurally hard:
+The v5 data (`pipeline/`) makes leakage structurally hard:
 
 - **Disjoint by shard index.** Each shard is its own RNG stream: `seed = seed_base + shard*7919`.
   Training used shards **0–89**, the independent test set shards **90–149** — different streams,
@@ -11,7 +11,7 @@ The v5 data (`pipeline/sim_v5/`) makes leakage structurally hard:
 - **Unseen-parameter stress test.** The 12.9M-event generalisation set uses seed bases **≥900M**,
   ≥1M apart per regime, versus training's base `20260720` (max seed ~23.4M). Different PCG64
   streams → parameter tuples the model never saw. `--seed-base` exposes this.
-- **The network never sees the labels' inputs.** The model forward (`model_v5.py`) consumes only
+- **The network never sees the labels' inputs.** The model forward (`model.py`) consumes only
   the `feat`/`frac` tokens + per-band presence. The `params` table (including `q, s, dchi2_*`,
   and `t_anom`) is used for **labelling and post-hoc analysis only**, never fed to the network.
 - **No fit-before-split statistic.** v5 uses a fixed input scale (`MAG_SCALE = 1.0`), so the

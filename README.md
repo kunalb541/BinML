@@ -64,7 +64,7 @@ each number.
 
 ## Documentation
 
-- **[Pipeline](docs/pipeline_v5.md)** — the current model: simulation, training & evaluation,
+- **[Pipeline](docs/pipeline.md)** — the current model: simulation, training & evaluation,
   file-by-file, with verified quick-start commands. **Start here.**
 - [Architecture](docs/architecture.md) — the conv-stem + transformer, and why it's built this way
 - [Evaluation](docs/evaluation.md) — detectability-conditioned, honest metrics
@@ -75,29 +75,29 @@ each number.
 
 ```bash
 # one shard of simulated data (all 6 classes) -> cache -> train -> evaluate
-python -m pipeline.sim_v5.run_shard --shard 0 --n-shards 1 --out data/raw
-python -c "from pipeline.sim_v5.cache import build_cache; import glob; \
+python -m pipeline.run_shard --shard 0 --n-shards 1 --out data/raw
+python -c "from pipeline.cache import build_cache; import glob; \
 build_cache(sorted(glob.glob('data/raw/*.h5')), 'data/cache/shard_00000.h5')"
-python -m pipeline.sim_v5.to_memmap --in-dir data/cache --out data/mm
-python -m pipeline.sim_v5.train_v5   --cache data/mm --out runs/model.pt --epochs 6 --device mps
-python -m pipeline.sim_v5.evaluate_v5 --ckpt runs/model.pt --cache data/mm_test --out eval/
+python -m pipeline.to_memmap --in-dir data/cache --out data/mm
+python -m pipeline.train   --cache data/mm --out runs/binml.pt --epochs 6 --device mps
+python -m pipeline.evaluate --ckpt runs/binml.pt --cache data/mm_test --out eval/
 ```
 
-Full walkthrough and every module's role: [`docs/pipeline_v5.md`](docs/pipeline_v5.md).
+Full walkthrough and every module's role: [`docs/pipeline.md`](docs/pipeline.md).
 
 ## Repository layout
 
 ```
-pipeline/sim_v5/   the current 6-class multi-band pipeline (simulate, train, evaluate, plot)
+pipeline/   the current 6-class multi-band pipeline (simulate, train, evaluate, plot)
 binml/             legacy installable 3-class inference package (Flat/PSPL/Binary) + weights
-docs/              architecture, pipeline_v5, evaluation, data format, leakage audit
+docs/              architecture, pipeline, evaluation, data format, leakage audit
 paper/             software paper + references
 examples/, tests/  usage examples and smoke tests
 ```
 
 > **Note.** The `binml/` pip package is the earlier **3-class** (Flat/PSPL/Binary) classifier and
 > its `pip install binml` API is unchanged. The **6-class multi-band** model described above is
-> the current research pipeline in [`pipeline/sim_v5/`](pipeline/sim_v5/).
+> the current research pipeline in [`pipeline/`](pipeline/).
 
 ## Cadence matters
 

@@ -3,7 +3,7 @@
 Runs a trained checkpoint over a single BINNED cache shard (h5) and writes only the compact
 prediction arrays (logits + the columns the metrics need). Purpose: evaluate a huge simulated
 set in-region on the generation/binning fleet, so only ~30 floats/event ever leave S3 instead
-of the multi-KB light curves. The heavy metric/plot code (evaluate_v5, plots_v5) then runs on
+of the multi-KB light curves. The heavy metric/plot code (evaluate, plots) then runs on
 these small arrays locally, exactly as it already does on the saved artifact.
 
 CPU-only: the model is 505k params over 156 tokens, so a 2-vCPU box classifies a 7,500-event
@@ -18,7 +18,7 @@ import h5py
 import numpy as np
 import torch
 
-from .model_v5 import BAND_BINS, BinMLv5, ModelConfigV5
+from .model import BAND_BINS, BinMLv5, ModelConfigV5
 
 MAG_SCALE = 1.0
 

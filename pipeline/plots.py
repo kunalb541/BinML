@@ -6,7 +6,7 @@ the v5-specific ones (detectability conditioning, the (log s, log q) efficiency 
 population-vs-sample distinction, and the classical-baseline comparison).
 
 Everything here reads the SAVED PREDICTION ARTIFACT, not the model. That is deliberate: once
-``evaluate_v5`` has written per-event logits, every figure, slice, threshold and bootstrap is a
+``evaluate`` has written per-event logits, every figure, slice, threshold and bootstrap is a
 pure numpy operation, so the whole suite regenerates in seconds and none of it requires a GPU
 or re-running the network.
 """
@@ -54,7 +54,7 @@ class Preds:
         self.y = np.load(f"{d}/label.npy").astype(int)
         self.tc = np.load(f"{d}/true_class.npy").astype(int)
         self.kp = np.load(f"{d}/keep_prob.npy")
-        # float64: see evaluate_v5.population_weights -- float32 cumsum overshoots 1.
+        # float64: see evaluate.population_weights -- float32 cumsum overshoots 1.
         self.w = 1.0 / np.clip(self.kp.astype(np.float64), 1e-3, 1.0)
         self.dca = np.load(f"{d}/dchi2_anomaly.npy")
         self.dce = np.load(f"{d}/dchi2_event.npy")
@@ -263,7 +263,7 @@ def fig_parameter_dependence(P: Preds, out: str):
 def fig_light_curves(P: Preds, cache: str, out: str, n_per: int = 2):
     """Example curves per class: correctly classified and, where they exist, failures."""
     plt = _style()
-    from .model_v5 import BAND_BINS
+    from .model import BAND_BINS
     n = len(P.y)
     feats = {b: np.memmap(f"{cache}/feat_{b}.f16", dtype=np.float16, mode="r",
                           shape=(json.load(open(f"{cache}/meta.json"))["n_events"], L, 3))
@@ -499,7 +499,7 @@ def _truncated_batch(cache, n_all, rows, frac_seen: float):
     not an out-of-distribution input.
     """
     import torch
-    from .model_v5 import BAND_BINS
+    from .model import BAND_BINS
     out = {}
     for b, L in BAND_BINS.items():
         f = np.memmap(f"{cache}/feat_{b}.f16", dtype=np.float16, mode="r", shape=(n_all, L, 3))
@@ -521,7 +521,7 @@ def temporal_scan(ckpt: str, cache: str, rows: np.ndarray, device: str = "mps",
                   n_steps: int = 16) -> np.ndarray:
     """(len(rows), n_steps, 6) softmax probabilities as the season is progressively revealed."""
     import torch
-    from .model_v5 import BAND_BINS, BinMLv5, ModelConfigV5
+    from .model import BAND_BINS, BinMLv5, ModelConfigV5
     ck = torch.load(ckpt, map_location="cpu")
     cfg = ModelConfigV5(**{k: v for k, v in ck["config"].items()
                            if k in ModelConfigV5.__dataclass_fields__})
@@ -686,7 +686,7 @@ def fig_temporal_bias(P: Preds, out: str):
 
 if __name__ == "__main__":
     import argparse, glob
-    from .report_v5 import parse_log
+    from .report import parse_log
     ap = argparse.ArgumentParser()
     ap.add_argument("--preds", required=True)
     ap.add_argument("--cache", required=True)
@@ -717,7 +717,7 @@ def _event_prob_track(model, cache: str, n_all: int, row: int, device: str,
     rather than fraction of bins, so the x-axis matches the light-curve panel above it.
     """
     import torch
-    from .model_v5 import BAND_BINS
+    from .model import BAND_BINS
     fracs = np.linspace(1.0 / n_steps, 1.0, n_steps)
     rows = np.array([row])
     out = np.zeros((n_steps, N_CLASSES), dtype=np.float32)
@@ -746,7 +746,7 @@ def fig_event_evolution(P: Preds, cache: str, ckpt: str, out_dir: str, n_per: in
     the ones v4 never had (PeriodicVar, LongPeriodVar, Eruptive).
     """
     import torch
-    from .model_v5 import BAND_BINS, BinMLv5, ModelConfigV5
+    from .model import BAND_BINS, BinMLv5, ModelConfigV5
     plt = _style()
     os.makedirs(out_dir, exist_ok=True)
     ck = torch.load(ckpt, map_location="cpu")

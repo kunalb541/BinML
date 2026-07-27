@@ -25,7 +25,7 @@ import sys
 import h5py
 import numpy as np
 
-from .model_v5 import BAND_BINS
+from .model import BAND_BINS
 
 SCALARS = ("label", "true_class", "keep_prob", "dchi2_event", "dchi2_anomaly",
            "m_base_ref", "a_ks", "n_usable_bands")

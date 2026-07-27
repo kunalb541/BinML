@@ -3,7 +3,7 @@
 BinML classifies Roman multi-band light curves into six classes — **Flat, PSPL, NonPSPL
 (binary/planetary), PeriodicVar, LongPeriodVar, Eruptive**. The network is a **convolutional
 stem feeding a small transformer encoder**, implemented in
-[`pipeline/sim_v5/model_v5.py`](../pipeline/sim_v5/model_v5.py). It has **505,479 parameters**.
+[`pipeline/model.py`](../pipeline/model.py). It has **505,479 parameters**.
 
 > The earlier 3-class model (`binml/model.py`) was a causal CNN-GRU; BinML 1.0 replaced it with a
 > multi-band conv-stem + transformer (BinML 1.0) to handle three bands of very different cadence and to
@@ -76,5 +76,5 @@ slightly worse than the flat 6-way head, so the flat head ships.
   variables are not), and the per-band presence masking makes "works from F146 alone under heavy
   extinction" a property of the model, not an accident.
 
-See [`docs/pipeline_v5.md`](pipeline_v5.md) for how the model is trained and evaluated, and
+See [`docs/pipeline.md`](pipeline.md) for how the model is trained and evaluated, and
 [`docs/data_format.md`](data_format.md) for the exact token/channel layout it consumes.

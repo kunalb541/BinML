@@ -1,1996 +1,480 @@
 """
-Roman Microlensing Classifier Training Engine v4.1.0
-====================================================
+BinML v5 — training.
 
-MULTI-GPU OPTIMIZATION v4.1.0 - CLEANUP RACE FIX + BROADCAST OPTIMIZATION
---------------------------------------------------------------------------
-**Fixed:** Added dist.barrier() before /dev/shm cleanup (prevents race condition)
-**Fixed:** Stats and indices now broadcast from rank0 (avoids redundant file reads)
-**Fixed:** Logging uses local_rank instead of rank % 4 (works with any GPU count)
-**Fixed:** Documentation now accurately describes what /dev/shm sharing achieves
+Four things here are load-bearing and easy to get wrong; each is a decision, not a default.
 
-**What /dev/shm actually provides (corrected from v4.0.0):**
-- Fast RAM-backed filesystem reads (no disk I/O)
-- Linux page cache sharing for the FILE (reduces disk reads)
-- Each process still allocates its own numpy arrays after load
-- NOT true shared memory across processes (would need multiprocessing.shared_memory)
+1. **There is NO `!= 0.0` validity mask.** v4 treated a zero magnification as "missing" and
+   compacted it away. The v5 cache stores BASELINE-RELATIVE magnitudes, so a bin with no
+   deviation stores exactly 0.0 -- the single most common value in the Flat class, which is
+   ~32% of the dataset. Porting that idiom would delete every genuinely flat bin as
+   "missing" and destroy the time axis for precisely the class that defines the Flat/event
+   boundary. It would not crash. It would train, converge, and be wrong. Validity here is
+   `isfinite` (the cache writes NaN for an empty bin), surfaced as an input channel.
 
-All v4.0.0, v3.2.0, v3.1.0 and v3.0.0 fixes preserved:
-- Deterministic /dev/shm path (no PID, uses SLURM_JOB_ID)
-- Preserves source file suffix (.npz/.h5)
-- Model calls use keyword arguments (lengths=lengths)
-- lengths tensor moved to device
-- torch.load compatibility wrapper
-- SharedRAMLensingDataset (no train/val double loading)
-- Hierarchical loss with separate BCE stages
-- Memory leak prevention
-- Complete type hints
+2. **keep_prob and class balancing must not both be applied naively.** Binaries whose anomaly
+   was undetectable were retained with probability 0.15, so 1/keep_prob restores the
+   generated population. But that restoration does two jobs at once: it fixes the INTER-class
+   balance and the INTRA-class mix of byproduct vs native rows. Class balancing deliberately
+   overrides the inter-class part -- that is what balancing means -- so only the intra-class
+   part must survive. Normalising each class weight by the keep_prob-corrected class mass
+   (not the raw count) achieves exactly that, and the double-count disappears by
+   construction. Multiplying raw class weights by 1/keep_prob would silently over-weight the
+   byproduct-heavy classes.
 
-Author: Kunal Bhatia
-Institution: University of Heidelberg
-Version: 4.1.0
-Date: December 2024
+3. **No fitted normalisation statistics.** This project has already shipped one leakage bug
+   where normalisation was fit over all rows instead of train-only. Inputs are already
+   baseline-relative magnitudes in physically known units, so fixed constants are used and
+   stored in the checkpoint. Nothing is fit from data, so nothing can leak.
+
+4. **Accuracy is the wrong headline metric -- and so is bare recall.** Flat+PSPL are ~61% of
+   the data, so a model that never predicts NonPSPL still scores well on accuracy. But
+   selecting on NonPSPL RECALL fails just as badly in the opposite direction: predicting
+   NonPSPL for everything scores 1.000. The first smoke run of this loop did exactly that and
+   was selected, at recall 1.000 / precision 0.139. Selection is therefore on NonPSPL F1,
+   which has no degenerate optimum at either extreme. Recall is additionally reported
+   CONDITIONED ON DETECTABILITY (binned by anomaly delta-chi^2), because many stored events
+   are genuinely undetectable and an unconditioned number flatters the model.
 """
-
 from __future__ import annotations
 
 import argparse
-import gc
 import json
-import logging
-import math
 import os
-import random
-import shutil
-import sys
 import time
-import warnings
-from contextlib import nullcontext
 from dataclasses import asdict
-from datetime import datetime, timedelta
-from functools import partial
-from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Dict, Tuple
 
-import h5py
 import numpy as np
 import torch
-import torch.distributed as dist
-import torch.nn as nn
 import torch.nn.functional as F
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.model_selection import train_test_split
-from torch import Tensor
-from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.optim.lr_scheduler import _LRScheduler
-from torch.utils.data import DataLoader, Dataset, Sampler
-from torch.utils.data.distributed import DistributedSampler
-from tqdm import tqdm
+from torch.utils.data import DataLoader, Dataset
 
-__version__: str = "4.1.0"
+from .classes import CLASS_NAMES, N_CLASSES
+from .model import BAND_BINS, IN_CH, BinMLv5, ModelConfigV5
 
-__all__ = [
-    "SharedRAMLensingDataset",
-    "load_data_to_shared_memory",
-    "load_and_split_data",
-    "WarmupCosineScheduler",
-    "compute_class_weights",
-    "compute_hierarchical_loss",
-    "train_epoch",
-    "evaluate",
-    "save_checkpoint",
-    "load_checkpoint_for_resume",
-    "setup_ddp",
-    "cleanup_ddp",
-    "cleanup_shared_memory",
-    "torch_load_compat",
-    "main",
-]
+# Fixed input scaling. Baseline-relative magnitudes: a 1-magnitude deviation is a big event,
+# so dividing by 1 mag puts typical signals in [-1, 1] without fitting anything.
+MAG_SCALE = 1.0
+I_FLAT = CLASS_NAMES.index("Flat")
+I_PSPL = CLASS_NAMES.index("PSPL")
+I_NON = CLASS_NAMES.index("NonPSPL")
+# Same amplitude floor assemble.SurveyConfig uses to call an event undetectable, so a
+# truncated window is judged by exactly the rule that produced the labels in the first place.
+# Same amplitude floor SurveyConfig uses to declare an event undetectable, applied to the
+# revealed span so a truncated window is judged by the rule that produced the labels.
+TRUNC_MIN_AMP_MAG = 0.02
 
-# =============================================================================
-# v4.0.0: TORCH SERIALIZATION COMPATIBILITY GUARD
-# =============================================================================
-# Guard torch.serialization import (prevents some PyTorch crashes on certain versions)
-try:
-    import torch.serialization  # type: ignore
-    try:
-        torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
-    except (AttributeError, TypeError):
-        pass
-except ImportError:
-    pass
 
-# =============================================================================
-# ENVIRONMENT CONFIGURATION
-# =============================================================================
+def _visible_amplitude(params: np.ndarray, pf_idx: dict, f_s: float, t_cut: float,
+                       window: float = 72.0) -> Optional[float]:
+    """Peak model amplitude (mag) inside [0, t_cut], from the TRUE parameters.
 
-def _configure_environment() -> None:
-    """Environment configuration for distributed training."""
-    os.environ.setdefault('NCCL_TIMEOUT', '600')
-    os.environ.setdefault('NCCL_SOCKET_TIMEOUT', '300')
-    os.environ.setdefault('NCCL_IB_TIMEOUT', '20')
-    os.environ.setdefault('NCCL_IB_DISABLE', '0')
-    os.environ.setdefault('NCCL_NET_GDR_LEVEL', '3')
-    os.environ.setdefault('TORCH_NCCL_ASYNC_ERROR_HANDLING', '1')
-    os.environ.setdefault('NCCL_DEBUG', 'INFO')
-    os.environ.setdefault('NCCL_P2P_LEVEL', '5')
-    os.environ.setdefault('NCCL_MIN_NCHANNELS', '16')
-    os.environ.setdefault('CUDA_DEVICE_MAX_CONNECTIONS', '1')
-    os.environ.setdefault('PYTORCH_CUDA_ALLOC_CONF', 'expandable_segments:False')
-    os.environ.setdefault('TORCH_DISTRIBUTED_DEBUG', 'OFF')
-    os.environ.setdefault('CUDA_LAUNCH_BLOCKING', '0')
-    os.environ.setdefault('KINETO_LOG_LEVEL', '5')
-    os.environ.setdefault('TORCH_NCCL_AVOID_RECORD_STREAMS', '1')
-    os.environ.setdefault('TORCH_NCCL_BLOCKING_WAIT', '1')
-
-_configure_environment()
-
-# Import model after path setup
-current_dir = Path(__file__).resolve().parent
-if str(current_dir) not in sys.path:
-    sys.path.insert(0, str(current_dir))
-from model import ModelConfig, RomanMicrolensingClassifier, HierarchicalOutput
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-SEED: int = 42
-EPS: float = 1e-8
-CLASS_NAMES: Tuple[str, str, str] = ('Flat', 'PSPL', 'Binary')
-N_CLASSES: int = 3
-LOG_FORMAT: str = '%(asctime)s | %(levelname)s | %(message)s'
-LOG_DATE_FORMAT: str = '%Y-%m-%d %H:%M:%S'
-
-DEFAULT_BATCH_SIZE: int = 256   # v4.2.0: was 64; model is tiny (d_model=16), under-fills 16GB
-DEFAULT_LR: float = 1e-3
-DEFAULT_EPOCHS: int = 50
-DEFAULT_NUM_WORKERS: int = 4     # v4.2.0: was 0 (synchronous inline loading starved the GPU)
-DEFAULT_PREFETCH_FACTOR: int = 4
-DEFAULT_ACCUMULATION_STEPS: int = 1
-DEFAULT_CLIP_NORM: float = 1.0
-DEFAULT_WARMUP_EPOCHS: int = 3
-DEFAULT_VAL_FRACTION: float = 0.1
-
-DEFAULT_STAGE1_WEIGHT: float = 1.0
-DEFAULT_STAGE2_WEIGHT: float = 1.0
-DEFAULT_AUX_WEIGHT: float = 0.5
-
-PROGRESS_UPDATE_FREQ: int = 50
-DDP_INIT_TIMEOUT_MINUTES: int = 10
-DDP_BARRIER_TIMEOUT_SECONDS: int = 300
-INVALID_TIMESTAMP: float = -999.0
-MIN_VALID_SEQ_LEN: int = 10
-
-# =============================================================================
-# LOGGING
-# =============================================================================
-
-def setup_logging(rank: int) -> logging.Logger:
-    """Configure logging for distributed training."""
-    logger = logging.getLogger('train')
-    logger.setLevel(logging.INFO if rank == 0 else logging.WARNING)
-
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        handler.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATE_FORMAT))
-        logger.addHandler(handler)
-
-    return logger
-
-logger = setup_logging(0)
-
-# =============================================================================
-# v4.0.0: TORCH LOAD COMPATIBILITY WRAPPER
-# =============================================================================
-
-def torch_load_compat(
-    path: Union[str, Path],
-    map_location: Union[str, torch.device, None],
-    weights_only: bool = False
-) -> Dict[str, Any]:
+    This has to be analytic. Deriving it from the stored curve fails: the noise level must be
+    estimated from the data, and for a variable whose signal spans the whole window that
+    estimate absorbs the signal -- measured on real curves, LongPeriodVar scored BELOW Flat.
+    Returns None when the class has no well-defined onset, in which case the label is kept.
     """
-    Compatibility torch.load wrapper.
-    
-    Handles older PyTorch versions that don't support weights_only parameter.
-    
-    Parameters
-    ----------
-    path : str or Path
-        Path to checkpoint file.
-    map_location : str, torch.device, or None
-        Device to map tensors to.
-    weights_only : bool
-        If True, only load weights (not supported on older PyTorch).
-        
-    Returns
-    -------
-    checkpoint : dict
-        Loaded checkpoint dictionary.
+    t0 = params[pf_idx["t0"]]; tE = params[pf_idx["tE"]]; u0 = params[pf_idx["u0"]]
+    if np.isfinite(t0) and np.isfinite(tE) and np.isfinite(u0) and tE > 0:
+        # microlensing: evaluate the PSPL curve on the revealed span only
+        t = np.linspace(0.0, max(t_cut, 1e-3), 128)
+        u = np.sqrt(u0 ** 2 + ((t - t0) / tE) ** 2)
+        A = (u ** 2 + 2.0) / (np.maximum(u, 1e-8) * np.sqrt(u ** 2 + 4.0))
+        return float(np.max(np.abs(2.5 * np.log10(np.maximum(1.0 + f_s * (A - 1.0), 1e-8)))))
+    ts = params[pf_idx["t_start"]] if "t_start" in pf_idx else np.nan
+    if np.isfinite(ts):
+        # eruptive: nothing to see before the outburst begins
+        return 0.0 if ts > t_cut else float("inf")
+    per = params[pf_idx["P"]] if "P" in pf_idx else np.nan
+    amp = params[pf_idx["amp_I"]] if "amp_I" in pf_idx else np.nan
+    if np.isfinite(per) and np.isfinite(amp) and per > 0:
+        # Periodic / long-period: the signal spans the FULL window, but a TRUNCATED window
+        # may traverse only a sliver of the cycle. Returning None here (the previous
+        # behaviour) kept the LongPeriodVar label on windows where nothing is visible: at a
+        # 4.5-day cut, 76% of LongPeriodVar have a visible amplitude below the 0.02 mag floor
+        # -- median 0.0079 mag -- so the model was being taught that a flat line is LPV, and
+        # it duly reported P(LPV)~0.3 on genuinely flat stars early in a season.
+        # PeriodicVar is unaffected in practice (median period 1 day, so a full cycle fits in
+        # even a short cut: 0.1% fall below the floor).
+        # Peak-to-peak actually traversed over an arc of length 2*pi*min(t_cut/P, 1/2).
+        phase = 2.0 * np.pi * min(max(t_cut, 0.0) / per, 0.5)
+        return float(amp * (1.0 - np.cos(phase)))
+    return None
+
+
+def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
+                      params: Optional[np.ndarray] = None,
+                      pf_idx: Optional[dict] = None, f_s: float = 0.5,
+                      min_frac: float = 0.03) -> int:
+    """Reveal a random prefix of the season and RE-LABEL by what is observable in it.
+
+    Returning the original label would be a serious error. A PSPL peaking on day 50, cut at
+    day 18, shows a flat line -- labelling that "PSPL" trains the model to invent a class
+    from absent evidence, which is precisely the failure the whole v5 labelling scheme exists
+    to prevent: ``assemble.py`` already relabels an event Flat when its in-window signal is
+    undetectable, and truncating the window is just a smaller window.
+
+    So the same rule is re-applied to the visible portion: if the largest baseline-relative
+    deviation among revealed bins is below the amplitude floor, the event IS Flat as observed,
+    and that is what the model should be taught to say. This now covers the PERIODIC classes
+    too -- previously they were exempted, which is what taught the model that a flat-looking
+    short window could be LongPeriodVar.
+
+    min_frac is 0.03 rather than 0.15 so that the first ~11 days of a season are in
+    distribution; below 15% the model had never seen a training example at all.
     """
-    try:
-        return torch.load(path, map_location=map_location, weights_only=weights_only)
-    except TypeError:
-        # Older PyTorch without weights_only parameter
-        return torch.load(path, map_location=map_location)
+    f = float(rng.uniform(min_frac, 1.0))
+    for b, x in out.items():
+        cut = int(round(f * x.shape[0]))
+        x[cut:, :3] = 0.0      # mean/min/max
+        x[cut:, 3] = 0.0       # observed fraction
+        x[cut:, 4] = 0.0       # observed mask
+    if params is None or pf_idx is None or label == I_FLAT:
+        return label
+    amp = _visible_amplitude(params, pf_idx, f_s, f * 72.0)
+    if amp is None:
+        return label           # periodic / long-period: signal spans the window, keep label
+    if amp < TRUNC_MIN_AMP_MAG:
+        return I_FLAT          # nothing observable yet -> Flat
+    # THE CASCADE. A binary whose ANOMALY has not yet appeared in the revealed window is,
+    # observationally, a plain PSPL: the light curve so far is a smooth Paczynski rise. t_anom
+    # is the day the anomaly first becomes detectable (assemble._anomaly_onset_day). Before it,
+    # teach PSPL, not NonPSPL -- this is what stops the model flagging binaries before the
+    # caustic is on screen (Flat -> PSPL -> NonPSPL as evidence arrives).
+    if label == I_NON and "t_anom" in pf_idx:
+        ta = params[pf_idx["t_anom"]]
+        if np.isfinite(ta) and (f * 72.0) < ta:
+            return I_PSPL
+    return label
 
-# =============================================================================
-# UTILITIES
-# =============================================================================
 
-def create_experiment_dir(base_dir: Path, args: argparse.Namespace) -> Path:
-    """Create timestamped experiment directory."""
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    exp_name = (
-        f"d{args.d_model}_"
-        f"l{args.n_layers}_"
-        f"{'hier' if args.hierarchical else 'flat'}_"
-        f"{timestamp}"
-    )
-    exp_dir = base_dir / exp_name
-    exp_dir.mkdir(parents=True, exist_ok=True)
-    
-    config_path = exp_dir / 'config.json'
-    with open(config_path, 'w') as f:
-        json.dump(vars(args), f, indent=2, default=str)
-    
-    return exp_dir
+class CacheDataset(Dataset):
+    """Serves pre-binned events from memory-mapped fp16 arrays.
 
-def is_main_process(rank: int) -> bool:
-    """Check if current process is the main process."""
-    return rank == 0 or rank == -1
-
-def format_number(n: int) -> str:
-    """Format large numbers with K/M suffixes."""
-    if n >= 1_000_000:
-        return f"{n / 1_000_000:.2f}M"
-    elif n >= 1_000:
-        return f"{n / 1_000:.1f}K"
-    return str(n)
-
-def format_time(seconds: float) -> str:
-    """Format time duration in human-readable format."""
-    if seconds < 60:
-        return f"{seconds:.1f}s"
-    elif seconds < 3600:
-        return f"{seconds / 60:.1f}m"
-    else:
-        return f"{seconds / 3600:.1f}h"
-
-def set_seed(seed: int) -> None:
-    """Set random seeds for reproducibility."""
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-
-def configure_cuda() -> None:
-    """Configure CUDA settings for optimal performance."""
-    if torch.cuda.is_available():
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.allow_tf32 = True
-        torch.backends.cudnn.benchmark = True
-        torch.backends.cudnn.deterministic = False
-
-# =============================================================================
-# v4.1.0: MULTI-GPU SHARED MEMORY (DOCUMENTATION CORRECTED)
-# =============================================================================
-
-def get_node_id(rank: int, local_rank: int) -> int:
+    The arrays stay fp16 and memory-mapped on purpose. A 500k-event subset is 4.22 GB in
+    fp16; a single `.astype(np.float32)` anywhere in this path would make it 8.44 GB, over
+    half of a 16 GB machine, before a single activation is allocated -- which on its own
+    reproduces the memory pressure this design exists to avoid. Conversion to a compute
+    dtype happens per batch, after indexing.
     """
-    Determine which physical node this process is on.
-    
-    v4.0.0 FIX: Use LOCAL_WORLD_SIZE env var for robust node calculation.
-    Previous version used torch.cuda.device_count() which can be unreliable.
-    
-    Parameters
-    ----------
-    rank : int
-        Global rank.
-    local_rank : int
-        Local rank within node.
-    
-    Returns
-    -------
-    node_id : int
-        Node identifier (0, 1, 2, ...).
-    """
-    # v4.0.0: Use LOCAL_WORLD_SIZE from SLURM/torchrun for accuracy
-    local_world_size = int(os.environ.get(
-        "LOCAL_WORLD_SIZE",
-        torch.cuda.device_count() if torch.cuda.is_available() else 1
-    ))
-    # More robust calculation: (rank - local_rank) gives first rank on this node
-    return (rank - local_rank) // max(local_world_size, 1)
 
-def load_data_to_shared_memory(
-    file_path: str,
-    rank: int,
-    local_rank: int,
-    is_ddp: bool
-) -> Tuple[str, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Load data to /dev/shm RAM-backed filesystem (ONLY local_rank=0 per node copies).
-    
-    v4.1.0 DOCUMENTATION CORRECTION:
-    This function copies data to /dev/shm for fast RAM-backed reads, but each
-    process still allocates its own numpy arrays after loading. The Linux page
-    cache is shared (reducing disk I/O), but the arrays themselves are duplicated.
-    
-    For true shared memory across processes, would need multiprocessing.shared_memory
-    or memory-mapped .npy files. Current approach provides:
-    - Fast RAM-backed reads (no disk I/O after first copy)
-    - Page cache sharing at filesystem level
-    - Each process still has separate array copies in RAM
-    
-    v4.0.0 FIXES (preserved):
-    - shm_path now deterministic across ranks (removed os.getpid())
-    - Preserves source file suffix (.npz/.h5)
-    - Uses SLURM_JOB_ID for collision avoidance across jobs
-    - Only copies if file doesn't already exist (recovery-friendly)
-    
-    Parameters
-    ----------
-    file_path : str
-        Path to source HDF5/NPZ file (could be in /tmp already).
-    rank : int
-        Global process rank.
-    local_rank : int
-        Local rank within node (0-3 for 4 GPUs).
-    is_ddp : bool
-        Whether using distributed training.
-    
-    Returns
-    -------
-    shm_path : str
-        Path to shared memory file in /dev/shm.
-    magnification : np.ndarray
-        Magnification array loaded from /dev/shm.
-    delta_t : np.ndarray
-        Time interval array loaded from /dev/shm.
-    labels : np.ndarray
-        Labels array loaded from /dev/shm.
-    """
-    node_id = get_node_id(rank, local_rank)
-    
-    # v4.0.0 FIX: Create deterministic /dev/shm path
-    # - Use SLURM_JOB_ID (not PID) for collision avoidance
-    # - Preserve original file suffix (.npz or .h5) - critical fix from v3.2.0
-    src = Path(file_path)
-    suffix = src.suffix  # Keep .h5 or .npz
-    job_id = os.environ.get("SLURM_JOB_ID", "nojid")
-    shm_path = f"/dev/shm/{src.stem}_job{job_id}_node{node_id}{suffix}"
-    
-    if local_rank == 0:
-        # =====================================================================
-        # FIRST GPU ON NODE: Copy data to /dev/shm
-        # =====================================================================
-        if is_main_process(rank):
-            logger.info("=" * 80)
-            logger.info("v4.1.0 /dev/shm OPTIMIZATION: RAM-Backed File Loading")
-            logger.info("=" * 80)
-            logger.info(f"Node {node_id} (Rank {rank}): Setting up /dev/shm...")
-        
-        # Check /dev/shm availability and space
-        if not Path('/dev/shm').exists():
-            raise RuntimeError("/dev/shm not available on this system!")
-        
-        # v4.0.0 FIX: Only copy if file doesn't already exist (recovery-friendly)
-        try:
-            if not Path(shm_path).exists():
-                shutil.copy2(file_path, shm_path)
-                file_size_mb = Path(shm_path).stat().st_size / 1e6
-                if is_main_process(rank):
-                    logger.info(f"  Copied {file_size_mb:.1f} MB to {shm_path}")
-            else:
-                file_size_mb = Path(shm_path).stat().st_size / 1e6
-                if is_main_process(rank):
-                    logger.info(f"  Found existing {shm_path} ({file_size_mb:.1f} MB)")
-        except Exception as e:
-            logger.error(f"Failed to setup /dev/shm: {e}")
-            raise
-        
-        # Load data from /dev/shm
-        if is_main_process(rank):
-            logger.info(f"  Loading data from /dev/shm...")
-        
-        magnification, delta_t, labels = _load_arrays_from_file(shm_path, rank)
-        
-        if is_main_process(rank):
-            total_mem = (magnification.nbytes + delta_t.nbytes + labels.nbytes) / 1e9
-            logger.info(f"  Data loaded: {total_mem:.2f} GB arrays allocated")
-            # v4.1.0: Accurate documentation of what's shared
-            logger.info(f"  Note: Page cache shared, but each process has own array copy")
-        
-        # Signal other GPUs on this node that data is ready
-        # Note: This barrier is global (all ranks), not per-node
-        if is_ddp:
-            dist.barrier()
-    
-    else:
-        # =====================================================================
-        # OTHER GPUs ON NODE: Wait and load from same /dev/shm file
-        # =====================================================================
-        
-        # Wait for first GPU to finish copying
-        if is_ddp:
-            dist.barrier()
-        
-        # Load from SAME /dev/shm file (fast RAM-backed read, but allocates own arrays)
-        magnification, delta_t, labels = _load_arrays_from_file(shm_path, rank)
-        
-        # v4.1.0 FIX: Use local_rank instead of rank % 4 (works with any GPU count)
-        if local_rank == 1 and is_main_process(rank):
-            logger.info(f"  GPU {local_rank}: Loaded from /dev/shm (fast RAM read)")
-    
-    # v4.1.0 FIX: Use local_rank instead of rank % 4
-    local_world_size = int(os.environ.get(
-        "LOCAL_WORLD_SIZE",
-        torch.cuda.device_count() if torch.cuda.is_available() else 1
-    ))
-    if local_rank == local_world_size - 1 and is_main_process(rank):
-        logger.info("=" * 80)
-        total_mem = (magnification.nbytes + delta_t.nbytes + labels.nbytes) / 1e9
-        logger.info(f"Node {node_id}: All {local_world_size} GPUs loaded {total_mem:.2f} GB each")
-        logger.info("=" * 80)
-    
-    return shm_path, magnification, delta_t, labels
-
-def _load_arrays_from_file(
-    file_path: str,
-    rank: int
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Load numpy arrays from HDF5 or NPZ file.
-    
-    Helper function called by load_data_to_shared_memory.
-    """
-    file_path = Path(file_path)
-    
-    if file_path.suffix == '.npz':
-        data = np.load(str(file_path))
-        magnification = data.get('flux', data.get('magnification', data.get('mag')))
-        delta_t = data['delta_t']
-        labels = data.get('labels', data['y'])
-    
-    elif file_path.suffix in ['.h5', '.hdf5']:
-        with h5py.File(str(file_path), 'r') as f:
-            if 'flux' in f:
-                magnification = f['flux'][:]
-            elif 'magnification' in f:
-                magnification = f['magnification'][:]
-            else:
-                magnification = f['mag'][:]
-            delta_t = f['delta_t'][:]
-            labels = f['labels'][:]
-    else:
-        raise ValueError(f"Unsupported file format: {file_path.suffix}")
-    
-    return magnification, delta_t, labels
-
-def cleanup_shared_memory(shm_path: str, rank: int, local_rank: int) -> None:
-    """
-    Cleanup /dev/shm files (ONLY local_rank=0 deletes).
-    
-    v4.1.0: Caller must ensure dist.barrier() is called BEFORE this function
-    to prevent race conditions where rank0 deletes while others still reading.
-    
-    Parameters
-    ----------
-    shm_path : str
-        Path to shared memory file.
-    rank : int
-        Global rank.
-    local_rank : int
-        Local rank within node.
-    """
-    if local_rank == 0:
-        try:
-            if Path(shm_path).exists():
-                Path(shm_path).unlink()
-                if is_main_process(rank):
-                    node_id = get_node_id(rank, local_rank)
-                    logger.info(f"Node {node_id}: Cleaned up /dev/shm")
-        except Exception as e:
-            logger.warning(f"Failed to cleanup {shm_path}: {e}")
-
-# =============================================================================
-# v3.1.0: SHARED DATASET (preserved from v3.1.0)
-# =============================================================================
-
-class SharedRAMLensingDataset(Dataset):
-    """
-    Lightweight dataset that references shared memory arrays.
-    
-    From v3.1.0 - eliminates train/val double loading within each process.
-    Combined with v4.1.0 /dev/shm, provides fast RAM-backed reads.
-    
-    Note: Each process has its own copy of the arrays in RAM.
-    """
-    
-    def __init__(
-        self,
-        magnification: np.ndarray,
-        delta_t: np.ndarray,
-        labels: np.ndarray,
-        indices: np.ndarray,
-        magnification_mean: float,
-        magnification_std: float,
-        delta_t_mean: float,
-        delta_t_std: float,
-        rank: int = 0
-    ) -> None:
-        self.magnification = magnification
-        self.delta_t = delta_t
+    def __init__(self, arrays: Dict[str, np.ndarray], labels: np.ndarray,
+                 weights: np.ndarray, dchi2_anom: np.ndarray, idx: np.ndarray,
+                 truncate_aug: float = 0.0, seed: int = 0,
+                 params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
+                 f_s_ref: Optional[np.ndarray] = None):
+        self.a = arrays
         self.labels = labels
-        self.indices = indices
-        self.rank = rank
-        
-        self._magnification_scale = 1.0 / (magnification_std + EPS)
-        self._dt_scale = 1.0 / (delta_t_std + EPS)
-        self.magnification_mean = magnification_mean
-        self.delta_t_mean = delta_t_mean
-    
-    def __len__(self) -> int:
-        return len(self.indices)
-    
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor, Tensor, int]:
-        full_idx = self.indices[idx]
-        
-        magnification_raw = self.magnification[full_idx].copy()
-        delta_t_raw = self.delta_t[full_idx].copy()
-        label = int(self.labels[full_idx])
-        
-        # Sequence compaction
-        valid_mask = magnification_raw != 0.0
-        valid_count = valid_mask.sum()
-        
-        if valid_count == 0:
-            valid_count = 1
-            magnification_raw[0] = self.magnification_mean
-            delta_t_raw[0] = 0.0
-            valid_mask[0] = True
-        
-        magnification_compacted = np.zeros_like(magnification_raw)
-        delta_t_compacted = np.zeros_like(delta_t_raw)
-        
-        magnification_compacted[:valid_count] = magnification_raw[valid_mask]
-        delta_t_compacted[:valid_count] = delta_t_raw[valid_mask]
-        
-        magnification_norm = (magnification_compacted - self.magnification_mean) * self._magnification_scale
-        dt_norm = (delta_t_compacted - self.delta_t_mean) * self._dt_scale
-        
-        magnification_tensor = torch.from_numpy(magnification_norm).float()
-        delta_t_tensor = torch.from_numpy(dt_norm).float()
-        # v4.0.0: Return length as tensor for device transfer
-        length_tensor = torch.tensor(int(valid_count), dtype=torch.long)
-        
-        return magnification_tensor, delta_t_tensor, length_tensor, label
-    
-    def __del__(self) -> None:
-        try:
-            self.magnification = None
-            self.delta_t = None
-            self.labels = None
-            self.indices = None
-        except:
-            pass
-
-
-class StreamingShardDataset(Dataset):
-    """
-    v4.2.0: Lazy, multi-shard HDF5 dataset for single-GPU training on data larger
-    than RAM. Reads flux/delta_t rows on demand from many shard files instead of
-    materializing full arrays (the SharedRAMLensingDataset + /dev/shm path holds the
-    whole corpus in RAM twice and cannot scale past ~a few hundred k events on a
-    16GB-RAM box, and hard-fails on macOS which has no /dev/shm).
-
-    Per-item compaction + normalization is IDENTICAL to SharedRAMLensingDataset so
-    the model sees the same inputs. Fork-safe: open h5py handles are dropped on pickle
-    and reopened lazily per worker (h5py handles are not fork-safe).
-
-    Read-amplification note: shards are chunked (10000, 6912), so a random single-row
-    read decompresses a whole ~276MB lzf chunk. For throughput, shuffle in chunk-sized
-    BLOCKS (see make_block_shuffle_indices) or repack the selected subset with small
-    chunks; correctness is unaffected either way.
-    """
-
-    def __init__(
-        self,
-        shard_paths: List[str],
-        indices: np.ndarray,
-        magnification_mean: float,
-        magnification_std: float,
-        delta_t_mean: float,
-        delta_t_std: float,
-        shard_lengths: Optional[List[int]] = None,
-        rank: int = 0,
-    ) -> None:
-        self.shard_paths = [str(p) for p in shard_paths]
-        # Per-shard event counts (metadata-only read; cheap).
-        if shard_lengths is None:
-            shard_lengths = []
-            for p in self.shard_paths:
-                with h5py.File(p, 'r') as f:
-                    shard_lengths.append(int(f['labels'].shape[0]))
-        self.shard_lengths = list(shard_lengths)
-        # cumulative offsets so a global row -> (shard, local row) is an O(log n) search
-        self._offsets = np.concatenate([[0], np.cumsum(self.shard_lengths)]).astype(np.int64)
-        self.indices = np.asarray(indices, dtype=np.int64)
-        self.rank = rank
-
-        self._magnification_scale = 1.0 / (magnification_std + EPS)
-        self._dt_scale = 1.0 / (delta_t_std + EPS)
-        self.magnification_mean = magnification_mean
-        self.delta_t_mean = delta_t_mean
-        self._handles: Optional[Dict] = None  # {shard_idx: h5py.File}, lazy per worker
-        self._max_open = 4  # LRU cap on concurrently-open shard handles per worker
-
-    @property
-    def total_events(self) -> int:
-        return int(self._offsets[-1])
-
-    def _get_handle(self, shard_idx: int):
-        # v4.2.0: LRU-cap open handles. Each open h5py file retains up to rdcc_nbytes of
-        # chunk cache; caching one per shard forever (only __del__ closes, which never
-        # runs in persistent workers) grows to ~1GB/worker at the 3M/~120-shard rung.
-        # With sorted, chunk-aligned reads each worker touches shards nearly sequentially,
-        # so a tiny cache has ~100% hit rate.
-        if self._handles is None:
-            self._handles = {}
-        h = self._handles.get(shard_idx)
-        if h is None:
-            h = h5py.File(self.shard_paths[shard_idx], 'r')
-            self._handles[shard_idx] = h
-            while len(self._handles) > self._max_open:
-                old_key = next(iter(self._handles))
-                try:
-                    self._handles.pop(old_key).close()
-                except Exception:
-                    pass
-        return h
+        self.weights = weights
+        self.dchi2_anom = dchi2_anom
+        self.idx = idx
+        self.truncate_aug = truncate_aug
+        self._rng = np.random.default_rng(seed)
+        self.params = params
+        self.pf_idx = pf_idx
+        self.f_s_ref = f_s_ref
+        if truncate_aug > 0 and (params is None or pf_idx is None):
+            raise ValueError(
+                "truncate_aug needs params (t0/tE/u0/t_start) to decide whether the event is "
+                "visible in the revealed span. Rebuild the cache with the params-carrying "
+                "cache.py -- inferring it from the noisy curve does not work.")
+        for b in BAND_BINS:
+            assert self.a[f"feat/{b}"].dtype == np.float16, "cache must stay fp16"
 
     def __len__(self) -> int:
-        return len(self.indices)
+        return len(self.idx)
 
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor, Tensor, int]:
-        full_idx = int(self.indices[idx])
-        shard_idx = int(np.searchsorted(self._offsets, full_idx, side='right') - 1)
-        local_row = full_idx - int(self._offsets[shard_idx])
-        f = self._get_handle(shard_idx)
-
-        magnification_raw = np.asarray(f['flux'][local_row], dtype=np.float32)
-        delta_t_raw = np.asarray(f['delta_t'][local_row], dtype=np.float32)
-        label = int(f['labels'][local_row])
-
-        # --- identical compaction + normalization to SharedRAMLensingDataset ---
-        valid_mask = magnification_raw != 0.0
-        valid_count = int(valid_mask.sum())
-        if valid_count == 0:
-            valid_count = 1
-            magnification_raw[0] = self.magnification_mean
-            delta_t_raw[0] = 0.0
-            valid_mask[0] = True
-
-        magnification_compacted = np.zeros_like(magnification_raw)
-        delta_t_compacted = np.zeros_like(delta_t_raw)
-        magnification_compacted[:valid_count] = magnification_raw[valid_mask]
-        delta_t_compacted[:valid_count] = delta_t_raw[valid_mask]
-
-        magnification_norm = (magnification_compacted - self.magnification_mean) * self._magnification_scale
-        dt_norm = (delta_t_compacted - self.delta_t_mean) * self._dt_scale
-
-        return (
-            torch.from_numpy(magnification_norm).float(),
-            torch.from_numpy(dt_norm).float(),
-            torch.tensor(valid_count, dtype=torch.long),
-            label,
-        )
-
-    def __getstate__(self):
-        # Drop non-fork-safe open h5py handles before pickling to workers.
-        state = self.__dict__.copy()
-        state['_handles'] = None
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        self._handles = None
-
-    def __del__(self):
-        if self._handles:
-            for h in list(self._handles.values()):
-                try:
-                    h.close()
-                except Exception:
-                    pass
+    def __getitem__(self, i):
+        j = int(self.idx[i])
+        out = {}
+        for b in BAND_BINS:
+            feat = np.asarray(self.a[f"feat/{b}"][j], dtype=np.float32)   # (L, 3)
+            frac = np.asarray(self.a[f"frac/{b}"][j], dtype=np.float32)   # (L,)
+            obs = np.isfinite(feat[:, 0]).astype(np.float32)
+            feat = np.nan_to_num(feat, nan=0.0, posinf=0.0, neginf=0.0) / MAG_SCALE
+            # channel order must match model.CH_MIN / CH_MAX: mean, min, max, frac, mask
+            out[b] = np.concatenate([feat, frac[:, None], obs[:, None]], axis=1)
+        lab = int(self.labels[j])
+        if self.truncate_aug > 0 and self._rng.random() < self.truncate_aug:
+            fs = float(self.f_s_ref[j]) if self.f_s_ref is not None else 0.5
+            lab = _apply_truncation(out, lab, self._rng, self.params[j], self.pf_idx, fs)
+        return (out, lab, float(self.weights[j]), float(self.dchi2_anom[j]))
 
 
-def make_block_shuffle_indices(indices: np.ndarray, block: int = 10000,
-                               seed: int = 0) -> np.ndarray:
+def collate(batch):
+    # np.ascontiguousarray + copy: torch.from_numpy would otherwise alias the stacked buffer,
+    # and these rows come from a memory-mapped file.
+    feats = {b: torch.from_numpy(np.ascontiguousarray(
+                 np.stack([x[0][b] for x in batch]), dtype=np.float32)).clone()
+             for b in BAND_BINS}
+    for b, t in feats.items():
+        if not torch.isfinite(t).all():
+            torch.nan_to_num_(t, nan=0.0, posinf=0.0, neginf=0.0)
+    # A band is "present" when it yielded any observed bin at all.
+    present = {b: (feats[b][..., 4].sum(dim=1) > 0) for b in BAND_BINS}
+    y = torch.tensor([x[1] for x in batch], dtype=torch.long)
+    w = torch.tensor([x[2] for x in batch], dtype=torch.float32)
+    d = torch.tensor([x[3] for x in batch], dtype=torch.float32)
+    return feats, present, y, w, d
+
+
+def compute_weights(labels: np.ndarray, keep_prob: np.ndarray,
+                    alpha_nonpspl: float = 2.0) -> np.ndarray:
+    """Per-event training weight; see note 2 in the module docstring.
+
+    Returns weights with mean 1 so the effective learning rate is comparable across configs.
     """
-    v4.2.0: Shuffle `indices` in contiguous BLOCKS instead of per-row, so a DataLoader
-    reading a StreamingShardDataset amortizes each lzf chunk decompress over ~`block`
-    consecutive rows (the on-disk chunk size) instead of re-decompressing per row.
-    Gives coarse shuffling with a fraction of the read amplification. Use as the train
-    sampler's index order (pass shuffle=False to the DataLoader).
-    """
-    idx = np.asarray(indices)
-    n = len(idx)
-    n_blocks = (n + block - 1) // block
-    rng = np.random.default_rng(seed)
-    block_order = rng.permutation(n_blocks)
-    out = []
-    for b in block_order:
-        seg = idx[b * block:(b + 1) * block].copy()
-        rng.shuffle(seg)  # shuffle within block too
-        out.append(seg)
-    return np.concatenate(out) if out else idx.copy()
+    inv = 1.0 / np.clip(keep_prob, 1e-3, 1.0)              # restore the generated population
+    n_eff = np.bincount(labels, weights=inv, minlength=N_CLASSES)   # keep_prob-corrected mass
+    target = np.ones(N_CLASSES, dtype=np.float64)
+    target[CLASS_NAMES.index("NonPSPL")] = alpha_nonpspl   # up-weight the science-critical class
+    target = target / target.sum() * N_CLASSES
+    cls_w = target / np.maximum(n_eff, 1.0)
+    w = inv * cls_w[labels]
+    return (w * (len(w) / w.sum())).astype(np.float32)
 
-
-class BlockShuffleSampler(Sampler):
-    """v4.2.0: epoch-varying block-shuffle order for StreamingShardDataset. A plain list
-    sampler yields the SAME order every epoch (and permanently drops the same drop_last
-    tail); this reshuffles blocks each epoch via set_epoch while keeping reads chunk-
-    aligned (positions within a block stay contiguous -> one lzf chunk decompress amortized
-    over the whole block). Call set_epoch(epoch) each epoch (train loop does this)."""
-
-    def __init__(self, n: int, block: int, seed: int = SEED) -> None:
-        self.n = int(n); self.block = int(block); self.seed = int(seed); self.epoch = 0
-
-    def set_epoch(self, epoch: int) -> None:
-        self.epoch = int(epoch)
-
-    def __len__(self) -> int:
-        return self.n
-
-    def __iter__(self):
-        order = make_block_shuffle_indices(np.arange(self.n), self.block, seed=self.seed + self.epoch)
-        return iter(order.tolist())
-
-
-# =============================================================================
-# DATA LOADING (v4.1.0: Broadcast optimization)
-# =============================================================================
-
-def compute_robust_statistics(
-    file_path: str,
-    rank: int = 0,
-    train_idx: Optional[np.ndarray] = None,
-) -> Dict[str, float]:
-    """Compute normalization statistics.
-
-    LEAKAGE FIX: pass `train_idx` to fit stats on TRAIN rows only. Fitting on the full
-    file before the train/val split folds validation rows into the mean/std used to
-    normalize training inputs. If None, all rows are used (legacy).
-    """
-    file_path = Path(file_path)
-
-    if file_path.suffix == '.npz':
-        data = np.load(str(file_path))
-        magnification_data = data.get('flux', data.get('magnification', data.get('mag')))
-        delta_t_data = data['delta_t']
-    else:
-        with h5py.File(str(file_path), 'r') as f:
-            if 'flux' in f:
-                magnification_data = f['flux'][:]
-            elif 'magnification' in f:
-                magnification_data = f['magnification'][:]
-            else:
-                magnification_data = f['mag'][:]
-            delta_t_data = f['delta_t'][:]
-
-    if train_idx is not None:                       # TRAIN-only rows (leakage fix)
-        magnification_data = magnification_data[train_idx]
-        delta_t_data = delta_t_data[train_idx]
-
-    magnification_valid = magnification_data[magnification_data != 0.0]
-    delta_t_valid = delta_t_data[delta_t_data != 0.0]
-    
-    magnification_mean = float(np.mean(magnification_valid))
-    magnification_std = float(np.std(magnification_valid))
-    delta_t_mean = float(np.mean(delta_t_valid))
-    delta_t_std = float(np.std(delta_t_valid))
-    
-    return {
-        'magnification_mean': magnification_mean,
-        'magnification_std': magnification_std,
-        'delta_t_mean': delta_t_mean,
-        'delta_t_std': delta_t_std
-    }
-
-
-def compute_streaming_statistics(
-    shard_paths: List[str],
-    block: int = 4096,
-    max_events_per_shard: Optional[int] = None,
-    rank: int = 0,
-    train_idx: Optional[np.ndarray] = None,
-) -> Dict[str, float]:
-    """
-    v4.2.0: Compute normalization stats by block-streaming shards instead of loading
-    full flux+delta_t arrays. compute_robust_statistics() does f['flux'][:] on every
-    shard, which OOMs on the same data the streaming loader is meant to handle. Peak
-    memory here is one (block, 6912) slab. Stats are over nonzero (observed) values,
-    matching compute_robust_statistics exactly; math uses running sum/sumsq so a single
-    pass is enough. Set max_events_per_shard to subsample huge shards for speed.
-    Returns the identical dict shape.
-
-    v4.2.0 LEAKAGE FIX: pass `train_idx` (global sorted row indices from the train/val
-    split) to accumulate over TRAIN rows ONLY. Fitting normalization on the full
-    dataset before the split folds validation rows into the mean/std used to standardize
-    training inputs (and reused at eval via the checkpoint) -- textbook fit-before-split
-    leakage. With train_idx given, val rows are excluded. If None, all rows are used
-    (legacy behaviour; use only when there is no held-out split).
-    """
-    paths = [str(x) for x in shard_paths]
-    # Per-shard row counts -> global offsets, so global train_idx maps to (shard, local row).
-    keep_masks: Optional[List[np.ndarray]] = None
-    if train_idx is not None:
-        ti = np.sort(np.asarray(train_idx))
-        n_rows_list = []
-        for p in paths:
-            with h5py.File(p, 'r') as f:
-                fk = 'flux' if 'flux' in f else ('magnification' if 'magnification' in f else 'mag')
-                n_rows_list.append(int(f[fk].shape[0]))
-        offs = np.concatenate([[0], np.cumsum(n_rows_list)])
-        keep_masks = []
-        for s, nr in enumerate(n_rows_list):
-            local = ti[(ti >= offs[s]) & (ti < offs[s + 1])] - offs[s]
-            km = np.zeros(nr, dtype=bool)
-            km[local] = True
-            keep_masks.append(km)
-
-    # Welford-free running accumulation in float64 for numerical stability.
-    m_n = m_sum = m_sumsq = 0.0
-    d_n = d_sum = d_sumsq = 0.0
-    for s, p in enumerate(paths):
-        with h5py.File(p, 'r') as f:
-            flux_key = 'flux' if 'flux' in f else ('magnification' if 'magnification' in f else 'mag')
-            n_rows = f[flux_key].shape[0]
-            limit = n_rows if max_events_per_shard is None else min(n_rows, max_events_per_shard)
-            for a in range(0, limit, block):
-                b = min(a + block, limit)
-                fl = np.asarray(f[flux_key][a:b], dtype=np.float64)
-                dt = np.asarray(f['delta_t'][a:b], dtype=np.float64)
-                if keep_masks is not None:              # TRAIN-only rows (leakage fix)
-                    kb = keep_masks[s][a:b]
-                    fl = fl[kb]; dt = dt[kb]
-                fv = fl[fl != 0.0]
-                dv = dt[dt != 0.0]
-                m_n += fv.size; m_sum += fv.sum(); m_sumsq += np.square(fv).sum()
-                d_n += dv.size; d_sum += dv.sum(); d_sumsq += np.square(dv).sum()
-
-    def _mean_std(n, s, ss):
-        if n <= 0:
-            return 0.0, 1.0
-        mean = s / n
-        var = max(ss / n - mean * mean, 0.0)
-        return float(mean), float(np.sqrt(var))
-
-    m_mean, m_std = _mean_std(m_n, m_sum, m_sumsq)
-    d_mean, d_std = _mean_std(d_n, d_sum, d_sumsq)
-    return {
-        'magnification_mean': m_mean,
-        'magnification_std': m_std,
-        'delta_t_mean': d_mean,
-        'delta_t_std': d_std,
-    }
-
-
-def load_and_split_data(
-    file_path: str,
-    val_fraction: float,
-    seed: int,
-    rank: int,
-    is_ddp: bool
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, float]]:
-    """
-    Load data, compute statistics, and split into train/val.
-    
-    v4.1.0: Rank 0 computes everything and broadcasts to avoid redundant file reads.
-    
-    Parameters
-    ----------
-    file_path : str
-        Path to data file.
-    val_fraction : float
-        Fraction of data for validation.
-    seed : int
-        Random seed for reproducibility.
-    rank : int
-        Process rank.
-    is_ddp : bool
-        Whether using distributed training.
-    
-    Returns
-    -------
-    train_idx : np.ndarray
-        Training indices.
-    val_idx : np.ndarray
-        Validation indices.
-    train_labels : np.ndarray
-        Labels for training samples.
-    stats : dict
-        Normalization statistics.
-    """
-    if is_ddp:
-        # v4.1.0: Only rank 0 reads file and computes, then broadcasts
-        if rank == 0:
-            file_path_obj = Path(file_path)
-            
-            if file_path_obj.suffix == '.npz':
-                data = np.load(str(file_path_obj))
-                total_samples = len(data.get('labels', data['y']))
-                all_labels = data.get('labels', data['y'])
-            else:
-                with h5py.File(str(file_path_obj), 'r') as f:
-                    total_samples = len(f['labels'])
-                    all_labels = f['labels'][:]
-            
-            indices = np.arange(total_samples)
-            train_idx, val_idx = train_test_split(
-                indices,
-                test_size=val_fraction,
-                stratify=all_labels,
-                random_state=seed
-            )
-            # LEAKAGE FIX: split first, then fit stats on TRAIN rows only.
-            stats = compute_robust_statistics(file_path, rank, train_idx=np.sort(train_idx))
-
-            train_labels = all_labels[train_idx]
-            
-            logger.info(f"Dataset: {format_number(total_samples)} samples")
-            logger.info(f"  Train: {format_number(len(train_idx))} samples")
-            logger.info(f"  Val:   {format_number(len(val_idx))} samples")
-            
-            unique, counts = np.unique(train_labels, return_counts=True)
-            logger.info("Class distribution (train):")
-            for cls_idx, count in zip(unique, counts):
-                pct = 100 * count / len(train_labels)
-                logger.info(f"  {CLASS_NAMES[cls_idx]}: {count:,} ({pct:.1f}%)")
-        else:
-            train_idx = None
-            val_idx = None
-            train_labels = None
-            stats = None
-        
-        # v4.1.0: Broadcast from rank0 to all other ranks
-        obj_list = [train_idx, val_idx, train_labels, stats]
-        dist.broadcast_object_list(obj_list, src=0)
-        train_idx, val_idx, train_labels, stats = obj_list
-        
-    else:
-        # Non-DDP path: single process does everything
-        file_path_obj = Path(file_path)
-        
-        if file_path_obj.suffix == '.npz':
-            data = np.load(str(file_path_obj))
-            total_samples = len(data.get('labels', data['y']))
-            all_labels = data.get('labels', data['y'])
-        else:
-            with h5py.File(str(file_path_obj), 'r') as f:
-                total_samples = len(f['labels'])
-                all_labels = f['labels'][:]
-        
-        indices = np.arange(total_samples)
-        train_idx, val_idx = train_test_split(
-            indices,
-            test_size=val_fraction,
-            stratify=all_labels,
-            random_state=seed
-        )
-        # LEAKAGE FIX: split first, then fit stats on TRAIN rows only.
-        stats = compute_robust_statistics(file_path, rank, train_idx=np.sort(train_idx))
-
-        train_labels = all_labels[train_idx]
-
-        if is_main_process(rank):
-            logger.info(f"Dataset: {format_number(total_samples)} samples")
-            logger.info(f"  Train: {format_number(len(train_idx))} samples")
-            logger.info(f"  Val:   {format_number(len(val_idx))} samples")
-            
-            unique, counts = np.unique(train_labels, return_counts=True)
-            logger.info("Class distribution (train):")
-            for cls_idx, count in zip(unique, counts):
-                pct = 100 * count / len(train_labels)
-                logger.info(f"  {CLASS_NAMES[cls_idx]}: {count:,} ({pct:.1f}%)")
-    
-    return train_idx, val_idx, train_labels, stats
-
-
-def resolve_shard_paths(data_arg: str) -> List[str]:
-    """
-    v4.2.0: Resolve the --data argument to a list of shard files for streaming.
-    Accepts a directory (sorted *.h5 glob), a comma-separated list, or a single file.
-    """
-    p = Path(data_arg)
-    if p.is_dir():
-        paths = sorted(str(x) for x in p.glob('*.h5'))
-        if not paths:
-            raise ValueError(f"No .h5 shards found in directory {data_arg}")
-        return paths
-    if ',' in str(data_arg):
-        return [s for s in str(data_arg).split(',') if s]
-    return [str(data_arg)]
-
-
-def stream_train_val_split(
-    shard_paths: List[str], val_fraction: float, seed: int
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    v4.2.0: Stratified train/val split over the CONCATENATED shards using only the
-    (tiny) label arrays -- no flux/delta_t loaded. Returns global indices into the
-    concatenation, matching StreamingShardDataset's addressing.
-    """
-    all_labels = []
-    for p in shard_paths:
-        with h5py.File(str(p), 'r') as f:
-            all_labels.append(f['labels'][:])
-    all_labels = np.concatenate(all_labels)
-    total = len(all_labels)
-    indices = np.arange(total)
-    train_idx, val_idx = train_test_split(
-        indices, test_size=val_fraction, stratify=all_labels, random_state=seed
-    )
-    return train_idx, val_idx, all_labels[train_idx], all_labels
-
-
-def create_dataloaders(
-    file_path: str,
-    train_idx: np.ndarray,
-    val_idx: np.ndarray,
-    stats: Dict[str, float],
-    batch_size: int,
-    num_workers: int,
-    prefetch_factor: int,
-    is_ddp: bool,
-    rank: int,
-    local_rank: int,
-    stream_paths: Optional[List[str]] = None,
-    block_shuffle: int = 0,
-) -> Tuple[DataLoader, DataLoader, Optional[str]]:
-    """
-    Create dataloaders.
-
-    v4.2.0: When ``stream_paths`` is given, use the lazy StreamingShardDataset (reads
-    rows on demand from many shard files) instead of the /dev/shm full-array path -- this
-    is the single-GPU / larger-than-RAM path. train_idx/val_idx are then GLOBAL indices
-    into the concatenated shards. Returns shm_path=None in that case (nothing to clean up).
-    ``block_shuffle`` (>0) orders the train sampler in chunk-sized blocks to cut lzf read
-    amplification; pass the on-disk chunk size (10000).
-
-    Returns
-    -------
-    (train_loader, val_loader, shm_path or None)
-    """
-    if stream_paths is not None:
-        # ---- v4.2.0 streaming path: no /dev/shm, O(batch) RAM ----
-        def _mk(idx):
-            return StreamingShardDataset(
-                stream_paths, idx,
-                stats['magnification_mean'], stats['magnification_std'],
-                stats['delta_t_mean'], stats['delta_t_std'], rank=rank,
-            )
-        train_dataset = _mk(train_idx)
-        val_dataset = _mk(val_idx)
-        train_sampler = DistributedSampler(train_dataset, shuffle=True, seed=SEED, drop_last=True) if is_ddp else None
-        val_sampler = DistributedSampler(val_dataset, shuffle=False, drop_last=False) if is_ddp else None
-        # block-shuffle only in the non-DDP case (DistributedSampler owns ordering under DDP)
-        train_shuffle = (train_sampler is None)
-        if train_sampler is None and block_shuffle > 0:
-            train_sampler = BlockShuffleSampler(len(train_idx), block_shuffle, seed=SEED)
-            train_shuffle = False
-        train_loader = DataLoader(
-            train_dataset, batch_size=batch_size, sampler=train_sampler, shuffle=train_shuffle,
-            num_workers=num_workers, prefetch_factor=prefetch_factor if num_workers > 0 else None,
-            pin_memory=True, drop_last=True, persistent_workers=num_workers > 0,
-        )
-        val_loader = DataLoader(
-            val_dataset, batch_size=batch_size, sampler=val_sampler, shuffle=False,
-            num_workers=num_workers, prefetch_factor=prefetch_factor if num_workers > 0 else None,
-            pin_memory=True, drop_last=False, persistent_workers=num_workers > 0,
-        )
-        if is_main_process(rank):
-            logger.info(f"v4.2.0 STREAMING loader: {len(stream_paths)} shard(s), "
-                        f"{len(train_idx)} train / {len(val_idx)} val, O(batch) RAM")
-        return train_loader, val_loader, None
-
-    # =========================================================================
-    # v4.1.0: Load to /dev/shm (ONLY local_rank=0 per node copies)
-    # =========================================================================
-    shm_path, magnification, delta_t, labels = load_data_to_shared_memory(
-        file_path, rank, local_rank, is_ddp
-    )
-    
-    # =========================================================================
-    # v3.1.0: Create shared datasets (no train/val double loading)
-    # v4.1.0 FIX: Use correct stats keys (magnification_mean, not flux_mean)
-    # =========================================================================
-    train_dataset = SharedRAMLensingDataset(
-        magnification, delta_t, labels, train_idx,
-        stats['magnification_mean'], stats['magnification_std'],
-        stats['delta_t_mean'], stats['delta_t_std'],
-        rank=rank
-    )
-    
-    val_dataset = SharedRAMLensingDataset(
-        magnification, delta_t, labels, val_idx,
-        stats['magnification_mean'], stats['magnification_std'],
-        stats['delta_t_mean'], stats['delta_t_std'],
-        rank=rank
-    )
-    
-    if is_main_process(rank):
-        total_mem = (magnification.nbytes + delta_t.nbytes + labels.nbytes) / 1e9
-        local_world_size = int(os.environ.get(
-            "LOCAL_WORLD_SIZE",
-            torch.cuda.device_count() if torch.cuda.is_available() else 1
-        ))
-        world_size = dist.get_world_size() if is_ddp else 1
-        n_nodes = world_size // local_world_size if is_ddp else 1
-        logger.info("=" * 80)
-        logger.info(f"v4.1.0 MEMORY LAYOUT:")
-        logger.info(f"  Array size per process: {total_mem:.2f} GB")
-        logger.info(f"  Processes per node: {local_world_size}")
-        logger.info(f"  Total nodes: {n_nodes}")
-        logger.info(f"  /dev/shm benefit: Fast RAM reads, page cache shared at OS level")
-        logger.info("=" * 80)
-    
-    # Setup samplers
-    if is_ddp:
-        train_sampler = DistributedSampler(
-            train_dataset, shuffle=True, seed=SEED, drop_last=True
-        )
-        val_sampler = DistributedSampler(
-            val_dataset, shuffle=False, drop_last=False
-        )
-    else:
-        train_sampler = None
-        val_sampler = None
-    
-    # Create dataloaders
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        sampler=train_sampler,
-        shuffle=(train_sampler is None),
-        num_workers=num_workers,
-        prefetch_factor=prefetch_factor if num_workers > 0 else None,
-        pin_memory=True,
-        drop_last=True,
-        persistent_workers=num_workers > 0
-    )
-    
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=batch_size,
-        sampler=val_sampler,
-        shuffle=False,
-        num_workers=num_workers,
-        prefetch_factor=prefetch_factor if num_workers > 0 else None,
-        pin_memory=True,
-        drop_last=False,
-        persistent_workers=num_workers > 0
-    )
-    
-    if is_main_process(rank):
-        logger.info(f"Dataloaders created:")
-        logger.info(f"  Batch size: {batch_size}")
-        logger.info(f"  Train batches: {len(train_loader)}")
-        logger.info(f"  Val batches: {len(val_loader)}")
-        logger.info(f"  Workers: {num_workers}")
-    
-    return train_loader, val_loader, shm_path
-
-# =============================================================================
-# SCHEDULER, WEIGHTS, LOSS (Same as v3.1.0)
-# =============================================================================
-
-class WarmupCosineScheduler(_LRScheduler):
-    """Cosine annealing scheduler with linear warmup."""
-    def __init__(self, optimizer, warmup_steps, total_steps, min_lr=0.0, last_epoch=-1):
-        self.warmup_steps = warmup_steps
-        self.total_steps = total_steps
-        self.min_lr = min_lr
-        super().__init__(optimizer, last_epoch)
-    
-    def get_lr(self):
-        if self.last_epoch < self.warmup_steps:
-            alpha = self.last_epoch / max(self.warmup_steps, 1)
-            return [base_lr * alpha for base_lr in self.base_lrs]
-        else:
-            progress = (self.last_epoch - self.warmup_steps) / max(self.total_steps - self.warmup_steps, 1)
-            cosine_decay = 0.5 * (1 + math.cos(math.pi * min(progress, 1.0)))
-            return [self.min_lr + (base_lr - self.min_lr) * cosine_decay for base_lr in self.base_lrs]
-
-def compute_class_weights(labels, n_classes, device):
-    """Compute balanced class weights."""
-    counts = np.bincount(labels, minlength=n_classes)
-    weights = 1.0 / (counts + EPS)
-    weights = weights / weights.sum() * n_classes
-    return torch.tensor(weights, dtype=torch.float32, device=device)
-
-def compute_hierarchical_loss(output, labels, class_weights, stage1_weight=1.0, stage2_weight=1.0, aux_weight=0.5):
-    """Compute hierarchical loss (v3.0.0 fix)."""
-    device = labels.device
-    B = labels.size(0)
-    
-    is_deviation = (labels > 0).float().unsqueeze(1)
-    is_pspl = (labels == 1).float().unsqueeze(1)
-    non_flat_mask = (labels > 0)
-    # v4.2.0 PERF: keep the non-flat count as a tensor. Calling .item() here forced a
-    # cudaStreamSynchronize on EVERY batch, serializing the GPU pipeline and defeating
-    # DataLoader prefetch overlap. See the sync-free stage-2 reduction below.
-    n_non_flat = non_flat_mask.sum()
-
-    stage1_pos_weight_scalar = (class_weights[1] + class_weights[2]) / 2.0 / (class_weights[0] + EPS)
-    stage1_bce = F.binary_cross_entropy_with_logits(
-        output.stage1_logit, is_deviation, pos_weight=stage1_pos_weight_scalar, reduction='mean'
-    )
-
-    # v4.2.0 PERF: unconditional, branch-free stage-2. Selecting an empty non-flat set
-    # and reducing with 'sum' yields 0.0 (not NaN), and sum / clamp(count, 1) equals the
-    # old reduction='mean' when non-empty and 0 when empty -- numerically identical to
-    # the previous `if n_non_flat > 0` branch but with no host<->device sync.
-    stage2_logit_nonflat = output.stage2_logit[non_flat_mask]
-    is_pspl_nonflat = is_pspl[non_flat_mask]
-    stage2_pos_weight_scalar = class_weights[1] / (class_weights[2] + EPS)
-    stage2_sum = F.binary_cross_entropy_with_logits(
-        stage2_logit_nonflat, is_pspl_nonflat, pos_weight=stage2_pos_weight_scalar, reduction='sum'
-    )
-    stage2_bce = stage2_sum / n_non_flat.clamp(min=1).to(stage2_sum.dtype)
-
-    if output.aux_logits is not None:
-        aux_ce = F.cross_entropy(output.aux_logits, labels, weight=class_weights)
-    else:
-        aux_ce = torch.zeros((), device=device)
-
-    total_loss = stage1_weight * stage1_bce + stage2_weight * stage2_bce + aux_weight * aux_ce
-
-    # v4.2.0 PERF: return DETACHED 0-dim GPU tensors, not Python floats. The caller
-    # accumulates them onto GPU tensors and only reads .item() behind PROGRESS_UPDATE_FREQ,
-    # so no per-batch sync happens here. Values are unchanged.
-    return total_loss, {
-        'stage1_bce': stage1_bce.detach(),
-        'stage2_bce': stage2_bce.detach(),
-        'aux_ce': aux_ce.detach(),
-        'total': total_loss.detach(),
-        'n_non_flat': n_non_flat.detach(),
-    }
-
-# =============================================================================
-# TRAINING & EVALUATION (v4.0.0: Fixed model calls and lengths device)
-# =============================================================================
-
-def train_epoch(model, loader, optimizer, scheduler, scaler, class_weights, device, rank, world_size,
-                epoch, config, accumulation_steps=1, clip_norm=1.0, stage1_weight=1.0, stage2_weight=1.0,
-                aux_weight=0.5, amp_dtype=torch.float16):
-    """Execute one training epoch."""
-    model.train()
-    
-    total_loss_gpu = torch.zeros(1, device=device)
-    total_correct_gpu = torch.zeros(1, device=device, dtype=torch.long)
-    total_samples_gpu = torch.zeros(1, device=device, dtype=torch.long)
-    total_stage1_loss = torch.zeros(1, device=device)
-    total_stage2_loss = torch.zeros(1, device=device)
-    total_aux_loss = torch.zeros(1, device=device)
-    
-    pbar = tqdm(loader, desc=f'Epoch {epoch} [Train]', disable=not is_main_process(rank), ncols=120, leave=False)
-    
-    if device.type == 'cuda' and config.use_amp:
-        autocast_ctx = torch.amp.autocast('cuda', dtype=amp_dtype, enabled=True)
-    else:
-        autocast_ctx = nullcontext()
-    
-    optimizer.zero_grad(set_to_none=True)
-    
-    for batch_idx, batch in enumerate(pbar):
-        magnification = batch[0].to(device, non_blocking=True)
-        delta_t = batch[1].to(device, non_blocking=True)
-        # v4.0.0 FIX: Move lengths to device (was staying on CPU)
-        lengths = batch[2].to(device, non_blocking=True)
-        labels = batch[3].to(device, non_blocking=True)
-        
-        with autocast_ctx:
-            if config.hierarchical:
-                # v4.0.0 FIX: Use keyword argument for lengths (matches v4 model API)
-                output = model(magnification, delta_t, lengths=lengths, return_intermediates=True)
-                loss, loss_dict = compute_hierarchical_loss(
-                    output, labels, class_weights, stage1_weight, stage2_weight, aux_weight
-                )
-                logits = output.logits
-                total_stage1_loss += loss_dict['stage1_bce']
-                total_stage2_loss += loss_dict['stage2_bce']
-                total_aux_loss += loss_dict['aux_ce']
-            else:
-                # v4.0.0 FIX: Use keyword argument for lengths
-                logits = model(magnification, delta_t, lengths=lengths)
-                loss = F.cross_entropy(logits, labels, weight=class_weights)
-            
-            loss = loss / accumulation_steps
-        
-        if scaler is not None:
-            scaler.scale(loss).backward()
-        else:
-            loss.backward()
-        
-        if (batch_idx + 1) % accumulation_steps == 0:
-            if scaler is not None:
-                scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), clip_norm)
-                scaler.step(optimizer)
-                scaler.update()
-            else:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), clip_norm)
-                optimizer.step()
-            
-            optimizer.zero_grad(set_to_none=True)
-            scheduler.step()
-        
-        with torch.no_grad():
-            if config.hierarchical:
-                probs = torch.exp(logits)
-            else:
-                probs = F.softmax(logits, dim=1)
-            
-            preds = probs.argmax(dim=1)
-            # v4.2.0: `loss` is a per-batch MEAN (divided by accumulation_steps earlier);
-            # weight by batch size so dividing by total_samples yields the true mean
-            # (was reporting ~batch_size x too small vs validation loss).
-            total_loss_gpu += loss.detach() * accumulation_steps * labels.size(0)
-            total_correct_gpu += (preds == labels).sum()
-            total_samples_gpu += labels.size(0)
-        
-        if batch_idx % PROGRESS_UPDATE_FREQ == 0:
-            current_loss = total_loss_gpu.item() / max(total_samples_gpu.item(), 1)
-            current_acc = total_correct_gpu.item() / max(total_samples_gpu.item(), 1)
-            
-            if config.hierarchical:
-                n_batches = batch_idx + 1
-                pbar.set_postfix({
-                    'loss': f'{current_loss:.4f}',
-                    'acc': f'{100*current_acc:.2f}%',
-                    's1': f'{total_stage1_loss.item()/n_batches:.3f}',
-                    's2': f'{total_stage2_loss.item()/n_batches:.3f}',
-                    'lr': f'{scheduler.get_last_lr()[0]:.2e}'
-                })
-            else:
-                pbar.set_postfix({
-                    'loss': f'{current_loss:.4f}',
-                    'acc': f'{100*current_acc:.2f}%',
-                    'lr': f'{scheduler.get_last_lr()[0]:.2e}'
-                })
-    
-    if world_size > 1:
-        dist.all_reduce(total_loss_gpu, op=dist.ReduceOp.SUM)
-        dist.all_reduce(total_correct_gpu, op=dist.ReduceOp.SUM)
-        dist.all_reduce(total_samples_gpu, op=dist.ReduceOp.SUM)
-    
-    avg_loss = total_loss_gpu.item() / max(total_samples_gpu.item(), 1)
-    avg_acc = total_correct_gpu.item() / max(total_samples_gpu.item(), 1)
-    
-    return avg_loss, avg_acc
 
 @torch.no_grad()
-def evaluate(model, loader, class_weights, device, rank, world_size, config,
-             stage1_weight=1.0, stage2_weight=1.0, aux_weight=0.5, amp_dtype=torch.float16):
-    """Evaluate model."""
+def evaluate(model, loader, device) -> dict:
     model.eval()
-    
-    total_loss_gpu = torch.zeros(1, device=device)
-    total_correct_gpu = torch.zeros(1, device=device, dtype=torch.long)
-    total_samples_gpu = torch.zeros(1, device=device, dtype=torch.long)
-    class_correct = torch.zeros(N_CLASSES, device=device, dtype=torch.long)
-    class_total = torch.zeros(N_CLASSES, device=device, dtype=torch.long)
-    
-    if device.type == 'cuda' and config.use_amp:
-        autocast_ctx = torch.amp.autocast('cuda', dtype=amp_dtype, enabled=True)
-    else:
-        autocast_ctx = nullcontext()
-    
-    for batch in loader:
-        magnification = batch[0].to(device, non_blocking=True)
-        delta_t = batch[1].to(device, non_blocking=True)
-        # v4.0.0 FIX: Move lengths to device (was staying on CPU)
-        lengths = batch[2].to(device, non_blocking=True)
-        labels = batch[3].to(device, non_blocking=True)
-        
-        with autocast_ctx:
-            if config.hierarchical:
-                # v4.0.0 FIX: Use keyword argument for lengths (matches v4 model API)
-                output = model(magnification, delta_t, lengths=lengths, return_intermediates=True)
-                loss, _ = compute_hierarchical_loss(
-                    output, labels, class_weights, stage1_weight, stage2_weight, aux_weight
-                )
-                logits = output.logits
-            else:
-                # v4.0.0 FIX: Use keyword argument for lengths
-                logits = model(magnification, delta_t, lengths=lengths)
-                loss = F.cross_entropy(logits, labels, weight=class_weights, reduction='sum')
-        
-        if config.hierarchical:
-            probs = torch.exp(logits)
-        else:
-            probs = F.softmax(logits, dim=1)
-        
-        preds = probs.argmax(dim=1)
-        
-        if config.hierarchical:
-            total_loss_gpu += loss * labels.size(0)
-        else:
-            total_loss_gpu += loss
-        total_correct_gpu += (preds == labels).sum()
-        total_samples_gpu += labels.size(0)
-        
-        for c in range(N_CLASSES):
-            mask = (labels == c)
-            class_total[c] += mask.sum()
-            class_correct[c] += ((preds == c) & mask).sum()
-    
-    if world_size > 1:
-        dist.all_reduce(total_loss_gpu, op=dist.ReduceOp.SUM)
-        dist.all_reduce(total_correct_gpu, op=dist.ReduceOp.SUM)
-        dist.all_reduce(total_samples_gpu, op=dist.ReduceOp.SUM)
-        dist.all_reduce(class_correct, op=dist.ReduceOp.SUM)
-        dist.all_reduce(class_total, op=dist.ReduceOp.SUM)
-    
-    avg_loss = total_loss_gpu.item() / max(total_samples_gpu.item(), 1)
-    accuracy = total_correct_gpu.item() / max(total_samples_gpu.item(), 1)
-    
-    per_class_recall = {}
-    for c, name in enumerate(CLASS_NAMES):
-        if class_total[c].item() > 0:
-            per_class_recall[name] = class_correct[c].item() / class_total[c].item()
-        else:
-            per_class_recall[name] = 0.0
-    
-    return {
-        'loss': avg_loss,
-        'accuracy': accuracy,
-        **{f'recall_{k}': v for k, v in per_class_recall.items()}
-    }
+    conf = np.zeros((N_CLASSES, N_CLASSES), dtype=np.int64)
+    tot_loss = tot_w = 0.0
+    d_all, correct_non, is_non = [], [], []
+    for feats, present, y, w, d in loader:
+        feats = {k: v.to(device) for k, v in feats.items()}
+        present = {k: v.to(device) for k, v in present.items()}
+        y, w = y.to(device), w.to(device)
+        logits = model(feats, present)
+        loss = (F.cross_entropy(logits, y, reduction="none") * w).sum()
+        tot_loss += float(loss); tot_w += float(w.sum())
+        pred = logits.argmax(1)
+        # Vectorised confusion update. The obvious `for t, p in zip(...)` costs one Python
+        # iteration per EVENT per epoch -- ~68k on val, ~68k more on test -- which is pure
+        # interpreter overhead on top of a GPU-bound loop. bincount does it in one pass.
+        conf += np.bincount((y * N_CLASSES + pred).cpu().numpy(),
+                            minlength=N_CLASSES * N_CLASSES).reshape(N_CLASSES, N_CLASSES)
+        i_non = CLASS_NAMES.index("NonPSPL")
+        m = (y == i_non)
+        if m.any():
+            d_all.append(d[m.cpu()].numpy())
+            correct_non.append((pred[m] == i_non).cpu().numpy())
+        is_non.append((pred == i_non).cpu().numpy())
 
-# =============================================================================
-# CHECKPOINTING (v4.0.0: Fixed torch.load compatibility)
-# =============================================================================
+    recall = np.diag(conf) / np.maximum(conf.sum(1), 1)
+    precision = np.diag(conf) / np.maximum(conf.sum(0), 1)
+    f1 = 2 * recall * precision / np.maximum(recall + precision, 1e-9)
+    out = {"loss": tot_loss / max(tot_w, 1e-9),
+           "recall": {CLASS_NAMES[i]: float(recall[i]) for i in range(N_CLASSES)},
+           "precision": {CLASS_NAMES[i]: float(precision[i]) for i in range(N_CLASSES)},
+           "f1": {CLASS_NAMES[i]: float(f1[i]) for i in range(N_CLASSES)},
+           "macro_f1": float(f1.mean()),
+           "confusion": conf.tolist()}
 
-def save_checkpoint(model, optimizer, scheduler, scaler, config, stats, epoch, best_acc, path):
-    """Save training checkpoint."""
-    model_state = model.module.state_dict() if isinstance(model, DDP) else model.state_dict()
-    checkpoint = {
-        'epoch': epoch,
-        'model_state_dict': model_state,
-        'optimizer_state_dict': optimizer.state_dict(),
-        'scheduler_state_dict': scheduler.state_dict(),
-        'scaler_state_dict': scaler.state_dict() if scaler is not None else None,
-        'model_config': config.to_dict(),
-        'stats': stats,
-        'best_acc': best_acc,
-        'version': __version__
-    }
-    # v4.2.0: ATOMIC write. A direct torch.save truncates the destination first, so a
-    # session kill / Spot preemption mid-write corrupts checkpoint_latest.pt (the resume
-    # anchor). Write to a temp file on the same filesystem, then os.replace() (atomic).
-    tmp = str(path) + '.tmp'
-    torch.save(checkpoint, tmp)
-    os.replace(tmp, path)
-    logger.info(f"Checkpoint saved: {path}")
+    # Detectability-conditioned NonPSPL recall: a raw number mixes in events whose anomaly is
+    # physically undetectable, which flatters the model. Report recall per delta-chi^2 decade.
+    if d_all:
+        d_cat = np.concatenate(d_all); c_cat = np.concatenate(correct_non)
+        bins = [(0, 160), (160, 1e3), (1e3, 1e4), (1e4, 1e5), (1e5, np.inf)]
+        out["nonpspl_recall_by_dchi2"] = {
+            f"{lo:g}-{hi:g}": (float(c_cat[(d_cat >= lo) & (d_cat < hi)].mean())
+                               if ((d_cat >= lo) & (d_cat < hi)).any() else None)
+            for lo, hi in bins}
+    return out
 
-def load_checkpoint_for_resume(path, model, optimizer, scheduler, scaler, device):
-    """
-    Load checkpoint for resuming training.
-    
-    v4.0.0 FIX: Uses torch_load_compat with weights_only=False for full checkpoint.
-    """
-    # v4.0.0 FIX: Use compat loader with weights_only=False (checkpoint has metadata)
-    checkpoint = torch_load_compat(path, map_location=device, weights_only=False)
-    
-    state = checkpoint['model_state_dict']
-    if isinstance(model, DDP):
-        model.module.load_state_dict(state)
-    else:
-        model.load_state_dict(state)
-    
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-    
-    if scaler is not None and checkpoint.get('scaler_state_dict') is not None:
-        scaler.load_state_dict(checkpoint['scaler_state_dict'])
-    
-    start_epoch = int(checkpoint.get('epoch', 0)) + 1
-    best_acc = float(checkpoint.get('best_acc', 0.0))
-    
-    logger.info(f"Resumed from epoch {start_epoch-1} (best acc: {100*best_acc:.2f}%)")
-    
-    return start_epoch, best_acc
 
-# =============================================================================
-# DDP SETUP (Same as v3.1.0)
-# =============================================================================
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--cache", required=True, help="memmap cache directory")
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--epochs", type=int, default=30)
+    ap.add_argument("--batch-size", type=int, default=256)
+    ap.add_argument("--lr", type=float, default=3e-4)
+    ap.add_argument("--weight-decay", type=float, default=0.01)
+    ap.add_argument("--alpha-nonpspl", type=float, default=2.0)
+    ap.add_argument("--n-layers", type=int, default=4)
+    ap.add_argument("--d-model", type=int, default=96)
+    ap.add_argument("--max-events", type=int, default=0)
+    ap.add_argument("--device", default="mps")
+    ap.add_argument("--seed", type=int, default=20260720)
+    ap.add_argument("--init-weights", default=None)
+    ap.add_argument("--truncate-aug", type=float, default=0.0,
+                    help="probability of revealing only a random prefix of the season. The "
+                         "base model saw F146 100%% observed in EVERY training curve, so a "
+                         "partial season is out-of-distribution: at 25%% revealed it predicts "
+                         "Eruptive for 100%% of events at 0.985 confidence, because the "
+                         "truncation edge reads as an outburst. This augmentation is what "
+                         "makes early/online detection possible at all.")
+    ap.add_argument("--num-workers", type=int, default=0,
+                    help="dataloader workers; safe with a memmap (workers share file pages, "
+                         "so there is no per-worker copy of the dataset)")
+    ap.add_argument("--resume", action="store_true",
+                    help="resume from <out>.last if it exists (for unattended runs)")
+    args = ap.parse_args(argv)
 
-def setup_ddp():
-    """Setup Distributed Data Parallel."""
-    if dist.is_initialized():
-        rank = dist.get_rank()
-        local_rank = int(os.environ.get('LOCAL_RANK', 0))
-        world_size = dist.get_world_size()
-    elif 'RANK' in os.environ:
-        rank = int(os.environ['RANK'])
-        local_rank = int(os.environ['LOCAL_RANK'])
-        world_size = int(os.environ['WORLD_SIZE'])
-        
-        master_addr = os.environ.get('MASTER_ADDR')
-        master_port = os.environ.get('MASTER_PORT')
-        
-        if not master_addr or not master_port:
-            raise RuntimeError("MASTER_ADDR and MASTER_PORT must be set!")
-        
-        if rank == 0:
-            logger.info("=" * 80)
-            logger.info("DDP Initialization")
-            logger.info(f"  RANK: {rank}")
-            logger.info(f"  LOCAL_RANK: {local_rank}")
-            logger.info(f"  WORLD_SIZE: {world_size}")
-            logger.info(f"  MASTER_ADDR: {master_addr}")
-            logger.info(f"  MASTER_PORT: {master_port}")
-            logger.info("=" * 80)
-        
-        if torch.cuda.is_available():
-            torch.cuda.set_device(local_rank)
-            if rank == 0:
-                logger.info(f"  Set CUDA device to: cuda:{local_rank}")
-        
-        try:
-            init_method = f'tcp://{master_addr}:{master_port}'
-            dist.init_process_group(
-                backend='nccl',
-                init_method=init_method,
-                world_size=world_size,
-                rank=rank,
-                timeout=timedelta(minutes=DDP_INIT_TIMEOUT_MINUTES)
-            )
-            dist.barrier()
-            
-            if rank == 0:
-                logger.info("  DDP initialization complete!")
-                logger.info(f"  CUDA device name: {torch.cuda.get_device_name(local_rank)}")
-        except Exception as e:
-            logger.error(f"DDP initialization failed: {e}")
-            raise
-    else:
-        rank = 0
-        local_rank = 0
-        world_size = 1
-    
-    if torch.cuda.is_available():
-        device = torch.device(f'cuda:{local_rank}')
-    else:
-        device = torch.device('cpu')
-    
-    return rank, local_rank, world_size, device
+    torch.manual_seed(args.seed)
+    rng = np.random.default_rng(args.seed)
+    dev = torch.device(args.device)
 
-def cleanup_ddp():
-    """Cleanup DDP process group."""
-    if dist.is_initialized():
-        try:
-            dist.barrier()
-            dist.destroy_process_group()
-        except Exception as e:
-            logger.warning(f"Error during DDP cleanup: {e}")
+    meta = json.load(open(os.path.join(args.cache, "meta.json")))
+    n = meta["n_events"]
+    arrays = {}
+    for b in BAND_BINS:
+        arrays[f"feat/{b}"] = np.memmap(os.path.join(args.cache, f"feat_{b}.f16"),
+                                        dtype=np.float16, mode="r",
+                                        shape=(n, BAND_BINS[b], 3))
+        arrays[f"frac/{b}"] = np.memmap(os.path.join(args.cache, f"frac_{b}.f16"),
+                                        dtype=np.float16, mode="r", shape=(n, BAND_BINS[b]))
+    params = pf_idx = f_s_ref = None
+    ppath = os.path.join(args.cache, "params.npy")
+    if os.path.exists(ppath):
+        params = np.load(ppath)
+        pf = meta.get("param_fields") or []
+        pf_idx = {k: i for i, k in enumerate(pf)}
+    fpath = os.path.join(args.cache, "f_s_F146.npy")
+    if os.path.exists(fpath):
+        f_s_ref = np.load(fpath)
+    labels = np.load(os.path.join(args.cache, "label.npy"))
+    keep_prob = np.load(os.path.join(args.cache, "keep_prob.npy"))
+    dchi2_anom = np.load(os.path.join(args.cache, "dchi2_anomaly.npy"))
 
-# =============================================================================
-# MAIN
-# =============================================================================
+    perm = rng.permutation(n)
+    if args.max_events and args.max_events < n:
+        perm = perm[:args.max_events]
+    n_use = len(perm)
+    n_tr, n_va = int(0.8 * n_use), int(0.1 * n_use)
+    tr, va, te = perm[:n_tr], perm[n_tr:n_tr + n_va], perm[n_tr + n_va:]
 
-def main():
-    """Main training entry point."""
-    parser = argparse.ArgumentParser(
-        description=f'Train Roman Microlensing Classifier v{__version__}',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    
-    parser.add_argument('--data', type=str, required=True,
-                        help='Path to data file, OR (with --stream) a directory of shards / comma-list')
-    parser.add_argument('--stream', action='store_true',
-                        help='v4.2.0: lazy multi-shard streaming loader (single-GPU / data > RAM). '
-                             '--data may be a directory of .h5 shards or a comma-separated list.')
-    parser.add_argument('--block-shuffle', type=int, default=0,
-                        help='v4.2.0: with --stream, shuffle in blocks of this size (set 10000, the '
-                             'on-disk chunk size) to cut lzf read amplification; 0 = per-row shuffle')
-    parser.add_argument('--output', type=str, default='../results/checkpoints', help='Output directory')
-    parser.add_argument('--val-fraction', type=float, default=DEFAULT_VAL_FRACTION, help='Validation fraction')
-    
-    parser.add_argument('--d-model', type=int, default=128, help='Model dimension')
-    parser.add_argument('--n-layers', type=int, default=4, help='Number of GRU layers')
-    parser.add_argument('--dropout', type=float, default=0.1, help='Dropout')
-    parser.add_argument('--window-size', type=int, default=7, help='Conv kernel size')
-    parser.add_argument('--hierarchical', action='store_true', help='Use hierarchical classification')
-    parser.add_argument('--attention-pooling', action='store_true', help='Use attention pooling')
-    
-    parser.add_argument('--use-aux-head', action='store_true', default=True, help='Use auxiliary head')
-    parser.add_argument('--no-aux-head', dest='use_aux_head', action='store_false', help='Disable aux head')
-    parser.add_argument('--stage2-temperature', type=float, default=1.0, help='Stage 2 temperature')
-    parser.add_argument('--stage1-weight', type=float, default=DEFAULT_STAGE1_WEIGHT, help='Stage 1 weight')
-    parser.add_argument('--stage2-weight', type=float, default=DEFAULT_STAGE2_WEIGHT, help='Stage 2 weight')
-    parser.add_argument('--aux-weight', type=float, default=DEFAULT_AUX_WEIGHT, help='Aux weight')
-    
-    parser.add_argument('--batch-size', type=int, default=DEFAULT_BATCH_SIZE, help='Batch size per GPU')
-    parser.add_argument('--lr', type=float, default=DEFAULT_LR, help='Learning rate')
-    parser.add_argument('--weight-decay', type=float, default=1e-4, help='Weight decay')
-    parser.add_argument('--epochs', type=int, default=DEFAULT_EPOCHS, help='Number of epochs')
-    parser.add_argument('--warmup-epochs', type=int, default=DEFAULT_WARMUP_EPOCHS, help='Warmup epochs')
-    parser.add_argument('--early-stop-patience', type=int, default=0,
-                        help='v4.2.0: stop if val loss does not improve for N epochs (0=off). '
-                             'Uses val loss, not accuracy, which saturates on the easy flat class.')
-    parser.add_argument('--early-stop-min-delta', type=float, default=1e-4,
-                        help='Minimum val-loss decrease to count as an improvement')
-    parser.add_argument('--accumulation-steps', type=int, default=DEFAULT_ACCUMULATION_STEPS, help='Gradient accumulation')
-    parser.add_argument('--clip-norm', type=float, default=DEFAULT_CLIP_NORM, help='Gradient clipping norm')
-    
-    parser.add_argument('--use-amp', action='store_true', help='Use mixed precision')
-    parser.add_argument('--compile', action='store_true', help='Use torch.compile')
-    parser.add_argument('--compile-mode', type=str, default='reduce-overhead',
-                       choices=['default', 'reduce-overhead', 'max-autotune'], help='Compile mode')
-    parser.add_argument('--no-class-weights', action='store_true', help='Disable class weighting')
-    
-    parser.add_argument('--num-workers', type=int, default=DEFAULT_NUM_WORKERS, help='Data workers')
-    parser.add_argument('--prefetch-factor', type=int, default=DEFAULT_PREFETCH_FACTOR, help='Prefetch factor')
-    
-    parser.add_argument('--resume', type=str, default=None,
-                        help="Resume: a checkpoint path, or 'auto' to resume the latest "
-                             "checkpoint_latest.pt under --output (reuses its experiment dir)")
-    parser.add_argument('--init-weights', type=str, default=None,
-                        help="Warm-start: load ONLY model weights from this checkpoint "
-                             "(fresh optimizer/scheduler) -- for fine-tuning on new data")
-    parser.add_argument('--save-every', type=int, default=5, help='Save every N epochs')
-    
-    args = parser.parse_args()
-    args.use_class_weights = not args.no_class_weights
-    
-    set_seed(SEED)
-    configure_cuda()
-    rank, local_rank, world_size, device = setup_ddp()
-    global logger
-    logger = setup_logging(rank)
-    
-    is_ddp = world_size > 1
-    
-    if is_main_process(rank):
-        logger.info("=" * 80)
-        logger.info(f"Roman Microlensing Classifier Training v{__version__}")
-        logger.info("=" * 80)
-        logger.info(f"Device: {device}")
-        logger.info(f"World size: {world_size}")
-        logger.info(f"GPUs per node: {torch.cuda.device_count()}")
-        logger.info(f"Workers: {args.num_workers}")
-        if args.hierarchical:
-            logger.info("=" * 80)
-            logger.info("HIERARCHICAL MODE (v4.1 FIXES APPLIED)")
-            logger.info(f"  Stage 1 weight: {args.stage1_weight}")
-            logger.info(f"  Stage 2 weight: {args.stage2_weight}")
-            logger.info(f"  Aux weight: {args.aux_weight}")
-            logger.info("=" * 80)
-    
-    if is_ddp:
-        if is_main_process(rank):
-            logger.info("Synchronizing all processes...")
-        dist.barrier()
-    
-    base_output_dir = Path(args.output)
-    if is_main_process(rank):
-        base_output_dir.mkdir(parents=True, exist_ok=True)
-    
-    if is_ddp:
-        dist.barrier()
-    
-    if is_main_process(rank):
-        # v4.2.0: on resume, REUSE the existing experiment dir instead of minting a new
-        # timestamped one (otherwise checkpoints scatter and resume can't find them).
-        # `--resume auto` picks the most recent <exp>/checkpoints/checkpoint_latest.pt
-        # under --output; point --output at a persistent path for cross-session Kaggle runs.
-        reuse_dir = None
-        if args.resume == 'auto':
-            cands = sorted(base_output_dir.glob('*/checkpoints/checkpoint_latest.pt'),
-                           key=lambda p: p.stat().st_mtime)
-            reuse_dir = cands[-1].resolve().parent.parent if cands else None
-        elif args.resume and Path(args.resume).exists():
-            reuse_dir = Path(args.resume).resolve().parent.parent
-        if reuse_dir is not None:
-            output_dir = reuse_dir
-            logger.info(f"AUTO-RESUME: reusing experiment dir {output_dir.name}")
-        else:
-            output_dir = create_experiment_dir(base_output_dir, args)
-        exp_name = output_dir.name
-        with open(base_output_dir / '.current_experiment', 'w') as f:
-            f.write(exp_name)
-    else:
-        exp_name = None
-    
-    if is_ddp:
-        dist.barrier()
-        exp_name_list = [exp_name] if is_main_process(rank) else [None]
-        dist.broadcast_object_list(exp_name_list, src=0)
-        exp_name = exp_name_list[0]
-        output_dir = base_output_dir / exp_name
-    
-    if args.stream:
-        # v4.2.0: streaming multi-shard path (single-GPU / larger-than-RAM).
-        shard_paths = resolve_shard_paths(args.data)
-        train_idx, val_idx, train_labels, _all_labels = stream_train_val_split(
-            shard_paths, args.val_fraction, SEED
-        )
-        # v4.2.0: SORT the split indices. train_test_split returns a random permutation;
-        # StreamingShardDataset maps position->global row, so sorted indices make
-        # consecutive positions read consecutive on-disk rows (chunk-aligned). Ordering
-        # carries no information (labels are per-row; the block sampler reshuffles at
-        # train time) and it is what makes --block-shuffle actually cut read amplification.
-        train_idx = np.sort(train_idx); val_idx = np.sort(val_idx)
-        # LEAKAGE FIX: fit normalization on TRAIN rows only (exclude val_idx).
-        stats = compute_streaming_statistics(shard_paths, rank=rank, train_idx=train_idx)
-        if is_main_process(rank):
-            logger.info(f"Streaming {len(shard_paths)} shard(s): "
-                        f"{format_number(len(train_idx))} train / {format_number(len(val_idx))} val")
-        train_loader, val_loader, shm_path = create_dataloaders(
-            args.data, train_idx, val_idx, stats,
-            args.batch_size, args.num_workers, args.prefetch_factor,
-            is_ddp, rank, local_rank,
-            stream_paths=shard_paths, block_shuffle=args.block_shuffle,
-        )
-    else:
-        # v4.1.0: Pass is_ddp to enable broadcast optimization
-        train_idx, val_idx, train_labels, stats = load_and_split_data(
-            args.data, args.val_fraction, SEED, rank, is_ddp
-        )
-        # v4.1.0: Multi-GPU /dev/shm dataloaders
-        train_loader, val_loader, shm_path = create_dataloaders(
-            args.data, train_idx, val_idx, stats,
-            args.batch_size, args.num_workers, args.prefetch_factor,
-            is_ddp, rank, local_rank
-        )
-    
-    config = ModelConfig(
-        d_model=args.d_model,
-        n_layers=args.n_layers,
-        dropout=args.dropout,
-        window_size=args.window_size,
-        hierarchical=args.hierarchical,
-        use_aux_head=args.use_aux_head,
-        stage2_temperature=args.stage2_temperature,
-        use_attention_pooling=args.attention_pooling,
-        use_amp=args.use_amp
-    )
-    
-    if is_main_process(rank):
-        logger.info("-" * 80)
-        logger.info("Model Configuration:")
-        for key, value in config.to_dict().items():
-            logger.info(f"  {key}: {value}")
-        logger.info("-" * 80)
-    
-    model = RomanMicrolensingClassifier(config).to(device)
+    # Weights are computed from the TRAIN split only; using all rows would leak the test
+    # class composition into the training objective.
+    w_all = np.zeros(n, dtype=np.float32)
+    w_all[tr] = compute_weights(labels[tr], keep_prob[tr], args.alpha_nonpspl)
+    w_all[va] = compute_weights(labels[va], keep_prob[va], args.alpha_nonpspl)
+    w_all[te] = 1.0
 
-    # v4.2.0: warm-start fine-tuning. Load ONLY model weights from a prior checkpoint
-    # (fresh optimizer/scheduler/epoch), so we can continue on a new dataset with a fresh
-    # low-LR schedule -- distinct from --resume, which restores full training state to
-    # continue the same run. Applied before DDP wrap; --resume (if any) still overrides
-    # later by loading a full checkpoint.
-    if getattr(args, "init_weights", None):
-        ckpt = torch_load_compat(args.init_weights, map_location=device, weights_only=False)
-        sd = ckpt.get("model_state_dict", ckpt)
+    mk = lambda idx, shuf: DataLoader(
+        CacheDataset(arrays, labels, w_all, dchi2_anom, idx,
+                     truncate_aug=args.truncate_aug if shuf else 0.0, seed=args.seed,
+                     params=params, pf_idx=pf_idx, f_s_ref=f_s_ref),
+        batch_size=args.batch_size, shuffle=shuf, collate_fn=collate,
+        num_workers=args.num_workers, pin_memory=False,
+        persistent_workers=args.num_workers > 0)
+    dl_tr, dl_va, dl_te = mk(tr, True), mk(va, False), mk(te, False)
+
+    cfg = ModelConfigV5(d_model=args.d_model, n_layers=args.n_layers)
+    model = BinMLv5(cfg).to(dev)
+    if args.init_weights:
+        sd = torch.load(args.init_weights, map_location="cpu")
+        sd = sd.get("model", sd)
         missing, unexpected = model.load_state_dict(sd, strict=False)
-        if is_main_process(rank):
-            logger.info(f"Warm-start: loaded weights from {args.init_weights} "
-                        f"(missing={len(missing)}, unexpected={len(unexpected)})")
+        # strict=False silently tolerates a totally mismatched checkpoint, which has bitten
+        # this project before -- so report and refuse if essentially nothing matched.
+        loaded = len(sd) - len(unexpected)
+        print(f"warm start: {loaded}/{len(list(model.state_dict()))} tensors loaded, "
+              f"{len(missing)} missing, {len(unexpected)} unexpected")
+        if loaded == 0:
+            raise SystemExit("--init-weights matched no parameters; refusing to train")
 
-    if is_main_process(rank):
-        complexity = model.get_complexity_info()
-        logger.info("Model Architecture:")
-        logger.info(f"  Total parameters: {format_number(complexity['total_parameters'])}")
-        logger.info(f"  Trainable parameters: {format_number(complexity['trainable_parameters'])}")
-        
-        if config.hierarchical:
-            logger.info("Hierarchical Head Initialization:")
-            logger.info(f"  Stage 1 bias: {model.head_stage1.bias.item():.4f}")
-            logger.info(f"  Stage 2 bias: {model.head_stage2.bias.item():.4f}")
-        logger.info("-" * 80)
-    
-    if is_ddp:
-        model = DDP(model, device_ids=[local_rank], output_device=local_rank)
-    
-    if args.compile and hasattr(torch, 'compile'):
-        if is_main_process(rank):
-            logger.info(f"Compiling model with mode={args.compile_mode}...")
-        try:
-            model = torch.compile(model, mode=args.compile_mode, fullgraph=False)
-            if is_main_process(rank):
-                logger.info("  Model compiled")
-        except Exception as e:
-            if is_main_process(rank):
-                logger.warning(f"torch.compile failed: {e}")
-    
-    fused_available = 'fused' in torch.optim.AdamW.__init__.__code__.co_varnames
-    if fused_available and device.type == 'cuda':
-        optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay, fused=True)
-        if is_main_process(rank):
-            logger.info("Using fused AdamW optimizer")
-    else:
-        optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    
-    steps_per_epoch = len(train_loader) // args.accumulation_steps
-    total_steps = steps_per_epoch * args.epochs
-    warmup_steps = steps_per_epoch * args.warmup_epochs
-    
-    scheduler = WarmupCosineScheduler(optimizer, warmup_steps, total_steps, min_lr=1e-6)
-    
-    # v4.2.0: choose the autocast dtype EXPLICITLY. torch.cuda.is_bf16_supported() returns
-    # True via emulation on Pascal (P100/T4), which would disable the GradScaler while
-    # autocast still runs float16 -> unscaled fp16 backward -> gradient underflow over a
-    # long run. Gate on NATIVE bf16 only; otherwise use fp16 WITH the scaler.
-    try:
-        native_bf16 = device.type == 'cuda' and torch.cuda.is_bf16_supported(including_emulation=False)
-    except TypeError:  # older torch without the kwarg
-        native_bf16 = False
-    amp_dtype = torch.bfloat16 if native_bf16 else torch.float16
-    use_scaler = args.use_amp and device.type == 'cuda' and amp_dtype == torch.float16
-    scaler = torch.amp.GradScaler('cuda', enabled=use_scaler) if use_scaler else None
-    if is_main_process(rank) and args.use_amp:
-        _why = 'ON (fp16)' if use_scaler else ('OFF (native bf16)' if native_bf16 else 'OFF')
-        logger.info(f"AMP: autocast dtype={amp_dtype}, GradScaler {_why}")
-    
-    if args.use_class_weights:
-        class_weights = compute_class_weights(train_labels, config.n_classes, device)
-    else:
-        class_weights = torch.ones(config.n_classes, device=device)
-    
-    start_epoch = 1
-    best_acc = 0.0
-    best_val_loss = float('inf')       # v4.2.0: early-stopping tracker
-    epochs_no_improve = 0
-    # v4.2.0: resolve the resume anchor now that output_dir is final (works for all ranks).
-    # 'auto' -> this experiment's checkpoint_latest.pt; explicit path -> that file.
-    if args.resume == 'auto':
-        _rp = output_dir / 'checkpoints' / 'checkpoint_latest.pt'
-        resume_path = str(_rp) if _rp.exists() else None
-    elif args.resume:
-        resume_path = args.resume if Path(args.resume).exists() else None
-    else:
-        resume_path = None
-    if resume_path:
-        start_epoch, best_acc = load_checkpoint_for_resume(
-            resume_path, model, optimizer, scheduler, scaler, device
-        )
-    elif args.resume and is_main_process(rank):
-        logger.info("--resume set but no checkpoint found; starting fresh.")
-    
-    if is_ddp:
-        dist.barrier()
-    
-    try:
-        if is_main_process(rank):
-            logger.info("Starting training...")
-            logger.info("-" * 80)
-        
-        for epoch in range(start_epoch, args.epochs + 1):
-            epoch_start = time.time()
-            
-            # v4.2.0: reshuffle each epoch for DistributedSampler AND BlockShuffleSampler.
-            if hasattr(train_loader.sampler, 'set_epoch'):
-                train_loader.sampler.set_epoch(epoch)
-            if val_loader.sampler is not None and hasattr(val_loader.sampler, 'set_epoch'):
-                val_loader.sampler.set_epoch(epoch)
-            
-            train_loss, train_acc = train_epoch(
-                model, train_loader, optimizer, scheduler, scaler,
-                class_weights, device, rank, world_size, epoch, config,
-                args.accumulation_steps, args.clip_norm,
-                args.stage1_weight, args.stage2_weight, args.aux_weight,
-                amp_dtype=amp_dtype
-            )
+    decay, no_decay = [], []
+    for nme, p in model.named_parameters():
+        (no_decay if p.ndim <= 1 or nme == "pos" else decay).append(p)
+    opt = torch.optim.AdamW([{"params": decay, "weight_decay": args.weight_decay},
+                             {"params": no_decay, "weight_decay": 0.0}], lr=args.lr)
+    sched = torch.optim.lr_scheduler.OneCycleLR(
+        opt, max_lr=args.lr, total_steps=args.epochs * max(len(dl_tr), 1), pct_start=0.15)
 
-            val_results = evaluate(
-                model, val_loader, class_weights, device, rank, world_size, config,
-                args.stage1_weight, args.stage2_weight, args.aux_weight,
-                amp_dtype=amp_dtype
-            )
-            
-            epoch_time = time.time() - epoch_start
-            
-            if is_main_process(rank):
-                logger.info(
-                    f"Epoch {epoch:3d} | "
-                    f"Train Loss: {train_loss:.4f} | Train Acc: {100*train_acc:.2f}% | "
-                    f"Val Loss: {val_results['loss']:.4f} | Val Acc: {100*val_results['accuracy']:.2f}% | "
-                    f"Time: {format_time(epoch_time)}"
-                )
-                if config.hierarchical:
-                    logger.info(
-                        f"         Per-class recall: "
-                        f"Flat={100*val_results.get('recall_Flat', 0):.1f}% | "
-                        f"PSPL={100*val_results.get('recall_PSPL', 0):.1f}% | "
-                        f"Binary={100*val_results.get('recall_Binary', 0):.1f}%"
-                    )
-            
-            is_best = val_results['accuracy'] > best_acc
-            if is_best:
-                best_acc = val_results['accuracy']
-            
-            if is_main_process(rank):
-                checkpoint_dir = output_dir / 'checkpoints'
-                checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                
-                save_checkpoint(
-                    model, optimizer, scheduler, scaler, config, stats,
-                    epoch, best_acc, checkpoint_dir / 'checkpoint_latest.pt'
-                )
-                
-                if is_best:
-                    save_checkpoint(
-                        model, optimizer, scheduler, scaler, config, stats,
-                        epoch, best_acc, output_dir / 'best.pt'
-                    )
-                
-                if epoch % args.save_every == 0:
-                    save_checkpoint(
-                        model, optimizer, scheduler, scaler, config, stats,
-                        epoch, best_acc, output_dir / f'epoch_{epoch:03d}.pt'
-                    )
+    print(f"train {len(tr):,} | val {len(va):,} | test {len(te):,} | params {model.n_params():,}",
+          flush=True)
+    print("train label mix: " + ", ".join(
+        f"{CLASS_NAMES[i]}={int((labels[tr]==i).sum()):,}" for i in range(N_CLASSES)), flush=True)
 
-            # v4.2.0: early stopping on val loss (checkpoints above are already saved,
-            # so best.pt / checkpoint_latest.pt are persisted before any break).
-            if args.early_stop_patience > 0:
-                vl = float(val_results['loss'])
-                if vl < best_val_loss - args.early_stop_min_delta:
-                    best_val_loss = vl
-                    epochs_no_improve = 0
-                else:
-                    epochs_no_improve += 1
-                    if is_main_process(rank):
-                        logger.info(f"         Early-stop: no val-loss improvement for "
-                                    f"{epochs_no_improve}/{args.early_stop_patience} epoch(s) "
-                                    f"(best val loss {best_val_loss:.4f})")
-                    if epochs_no_improve >= args.early_stop_patience:
-                        if is_main_process(rank):
-                            logger.info(f"EARLY STOP at epoch {epoch}: val loss plateaued "
-                                        f"(best {best_val_loss:.4f}, best acc {100*best_acc:.2f}%)")
-                        break
+    # An unattended multi-hour run must survive being interrupted, so optimiser and
+    # scheduler state are checkpointed every epoch, not just the best weights.
+    last_path = args.out + ".last"
+    start_ep, best, best_ep, hist = 0, -1.0, -1, []
+    if args.resume and os.path.exists(last_path):
+        ck = torch.load(last_path, map_location=dev)
+        model.load_state_dict(ck["model"]); opt.load_state_dict(ck["opt"])
+        sched.load_state_dict(ck["sched"])
+        start_ep = ck["epoch"] + 1; best = ck["best"]; best_ep = ck["best_ep"]
+        hist = ck.get("history", [])
+        print(f"resumed from epoch {ck['epoch']} (best F1 {best:.3f} @ ep {best_ep})", flush=True)
+    n_bad = 0          # non-finite training steps, skipped rather than allowed to poison
+    i_non = CLASS_NAMES.index("NonPSPL")
+    for ep in range(start_ep, args.epochs):
+        model.train(); t0 = time.time(); run = torch.zeros((), device=dev); seen = 0
+        for feats, present, y, w, _ in dl_tr:
+            feats = {k: v.to(dev) for k, v in feats.items()}
+            present = {k: v.to(dev) for k, v in present.items()}
+            y, w = y.to(dev), w.to(dev)
+            opt.zero_grad(set_to_none=True)
+            logits = model(feats, present)
+            loss = (F.cross_entropy(logits, y, reduction="none") * w).sum() / w.sum()
+            # A single non-finite step would otherwise propagate NaN into every weight via
+            # the optimiser and silently destroy the run -- the loss just reads "nan" from
+            # then on. Detect, report once with enough context to diagnose, and SKIP the
+            # update rather than let it through.
+            if not torch.isfinite(loss):
+                n_bad += 1
+                if n_bad <= 3:
+                    with torch.no_grad():
+                        fin = {b: bool(torch.isfinite(feats[b]).all()) for b in feats}
+                        pres = {b: int(present[b].sum()) for b in present}
+                    print(f"  [warn] non-finite loss at epoch {ep} step {seen//max(len(y),1)}: "
+                          f"logits_finite={bool(torch.isfinite(logits).all())} "
+                          f"w.sum={float(w.sum()):.3e} inputs_finite={fin} present={pres}",
+                          flush=True)
+                opt.zero_grad(set_to_none=True)
+                continue
+            loss.backward()
+            gnorm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            if not torch.isfinite(gnorm):
+                n_bad += 1
+                opt.zero_grad(set_to_none=True)
+                continue
+            opt.step(); sched.step()
+            # accumulate on-device: float(loss) forces an MPS sync every step
+            run += loss.detach() * len(y); seen += len(y)
+        run = float(run) if torch.is_tensor(run) else run    # single sync per epoch
+        if n_bad:
+            print(f"  [warn] {n_bad} non-finite step(s) skipped so far", flush=True)
+        m = evaluate(model, dl_va, dev)
+        # Selection on NonPSPL F1, not accuracy and not bare recall.
+        #   * accuracy is wrong because Flat+PSPL are ~61% of the data, so a model that never
+        #     predicts NonPSPL still scores well;
+        #   * bare RECALL is just as wrong in the opposite direction -- a model that predicts
+        #     NonPSPL for everything scores 1.000. That is not hypothetical: the first smoke
+        #     run of this loop selected exactly such a model, recall 1.000 at precision 0.139.
+        # F1 has no degenerate optimum at either extreme.
+        score = m["f1"]["NonPSPL"]
+        hist.append({"epoch": ep, "train_loss": run / max(seen, 1), **m})
+        print(f"ep {ep:3d} loss {run/max(seen,1):.4f} val {m['loss']:.4f} "
+              f"NonPSPL f1 {score:.3f} (r {m['recall']['NonPSPL']:.3f} "
+              f"p {m['precision']['NonPSPL']:.3f}) macroF1 {m['macro_f1']:.3f} "
+              f"({time.time()-t0:.0f}s)", flush=True)
+        # makedirs before EVERY save, not just the best one. A run whose output directory
+        # disappears mid-flight (moved, unmounted) would otherwise die here at the end of an
+        # epoch with a bare FileNotFoundError, losing the whole run.
+        os.makedirs(os.path.dirname(last_path) or ".", exist_ok=True)
+        torch.save({"model": model.state_dict(), "opt": opt.state_dict(),
+                    "sched": sched.state_dict(), "epoch": ep, "best": best,
+                    "best_ep": best_ep, "history": hist}, last_path)
+        if score > best:
+            best, best_ep = score, ep
+            os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+            torch.save({"model": model.state_dict(), "config": asdict(cfg),
+                        "format": "binml-v5", "mag_scale": MAG_SCALE,
+                        "epoch": ep, "val_nonpspl_f1": score,
+                        "val_nonpspl_recall": m["recall"]["NonPSPL"],
+                        "val_nonpspl_precision": m["precision"]["NonPSPL"],
+                        "class_names": CLASS_NAMES, "seed": args.seed}, args.out)
 
-        if is_main_process(rank):
-            save_checkpoint(
-                model, optimizer, scheduler, scaler, config, stats,
-                args.epochs, best_acc, output_dir / 'final.pt'
-            )
-            logger.info("=" * 80)
-            logger.info(f"Training complete! Best validation accuracy: {100*best_acc:.2f}%")
-            logger.info("=" * 80)
-    
-    except KeyboardInterrupt:
-        if is_main_process(rank):
-            logger.info("\nTraining interrupted by user")
-        raise
-    
-    except Exception as e:
-        if is_main_process(rank):
-            logger.error(f"Training failed: {e}")
-        import traceback
-        traceback.print_exc()
-        raise
-    
-    finally:
-        # =====================================================================
-        # v4.1.0 FIX: Barrier BEFORE cleanup to prevent race condition
-        # Without this, rank0 can delete /dev/shm while others still reading
-        # =====================================================================
-        try:
-            if dist.is_initialized():
-                dist.barrier()
-        except Exception:
-            pass
-        
-        if shm_path is not None:  # v4.2.0: streaming path has no /dev/shm file
-            cleanup_shared_memory(shm_path, rank, local_rank)
-        cleanup_ddp()
+    print(f"\nbest epoch {best_ep}, val NonPSPL F1 {best:.3f}")
+    model.load_state_dict(torch.load(args.out, map_location=dev)["model"])
+    final = evaluate(model, dl_te, dev)
+    print("TEST:", json.dumps({k: v for k, v in final.items() if k != "confusion"}, indent=2))
+    json.dump({"history": hist, "test": final}, open(args.out + ".metrics.json", "w"), indent=2)
+    return 0
 
-if __name__ == '__main__':
-    main()
+
+if __name__ == "__main__":
+    raise SystemExit(main())

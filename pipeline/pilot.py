@@ -7,7 +7,7 @@ must pass before any paid production run: a simulator bug is worse than a traini
 because it silently poisons every downstream number and only surfaces after the compute is
 spent.
 
-Run:  python -m pipeline.sim_v5.pilot [n_events]
+Run:  python -m pipeline.pilot [n_events]
 """
 from __future__ import annotations
 

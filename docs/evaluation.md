@@ -7,7 +7,7 @@ that.
 
 Everything below is on a **single independent 450,589-event held-out test set** (shard indices
 disjoint from training — see [`leakage_audit.md`](leakage_audit.md)), scored by
-[`evaluate_v5.py`](../pipeline/sim_v5/evaluate_v5.py).
+[`evaluate.py`](../pipeline/evaluate.py).
 
 ---
 
@@ -94,6 +94,6 @@ spike). These are documented, not hidden.
 ## 6. Baseline
 
 Every NonPSPL number is compared against the classical Δχ² anomaly detector
-([`baseline_v5.py`](../pipeline/sim_v5/baseline_v5.py)) applied to the same noisy data. The
+([`baseline.py`](../pipeline/baseline.py)) applied to the same noisy data. The
 network's margin (AP 0.95 vs the baseline's ~0.34) is margin from reading morphology and colour,
 not from privileged access to the labelling rule.

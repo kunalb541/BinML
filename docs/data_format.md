@@ -87,5 +87,5 @@ with h5py.File("shard_00000.h5") as f:
     t_anom = par[:, fields.index("t_anom")]
 ```
 
-For training you normally go through [`to_memmap.py`](../pipeline/sim_v5/to_memmap.py), which
+For training you normally go through [`to_memmap.py`](../pipeline/to_memmap.py), which
 scatters cache shards into a shuffled fp16 memmap for fast random access.

@@ -7,7 +7,7 @@ the reduction happens in-region where S3 reads are fast and free, and only the c
 result is ever downloaded.
 
 Usage:
-    python -m pipeline.sim_v5.run_bin --n-shards 400 --worker 0 --workers 40 --bucket B
+    python -m pipeline.run_bin --n-shards 400 --worker 0 --workers 40 --bucket B
 """
 from __future__ import annotations
 
