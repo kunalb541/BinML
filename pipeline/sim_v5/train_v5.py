@@ -56,6 +56,8 @@ from .model_v5 import BAND_BINS, IN_CH, BinMLv5, ModelConfigV5
 # so dividing by 1 mag puts typical signals in [-1, 1] without fitting anything.
 MAG_SCALE = 1.0
 I_FLAT = CLASS_NAMES.index("Flat")
+I_PSPL = CLASS_NAMES.index("PSPL")
+I_NON = CLASS_NAMES.index("NonPSPL")
 # Same amplitude floor assemble.SurveyConfig uses to call an event undetectable, so a
 # truncated window is judged by exactly the rule that produced the labels in the first place.
 # Same amplitude floor SurveyConfig uses to declare an event undetectable, applied to the
@@ -83,13 +85,27 @@ def _visible_amplitude(params: np.ndarray, pf_idx: dict, f_s: float, t_cut: floa
     if np.isfinite(ts):
         # eruptive: nothing to see before the outburst begins
         return 0.0 if ts > t_cut else float("inf")
+    per = params[pf_idx["P"]] if "P" in pf_idx else np.nan
+    amp = params[pf_idx["amp_I"]] if "amp_I" in pf_idx else np.nan
+    if np.isfinite(per) and np.isfinite(amp) and per > 0:
+        # Periodic / long-period: the signal spans the FULL window, but a TRUNCATED window
+        # may traverse only a sliver of the cycle. Returning None here (the previous
+        # behaviour) kept the LongPeriodVar label on windows where nothing is visible: at a
+        # 4.5-day cut, 76% of LongPeriodVar have a visible amplitude below the 0.02 mag floor
+        # -- median 0.0079 mag -- so the model was being taught that a flat line is LPV, and
+        # it duly reported P(LPV)~0.3 on genuinely flat stars early in a season.
+        # PeriodicVar is unaffected in practice (median period 1 day, so a full cycle fits in
+        # even a short cut: 0.1% fall below the floor).
+        # Peak-to-peak actually traversed over an arc of length 2*pi*min(t_cut/P, 1/2).
+        phase = 2.0 * np.pi * min(max(t_cut, 0.0) / per, 0.5)
+        return float(amp * (1.0 - np.cos(phase)))
     return None
 
 
 def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
                       params: Optional[np.ndarray] = None,
                       pf_idx: Optional[dict] = None, f_s: float = 0.5,
-                      min_frac: float = 0.15) -> int:
+                      min_frac: float = 0.03) -> int:
     """Reveal a random prefix of the season and RE-LABEL by what is observable in it.
 
     Returning the original label would be a serious error. A PSPL peaking on day 50, cut at
@@ -100,7 +116,12 @@ def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Gen
 
     So the same rule is re-applied to the visible portion: if the largest baseline-relative
     deviation among revealed bins is below the amplitude floor, the event IS Flat as observed,
-    and that is what the model should be taught to say.
+    and that is what the model should be taught to say. This now covers the PERIODIC classes
+    too -- previously they were exempted, which is what taught the model that a flat-looking
+    short window could be LongPeriodVar.
+
+    min_frac is 0.03 rather than 0.15 so that the first ~11 days of a season are in
+    distribution; below 15% the model had never seen a training example at all.
     """
     f = float(rng.uniform(min_frac, 1.0))
     for b, x in out.items():
@@ -113,7 +134,18 @@ def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Gen
     amp = _visible_amplitude(params, pf_idx, f_s, f * 72.0)
     if amp is None:
         return label           # periodic / long-period: signal spans the window, keep label
-    return label if amp >= TRUNC_MIN_AMP_MAG else I_FLAT
+    if amp < TRUNC_MIN_AMP_MAG:
+        return I_FLAT          # nothing observable yet -> Flat
+    # THE CASCADE. A binary whose ANOMALY has not yet appeared in the revealed window is,
+    # observationally, a plain PSPL: the light curve so far is a smooth Paczynski rise. t_anom
+    # is the day the anomaly first becomes detectable (assemble._anomaly_onset_day). Before it,
+    # teach PSPL, not NonPSPL -- this is what stops the model flagging binaries before the
+    # caustic is on screen (Flat -> PSPL -> NonPSPL as evidence arrives).
+    if label == I_NON and "t_anom" in pf_idx:
+        ta = params[pf_idx["t_anom"]]
+        if np.isfinite(ta) and (f * 72.0) < ta:
+            return I_PSPL
+    return label
 
 
 class CacheDataset(Dataset):

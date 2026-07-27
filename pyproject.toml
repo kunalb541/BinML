@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "binml"
 version = "0.2.0"
-description = "Deep-learning classifier for gravitational microlensing light curves (Flat / PSPL / Binary)"
+description = "Installable 3-class inference package (Flat / PSPL / Binary) for the BinML microlensing classifier. The current 6-class multi-band research model is in pipeline/sim_v5/."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

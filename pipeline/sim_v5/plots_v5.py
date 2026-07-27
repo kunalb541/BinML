@@ -436,8 +436,20 @@ def fig_training(logs: dict, out: str):
     fig.tight_layout(); fig.savefig(out); plt.close(fig)
 
 
+def _scan_rows(P, n_per_class: int = 1200, seed: int = 7) -> np.ndarray:
+    """Class-balanced row sample, so the truncation figures are not dominated by Flat+PSPL."""
+    rng = np.random.default_rng(seed)
+    out = []
+    for c in range(N_CLASSES):
+        idx = np.nonzero(P.y == c)[0]
+        if len(idx):
+            out.append(rng.choice(idx, size=min(n_per_class, len(idx)), replace=False))
+    return np.sort(np.concatenate(out))
+
+
 def make_all(preds_dir: str, cache: str, out_dir: str, baseline: Optional[str] = None,
-             logs: Optional[dict] = None) -> list:
+             logs: Optional[dict] = None, ckpt: Optional[str] = None,
+             device: str = "mps", n_scan: int = 1200) -> list:
     os.makedirs(out_dir, exist_ok=True)
     P = Preds(preds_dir)
     made = []
@@ -452,6 +464,19 @@ def make_all(preds_dir: str, cache: str, out_dir: str, baseline: Optional[str] =
             ("09_light_curves.png", lambda p: fig_light_curves(P, cache, p))]
     if logs:
         jobs.append(("10_training.png", lambda p: fig_training(logs, p)))
+    jobs.append(("11_class_distributions.png", lambda p: fig_class_distributions(P, p)))
+    jobs.append(("12_temporal_bias.png", lambda p: fig_temporal_bias(P, p)))
+    # The temporal pair needs a forward pass over progressively truncated curves, so it only
+    # runs when a checkpoint is supplied. These were previously unreachable: the __main__
+    # block sat ABOVE their definitions, so at the moment it executed the names did not yet
+    # exist and make_all could only ever emit 10 figures.
+    if ckpt:
+        rows = _scan_rows(P, n_per_class=n_scan)
+        probs, fracs = temporal_scan(ckpt, cache, rows, device=device)
+        jobs.append(("13_probability_evolution.png",
+                     lambda p: fig_probability_evolution(P, probs, fracs, rows, p)))
+        jobs.append(("14_early_detection.png",
+                     lambda p: fig_early_detection(P, probs, fracs, rows, p)))
     for name, fn in jobs:
         p = os.path.join(out_dir, name)
         try:
@@ -461,25 +486,6 @@ def make_all(preds_dir: str, cache: str, out_dir: str, baseline: Optional[str] =
         except Exception as e:
             print(f"  FAIL {name}: {type(e).__name__}: {e}")
     return made
-
-
-if __name__ == "__main__":
-    import argparse, glob
-    from .report_v5 import parse_log
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--preds", required=True)
-    ap.add_argument("--cache", required=True)
-    ap.add_argument("--out", required=True)
-    ap.add_argument("--baseline", default=None)
-    a = ap.parse_args()
-    v5 = os.path.expanduser("~/Desktop/Research/microlensing/v5runs")
-    lg = {}
-    for tag, pat in (("stage1", "train_2026*.log"), ("stage2", "stage2_*.log")):
-        f = sorted(glob.glob(os.path.join(v5, pat)))
-        if f:
-            lg[tag] = parse_log(f[-1])
-    made = make_all(a.preds, a.cache, a.out, a.baseline, lg)
-    print(f"\n{len(made)} figures -> {a.out}")
 
 
 # ---------------------------------------------------------------------------------
@@ -556,10 +562,10 @@ def fig_probability_evolution(P: Preds, probs, fracs, rows, out: str):
         ax.set_title(f"true = {CLASS_NAMES[c]}  (n={int(m.sum())})")
         if c == 0:
             ax.legend(fontsize=6, ncol=2)
-    fig.suptitle("OUT-OF-DISTRIBUTION PROBE, not an early-detection capability: the model was "
-                 "trained only on FULL seasons (F146 100% observed), so a truncated curve is "
-                 "unseen input.\nAt 25% revealed it predicts Eruptive for 100% of events at "
-                 "0.985 confidence -- the truncation edge reads as an outburst.", y=1.0,
+    fig.suptitle("Probability evolution as the season is revealed. Stage 4 was TRAINED with\n"
+                 "truncation augmentation (50%), so partial seasons are in-distribution: with\n"
+                 "nothing yet visible the model correctly reports Flat and commits as evidence arrives.",
+                 y=1.0,
                  fontsize=8)
     fig.tight_layout(); fig.savefig(out); plt.close(fig)
 
@@ -578,7 +584,7 @@ def fig_early_detection(P: Preds, probs, fracs, rows, out: str):
         acc = (probs[m].argmax(2) == c).mean(0)
         ax.plot(days, acc, color=COL[c], lw=1.6, label=CLASS_NAMES[c])
     ax.set_xlabel("days observed"); ax.set_ylabel("recall")
-    ax.set_ylim(0, 1); ax.set_title("Recall vs observing time (OOD -- see note)")
+    ax.set_ylim(0, 1); ax.set_title("Recall vs observing time")
     ax.legend(fontsize=7)
 
     ax = axes[1]
@@ -589,7 +595,7 @@ def fig_early_detection(P: Preds, probs, fracs, rows, out: str):
                     label=f"P(NonPSPL) $\\geq$ {thr}")
         ax.set_xlabel("days observed"); ax.set_ylabel("fraction of anomalies flagged")
         ax.set_ylim(0, 1)
-        ax.set_title("Anomaly flagging vs time (NOT valid until trained on partial seasons)")
+        ax.set_title("Anomaly flagging vs time")
         ax.legend(fontsize=7)
 
     ax = axes[2]
@@ -676,3 +682,136 @@ def fig_temporal_bias(P: Preds, out: str):
         ax.set_title("Peak-time distribution (padded beyond the window by design)")
         ax.legend(fontsize=6)
     fig.tight_layout(); fig.savefig(out); plt.close(fig)
+
+
+if __name__ == "__main__":
+    import argparse, glob
+    from .report_v5 import parse_log
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--preds", required=True)
+    ap.add_argument("--cache", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--baseline", default=None)
+    ap.add_argument("--ckpt", default=None, help="enables figures 13/14 (temporal scan)")
+    ap.add_argument("--device", default="mps")
+    a = ap.parse_args()
+    v5 = os.path.expanduser("~/Desktop/Research/microlensing/v5runs")
+    lg = {}
+    # stage3/stage4 were missing here, so the fine-tuning history -- the part that actually
+    # produced the shipped model -- never appeared in the training figure.
+    for tag, pat in (("stage1", "train_2026*.log"), ("stage2", "stage2_*.log"),
+                     ("stage3", "stage3_*.log"), ("stage4", "stage4_*.log")):
+        f = sorted(glob.glob(os.path.join(v5, pat)))
+        if f:
+            lg[tag] = parse_log(f[-1])
+    made = make_all(a.preds, a.cache, a.out, a.baseline, lg,
+                    ckpt=a.ckpt, device=a.device)
+    print(f"\n{len(made)} figures -> {a.out}")
+
+
+def _event_prob_track(model, cache: str, n_all: int, row: int, device: str,
+                      n_steps: int = 36):
+    """Probabilities for ONE event as its season is progressively revealed.
+
+    Returns (days, probs[n_steps, 6]). The reveal is expressed in DAYS of the 72-day season
+    rather than fraction of bins, so the x-axis matches the light-curve panel above it.
+    """
+    import torch
+    from .model_v5 import BAND_BINS
+    fracs = np.linspace(1.0 / n_steps, 1.0, n_steps)
+    rows = np.array([row])
+    out = np.zeros((n_steps, N_CLASSES), dtype=np.float32)
+    with torch.inference_mode():
+        for k, fr in enumerate(fracs):
+            feats = _truncated_batch(cache, n_all, rows, float(fr))
+            feats = {kk: v.to(device) for kk, v in feats.items()}
+            pres = {b: (feats[b][..., 4].sum(dim=1) > 0) for b in BAND_BINS}
+            out[k] = softmax(model(feats, pres).float().cpu().numpy())[0]
+    return fracs * 72.0, out
+
+
+def fig_event_evolution(P: Preds, cache: str, ckpt: str, out_dir: str, n_per: int = 3,
+                        device: str = "mps", n_steps: int = 36, pick: str = "mixed",
+                        seed: int = 3) -> list:
+    """The v4 three-panel per-event figure, extended to all six classes.
+
+    Panel 1  the light curve (all three bands, magnitudes)
+    Panel 2  every class probability as the season is revealed
+    Panel 3  max probability -- how confident, and when it commits
+
+    fig 13 shows the MEAN track per class, which is a different object: it answers "what does
+    the average PSPL look like over time" and hides the per-event dynamics -- the moment a
+    caustic crossing arrives and P(NonPSPL) jumps, or a curve that commits early and then
+    changes its mind. This one keeps that, one figure per event, for every class including
+    the ones v4 never had (PeriodicVar, LongPeriodVar, Eruptive).
+    """
+    import torch
+    from .model_v5 import BAND_BINS, BinMLv5, ModelConfigV5
+    plt = _style()
+    os.makedirs(out_dir, exist_ok=True)
+    ck = torch.load(ckpt, map_location="cpu")
+    cfg = ModelConfigV5(**{k: v for k, v in ck["config"].items()
+                           if k in ModelConfigV5.__dataclass_fields__})
+    model = BinMLv5(cfg).to(device); model.load_state_dict(ck["model"]); model.eval()
+
+    n_all = json.load(open(f"{cache}/meta.json"))["n_events"]
+    feats = {b: np.memmap(f"{cache}/feat_{b}.f16", dtype=np.float16, mode="r",
+                          shape=(n_all, L, 3)) for b, L in BAND_BINS.items()}
+    ti = np.load(f"{P.d}/test_idx.npy") if os.path.exists(f"{P.d}/test_idx.npy") \
+        else np.arange(len(P.y))
+    colours = {"F146": "#1f77b4", "F087": "#2ca02c", "F213": "#d62728"}
+    rng = np.random.default_rng(seed)
+    made = []
+    for c in range(N_CLASSES):
+        # one guaranteed failure per class where one exists: the interesting dynamics are
+        # usually in the events the model gets wrong or changes its mind about
+        if pick == "random":
+            # uniform draw from the class, so the sample reflects what the model actually
+            # does on a typical event rather than over-representing failures
+            idx = np.nonzero(P.y == c)[0]
+            picks = list(rng.choice(idx, min(n_per, len(idx)), replace=False))
+        else:
+            good = np.nonzero((P.y == c) & (P.pred == c))[0]
+            bad = np.nonzero((P.y == c) & (P.pred != c))[0]
+            picks = list(rng.choice(good, min(n_per - 1, len(good)), replace=False))
+            if len(bad):
+                picks.append(int(rng.choice(bad)))
+        for rank, i in enumerate(picks):
+            i = int(i)
+            src = int(ti[i]) if len(ti) == len(P.y) else i
+            days, probs = _event_prob_track(model, cache, n_all, src, device, n_steps)
+            fig, (a1, a2, a3) = plt.subplots(3, 1, figsize=(9, 7.6), sharex=True)
+            for b in BAND_BINS:
+                f = np.asarray(feats[b][src, :, 0], dtype=np.float32)
+                t = np.linspace(0, 72, len(f), endpoint=False)
+                v = np.isfinite(f)
+                if v.any():
+                    a1.plot(t[v], P.mb[i] + f[v], ".", ms=2.0, color=colours[b], label=b)
+            a1.invert_yaxis(); a1.set_ylabel("AB magnitude")
+            a1.legend(fontsize=7, markerscale=4, ncol=3)
+            ok = "correct" if P.pred[i] == c else "MISCLASSIFIED"
+            a1.set_title(f"{CLASS_NAMES[c]} -> {CLASS_NAMES[P.pred[i]]} "
+                         f"(p={P.p[i, P.pred[i]]:.2f}) — {ok}",
+                         color="green" if P.pred[i] == c else "red")
+            for k in range(N_CLASSES):
+                a2.plot(days, probs[:, k], "-", lw=1.6, color=COL[k], label=CLASS_NAMES[k])
+            a2.axhline(1.0 / N_CLASSES, color="gray", ls="--", lw=0.8, alpha=0.6)
+            a2.set_ylabel("class probability"); a2.set_ylim(0, 1.05)
+            a2.legend(fontsize=7, ncol=3, loc="best")
+            conf = probs.max(1)
+            a3.plot(days, conf, "-", color="black", lw=1.6)
+            a3.fill_between(days, 0, conf, alpha=0.25, color="gray")
+            # when it first commits to its final answer and never leaves
+            fin = probs[-1].argmax()
+            agree = probs.argmax(1) == fin
+            stable = len(agree) - 1
+            while stable > 0 and agree[stable - 1]:
+                stable -= 1
+            a3.axvline(days[stable], color="#d62728", ls=":", lw=1.2,
+                       label=f"commits to {CLASS_NAMES[fin]} at day {days[stable]:.0f}")
+            a3.set_ylabel("max probability"); a3.set_xlabel("days of season observed")
+            a3.set_ylim(0, 1.05); a3.legend(fontsize=7)
+            p = os.path.join(out_dir, f"evolution_{CLASS_NAMES[c]}_{i}.png")
+            fig.tight_layout(); fig.savefig(p); plt.close(fig)
+            made.append(p)
+    return made

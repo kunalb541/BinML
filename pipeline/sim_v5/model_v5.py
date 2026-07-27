@@ -235,3 +235,102 @@ class BinMLv5(nn.Module):
 
     def n_params(self) -> int:
         return sum(p.numel() for p in self.parameters())
+
+
+# ---------------------------------------------------------------------------------
+# Hierarchical head
+# ---------------------------------------------------------------------------------
+# The class taxonomy already encodes three nested questions (see classes.py):
+#     L1  is there an event at all?          Flat        vs everything
+#     L2  is it microlensing?                {PSPL, NonPSPL} vs the contaminants
+#     L3  is it anomalous?                   PSPL        vs NonPSPL
+# A flat 6-way softmax throws that structure away and makes the three compete for one
+# output distribution. Measured on 443k test events, 37.6% of ALL errors are the single
+# PSPL<->NonPSPL decision, and in the flat view NonPSPL is only 11.86% of events -- whereas
+# among MICROLENSING events it is 28.95%, a 2.4x better-balanced problem. Splitting the
+# decisions gives that hard call its own head at its own natural balance, instead of forcing
+# a class weight (alpha_nonpspl) to compensate -- which is exactly what destabilised the
+# first training run.
+#
+# The trunk is shared, so this costs ~2k extra parameters, and the class probabilities are
+# recovered by multiplication rather than by hard routing, so an L1 mistake stays recoverable
+# and the model remains trainable end-to-end.
+I_FLAT, I_PSPL, I_NONPSPL = 0, 1, 2
+CONTAMINANT_IDS = (3, 4, 5)
+
+
+class HierarchicalHead(nn.Module):
+    """Factorised head: P(class) = P(event) * P(kind | event) * P(sub | kind)."""
+
+    def __init__(self, d_model: int, dropout: float = 0.1):
+        super().__init__()
+        self.norm = nn.LayerNorm(d_model)
+        self.drop = nn.Dropout(dropout)
+        self.event = nn.Linear(d_model, 2)     # Flat vs Event
+        self.kind = nn.Linear(d_model, 2)      # microlensing vs contaminant
+        self.ml = nn.Linear(d_model, 2)        # PSPL vs NonPSPL
+        self.cont = nn.Linear(d_model, 3)      # PeriodicVar / LongPeriodVar / Eruptive
+
+    def forward(self, h: torch.Tensor) -> Dict[str, torch.Tensor]:
+        h = self.drop(self.norm(h))
+        return {"event": self.event(h), "kind": self.kind(h),
+                "ml": self.ml(h), "cont": self.cont(h)}
+
+    @staticmethod
+    def to_class_logits(parts: Dict[str, torch.Tensor]) -> torch.Tensor:
+        """Combine the factored heads into 6 class log-probabilities.
+
+        Done in LOG space: the products become sums, which keeps the small probabilities of
+        the rare classes from underflowing and makes the result a proper distribution that
+        cross-entropy can consume directly.
+        """
+        lp_event = F.log_softmax(parts["event"], -1)   # [:,0] flat   [:,1] event
+        lp_kind = F.log_softmax(parts["kind"], -1)     # [:,0] ml     [:,1] contaminant
+        lp_ml = F.log_softmax(parts["ml"], -1)         # [:,0] PSPL   [:,1] NonPSPL
+        lp_cont = F.log_softmax(parts["cont"], -1)     # periodic / long-period / eruptive
+        ev = lp_event[:, 1:2]
+        out = [lp_event[:, 0:1],                                   # Flat
+               ev + lp_kind[:, 0:1] + lp_ml[:, 0:1],               # PSPL
+               ev + lp_kind[:, 0:1] + lp_ml[:, 1:2],               # NonPSPL
+               ev + lp_kind[:, 1:2] + lp_cont[:, 0:1],             # PeriodicVar
+               ev + lp_kind[:, 1:2] + lp_cont[:, 1:2],             # LongPeriodVar
+               ev + lp_kind[:, 1:2] + lp_cont[:, 2:3]]             # Eruptive
+        return torch.cat(out, dim=1)
+
+    @staticmethod
+    def targets(y: torch.Tensor):
+        """Per-level targets and masks. A level is only supervised where it applies.
+
+        Asking the PSPL-vs-NonPSPL head about a Cepheid is meaningless, and back-propagating
+        that would teach the head to model something it will never be asked about at
+        inference. Hence the masks.
+        """
+        is_event = (y != I_FLAT).long()
+        is_cont = torch.isin(y, torch.tensor(CONTAMINANT_IDS, device=y.device)).long()
+        m_kind = y != I_FLAT
+        m_ml = (y == I_PSPL) | (y == I_NONPSPL)
+        m_cont = is_cont.bool()
+        return {"event": (is_event, None),
+                "kind": (is_cont, m_kind),                 # 0 = microlensing, 1 = contaminant
+                "ml": ((y == I_NONPSPL).long(), m_ml),     # 0 = PSPL, 1 = NonPSPL
+                "cont": ((y - 3).clamp(min=0), m_cont)}
+
+
+def hierarchical_loss(parts: Dict[str, torch.Tensor], y: torch.Tensor,
+                      w: torch.Tensor, level_weights: Optional[Dict[str, float]] = None
+                      ) -> torch.Tensor:
+    """Sum of per-level weighted cross-entropies, each over the rows where it applies."""
+    lw = level_weights or {"event": 1.0, "kind": 1.0, "ml": 2.0, "cont": 1.0}
+    tg = HierarchicalHead.targets(y)
+    total = y.new_zeros((), dtype=torch.float32)
+    for name, (t, mask) in tg.items():
+        logits = parts[name]
+        if mask is not None:
+            if mask.sum() == 0:
+                continue
+            logits, t, ww = logits[mask], t[mask], w[mask]
+        else:
+            ww = w
+        ce = F.cross_entropy(logits, t, reduction="none")
+        total = total + lw[name] * (ce * ww).sum() / ww.sum().clamp(min=1e-8)
+    return total

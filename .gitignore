@@ -100,3 +100,6 @@ binml/__pycache__/
 *.f16
 data.nosync/
 v5runs/
+
+# operational fleet scripts (account-specific infra, not for publication)
+aws/

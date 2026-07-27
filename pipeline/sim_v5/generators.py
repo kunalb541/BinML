@@ -218,6 +218,20 @@ _TYPE_AMP_RATIO_K: Dict[str, float] = {
 _AMP_RATIO_SCATTER_DEX = 0.08      # ~20% object-to-object dispersion
 
 
+# Training-only amplitude scaling. The single largest source of Flat error is variables whose
+# amplitude sits just under the 0.02 mag detectability floor: they are LABELLED Flat, the model
+# still sees the sub-threshold wiggle, and calls them PeriodicVar/LongPeriodVar. Measured on
+# 443k events, 85.5% of all "missed Flat" are exactly this. The priors rarely land there, so
+# the boundary is under-sampled -- this knob lets a generation run concentrate on it.
+# It is a TRAINING augmentation and must never be used for a population measurement.
+AMP_SCALE: float = 1.0
+
+
+def set_amp_scale(v: float) -> None:
+    global AMP_SCALE
+    AMP_SCALE = float(v)
+
+
 def sample_amp_ratio_k(rng, kind: str) -> float:
     """Per-OBJECT amplitude ratio A_K / A_I for a variable of this type."""
     base = _TYPE_AMP_RATIO_K.get(kind, 0.5)
@@ -317,7 +331,7 @@ class PeriodicVarGen(Generator):
         return _normalised_shape(self._raw(ph, p), self._raw(ph_ref, p))
 
     def delta(self, t, params, band):
-        amp = params["amp_I"] * amp_ratio_in_band(band, object_ratio_k(params))
+        amp = params["amp_I"] * amp_ratio_in_band(band, object_ratio_k(params)) * AMP_SCALE
         return _mag_shape_to_delta(self._shape(t, params), amp)
 
 
@@ -370,7 +384,7 @@ class LongPeriodVarGen(Generator):
         return _normalised_shape(self._raw(t, p), self._raw(t_ref, p))
 
     def delta(self, t, params, band):
-        amp = params["amp_I"] * amp_ratio_in_band(band, object_ratio_k(params))
+        amp = params["amp_I"] * amp_ratio_in_band(band, object_ratio_k(params)) * AMP_SCALE
         return _mag_shape_to_delta(self._shape(t, params), amp)
 
 
@@ -424,7 +438,7 @@ class EruptiveGen(Generator):
         # Outbursts are BLUER at maximum. That is already what a per-object K/I ratio
         # encodes (Bumper 0.70 vs DN/WZSge 0.55), so no extra blue_boost factor -- applying
         # both double-counted the colour dependence.
-        amp = params["amp_I"] * amp_ratio_in_band(band, object_ratio_k(params))
+        amp = params["amp_I"] * amp_ratio_in_band(band, object_ratio_k(params)) * AMP_SCALE
         return _mag_shape_to_delta(self._shape(t, params), amp)
 
 

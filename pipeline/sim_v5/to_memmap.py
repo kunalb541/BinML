@@ -131,3 +131,90 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def convert_selected(cache_paths, keep_masks, out_dir: str, seed: int = 20260721) -> dict:
+    """convert(), but the caller chooses which rows survive.
+
+    ``convert`` subsamples UNIFORMLY, which is wrong for the hard-regime mix: NonPSPL is 4.3%
+    of the hard pool, so a uniform cut to 35% would throw away two thirds of the very class
+    the hard regimes were generated to supply. Here the caller passes a per-shard boolean mask
+    and selection can be stratified by class and by regime.
+
+    The global shuffle is preserved: surviving rows are scattered to random destinations, so
+    the output still has no correlation between position and source shard.
+    """
+    os.makedirs(out_dir, exist_ok=True)
+    paths = list(cache_paths)
+    counts, keeps = [], []
+    for p in paths:
+        with h5py.File(p, "r") as f:
+            counts.append(int(f.attrs["n_events"]))
+        m = np.asarray(keep_masks[p], dtype=bool)
+        assert m.shape == (counts[-1],), f"mask/shard length mismatch for {p}"
+        keeps.append(m)
+    n_out = int(sum(int(m.sum()) for m in keeps))
+
+    rng = np.random.default_rng(seed)
+    dest = rng.permutation(n_out)
+
+    mm = {}
+    for b in BAND_BINS:
+        mm[f"feat/{b}"] = np.memmap(os.path.join(out_dir, f"feat_{b}.f16"), dtype=np.float16,
+                                    mode="w+", shape=(n_out, BAND_BINS[b], 3))
+        mm[f"frac/{b}"] = np.memmap(os.path.join(out_dir, f"frac_{b}.f16"), dtype=np.float16,
+                                    mode="w+", shape=(n_out, BAND_BINS[b]))
+    sc = {k: np.zeros(n_out, dtype=np.float64) for k in SCALARS}
+    for b in BAND_BINS:
+        for k in PERBAND:
+            sc[f"{k}_{b}"] = np.zeros(n_out, dtype=np.float64)
+    par, param_fields = None, None
+    src_regime = np.zeros(n_out, dtype=np.int16)
+    regimes = sorted({os.path.basename(os.path.dirname(p)) for p in paths})
+
+    cur = 0
+    for p, m in zip(paths, keeps):
+        k = int(m.sum())
+        if k == 0:
+            continue
+        src = np.nonzero(m)[0]
+        dst = dest[cur:cur + k]
+        cur += k
+        with h5py.File(p, "r") as f:
+            for b in BAND_BINS:
+                mm[f"feat/{b}"][dst] = f[f"feat/{b}"][:][src]
+                mm[f"frac/{b}"][dst] = f[f"frac/{b}"][:][src]
+            for kk in SCALARS:
+                sc[kk][dst] = f[kk][:][src]
+            for b in BAND_BINS:
+                for kk in PERBAND:
+                    sc[f"{kk}_{b}"][dst] = f[f"{kk}/{b}"][:][src]
+            if "params" in f:
+                if par is None:
+                    par = np.full((n_out, f["params"].shape[1]), np.nan, dtype=np.float32)
+                    pf = f.attrs.get("param_fields")
+                    if pf is not None:
+                        param_fields = [x.decode() if isinstance(x, bytes) else str(x)
+                                        for x in pf]
+                par[dst] = f["params"][:][src]
+        src_regime[dst] = regimes.index(os.path.basename(os.path.dirname(p)))
+
+    for v in mm.values():
+        v.flush()
+    np.save(os.path.join(out_dir, "label.npy"), sc["label"].astype(np.int64))
+    np.save(os.path.join(out_dir, "true_class.npy"), sc["true_class"].astype(np.int64))
+    for kk in ("keep_prob", "dchi2_event", "dchi2_anomaly", "m_base_ref", "a_ks"):
+        np.save(os.path.join(out_dir, f"{kk}.npy"), sc[kk].astype(np.float32))
+    if par is not None:
+        np.save(os.path.join(out_dir, "params.npy"), par)
+    for b in BAND_BINS:
+        for kk in PERBAND:
+            np.save(os.path.join(out_dir, f"{kk}_{b}.npy"), sc[f"{kk}_{b}"].astype(np.float32))
+    np.save(os.path.join(out_dir, "src_regime.npy"), src_regime)
+    meta = {"n_events": int(n_out), "param_fields": param_fields,
+            "bands": {b: BAND_BINS[b] for b in BAND_BINS}, "dtype": "float16",
+            "shuffled": True, "seed": seed, "regimes": regimes, "stratified": True}
+    json.dump(meta, open(os.path.join(out_dir, "meta.json"), "w"), indent=2)
+    meta["bytes"] = sum(os.path.getsize(os.path.join(out_dir, f))
+                        for f in os.listdir(out_dir))
+    return meta

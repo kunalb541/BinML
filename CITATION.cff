@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "BinML: Deep-learning microlensing light-curve classifier"
+title: "BinML: multi-band, 6-class deep-learning classifier for Roman microlensing and variable light curves"
 message: "If you use BinML, please cite it."
 type: software
 authors:
@@ -7,11 +7,14 @@ authors:
     family-names: Bhatia
     affiliation: "University of Heidelberg"
 version: 0.2.0
-date-released: "2026-07-09"
+date-released: "2026-07-26"
 license: MIT
 keywords:
   - microlensing
   - exoplanets
   - deep-learning
   - Roman Space Telescope
+  - variable-stars
+  - light-curve-classification
+  - transformer
 repository-code: "https://github.com/kunalb541/BinML"

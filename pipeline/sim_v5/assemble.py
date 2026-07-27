@@ -184,10 +184,40 @@ def _pspl_refit_dchi2(t: np.ndarray, mag_true: np.ndarray, sigma: np.ndarray,
     return float(np.sum((dev / sigma) ** 2)), float(np.max(np.abs(dev)))
 
 
+
+def _anomaly_onset_day(ref_truth, params, cfg, n_cuts: int = 10) -> float:
+    """First day at which the binary anomaly is DETECTABLE in the revealed window [0, t_cut].
+
+    The real-time analogue of the anomaly label: before this day the light curve is a smooth
+    Paczynski rise indistinguishable from PSPL, so a truncation-aware label must read PSPL, not
+    NonPSPL. Coarse grid (a PSPL refit per cut) is enough -- we only need the first crossing,
+    and this runs once per detectable-anomaly event at generation time.
+    """
+    t, mag, sig, mb, fs = ref_truth
+    if t.size < 10:
+        return float("inf")
+    for tc in np.linspace(cfg.window_days / n_cuts, cfg.window_days, n_cuts):
+        m = t <= tc
+        if int(m.sum()) < 10:
+            continue
+        d, amp = _pspl_refit_dchi2(t[m], mag[m], sig[m], mb, fs, params)
+        if d >= cfg.dchi2_anomaly and amp >= cfg.min_amplitude_mag:
+            return float(tc)
+    return float("inf")
+
+
 def simulate_event(true_class: str, rng: np.random.Generator,
                    cfg: SurveyConfig = SurveyConfig(),
-                   ext: Optional[BulgeExtinction] = None) -> Optional[Event]:
-    """Simulate one event of ``true_class`` and label it by what is actually observable."""
+                   ext: Optional[BulgeExtinction] = None,
+                   priors=None, _return_ref_truth: bool = False,
+                   param_override=None) -> Optional[Event]:
+    """Simulate one event of ``true_class`` and label it by what is actually observable.
+
+    ``_return_ref_truth`` (debug) additionally returns the reference-band noise-free curve
+    ``(t, mag_true, sigma, m_base, f_s)`` -- the exact tuple the anomaly Delta-chi^2 is
+    computed from -- so an experiment can recompute the anomaly over a TRUNCATED window and
+    ask when a binary first becomes observably non-PSPL.
+    """
     ext = ext or BulgeExtinction()
     gen = GENERATORS[true_class]
     ref_band = ROMAN_BANDS[cfg.reference_band]
@@ -205,10 +235,27 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     blend_colour = float(rng.normal(0.0, 0.6))   # (blend - source) colour, mag/dex
 
     # --- event parameters, with t0 drawn over a PADDED range (never centred) -----
-    params = gen.sample(rng, cfg.window_days)
+    # Generators that draw physical parameters accept a priors object; the contaminant
+    # generators do not take one. Passing it only where accepted keeps hard-regime overrides
+    # from silently doing nothing (or raising) on the variable-star classes.
+    try:
+        params = gen.sample(rng, cfg.window_days, priors=priors) if priors is not None \
+            else gen.sample(rng, cfg.window_days)
+    except TypeError:
+        params = gen.sample(rng, cfg.window_days)
     if "tE" in params:
         pad = min(cfg.t0_pad_tE * params["tE"], cfg.t0_pad_max_frac * cfg.window_days)
         params["t0"] = float(rng.uniform(-pad, cfg.window_days + pad))
+
+    # Out-of-range sweeps redraw specific parameters, possibly BEYOND the training priors,
+    # to probe extrapolation. The event is then labelled by the same detectability rule as
+    # everything else, so an unobservable OOR event lands in its observable class -- exactly
+    # the grading the rest of the pipeline uses.
+    if param_override is not None:
+        param_override(true_class, params, rng)
+        if "tE" in params:                       # re-pad t0 if tE was changed
+            pad = min(cfg.t0_pad_tE * params["tE"], cfg.t0_pad_max_frac * cfg.window_days)
+            params.setdefault("t0", float(rng.uniform(-pad, cfg.window_days + pad)))
 
     # An ACHROMATIC signal is evaluated ONCE on the finest grid and indexed down to the
     # coarser bands, making "identical in every band" structural rather than a consequence
@@ -273,8 +320,11 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     # the binary's own (t0, tE, u0) would charge the anomaly for parameter offsets a real
     # fitter would simply absorb, inflating delta-chi^2 for events with no visible anomaly.
     anom_amp_mag = 0.0
+    t_anom = float("inf")
     if true_class == "NonPSPL" and ref_truth is not None and ref_truth[0].size >= 10:
         dchi2_anom, anom_amp_mag = _pspl_refit_dchi2(*ref_truth, params)
+        if dchi2_anom >= cfg.dchi2_anomaly and anom_amp_mag >= cfg.min_amplitude_mag:
+            t_anom = _anomaly_onset_day(ref_truth, params, cfg)
 
     # --- LABEL BY WHAT IS OBSERVABLE -------------------------------------------
     label = true_class
@@ -291,10 +341,17 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     # the event (and to check the simulated population against the survey's own priors).
     params["_m_base_ref"] = m_base_ref_obs
     params["_a_ks"] = a_ks
+    # only meaningful for events that ARE observably NonPSPL; NaN elsewhere so the field
+    # never implies an anomaly for non-binaries.
+    if true_class == "NonPSPL" and label == "NonPSPL" and np.isfinite(t_anom):
+        params["t_anom"] = float(t_anom)
 
-    return Event(true_class=true_class, label=label, label_index=label_of(label),
-                 bands=bands, params=params, dchi2_event=dchi2_event,
-                 dchi2_anomaly=dchi2_anom, n_usable_bands=n_usable_bands)
+    ev = Event(true_class=true_class, label=label, label_index=label_of(label),
+               bands=bands, params=params, dchi2_event=dchi2_event,
+               dchi2_anomaly=dchi2_anom, n_usable_bands=n_usable_bands)
+    if _return_ref_truth:
+        return ev, ref_truth
+    return ev
 
 
 # ---------------------------------------------------------------------------------

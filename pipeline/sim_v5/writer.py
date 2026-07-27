@@ -41,6 +41,7 @@ PARAM_FIELDS: List[str] = [
     "t0", "tE", "u0", "q", "s", "alpha", "rho",      # microlensing
     "P", "amp_I", "ratio_k",                          # periodic / general variability
     "t_start", "rise", "decay", "plateau", "recur",   # eruptive
+    "t_anom",                                         # day the binary anomaly first becomes observable
 ]
 
 # Per-event scalars recorded alongside the light curves.

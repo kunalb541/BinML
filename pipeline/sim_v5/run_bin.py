@@ -42,19 +42,29 @@ def main(argv=None) -> int:
             continue
         raw = os.path.join(args.work, name)
         t0 = time.time()
+        # Probe first, and SKIP a shard that is not there. The raw shard indices are SPARSE
+        # whenever generation striped across more workers than there are shards per prefix --
+        # e.g. the hard regimes hold indices 2,3,14,15,26,... An earlier version returned 1
+        # here, so every binning worker died on its very first missing index and the whole
+        # fleet idled for hours having produced almost nothing.
+        if subprocess.run(["aws", "s3api", "head-object", "--bucket", args.bucket,
+                           "--key", f"{args.raw_prefix}/{name}"],
+                          capture_output=True).returncode != 0:
+            continue
         r = subprocess.run(["aws", "s3", "cp", f"s3://{args.bucket}/{args.raw_prefix}/{name}",
                             raw, "--only-show-errors"], capture_output=True, text=True)
         if r.returncode != 0:
-            print(f"[{s}] DOWNLOAD FAILED: {r.stderr}", flush=True)
-            return 1
+            print(f"[{s}] download failed, skipping: {r.stderr[:120]}", flush=True)
+            continue
         out = os.path.join(args.work, f"cache_{s:05d}.h5")
         res = build_cache([raw], out, verbose=False)
         os.unlink(raw)
         up = subprocess.run(["aws", "s3", "cp", out, f"s3://{args.bucket}/{key}",
                              "--only-show-errors"], capture_output=True, text=True)
         if up.returncode != 0:
-            print(f"[{s}] UPLOAD FAILED: {up.stderr}", flush=True)
-            return 1
+            print(f"[{s}] upload failed, skipping: {up.stderr[:120]}", flush=True)
+            os.unlink(out) if os.path.exists(out) else None
+            continue
         os.unlink(out)
         print(f"[{s}] {res['n_events']:,} events -> {res['bytes']/1e6:.0f} MB "
               f"in {time.time()-t0:.0f}s", flush=True)

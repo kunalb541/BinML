@@ -1,4 +1,31 @@
-# Data-leakage audit — 2026-07-08
+# Data-leakage audit
+
+## v5 (current pipeline) — how train/test disjointness is guaranteed
+
+The v5 data (`pipeline/sim_v5/`) makes leakage structurally hard:
+
+- **Disjoint by shard index.** Each shard is its own RNG stream: `seed = seed_base + shard*7919`.
+  Training used shards **0–89**, the independent test set shards **90–149** — different streams,
+  zero event overlap. (The `cache` and `cache2` S3 prefixes are the *same* events at a given
+  index — a re-bin, not a second population — so independence is by **index**, never by prefix.)
+- **Unseen-parameter stress test.** The 12.9M-event generalisation set uses seed bases **≥900M**,
+  ≥1M apart per regime, versus training's base `20260720` (max seed ~23.4M). Different PCG64
+  streams → parameter tuples the model never saw. `--seed-base` exposes this.
+- **The network never sees the labels' inputs.** The model forward (`model_v5.py`) consumes only
+  the `feat`/`frac` tokens + per-band presence. The `params` table (including `q, s, dchi2_*`,
+  and `t_anom`) is used for **labelling and post-hoc analysis only**, never fed to the network.
+- **No fit-before-split statistic.** v5 uses a fixed input scale (`MAG_SCALE = 1.0`), so the
+  normalization-leak class below (a 3-class-pipeline issue) does not exist in v5.
+
+Evaluation is detectability-conditioned throughout (see [`evaluation.md`](evaluation.md)); the
+`keep_prob` reweighting is applied to precision/purity only, never recall.
+
+---
+
+# Legacy 3-class audit — 2026-07-08
+
+*(The audit below concerns the original CNN-GRU package `binml/` — `model.py`, `train.py`,
+`evaluate.py`. Retained for the record; superseded by the v5 section above.)*
 
 Adversarial audit of the model (`model.py`) and training/eval pipeline (`train.py`,
 `evaluate.py`) for data leakage. Six dimensions, each finding independently verified
