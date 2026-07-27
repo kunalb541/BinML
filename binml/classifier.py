@@ -1,188 +1,138 @@
-"""
-High-level BinML inference API.
+"""BinML — the 6-class inference API.
 
     import binml
-    clf = binml.Classifier()                      # fine-tuned model, CPU
-    r = clf.predict(time, mag, mag_err)           # a real light curve
-    print(r)                                       # Flat/PSPL/Binary + verdicts
-    r.is_microlensing   # P(PSPL)+P(Binary)  -- "is this a microlensing event?"
-    r.is_anomalous      # P(Binary)          -- "is it binary/planetary, not plain PSPL?"
+    clf = binml.Classifier()
+    r = clf.predict({"F146": (t, mag), "F087": (t2, mag2), "F213": (t3, mag3)})
+    print(r)                       # <BinML NonPSPL 0.98 | microlensing 0.99 anomalous 0.98>
+    r.probabilities                # {'Flat':.., 'PSPL':.., 'NonPSPL':.., ...}
 
-BinML is a 3-class microlensing classifier: Flat (no event), PSPL (single-lens
-microlensing -- the detection proxy), Binary (planetary/binary lens -- the anomalous
-class). A binary is NOT a PSPL; the two questions the model answers are (1) is there a
-microlensing event, and (2) is it anomalous.
+Single-band (F146 only) is accepted too: ``clf.predict(t, mag)``.
 """
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Dict, List, Optional, Union
+from dataclasses import dataclass
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 
-from .preprocess import Preprocessed, preprocess
+from pipeline.model import BAND_BINS, BinMLv5, ModelConfigV5
+from .preprocess import Tokens, to_tokens
 
-CLASS_NAMES = ("Flat", "PSPL", "Binary")
-_WEIGHTS_DIR = Path(__file__).parent / "weights"
-_BUNDLED = {"finetuned": "binml_finetuned.pt", "base": "binml_base.pt"}
-_EPS = 1e-8
+_HERE = os.path.dirname(__file__)
+_DEFAULT_WEIGHTS = os.path.join(_HERE, "weights", "binml.pt")
+CLASS_NAMES = ["Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"]
+
+BandInput = Dict[str, Tuple[np.ndarray, np.ndarray]]
 
 
 @dataclass
 class Prediction:
-    """Result of classifying one light curve."""
     probabilities: Dict[str, float]
     label: str
-    confidence: float
-    # -- scientific views (see module docstring) --
-    is_microlensing: float   # P(PSPL) + P(Binary)   -> detection
-    is_anomalous: float      # P(Binary)             -> characterization (binary != PSPL)
-    # -- context --
-    n_points: int
-    t0: float
-    m_base: float
-    peak_magnification: float
-    _pre: Optional[Preprocessed] = field(default=None, repr=False)
+    n_points: Dict[str, int]
+
+    @property
+    def confidence(self) -> float:
+        return max(self.probabilities.values())
+
+    @property
+    def is_microlensing(self) -> float:
+        """P(PSPL) + P(NonPSPL) — 'is this a microlensing event at all'."""
+        return self.probabilities["PSPL"] + self.probabilities["NonPSPL"]
+
+    @property
+    def is_anomalous(self) -> float:
+        """P(NonPSPL) — 'is it binary/planetary rather than a plain single lens'."""
+        return self.probabilities["NonPSPL"]
 
     def __repr__(self) -> str:
-        p = self.probabilities
-        bar = "  ".join(f"{k} {p[k]:.3f}" for k in CLASS_NAMES)
-        return (f"<BinML {self.label} (conf {self.confidence:.2f}) | {bar} | "
-                f"microlensing={self.is_microlensing:.2f} anomalous={self.is_anomalous:.2f} "
-                f"| n={self.n_points} peakA={self.peak_magnification:.1f}>")
-
-
-@dataclass
-class Evolution:
-    """Probability evolution as the light curve is revealed prefix by prefix."""
-    days_from_peak: np.ndarray       # time of the latest observation fed
-    probabilities: np.ndarray        # (steps, 3) columns = Flat, PSPL, Binary
-    n_points: np.ndarray             # prefix length at each step
-    final: Prediction
+        return (f"<BinML {self.label} {self.confidence:.2f} | "
+                f"microlensing {self.is_microlensing:.2f} anomalous {self.is_anomalous:.2f}>")
 
 
 class Classifier:
-    """Load a trained BinML model and classify light curves."""
+    """Load BinML and classify Roman light curves into six classes."""
 
-    def __init__(self, model: str = "finetuned", device: str = "cpu"):
-        """
-        Parameters
-        ----------
-        model : {'finetuned', 'base'} or path
-            'finetuned' (default) = higher planetary/binary sensitivity;
-            'base' = balanced 3-class. A filesystem path to a .pt checkpoint also works.
-        device : str
-            'cpu' (default) or 'cuda'.
-        """
-        import torch  # deferred so `import binml` is cheap and torch errors are actionable
-        from .model import ModelConfig, RomanMicrolensingClassifier
-
+    def __init__(self, weights: Optional[str] = None, device: str = "cpu"):
+        import torch
         self._torch = torch
         self.device = device
-        path = _BUNDLED.get(model)
-        ckpt_path = (_WEIGHTS_DIR / path) if path else Path(model)
-        if not ckpt_path.exists():
-            raise FileNotFoundError(
-                f"No checkpoint at {ckpt_path}. Use model in {list(_BUNDLED)} or a valid path.")
-
-        ck = torch.load(str(ckpt_path), map_location=device, weights_only=False)
-        cfg = ck["model_config"]
-        self._cfg = ModelConfig(**cfg) if isinstance(cfg, dict) else cfg
-        net = RomanMicrolensingClassifier(self._cfg).to(device)
-        sd = ck["model_state_dict"]
-        sd = {(k[10:] if k.startswith("_orig_mod.") else k): v for k, v in sd.items()}
-        net.load_state_dict(sd, strict=True)
+        ck = torch.load(weights or _DEFAULT_WEIGHTS, map_location="cpu")
+        cfg = ModelConfigV5(**{k: v for k, v in ck["config"].items()
+                               if k in ModelConfigV5.__dataclass_fields__})
+        net = BinMLv5(cfg).to(device)
+        net.load_state_dict(ck["model"])
         net.eval()
         self._net = net
+        self._mag_scale = float(ck.get("mag_scale", 1.0))
+        self.class_names = list(ck.get("class_names", CLASS_NAMES))
 
-        s = ck["stats"]
-        self._fm = float(s.get("flux_mean", s.get("magnification_mean")))
-        self._fs = float(s.get("flux_std", s.get("magnification_std")))
-        self._dm = float(s["delta_t_mean"])
-        self._ds = float(s["delta_t_std"])
-        self.seq_len = int(getattr(self._cfg, "max_length", 6912) or 6912)
-        self.model_name = model
-        self.epoch = ck.get("epoch")
-
-    # ------------------------------------------------------------------ internals
-    def _forward(self, flux: np.ndarray, delta_t: np.ndarray, length: int) -> np.ndarray:
+    # -- core: tokens -> probabilities (one or many events) -------------------------------
+    def _forward(self, feats_np: Dict[str, np.ndarray], present_np: Dict[str, np.ndarray]):
         torch = self._torch
-        fn = (flux - self._fm) / (self._fs + _EPS)
-        dn = (delta_t - self._dm) / (self._ds + _EPS)
-        xf = torch.from_numpy(fn).float().to(self.device)
-        xd = torch.from_numpy(dn).float().to(self.device)
-        xl = torch.tensor([length], dtype=torch.long, device=self.device)
-        with torch.no_grad():
-            out = self._net(xf, xd, xl)
-            logits = out if torch.is_tensor(out) else out["logits"]
-            probs = torch.softmax(logits.float(), dim=-1).cpu().numpy()[0]
-        return probs
+        feats, present = {}, {}
+        for b, L in BAND_BINS.items():
+            x = feats_np[b].astype(np.float32)                    # (B, L, 3) mean/min/max
+            fr = present_np[b].astype(np.float32)                 # (B, L) frac
+            obs = np.isfinite(x[:, :, 0]).astype(np.float32)      # mask BEFORE nan->0
+            x = np.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+            t = np.concatenate([x / self._mag_scale, fr[:, :, None], obs[:, :, None]], axis=2)
+            feats[b] = torch.tensor(t, dtype=torch.float32, device=self.device)
+            present[b] = feats[b][..., 4].sum(dim=1) > 0
+        with torch.inference_mode():
+            logits = self._net(feats, present).float().cpu().numpy()
+        z = logits - logits.max(1, keepdims=True)
+        e = np.exp(z)
+        return e / e.sum(1, keepdims=True)
 
-    def predict_arrays(self, flux: np.ndarray, delta_t: np.ndarray, batch: int = 256) -> np.ndarray:
-        """Predict directly from stored grid arrays (magnification + delta_t, with 0 for
-        unobserved slots), e.g. rows of a compact HDF5 test set. Compaction (moving valid
-        observations to the prefix) is done vectorised on-device. Returns (N, 3) probs."""
-        torch = self._torch
-        flux = np.asarray(flux, dtype=np.float32)
-        delta_t = np.asarray(delta_t, dtype=np.float32)
-        if flux.ndim == 1:
-            flux = flux[None, :]; delta_t = delta_t[None, :]
-        n = flux.shape[0]
-        out = np.zeros((n, 3), np.float32)
-        for s0 in range(0, n, batch):
-            e = min(s0 + batch, n)
-            fx = torch.from_numpy(flux[s0:e]).to(self.device)
-            dx = torch.from_numpy(delta_t[s0:e]).to(self.device)
-            valid = fx != 0
-            lengths = valid.sum(1).clamp(min=1)
-            perm = torch.argsort(valid.int(), dim=1, descending=True, stable=True)
-            fc = torch.gather(fx, 1, perm); dc = torch.gather(dx, 1, perm)
-            fn = (fc - self._fm) / (self._fs + _EPS)
-            dn = (dc - self._dm) / (self._ds + _EPS)
-            with torch.no_grad():
-                o = self._net(fn, dn, lengths)
-                logits = o if torch.is_tensor(o) else o["logits"]
-                out[s0:e] = torch.softmax(logits.float(), dim=-1).cpu().numpy()
-        return out
+    def predict_tokens(self, tok: Tokens) -> Prediction:
+        feats = {b: tok.feat[b][None] for b in BAND_BINS}     # add batch dim
+        frac = {b: tok.frac[b][None] for b in BAND_BINS}
+        p = self._forward(feats, frac)[0]
+        probs = {c: float(p[i]) for i, c in enumerate(self.class_names)}
+        return Prediction(probabilities=probs,
+                          label=self.class_names[int(p.argmax())],
+                          n_points=tok.n_points)
 
-    def _to_prediction(self, probs: np.ndarray, pre: Preprocessed) -> Prediction:
-        pdict = {CLASS_NAMES[i]: float(probs[i]) for i in range(3)}
-        k = int(np.argmax(probs))
-        return Prediction(
-            probabilities=pdict, label=CLASS_NAMES[k], confidence=float(probs[k]),
-            is_microlensing=float(probs[1] + probs[2]), is_anomalous=float(probs[2]),
-            n_points=pre.length, t0=pre.t0, m_base=pre.m_base,
-            peak_magnification=pre.peak_magnification, _pre=pre,
-        )
+    def predict(self,
+                light_curve: Union[BandInput, np.ndarray],
+                mag: Optional[np.ndarray] = None,
+                mag_err: Optional[np.ndarray] = None,
+                m_base_ref: Optional[float] = None,
+                t_start: Optional[float] = None) -> Prediction:
+        """Classify one event.
 
-    # ------------------------------------------------------------------ public API
-    def predict(self, time, mag, mag_err=None, *, t0=None, m_base=None,
-                is_flux=False, window_days=72.0) -> Prediction:
-        """Classify one light curve. Returns a :class:`Prediction`."""
-        pre = preprocess(time, mag, mag_err, seq_len=self.seq_len, window_days=window_days,
-                         t0=t0, m_base=m_base, is_flux=is_flux)
-        return self._to_prediction(self._forward(pre.flux, pre.delta_t, pre.length), pre)
-
-    def predict_proba(self, time, mag, mag_err=None, **kw) -> Dict[str, float]:
-        """Just the {Flat, PSPL, Binary} probability dict."""
-        return self.predict(time, mag, mag_err, **kw).probabilities
-
-    def predict_evolution(self, time, mag, mag_err=None, *, steps=200, **kw) -> Evolution:
-        """Feed growing prefixes of the curve and record how the probabilities evolve.
-
-        The network is causal, so a prefix prediction only ever sees data up to that time.
+        ``predict({"F146": (t, mag), ...})`` for multi-band, or ``predict(t, mag)`` for
+        F146-only. ``m_base_ref`` (the F146 baseline magnitude) is recommended; otherwise estimated.
         """
-        pre = preprocess(time, mag, mag_err, seq_len=self.seq_len, **kw)
-        n = pre.length
-        ks = sorted(set(list(range(3, n + 1, max(1, n // steps))) + [n]))
-        P = np.zeros((len(ks), 3))
-        for i, k in enumerate(ks):
-            fk = np.zeros_like(pre.flux); dk = np.zeros_like(pre.delta_t)
-            fk[0, :k] = pre.flux[0, :k]; dk[0, :k] = pre.delta_t[0, :k]
-            P[i] = self._forward(fk, dk, k)
-        ks = np.array(ks)
-        xt = pre.time[ks - 1] - pre.t0
-        final = self._to_prediction(P[-1], pre)
-        return Evolution(days_from_peak=xt, probabilities=P, n_points=ks, final=final)
+        if isinstance(light_curve, dict):
+            bands = {b: (np.asarray(v[0], float), np.asarray(v[1], float))
+                     for b, v in light_curve.items()}
+        else:                                                 # single-band -> F146
+            bands = {"F146": (np.asarray(light_curve, float), np.asarray(mag, float))}
+        tok = to_tokens(bands, m_base_ref=m_base_ref, t_start=t_start)
+        return self.predict_tokens(tok)
+
+    def predict_evolution(self, light_curve: BandInput, m_base_ref=None, t_start=None,
+                          n_steps: int = 16):
+        """Class probabilities as the 72-day season is progressively revealed — the real-time
+        cascade. Returns ``(days, probs)`` with ``probs`` shape ``(n_steps, 6)``."""
+        bands = {b: (np.asarray(v[0], float), np.asarray(v[1], float))
+                 for b, v in light_curve.items()}
+        if t_start is None:
+            t_start = min(float(np.nanmin(t)) for t, _ in bands.values())
+        fracs = np.linspace(1.0 / n_steps, 1.0, n_steps)
+        out = np.zeros((n_steps, len(self.class_names)), np.float32)
+        for k, fr in enumerate(fracs):
+            cut = t_start + fr * 72.0
+            revealed = {b: (t[t <= cut], m[t <= cut]) for b, (t, m) in bands.items()}
+            if not len(revealed["F146"][0]):
+                out[k] = self._forward(
+                    {b: np.full((1, BAND_BINS[b], 3), np.nan, np.float32) for b in BAND_BINS},
+                    {b: np.zeros((1, BAND_BINS[b]), np.float32) for b in BAND_BINS})[0]
+                continue
+            tok = to_tokens(revealed, m_base_ref=m_base_ref, t_start=t_start)
+            out[k] = self._forward({b: tok.feat[b][None] for b in BAND_BINS},
+                                   {b: tok.frac[b][None] for b in BAND_BINS})[0]
+        return fracs * 72.0, out

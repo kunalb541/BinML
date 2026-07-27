@@ -32,17 +32,39 @@ Two design choices set it apart from a standard classifier:
 1. **Detectability-conditioned labelling.** An event is labelled by what is *observable*, not by
    what we simulated. A microlensing event whose peak falls outside the season, or whose
    amplitude is buried by noise, is **Flat**. A binary whose caustic anomaly is below the noise
-   floor is, observationally, a **PSPL** — because no classifier or human modeller could tell
-   them apart from the photometry. This removes the label noise that would otherwise punish the
-   model for not seeing what isn't there.
+   floor is, observationally, a **PSPL** — no classifier or human modeller could tell them apart
+   from the photometry. This removes the label noise that would otherwise punish the model for
+   not seeing what isn't there.
 
 2. **The real-time cascade.** Under a partially-observed season, BinML flags classes only as
    their evidence arrives: **Flat → PSPL → NonPSPL**. A binary reads as a plain PSPL during its
-   smooth rise and only becomes NonPSPL when the caustic is actually on screen. This is what a
-   Roman follow-up pipeline needs — **it must not trigger on a false binary before it has seen
-   one.**
+   smooth rise and becomes NonPSPL only when the caustic is on screen. This is what a Roman
+   follow-up pipeline needs — **it must not trigger on a false binary before it has seen one.**
 
-## Results — the model (independent 450,589-event test set)
+## The model
+
+The network is a **convolutional stem feeding a small transformer encoder** — **505,479
+parameters** — deliberately small, because the task is not data-starved (millions of simulated
+events) but inference-heavy at survey scale.
+
+- **Input: 3 bands → 156 tokens × 5 channels.** F146 is the workhorse (15-min cadence, 6912
+  epochs / 72-day season); F087 and F213 are the colour bands (6-h, 288 epochs). Each band is
+  binned into fixed token slots (F146→864, colour→96) and every bin carries `mean, min, max,
+  observed-fraction, observed-mask`.
+- **Conv stem with non-learned min/max carry lanes.** The stem downsamples each band to its
+  token count (F146 864→108, colour 96→24, total **156 tokens**). A learned averaging filter
+  would smear a ~2.9-mag caustic spike down to ~0.36 mag — the size of ordinary PSPL curvature,
+  erasing the PSPL-vs-NonPSPL distinction. So two stem channels are reserved as **non-learned
+  max/min pooling lanes** carried through every downsampling step: the caustic extremum survives
+  *by construction*.
+- **Transformer:** 4 pre-norm blocks, 4 heads, `d_model=96`, fused SDPA. Absent colour bands are
+  masked out of attention (F087 drops out in ~38% of events, F213 in ~1%, under extinction).
+- **Head:** masked attention-pooling → a flat **6-way** classifier. (A hierarchical head was
+  tested and shipped worse.)
+
+Details: [`docs/architecture.md`](docs/architecture.md).
+
+## Results (independent 450,589-event test set)
 
 Per-class F1 (population-weighted):
 
@@ -50,28 +72,51 @@ Per-class F1 (population-weighted):
 |---|---|---|---|---|---|
 | 0.99 | 0.92 | 0.93 | 0.96 | 0.95 | 0.88 |
 
-- **Completeness at fixed purity: 0.879** (the headline — what a follow-up pipeline is
-  specified against, not accuracy or F1). Average precision 0.952.
+- **Completeness at fixed purity: 0.879** (the headline a follow-up pipeline is specified
+  against, not accuracy or F1). Average precision 0.952.
 - **The cascade works:** premature NonPSPL flagging (calling a binary before its anomaly is
-  observable) dropped from **42% → 9%** vs the previous model — a 12× reduction — with no loss on
-  full-season discrimination (AP tied, completeness-at-matched-purity curves cross).
+  observable) dropped **42% → 9%** — a 12× reduction — with no loss on full-season discrimination.
 - **Generalises to unseen parameters:** a 12.9-million-event stress test on parameter draws the
   model never saw reproduces the held-out numbers, with documented failure modes only at the
-  out-of-range extremes (faint m>25, wide caustics s>5, sub-day tE).
+  out-of-range extremes.
 
-See [`docs/evaluation.md`](docs/evaluation.md) for the full analysis and the honest reading of
-each number.
+Full methodology and the honest reading of each number: [`docs/evaluation.md`](docs/evaluation.md).
 
-## Documentation
+## Install
 
-- **[Pipeline](docs/pipeline.md)** — the current model: simulation, training & evaluation,
-  file-by-file, with verified quick-start commands. **Start here.**
-- [Architecture](docs/architecture.md) — the conv-stem + transformer, and why it's built this way
-- [Evaluation](docs/evaluation.md) — detectability-conditioned, honest metrics
-- [Data format](docs/data_format.md) — the compact multi-band cache
-- [Leakage audit](docs/leakage_audit.md) — how train/test disjointness is guaranteed
+```bash
+pip install binml            # inference: torch + numpy, weights bundled
+```
+For the full simulation/training pipeline (adds `h5py`, `scipy`, and `VBBinaryLensing` for
+binary-lens generation) use the conda environment:
+```bash
+conda env create -f environment.yml && conda activate binml
+```
 
-## Quick start
+## Classify a light curve (Python)
+
+```python
+import binml
+clf = binml.Classifier()                      # BinML 1.0 (6-class), CPU, weights bundled
+
+# multi-band: {band: (time_days, magnitude)}; F146 required, colour bands optional
+r = clf.predict({"F146": (t146, m146), "F087": (t087, m087), "F213": (t213, m213)},
+                m_base_ref=22.1)              # F146 baseline magnitude (recommended)
+
+print(r)                    # <BinML NonPSPL 0.98 | microlensing 0.99 anomalous 0.98>
+r.probabilities            # {'Flat':.., 'PSPL':.., 'NonPSPL':.., 'PeriodicVar':.., ...}
+r.is_microlensing          # P(PSPL)+P(NonPSPL)
+r.is_anomalous             # P(NonPSPL)  -- is it binary/planetary?
+
+# single band (F146 only) is fine:
+r = clf.predict(t146, m146, m_base_ref=22.1)
+
+# the real-time cascade: probabilities as the season is revealed
+days, probs = clf.predict_evolution({"F146": (t146, m146)}, m_base_ref=22.1)
+```
+Command line: `binml classify lc.csv --m-base 22.1`. More: [`docs/usage.md`](docs/usage.md).
+
+## Train / evaluate from scratch
 
 ```bash
 # one shard of simulated data (all 6 classes) -> cache -> train -> evaluate
@@ -79,32 +124,66 @@ python -m pipeline.run_shard --shard 0 --n-shards 1 --out data/raw
 python -c "from pipeline.cache import build_cache; import glob; \
 build_cache(sorted(glob.glob('data/raw/*.h5')), 'data/cache/shard_00000.h5')"
 python -m pipeline.to_memmap --in-dir data/cache --out data/mm
-python -m pipeline.train   --cache data/mm --out runs/binml.pt --epochs 6 --device mps
-python -m pipeline.evaluate --ckpt runs/binml.pt --cache data/mm_test --out eval/
+python -m pipeline.train    --cache data/mm --out runs/binml.pt --epochs 6 --device mps
+python -m pipeline.evaluate  --ckpt runs/binml.pt --cache data/mm_test --out eval/
 ```
+File-by-file walkthrough: [`docs/pipeline.md`](docs/pipeline.md).
 
-Full walkthrough and every module's role: [`docs/pipeline.md`](docs/pipeline.md).
+## Simulating data at scale (AWS)
+
+The simulator runs at two scales from one codebase — a single shard on a laptop, or thousands
+across a transient cloud fleet — because the modules take `--bucket`/`--prefix` and write locally
+if you omit the bucket. Generation is embarrassingly parallel:
+
+- **Content-addressed shards.** One process builds one shard (an HDF5 file of a few thousand
+  light curves), seeded purely by its index: `seed = seed_base + shard * 7919`. Workers HEAD each
+  shard's S3 key and skip existing ones, so a Spot interruption costs at most one shard, and runs
+  are fully resumable. Work is split by a modulo partition (`--worker W --workers N`).
+- **`--seed-base` makes evaluation honest.** Train/val/test used base `20260720`; a far-off base
+  (e.g. `900000000`) gives a different PCG64 stream — parameter tuples the model *provably* never
+  saw. That's how the 12.9M-event unseen-parameter stress test is built.
+- **Binning & inference run in-region.** Raw shards are ~312 MB each (~125 GB for a full run);
+  binning them to compact caches (~46 MB) and running the model *in the S3 region* means the
+  light curves never leave — only the compact predictions (~30 floats/event) come back.
+- **Self-terminating fleets.** Free-tier Spot instances install deps from a code tarball, refuse
+  to start without `VBBinaryLensing` (else binary lenses silently degrade to single-lens and
+  ruin the dataset), generate → upload → shut down; a watchdog force-terminates any stragglers.
+
+The `aws/` launch scripts are account-specific infra (hard-coded bucket/region/IAM) and are kept
+out of the public tree; the `pipeline` modules underneath them are what run. See
+[`docs/pipeline.md`](docs/pipeline.md).
 
 ## Repository layout
 
 ```
-pipeline/   the current 6-class multi-band pipeline (simulate, train, evaluate, plot)
-binml/             legacy installable 3-class inference package (Flat/PSPL/Binary) + weights
-docs/              architecture, pipeline, evaluation, data format, leakage audit
+binml/             pip package — the 6-class inference API (Classifier, predict, CLI) + weights
+binml/legacy/      the earlier 3-class (Flat/PSPL/Binary) model, preserved for provenance
+pipeline/          simulation, training & evaluation modules (run via `python -m pipeline.<mod>`)
+docs/              architecture, pipeline, evaluation, data format, usage, model card, leakage audit
 paper/             software paper + references
 examples/, tests/  usage examples and smoke tests
+aws/               (local, gitignored) account-specific fleet-launch scripts
 ```
 
-> **Note.** The `binml/` pip package is the earlier **3-class** (Flat/PSPL/Binary) classifier and
-> its `pip install binml` API is unchanged. The **6-class multi-band** model described above is
-> the current research pipeline in [`pipeline/`](pipeline/).
+## Limitations & intended use
 
-## Cadence matters
+- **Roman-quality cadence.** Trained on dense ~15-min F146 sampling. Binary *characterization*
+  needs that density — the short caustic anomaly must be observed. On sparse ground-survey
+  cadence (LSST, multi-day gaps) detection degrades and characterization is not recoverable.
+- **Known weak spots** (rare out-of-range extremes, documented in [`docs/model_card.md`](docs/model_card.md)):
+  faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
+  sub-day tE (few epochs on the peak). These are near fundamental physical limits, not gaps.
+- **Provide `m_base_ref`.** The model input is baseline-relative; give the F146 quiescent
+  magnitude when you have it (a catalogue value). The faint-tail estimate is only reliable for
+  short, well-sampled events.
+- **Intended use:** triage/vetting of Roman GBTDS light curves — a follow-up-triggering aid, not
+  a substitute for full light-curve modelling of a candidate.
 
-BinML is trained on **Roman-quality cadence** (dense ~15-min F146 sampling). Binary
-characterization needs that density — the short caustic anomaly must actually be observed. On
-sparse ground-survey cadence (e.g. LSST at multi-day gaps) detection degrades and
-characterization is not recoverable. Roman is the planet-finder; LSST is at best a detector.
+## Documentation
+
+- [Usage](docs/usage.md) · [Pipeline](docs/pipeline.md) · [Architecture](docs/architecture.md)
+- [Evaluation](docs/evaluation.md) · [Data format](docs/data_format.md) · [Model card](docs/model_card.md)
+- [Leakage audit](docs/leakage_audit.md) · [Legacy 3-class model](docs/legacy_3class.md)
 
 ## Citing
 

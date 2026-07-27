@@ -49,7 +49,7 @@ Documentation = "https://github.com/kunalb541/BinML/tree/main/docs"
 Issues = "https://github.com/kunalb541/BinML/issues"
 
 [tool.setuptools]
-packages = ["binml"]
+packages = ["binml", "binml.legacy", "pipeline"]
 
 [tool.setuptools.package-data]
 binml = ["weights/*.pt"]

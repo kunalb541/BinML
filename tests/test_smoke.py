@@ -1,6 +1,12 @@
-"""Smoke tests: the package imports, a model loads, and a synthetic curve classifies."""
+"""Smoke tests for the LEGACY 3-class API (binml.legacy).
+
+The top-level package is now the 6-class model (see test_package_api.py); the original
+3-class Flat/PSPL/Binary classifier is preserved at ``binml.legacy`` and tested here.
+"""
 import numpy as np
 import pytest
+
+legacy = pytest.importorskip("binml.legacy")
 
 
 def _fake_pspl(n=300, t0=40.0, tE=20.0, u0=0.1, m_base=18.0, seed=0):
@@ -13,15 +19,13 @@ def _fake_pspl(n=300, t0=40.0, tE=20.0, u0=0.1, m_base=18.0, seed=0):
 
 
 def test_import():
-    import binml
-    assert binml.CLASS_NAMES == ("Flat", "PSPL", "Binary")
-    assert hasattr(binml, "Classifier")
+    assert legacy.CLASS_NAMES == ("Flat", "PSPL", "Binary")
+    assert hasattr(legacy, "Classifier")
 
 
 def test_preprocess_shapes():
-    import binml
     t, m, e = _fake_pspl()
-    pre = binml.preprocess(t, m, e, seq_len=6912)
+    pre = legacy.preprocess(t, m, e, seq_len=6912)
     assert pre.flux.shape == (1, 6912)
     assert pre.delta_t.shape == (1, 6912)
     assert 0 < pre.length <= len(t)
@@ -30,8 +34,7 @@ def test_preprocess_shapes():
 
 @pytest.mark.parametrize("model", ["finetuned", "base"])
 def test_predict(model):
-    import binml
-    clf = binml.Classifier(model=model)
+    clf = legacy.Classifier(model=model)
     t, m, e = _fake_pspl()
     r = clf.predict(t, m, e)
     p = r.probabilities
@@ -40,13 +43,11 @@ def test_predict(model):
     assert r.label in p
     assert 0.0 <= r.is_microlensing <= 1.0
     assert abs(r.is_anomalous - p["Binary"]) < 1e-6
-    # a clean PSPL curve should read as a microlensing event (not Flat)
     assert r.is_microlensing > 0.5
 
 
 def test_evolution():
-    import binml
-    clf = binml.Classifier()
+    clf = legacy.Classifier()
     t, m, e = _fake_pspl()
     evo = clf.predict_evolution(t, m, e, steps=30)
     assert evo.probabilities.shape[1] == 3
@@ -55,21 +56,17 @@ def test_evolution():
 
 
 def test_evaluate_functions():
-    import binml
     rng = np.random.RandomState(0)
     labels = rng.randint(0, 3, 2000)
     preds = labels.copy()
-    flip = rng.random(2000) < 0.2          # compute the mask ONCE
+    flip = rng.random(2000) < 0.2
     preds[flip] = rng.randint(0, 3, flip.sum())
-    rep = binml.classification_report(labels, preds)
+    rep = legacy.classification_report(labels, preds)
     assert 0.0 <= rep.accuracy <= 1.0
     assert set(rep.recall) == {"Flat", "PSPL", "Binary"}
-    # detectability: binaries with higher dchi2 should be recovered more often by construction
     dchi2 = np.where(labels == 2, rng.lognormal(5, 3, 2000), 0.0)
     caught = (labels == 2) & (dchi2 > np.median(dchi2[labels == 2]))
     preds2 = np.where(labels == 2, np.where(caught, 2, 1), labels)
-    det = binml.detectability_curve(labels, preds2, dchi2)
+    det = legacy.detectability_curve(labels, preds2, dchi2)
     assert det.n_binaries == int((labels == 2).sum())
-    hi = det.thresholds[str(1000)]["recall_detectable"]
-    lo = det.thresholds[str(50)]["recall_detectable"]
-    assert hi >= lo  # recall on more-detectable subset is not worse
+    assert det.thresholds[str(1000)]["recall_detectable"] >= det.thresholds[str(50)]["recall_detectable"]
