@@ -1,12 +1,12 @@
-# Model Architecture (v5)
+# Model Architecture
 
-BinML v5 classifies Roman multi-band light curves into six classes — **Flat, PSPL, NonPSPL
+BinML classifies Roman multi-band light curves into six classes — **Flat, PSPL, NonPSPL
 (binary/planetary), PeriodicVar, LongPeriodVar, Eruptive**. The network is a **convolutional
 stem feeding a small transformer encoder**, implemented in
 [`pipeline/sim_v5/model_v5.py`](../pipeline/sim_v5/model_v5.py). It has **505,479 parameters**.
 
-> The earlier 3-class model (`binml/model.py`) was a causal CNN-GRU. v5 replaced it with a
-> multi-band conv-stem + transformer to handle three bands of very different cadence and to
+> The earlier 3-class model (`binml/model.py`) was a causal CNN-GRU; BinML 1.0 replaced it with a
+> multi-band conv-stem + transformer (BinML 1.0) to handle three bands of very different cadence and to
 > classify variable-star contaminants alongside microlensing.
 
 ---

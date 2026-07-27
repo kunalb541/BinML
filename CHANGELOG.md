@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — v5 (6-class multi-band model)
+## 1.0.0 — 6-class multi-band model
 - **New model: `pipeline/sim_v5/`.** 6 classes (Flat, PSPL, NonPSPL, PeriodicVar,
   LongPeriodVar, Eruptive) from 3 bands (F146/F087/F213). Conv-stem + transformer,
   505,479 params, replacing the 3-class CNN-GRU.

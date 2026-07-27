@@ -1,6 +1,6 @@
-# Evaluation methodology (v5)
+# Evaluation methodology
 
-This document describes how BinML v5 is evaluated and — more importantly — how its numbers
+This document describes how BinML is evaluated and — more importantly — how its numbers
 should be *read*. Getting a headline accuracy is easy; interpreting a 6-class,
 detectability-conditioned classifier honestly is the hard part, and most of this page is about
 that.
@@ -33,7 +33,7 @@ disjoint from training — see [`leakage_audit.md`](leakage_audit.md)), scored b
 4. **Zero-support classes yield `None`, not 0.0** — so an absent class can't silently drag
    macro-F1 down.
 
-## 2. Stage-6 headline (the shipped model)
+## 2. Headline results
 
 Per-class F1 (population-weighted, argmax):
 
@@ -43,19 +43,19 @@ Per-class F1 (population-weighted, argmax):
 
 - **Completeness @ fixed purity: 0.879.** Average precision (population): 0.9515.
 - **Confusion is healthy.** The science-critical error — NonPSPL→PSPL, a *missed planet* — is
-  0.048 (down from 0.055 in stage 5). The LongPeriodVar→PSPL false-microlensing impostor is
+  0.048 (down from 0.055 without the cascade). The LongPeriodVar→PSPL false-microlensing impostor is
   0.010. No dangerous cross-confusions elsewhere; the variable classes are near-diagonal.
 
-## 3. The real-time cascade — the v5 headline capability
+## 3. The real-time cascade — the headline capability
 
 A Roman follow-up pipeline runs on *partial* seasons. It must not flag a false binary before
-the caustic has been seen. BinML v5 is trained (via detectability-conditioned truncation
+the caustic has been seen. BinML is trained (via detectability-conditioned truncation
 labelling and a per-binary anomaly-onset day `t_anom`) so class probabilities follow the
 cascade of what is observable: **Flat → PSPL → NonPSPL**.
 
 Measured on truncated light curves, fraction flagged NonPSPL *before the anomaly is observable*:
 
-| | stage 5 | stage 6 |
+| | baseline (no cascade) | BinML 1.0 (cascade) |
 |---|---|---|
 | premature NonPSPL flag (day 11) | 42% | **9%** |
 | pre-onset P(NonPSPL) | 0.411 | **0.033** |
@@ -64,13 +64,13 @@ A **12× reduction** in premature binary flagging — and it's surgical: the oth
 temporal behaviour is unchanged (Flat stays Flat, Periodic commits in one cycle, Eruptive waits
 for the outburst).
 
-## 4. Stage 5 vs stage 6 — read the operating point, not the argmax
+## 4. Baseline vs cascade model — read the operating point, not the argmax
 
 On full-season classification the two models are **equivalent**, which the raw macro-F1
 (0.926 → 0.919) hides. The honest, threshold-independent comparison is NonPSPL completeness at
 **matched purity**:
 
-| purity | stage 5 | stage 6 |
+| purity | baseline (no cascade) | BinML 1.0 (cascade) |
 |---|---|---|
 | 0.90 | 0.879 | **0.883** |
 | 0.92 | 0.863 | **0.868** |
@@ -78,9 +78,9 @@ On full-season classification the two models are **equivalent**, which the raw m
 | 0.97 | 0.797 | 0.793 |
 | 0.99 | 0.722 | 0.711 |
 
-The curves **cross** (AP tied at 0.950 vs 0.952). Stage 6 favours the high-completeness regime,
-stage 5 the high-purity regime — neither dominates. The macro-F1 dip is purely where the argmax
-cut lands, **not** lost capability. Stage 6 ships because it adds the cascade at no full-season
+The curves **cross** (AP tied at 0.950 vs 0.952). The cascade model favours the high-completeness regime,
+the baseline the high-purity regime — neither dominates. The macro-F1 dip is purely where the argmax
+cut lands, **not** lost capability. The model ships because it adds the cascade at no full-season
 cost.
 
 ## 5. Generalisation — the 12.9M-event stress test

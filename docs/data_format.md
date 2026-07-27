@@ -1,6 +1,6 @@
-# BinML Dataset Format (v5)
+# BinML Dataset Format
 
-v5 has **two on-disk representations**: a **raw shard** (full-resolution multi-band light curves,
+BinML has **two on-disk representations**: a **raw shard** (full-resolution multi-band light curves,
 written by `run_shard.py` via `writer.py`) and a **compact cache shard** (binned tokens the model
 consumes, written by `cache.py`). Rows are row-aligned across every dataset within a file:
 index `i` is the same event everywhere.
@@ -54,7 +54,7 @@ t_start, rise, decay, plateau, recur,   # eruptive
 t_anom                             # day the binary anomaly first becomes observable
 ```
 
-`t_anom` is **new in v5** and only finite for events observably labelled NonPSPL. It drives the
+`t_anom` is **new in BinML 1.0** and only finite for events observably labelled NonPSPL. It drives the
 real-time cascade (see [`evaluation.md`](evaluation.md) §3): under truncation a binary is
 labelled PSPL until `t_anom`, then NonPSPL.
 

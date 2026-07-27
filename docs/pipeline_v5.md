@@ -1,4 +1,4 @@
-# BinML v5 — Simulation, Training & Evaluation Pipeline
+# BinML — Simulation, Training & Evaluation Pipeline
 
 The v5 pipeline (`pipeline/sim_v5/`) is a ground-up rebuild of the original 3-class classifier
 into a **6-class, multi-band, real-time-aware** model for the Nancy Grace Roman Galactic Bulge

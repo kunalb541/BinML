@@ -42,7 +42,7 @@ Two design choices set it apart from a standard classifier:
    Roman follow-up pipeline needs — **it must not trigger on a false binary before it has seen
    one.**
 
-## Results — stage 6 (independent 450,589-event test set)
+## Results — the model (independent 450,589-event test set)
 
 Per-class F1 (population-weighted):
 
@@ -64,10 +64,10 @@ each number.
 
 ## Documentation
 
-- **[v5 pipeline](docs/pipeline_v5.md)** — the current model: simulation, training & evaluation,
+- **[Pipeline](docs/pipeline_v5.md)** — the current model: simulation, training & evaluation,
   file-by-file, with verified quick-start commands. **Start here.**
 - [Architecture](docs/architecture.md) — the conv-stem + transformer, and why it's built this way
-- [Evaluation](docs/evaluation.md) — detectability-conditioned, honest metrics; the stage-lineage results
+- [Evaluation](docs/evaluation.md) — detectability-conditioned, honest metrics
 - [Data format](docs/data_format.md) — the compact multi-band cache
 - [Leakage audit](docs/leakage_audit.md) — how train/test disjointness is guaranteed
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "binml"
-version = "0.2.0"
+version = "1.0.0"
 description = "Installable 3-class inference package (Flat / PSPL / Binary) for the BinML microlensing classifier. The current 6-class multi-band research model is in pipeline/sim_v5/."
 readme = "README.md"
 requires-python = ">=3.9"

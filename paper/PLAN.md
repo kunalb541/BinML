@@ -1,166 +1,153 @@
-# BinML paper plan
+# BinML paper plan (1.0 — 6-class, real-time cascade)
 
-Two papers: a **methods paper** (primary) framed around a Roman-ready deep-learning
-microlensing classifier, and a short **JOSS companion** for the `binml` software.
+Status: 2026-07-28. Drives the rewrite of `paper.md`.
 
-Status: plan (2026-07-10). The current `paper/paper.md` is a placeholder; this plan drives
-its rewrite.
+> **Public framing.** Externally this is **BinML 1.0**. Internal development numbering
+> (training stages, simulator iterations) is not exposed in the paper, docs, or public code —
+> where an ablation is scientifically useful it is framed as **"baseline vs cascade model,"**
+> not by internal stage names.
+
+Two outputs: a **methods paper** (primary) and a short **JOSS software note** for the package.
+
+---
+
+## 0. Roadmap (where the project goes next)
+
+1. **Write the methods paper** (this plan) — the science is at a defensible milestone.
+2. **Real Roman / OGLE-IV validation** — run BinML on real events; this is what turns
+   "works on sims" into "works," and is the trigger for a targeted retrain.
+3. **Targeted retrain (conditional)** — only if real data shows the faint-noise false-binary
+   weak spot is a practical problem. Otherwise deferred (rare-corner physics limits).
 
 ---
 
 ## Paper A — Methods paper (primary)
 
-**Target venue:** *Astronomy & Computing* (fits a methods+software contribution) or *AJ /
-MNRAS* if positioned more as a survey-readiness study. A&C is the recommended first target.
+**Target venue:** *Astronomy & Computing* (methods+software) first choice; *AJ*/*MNRAS* if
+positioned as a survey-readiness study.
 
-**Working title (options):**
-- *BinML: A Deep-Learning Classifier for Microlensing Light Curves in the Roman Era*
-- *A Causal CNN–GRU for Real-Time Three-Class Microlensing Classification with the Nancy
-  Grace Roman Space Telescope*
+**Working title:** *BinML: A Real-Time, Detectability-Conditioned Deep-Learning Classifier for
+the Roman Galactic Bulge Time-Domain Survey.*
 
-**Thesis / one-sentence pitch.** BinML is a compact, causal CNN–GRU that classifies
-microlensing light curves (Flat / PSPL / Binary) at Roman cadence in real time, evaluated
-with a detectability-honest methodology and validated on real OGLE events — a ready-to-use
-tool for the Roman Galactic Bulge Time-Domain Survey.
+**One-sentence pitch.** BinML is a compact multi-band conv-stem+transformer that classifies
+Roman light curves into six physically-meaningful classes and — uniquely — only flags a class
+once its evidence is *observable*, so it never triggers a false planet alert before the caustic
+has been seen.
 
-### Section outline (what goes where → which result/figure)
+### Three contributions (the spine of the paper)
+1. **Detectability-conditioned labelling** — label by what is observable, not by generator
+   intent. Removes the label noise that penalises a model for not seeing what isn't there.
+2. **The real-time cascade** — truncation labelling keyed on a per-binary anomaly-onset time,
+   yielding Flat→PSPL→NonPSPL as evidence arrives. Premature binary flagging 42%→9%.
+3. **Honest evaluation at survey scale** — completeness at fixed purity as the headline;
+   selection-aware reweighting; a 12.9M-event unseen-parameter stress test with documented
+   failure modes.
 
-1. **Introduction** — microlensing & exoplanet detection; the Roman bulge survey and its data
-   volume; the classification/triage problem; prior ML work (MicroLIA random forest; other
-   CNN/RNN light-curve classifiers); our contribution (compact causal net + detectability-honest
-   evaluation + real-data validation). *No figure.*
-2. **Simulations & data** — VBBinaryLensing engine; the three classes; Roman cadence (6912 pts,
-   15 min, 72 d); the compact HDF5 format; the `anomaly_dchi2` detectability metric; the 10M
-   simulation and detectability-aware subsets. *Fig: example simulated light curves per class;
-   Fig: parameter distributions (q, tE, u0, anomaly_dchi2).*
-3. **Model** — 2-channel input (magnification, Δt); compaction + lengths; causal DW-separable
-   conv; unidirectional GRU; masked attention pooling; hierarchical head (+aux); why it is
-   causal; leakage-safe design (train-only norm stats, masked pooling). *Fig: architecture
-   schematic (NEEDED).* *Table: hyperparameters (131K params).*
-4. **Training** — streaming single-GPU pipeline; hierarchical loss; AMP/cosine/early-stop;
-   warm-start fine-tuning (`--init-weights`) targeting the low-q planetary regime; the
-   round-1/round-2 lesson (targeted fine-tune > more base training; round-2 collapse). *Fig:
-   ft_recall_before_after.png.*
-5. **Evaluation methodology** — the detectability-conditioned framework: a binary with no
-   detectable anomaly is observationally a PSPL, so report binary recall vs `anomaly_dchi2` +
-   the indistinguishable fraction, not the raw population number; the temporal-bias KS test
-   (effect size vs p-value at 1e6 events). *Fig: binary_recall_vs_detectability.png (KEY).*
-6. **Results** — full 1M held-out evaluation: per-class recall/precision, per-q binary recall,
-   detectable-only recall; calibration (ECE); ROC; confusion matrix; probability-evolution /
-   early-detection. *Figs: eval_1M_binary_recall_by_q.png, binary_recall_by_preset.png,
-   confusion_matrix, roc_curves, calibration, early_detection_curve.*
-7. **Real-data validation** — OGLE-IV EWS events run through the model: clean PSPL, caustic-
-   crossing binaries (OGLE-2014-BLG-0289, 2013-BLG-0578), the super-Earth
-   OGLE-2017-BLG-0482Lb (residual bump); the domain shift; the fine-tuned model recovering
-   missed binaries. *Figs: evolution_OGLE-2014-BLG-0289.png, planetary_bump_real_vs_synth.png,
-   real-OGLE grid.*
-8. **Cadence study** — detection vs characterization as a function of cadence; Roman vs
-   LSST-like sampling; why dense cadence is required to characterize (not just detect)
-   binaries. *Fig: lsst_cadence_degradation.png.*
-9. **Discussion** — implications for Roman triage/alerts; limitations (sim-to-real gap;
-   single-band; achromatic assumption); future work (the v5 multi-band, multi-class extension —
-   cite the design doc). *No figure.*
-10. **Software & reproducibility** — the `binml` package (pip, bundled weights, CLI,
-    detectability-conditioned evaluate); code + data release. *No figure.*
-11. **Conclusions.**
+### Section outline → result / figure
 
-### Figures — have vs. need
-- **Have** (in `docs/figures/` + `results/`): recall-by-detectability, 1M-recall-by-q,
-  recall-by-preset, ft before/after, LSST degradation, planetary bump real-vs-synth,
-  real-event evolution; plus confusion/ROC/calibration/early-detection from the eval run.
-- **Need to make:**
-  - **Architecture schematic** (the CNN–GRU pipeline) — essential.
-  - **Example simulated light curves** per class (clean, publication-quality).
-  - **Parameter-distribution** panel for the simulations.
-  - Optionally: a **real-OGLE gallery** figure (curated from the grids we made).
+| § | content | figure / number |
+|---|---|---|
+| 1 Introduction | microlensing & exoplanets; Roman GBTDS data volume; the real-time triage problem; prior ML (§refs); our 3 contributions | — |
+| 2 Simulations | 6 classes, 3 bands, Roman cadence; priors; VBBinaryLensing; **detectability-conditioned labelling** | Fig: example light curves, class distributions |
+| 3 Model | conv stem + min/max carry lanes + transformer; 505k params; why compact | schematic — **NEW, to draw** |
+| 4 The cascade | anomaly-onset time; truncation relabelling; Flat→PSPL→NonPSPL | Fig: probability evolution, early detection, + the 42%→9% table |
+| 5 Evaluation methodology | completeness@purity; selection reweighting; detectability conditioning | Fig: ROC/PR + operating point, calibration |
+| 6 Results | per-class; confusion; (log s, log q) efficiency; parameter dependence | Fig: confusion, per-class, param dependence, efficiency planes, slices |
+| 7 Generalisation & limits | 12.9M stress test; OOR failure modes; the cascade ablation | Fig: failure analysis + stress-test table + matched-purity table |
+| 8 Discussion | operating-point choice for follow-up; comparison to classical Δχ²; real-data outlook | Fig: baseline overlay |
+| 9 Conclusion | — | — |
 
-### Gaps to close before submission (honest — reviewers will ask)
-1. **Baseline comparison (CRITICAL).** Compare BinML to a simple baseline — a random-forest on
-   hand-features (à la MicroLIA) and/or a plain CNN — on the same 1M test set, to show the
-   causal CNN–GRU earns its complexity. *We do not have this yet; it is the top priority.*
-2. **Ablations.** Attention vs masked-mean pooling; hierarchical vs flat head; with/without the
-   Δt channel; d_model/n_layers scaling. A small ablation table.
-3. **Statistical rigor.** Bootstrap CIs on the headline metrics (we have some); report them.
-4. **Larger real-data test.** Expand from ~a dozen curated OGLE events to a systematic sample
-   (e.g. all well-sampled events in a season) for an aggregate real-data number, with the
-   caveat that ground truth (published solutions) is only available for a subset.
-5. **Reproducibility artifact.** Freeze a data release + weights on **Zenodo** for a DOI;
-   pin the exact commit.
+### Figures — inventory & gaps
+
+**Have (14 diagnostic figures + 300 per-event evolution plots, archived in the results set):**
+confusion, ROC/PR+operating, calibration, per-class, parameter-dependence, slices,
+failure-analysis, efficiency-planes, light-curves, training, class-distributions,
+temporal-bias, probability-evolution, early-detection.
+
+**Need to make (NEW):**
+- **F1. Model schematic** — bands → conv stem (min/max lanes) → 156 tokens → transformer → 6-way
+  head.
+- **F2. The cascade hero figure** — 2–3 per-event panels (a clean binary, an ambiguous one, a
+  faint) showing Flat→PSPL→NonPSPL with the commit-time marker. The paper's signature figure.
+- **F3. Cascade summary** — pre-onset P(NonPSPL) and premature-flag rate vs day observed,
+  **baseline vs cascade model** (from the all-class temporal scan). Quantifies contribution #2.
+- **T1. Training-curriculum table** — completeness@purity across the fine-tuning curriculum
+  (framed as capability added, not stage numbers).
+- **T2. Matched-purity table** — NonPSPL completeness at purity {0.90…0.99}, baseline vs
+  cascade (already computed; shows the crossover).
+- **T3. Stress-test / OOR table** — per-class on 12.9M unseen; OOR failure modes.
+
+### Headline numbers (locked)
+- completeness@purity 0.879; AP 0.952; per-class F1 [0.99, 0.92, 0.93, 0.96, 0.95, 0.88]
+- cascade: premature NonPSPL flag 42%→9%; pre-onset P(NonPSPL) 0.411→0.033
+- NonPSPL→PSPL (missed planet) 0.055→0.048; stress test 12.9M events, macroF1 0.927
 
 ---
 
-## Paper B — JOSS companion (software)
+## Paper B — JOSS software note (short)
 
-Short (~1000 words). Rewrite `paper/paper.md` (the current draft is close but was auto-drafted
-and is a placeholder). Sections: Summary; Statement of need (contrast with MicroLIA; the 3-class
-framing + detectability-honest evaluation as the software's distinguishing features);
-Functionality (Classifier API, CLI, survey loaders, detectability-conditioned `evaluate`);
-a minimal usage example; Availability; Acknowledgements. Requires the repo to have: tests (✓),
-CI (✓), docs (✓), an example (✓), a LICENSE (✓), and a review-ready README (✓). JOSS wants the
-software archived (Zenodo DOI) — shared prerequisite with Paper A.
+The `binml` package + the v1 pipeline. ~1000 words: statement of need (Roman triage),
+functionality, the detectability-honest evaluation, links to docs. Cite the methods paper.
 
 ---
 
-## Shared prerequisites
-- **Author list & affiliations** — confirm co-authors / advisor (currently only K. Bhatia,
-  Heidelberg). *User decision.*
-- **Zenodo archive** of code + weights + a data release → DOI (needed by both papers).
-- **Data availability statement** — where the simulated data / trained weights live.
-- Decide **which trained model is "the" model** in the paper (base vs fine-tuned; report both,
-  ship fine-tuned).
+## References to cite (researched 2026-07-28; grouped by what they justify)
 
-## Execution plan (ordered)
+**Roman GBTDS survey & yields** (§1, §2 — motivation, cadence, expected planet counts)
+- **Penny et al. 2019, ApJS 241, 3** — "Predictions of the WFIRST Microlensing Survey I: Bound
+  Planet Detection Rates" (~1400 bound planets). Survey-design + cadence reference.
+  2019ApJS..241....3P
+- **Johnson et al. 2020, AJ 160, 123** — Roman Galactic Exoplanet Survey II: free-floating
+  planet detection rates. arXiv:2006.10760
+- **Terry et al. 2023, ApJS** — transiting exoplanet yields for the Roman GBTDS from pixel-level
+  simulations (establishes the survey's cadence/photometry). 10.3847/1538-4365/acf3df
 
-| step | task | owner | blocks |
-|---|---|---|---|
-| 1 | **Baseline comparison** — random-forest (features) + plain-CNN on the 1M test; results table | me (needs compute) | Results section |
-| 2 | **Ablation table** — pooling / head / Δt / size | me (compute) | Method/Results |
-| 3 | **Make missing figures** — architecture schematic, example curves, param distributions | me | Figures |
-| 4 | **Bootstrap CIs** on headline metrics | me | Results |
-| 5 | (optional) **Systematic real-OGLE sample** + aggregate number | me | Real-data section |
-| 6 | **Draft methods paper** (LaTeX, `paper/methods/`) section by section, dropping in figures | me + user review | — |
-| 7 | **Rewrite JOSS `paper.md`** | me | — |
-| 8 | **Zenodo release** + DOI; finalize author list & data statement | user | submission |
-| 9 | Internal review → revise → submit | user | — |
+**Event rates & parameter priors** (§2 — justify the simulation priors)
+- **Mróz et al. 2019, ApJS 244, 29** — optical depth & event rate from 8 yr OGLE-IV; the tE
+  distribution (peak ~10–40 d, ±3 power-law tails). Our tE prior. arXiv:1906.02210
+- **Suzuki et al. 2016, ApJ 833, 145** — planet mass-ratio function; break at q≈1.7×10⁻⁴.
+  Our q prior and the "planetary" regime boundary.
+- **Sumi et al. 2023** (MOA-II 9-yr free-floating planet MF, arXiv:2303.08280) — low-mass /
+  short-tE population context.
 
-**Estimated compute:** steps 1–2 (baselines + ablations) need a few GPU-hours (Modal top-up).
-Steps 3–7 are local/free. Figures and both drafts can be produced now; the baseline and
-ablation results are the only hard prerequisites that need running before the Results section
-is final.
+**Binary-lens modelling** (§2 — the NonPSPL generator)
+- **Bozza 2010, MNRAS 408, 2188** — advanced contour-integration algorithm.
+- **Bozza et al. 2018, MNRAS 479, 5157** — VBBinaryLensing public package (what we use).
+  arXiv:1805.05653
 
-## Thesis feedback (round 2) — must carry into the paper
+**Prior ML classification of microlensing** (§1 — position our contribution)
+- **Godines et al. 2019, A&C 28** — LIA / MicroLIA: Random Forest with ~50 features on OGLE-II,
+  tested on ZTF/Palomar. The reference "classical ML" approach.
+- **Mróz 2020, Acta Astron. 70, 169** — "Identifying Microlensing Events Using Neural Networks."
+  arXiv:2008.11930
+- **Classifying High-cadence Microlensing Light Curves I: Defining Features, 2021, AJ**
+  (10.3847/1538-3881/abd6cc) — Roman/high-cadence-specific ML; closest prior art on cadence.
+- **Early recognition of Microlensing Events from Archival Photometry with ML, 2022**
+  (arXiv:2201.12209) — early/real-time detection; closest prior art to our cascade angle.
 
-The MSc thesis examiner's round-2 comments (34 substantive notes) map directly onto paper
-actions. The paper must not repeat these weaknesses:
+**Deep learning for astronomical time series** (§3 — architecture context)
+- **Donoso-Oliva et al. 2023, A&A (ASTROMER)** — transformer embeddings for single-band
+  astronomical time series. Our transformer lineage.
+- **Astro-MoE / multi-band transformers, 2024–2025** (arXiv:2507.12611; A&A multi-band
+  vision-transformer 2025) — positions our 3-band design.
+- A CNN/RNN light-curve classifier (e.g. Naul et al. 2018 RNN; or the general light-curve
+  classification framework 10.3847/1538-4365/ad62fd) as the pre-transformer baseline.
 
-1. **Motivation first.** Open with the *science* (exoplanet demographics, the Roman bulge
-   survey) before the method (p5).
-2. **Physics correctness** — get these exactly right and cite sources:
-   - caustics are in the **source plane**, critical curves on the **lens/image plane**
-     (Schneider, Ehlers & Falco); Roman covers the **bulge**, not the whole sky (p16);
-   - binary caustic topology + **close / intermediate / wide** regimes (Tsapras 2018) (p25);
-   - `α` = angle between source trajectory and the binary axis; high magnification arises
-     from the trajectory approaching a caustic (p26);
-   - **redo or replace the caustic figure** — the thesis one "does not show caustics"; either
-     compute properly (Bozza 2010, Green's theorem/contour integration) or borrow-with-citation
-     (p26, p28);
-   - re-check the KMTNet-vs-OGLE resolution/precision claim (p34).
-3. **Cite thoroughly.** The thesis was under-referenced. Required: Paczyński; Schneider &
-   Weiss 1986; Witt 1990; Griest & Safizadeh 1998; Bozza 2010; Tsapras 2016 & 2018;
-   Dominik 2007 & 2008 and Tsapras 2009 (alert systems); MACHO & EROS surveys.
-4. **No overclaiming.** Drop/soften unsupported claims (e.g. "precision sufficient to
-   constrain planetary formation scenarios") unless directly defensible (p27).
-5. **tE distribution (ML-relevant!).** The examiner notes the real `tE` distribution peaks
-   ~25 d and long-timescale events were missed (Tsapras 2016) — **verify the simulator's `tE`
-   sampling matches reality**; if biased, note it as a limitation or re-simulate. This affects
-   the training distribution and must be addressed in the Data section.
-6. **Reproducibility.** State where training/sims ran (Modal L4; local GPU), compute cost, any
-   restrictions, and link the public repo — exactly what the examiner asked for (p52).
-7. **Define abbreviations at first use**; consider a glossary/notation table (p17).
+**Bulge variable/contaminant populations** (§2 — the non-microlensing classes)
+- **Soszyński et al. (OGLE) LPV catalogs** — Mira / SRV / OSARG classification and P–L relations
+  (the LongPeriodVar generator + the OSARG small-amplitude impostor).
+- **Soszyński et al. (OGLE) RR Lyrae / eclipsing-binary catalogs** — the PeriodicVar generator.
+- **Identifying low-amplitude pulsating stars through microlensing observations, 2021**
+  (arXiv:2108.08650) — LPV-vs-microlensing confusion; motivates LongPeriodVar as the dangerous
+  impostor.
 
-## What I can start immediately (no compute, no blockers)
-- The **architecture schematic** and **example-light-curve / parameter-distribution** figures.
-- A **detailed section-by-section methods-paper skeleton** in LaTeX (`paper/methods/`) with the
-  figures and the results we already have slotted in, leaving `TODO` placeholders for the
-  baseline/ablation numbers.
-- The **JOSS `paper.md`** rewrite.
+> **Action:** pull exact bibkeys/DOIs into `paper.bib` (several already present); verify each
+> arXiv ID and journal ref before submission.
+
+---
+
+## Immediate next actions
+1. Rewrite `paper.md` from this outline.
+2. Make the 3 NEW figures (schematic, cascade hero, cascade summary) + the 3 tables.
+3. Reconcile `paper.bib` with the reference list above.
+4. Draft the JOSS note.
