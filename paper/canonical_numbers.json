@@ -71,6 +71,21 @@
     "median_detection_lag_days": 5
   },
 
+  "infra": {
+    "_comment": "measured/recorded infrastructure numbers for the appendix",
+    "sim_events_millions": 10.0,
+    "sim_instances": 3,
+    "sim_vcpus_each": 2,
+    "sim_events_per_sec": 90,
+    "sim_hours": 30,
+    "sim_region": "eu-central-1",
+    "train_device": "Apple M-series GPU (MPS)",
+    "train_events_per_sec": 958,
+    "train_batch": 256,
+    "train_hours": 15,
+    "train_epochs_effective": 5
+  },
+
   "false_positive": {
     "_comment": "timing false positives = premature flags; missed planets = false negatives",
     "missed_planet_rate": 0.048,

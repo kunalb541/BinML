@@ -64,6 +64,18 @@ fp = cn["false_positive"]
 cmd("bmlMissedRate", three(fp["missed_planet_rate"]))
 cmd("bmlLPVtoPSPL", three(fp["long_period_var_to_pspl"]))
 
+ia = cn["infra"]
+cmd("bmlSimEvents", f"{ia['sim_events_millions']:.0f}")
+cmd("bmlSimInstances", str(ia["sim_instances"]))
+cmd("bmlSimVcpus", str(ia["sim_vcpus_each"]))
+cmd("bmlSimEps", str(ia["sim_events_per_sec"]))
+cmd("bmlSimHours", str(ia["sim_hours"]))
+cmd("bmlSimRegion", ia["sim_region"])
+cmd("bmlTrainDevice", ia["train_device"])
+cmd("bmlTrainEps", f"{ia['train_events_per_sec']:,}")
+cmd("bmlTrainBatch", str(ia["train_batch"]))
+cmd("bmlTrainHours", str(ia["train_hours"]))
+
 sl = cn["slices"]
 cmd("bmlSliceDeepPlanet", three(sl["deep_planetary_q_lt_1e-3"]["recall"]))
 cmd("bmlSlicePlanet", three(sl["planetary_q_lt_1e-2"]["recall"]))

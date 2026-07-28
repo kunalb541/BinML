@@ -52,11 +52,11 @@ Gravitational microlensing occupies a niche no other planet-detection method rea
 responds to a lens's mass rather than its light, it is sensitive to cold, low-mass planets far
 from their host stars and to unbound planetary-mass objects drifting through the Galaxy---the very
 population that transit and radial-velocity surveys, biased toward hot and close-in planets,
-recover least well \citep{Mao1991,Suzuki2016}. The Nancy Grace \Rom{} Space Telescope will exploit
+recover least well \citep{Mao1991,GouldLoeb1992,Suzuki2016}. The Nancy Grace \Rom{} Space Telescope will exploit
 this sensitivity systematically. Its Galactic Bulge Time-Domain Survey (GBTDS) will monitor the
 crowded bulge fields at high cadence in the near-infrared, and is predicted to detect of order a
 thousand bound planets and to pin down the free-floating planet mass function
-\citep{Penny2019,Johnson2020,Terry2023}. The wide F146 filter samples the light curve every
+\citep{Spergel2015,Penny2019,Johnson2020,Sumi2023,Gaudi2022,Wilson2023}. The wide F146 filter samples the light curve every
 $\sim\bmlCadence$~minutes; two auxiliary bands, F087 and F213, add colour information on a
 $\sim$6-hour cycle.
 
@@ -80,9 +80,10 @@ classifier that scans the raw stream.
 Machine learning has been applied to microlensing classification before, and the trajectory is
 instructive. Feature-engineered classifiers such as \textsc{MicroLIA} \citep{Godines2019} and
 neural networks trained on lower-cadence ground-based data \citep{Mroz2020} established that the
-problem is learnable on OGLE- and ZTF-like photometry. Studies aimed specifically at high-cadence,
-\Rom{}-like sampling \citep{Zhao2021} and at early, real-time recognition \citep{Early2022} are
-the closest antecedents of the present work. Architecturally we build on the now-standard use of
+problem is learnable on OGLE- and ZTF-like photometry. Work aimed specifically at high-cadence,
+\Rom{}-like microlensing sampling \citep{Khakpash2021}, together with deep-learning classifiers
+built to flag transients in real time more broadly \citep{Muthukrishna2019}, are the closest
+antecedents of the present work. Architecturally we build on the now-standard use of
 transformers for astronomical time series \citep{Astromer2023,Vaswani2017}. What distinguishes
 BinML, however, is not the network but the way the problem is posed: we treat detectability and
 observation time as first-class parts of the label definition rather than as afterthoughts of
@@ -101,13 +102,15 @@ $\bmlStressN$-million-event stress test on parameters the model never saw.
 
 \section{Simulated survey and labelling}\label{sec:sims}
 
-\begin{figure*}[t]
+\begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.98\textwidth]{outputs/figures/lightcurve_gallery.pdf}
-\caption{Representative simulated \Rom{} F146 light curves, one per class, as the survey would
+\caption{Representative simulated \Rom{} light curves, one per class, in all three photometric
+bands (F146 in grey, the bluer F087 in blue, the redder F213 in red), as the survey would
 record them, with BinML's prediction annotated in each panel. \texttt{Flat} sources are
 noise-dominated; \texttt{PSPL} shows the smooth single-lens magnification; \texttt{NonPSPL}
-carries the sharp caustic features that mark a binary or planetary lens; the three
+carries the sharp caustic features that mark a binary or planetary lens---note that they appear
+in all three bands together, as microlensing is achromatic; the three
 variable-star classes span short-period pulsators and eclipsing binaries (\texttt{PeriodicVar},
 shown phase-folded), slow red-giant variability (\texttt{LongPeriodVar}), and outbursts
 (\texttt{Eruptive}). The visual separability of the caustic signature from ordinary single-lens
@@ -129,7 +132,7 @@ populations that dominate the real bulge and are the classifier's most dangerous
 microlensing event), and \texttt{Eruptive} (dwarf novae and Be outbursts). Event-timescale,
 mass-ratio, and separation priors follow the measured bulge distributions
 \citep{Mroz2019,Suzuki2016}; the variable-star templates follow the OGLE bulge catalogues
-\citep{Soszynski2013,Soszynski2016}. Every event is realised on the true \Rom{} cadence in all
+\citep{Soszynski2013,Soszynski2017}. Every event is realised on the true \Rom{} cadence in all
 three bands and degraded by survey-realistic photometric noise, blending, and interstellar
 extinction, so that the training distribution matches what the telescope will actually deliver.
 
@@ -151,7 +154,7 @@ to begin with. We return to what this means for the numbers in \S\ref{sec:result
 
 \section{Model}\label{sec:model}
 
-\begin{figure*}[t]
+\begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.92\textwidth]{outputs/figures/schematic.pdf}
 \caption{BinML architecture. Each of the three \Rom{} bands is binned onto a fixed grid whose
@@ -207,12 +210,13 @@ requires, is therefore inexpensive rather than prohibitive.
 
 \section{The real-time cascade}\label{sec:cascade}
 
-\begin{figure*}[t]
+\begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.98\textwidth]{outputs/figures/cascade_evolution.pdf}
 \caption{The real-time cascade, shown on three simulated events as the season is progressively
-revealed (left to right in each panel). \emph{Top:} the F146 light curve, with the dashed line
-marking the anomaly-onset day $t_{\mathrm{anom}}$ for the binaries. \emph{Bottom:} BinML's class
+revealed (left to right in each panel). \emph{Top:} the light curve in all three bands (F146
+grey, F087 blue, F213 red), with the dashed line marking the anomaly-onset day
+$t_{\mathrm{anom}}$ for the binaries. \emph{Bottom:} BinML's class
 probability as a function of how much of the season it has seen. For the clean binary (left),
 probability flows \texttt{Flat}$\rightarrow$\texttt{PSPL}$\rightarrow$\texttt{NonPSPL}, with the
 jump to \texttt{NonPSPL} occurring precisely when the caustic enters the observed window---not
@@ -252,7 +256,7 @@ on the full-season task for which conventional classifiers are optimised: the mi
 a true \texttt{NonPSPL} called \texttt{PSPL} on the complete curve, is statistically unchanged
 ($\bmlMissedBefore\rightarrow\bmlMissedAfter$).
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.82\columnwidth]{outputs/figures/cascade_summary.pdf}
 \caption{Aggregate effect of the cascade over the test population. Keying the label on a per-event
@@ -271,7 +275,7 @@ caustic crossing flagged by BinML is still in progress or freshly past when the 
 small negative-lag tail is the same population of premature flags quantified above, here recast
 as timing false positives; it is a manageable minority rather than the bulk of the distribution.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{outputs/figures/detection_latency.pdf}
 \caption{Detection latency: the number of days between the caustic becoming detectable
@@ -291,7 +295,7 @@ it erupts, at which point the model switches decisively to the eruptive class. I
 probability of the correct class rises just as its characteristic signal becomes visible and not
 before---which is what makes the model's output safe to act on in real time.
 
-\begin{figure*}[t]
+\begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.98\textwidth]{outputs/figures/prob_evolution_all.pdf}
 \caption{Class probability as the season is progressively revealed, for one representative event
@@ -373,7 +377,7 @@ as the single lens it observationally resembles. The variable-star classes sit c
 diagonal, and the most dangerous physical confusion, a \texttt{LongPeriodVar} masquerading as
 microlensing, is rare.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{outputs/figures/confusion.pdf}
 \caption{Row-normalised, selection-corrected confusion matrix. The dominant off-diagonal,
@@ -405,7 +409,7 @@ anomaly is, from $\bmlSliceSuzuki$ for the borderline planetary signals near the
 where planets become common to $0.972$ for the strongest anomalies, just as one would expect if
 the model is limited by the information in the data rather than by any shortcoming of its own.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\columnwidth]{outputs/figures/pr_nonpspl.pdf}
 \caption{Anomaly (\texttt{NonPSPL}) precision--recall. BinML (solid) tracks the oracle \dchisq{}
@@ -422,7 +426,7 @@ anomaly is present, which means the structure visible in the end-to-end map is i
 survey's detectability rather than introduced by BinML. Even deep planetary events with
 $q<10^{-3}$ are recovered at $\bmlSliceDeepPlanet$.
 
-\begin{figure*}[t]
+\begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.95\textwidth]{outputs/figures/efficiency_plane.pdf}
 \caption{Recovery across the $(\log s,\log q)$ plane, factored into survey detectability, end-to-end
@@ -436,7 +440,7 @@ degrades gracefully toward faint baselines and weak anomalies---the two directio
 photometric information itself thins out---and remains high, $\bmlSliceFaint$, even for faint sources
 with $m_{\mathrm{base}}>22.5$, dropping only in the noise-dominated tail.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.98\columnwidth]{outputs/figures/param_dependence.pdf}
 \caption{\texttt{NonPSPL} recall versus source baseline magnitude (left) and anomaly \dchisq{}
@@ -495,11 +499,59 @@ test. The model, its weights, and the full simulation-to-inference pipeline are 
 source.
 
 \begin{acknowledgments}
-This work made use of \textsc{VBBinaryLensing} \citep{Bozza2018} and the OGLE variable-star
-catalogues. Simulations were generated on transient cloud compute.
+I thank the gravitational lensing group at the Astronomisches Rechen-Institut (ARI), Zentrum für
+Astronomie der Universität Heidelberg, and in particular Yiannis Tsapras, for guidance and
+discussions that shaped this work. Simulations were run on Amazon Web Services (AWS) EC2, and
+model development used a combination of local Apple Silicon hardware and cloud GPU credits from
+AWS and Modal; I gratefully acknowledge both for computational credits. This work made use of
+\textsc{VBBinaryLensing} \citep{Bozza2018} and the OGLE variable-star catalogues
+\citep{Soszynski2013,Soszynski2017}. In the interest of transparency, I note that AI assistants
+(Anthropic's Claude and OpenAI's GPT) were used to assist with code development, refactoring, and
+manuscript editing; all scientific content, results, and conclusions are my own and were checked
+against the underlying data.
 \end{acknowledgments}
 
-\software{NumPy, PyTorch, Matplotlib, VBBinaryLensing \citep{Bozza2018}, Astropy}
+\software{NumPy \citep{harris2020}, PyTorch \citep{paszke2019}, Matplotlib \citep{hunter2007},
+\textsc{VBBinaryLensing} \citep{Bozza2018}, Astropy \citep{astropy2022}}
+
+\facilities{AWS, Modal}
+
+\section*{Data availability}
+BinML, its trained weights, and the full simulation-to-inference pipeline are openly available at
+\url{https://github.com/kunalb541/BinML}. Every figure and number in this paper is regenerated
+from the archived evaluation artifact by the build script in that repository.
+
+\appendix
+
+\section{Simulation and training infrastructure}\label{app:infra}
+
+Because reproducibility and the real computational cost of a method are as much a part of a survey
+tool as its accuracy, we describe here exactly how the data were generated and the model trained,
+and what it cost.
+
+\paragraph{Simulation (AWS).} The training set of roughly $\bmlSimEvents$~million events was
+generated on Amazon Web Services in the \texttt{\bmlSimRegion} region, on a small fleet of
+$\bmlSimInstances$ transient (Spot) instances of $\bmlSimVcpus$ virtual CPUs each. The generator is
+embarrassingly parallel: one process builds one self-contained shard of a few thousand light
+curves, seeded purely by its index, so a shard that is lost to a Spot interruption costs at most
+that shard and the run resumes by skipping shards already written to cloud storage. At a measured
+throughput of about $\bmlSimEps$ events per second across the fleet, the full set was produced in
+roughly $\bmlSimHours$~hours. Because the instances are free-tier-eligible Spot capacity, the
+compute cost of a full generation is at the level of cents; the only non-trivial cost is storage of
+the compact binned shards, a few dollars per month.
+
+\paragraph{Training (local, with a cloud comparison).} The network is small enough that it was
+trained end to end on a personal computer, on the \bmlTrainDevice, at a batch size of
+$\bmlTrainBatch$. We measured a sustained training throughput of about $\bmlTrainEps$ events per
+second including the backward pass, so a full training run of a few passes over the
+$\bmlSimEvents$-million-event set completes in roughly $\bmlTrainHours$~hours. On local hardware the
+marginal cost of this is essentially only electricity---of order ten cents' worth---since no compute
+is rented. For comparison, renting a modest cloud GPU (for example on AWS or Modal) would train the
+same model appreciably faster but at a cost of only a few dollars, given the model's small size;
+either way, the end-to-end cost of building BinML from scratch is dominated by neither training nor
+inference but is negligible. This is a direct consequence of the design choice to keep the network
+compact (\S\ref{sec:model}): the entire pipeline, from simulation through training to survey-scale
+inference, runs at hobbyist cost rather than requiring a dedicated computing allocation.
 
 \bibliographystyle{aasjournalv7}
 \bibliography{refs}
