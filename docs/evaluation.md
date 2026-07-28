@@ -35,11 +35,22 @@ disjoint from training — see [`leakage_audit.md`](leakage_audit.md)), scored b
 
 ## 2. Headline results
 
-Per-class F1 (population-weighted, argmax):
+Per-class recall / precision / F1 (population-weighted, selection-corrected argmax; from
+`metrics.json` → `argmax_population`):
 
-| Flat | PSPL | NonPSPL | PeriodicVar | LongPeriodVar | Eruptive |
-|---|---|---|---|---|---|
-| 0.987 | 0.923 | 0.930 | 0.958 | 0.947 | 0.880 |
+| metric | Flat | PSPL | NonPSPL | PeriodicVar | LongPeriodVar | Eruptive |
+|---|---|---|---|---|---|---|
+| recall    | 0.960 | 0.936 | 0.948 | 0.990 | 0.982 | 0.985 |
+| precision | 0.982 | 0.988 | 0.716 | 0.952 | 0.851 | 0.795 |
+| **F1**    | 0.971 | 0.962 | 0.816 | 0.971 | 0.912 | 0.880 |
+
+Macro-F1 0.919. **Read NonPSPL carefully:** its recall is 0.95 — the model *finds* the anomalies.
+The 0.72 precision (and hence the 0.82 F1) is a **labelling artefact**: 71% of its "false
+positives" are genuine binaries whose caustic anomaly is below the detectability floor and were
+therefore labelled PSPL by the detectability-conditioned labelling (§1). Counting those as
+correct gives a physical precision of 0.99. This is exactly why the headline is
+completeness@purity, not F1 — the argmax F1 penalises the model for a labelling choice that makes
+the *reported* numbers honest.
 
 - **Completeness @ fixed purity: 0.879.** Average precision (population): 0.9515.
 - **Confusion is healthy.** The science-critical error — NonPSPL→PSPL, a *missed planet* — is

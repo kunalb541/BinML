@@ -26,8 +26,10 @@ observable, so undetectable events → Flat and undetectable anomalies → PSPL.
 ## Evaluation
 Independent 450,589-event held-out test set (shard indices disjoint from training). Metrics:
 completeness at fixed purity (headline), keep_prob-aware precision/purity, detectability-binned
-recall. **Completeness@purity 0.879, AP 0.952**; per-class F1 [Flat 0.99, PSPL 0.92, NonPSPL 0.93,
-Per 0.96, LPV 0.95, Erup 0.88]. Real-time cascade: premature NonPSPL flagging 42%→9%. Generalises
+recall. **Completeness@purity 0.879, AP 0.952**; per-class F1 [Flat 0.97, PSPL 0.96, NonPSPL 0.82,
+Per 0.97, LPV 0.91, Erup 0.88] (macro 0.919; NonPSPL F1 is precision-limited by the
+detectability-floor demotion — recall is 0.95, physical precision 0.99, see evaluation.md).
+Real-time cascade: premature NonPSPL flagging 42%→9%. Generalises
 on a 12.9M-event unseen-parameter stress test (macro-F1 0.927). Full detail: [evaluation.md](evaluation.md).
 
 ## Limitations / known failure modes

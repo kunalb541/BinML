@@ -1,0 +1,22 @@
+{
+  "param_fields": [
+    "t0",
+    "tE",
+    "u0",
+    "q",
+    "s",
+    "alpha",
+    "rho",
+    "P",
+    "amp_I",
+    "ratio_k",
+    "t_start",
+    "rise",
+    "decay",
+    "plateau",
+    "recur"
+  ],
+  "checkpoint": "/Users/kunalbhatia/Desktop/Research/microlensing/v5runs/binml_v5_stage6.pt",
+  "checkpoint_sha256": "897a9aec1785dc15",
+  "cache": "/Users/kunalbhatia/Desktop/Research/microlensing/v5data/v5mm_test"
+}

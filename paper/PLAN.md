@@ -78,7 +78,7 @@ temporal-bias, probability-evolution, early-detection.
 - **T3. Stress-test / OOR table** — per-class on 12.9M unseen; OOR failure modes.
 
 ### Headline numbers (locked)
-- completeness@purity 0.879; AP 0.952; per-class F1 [0.99, 0.92, 0.93, 0.96, 0.95, 0.88]
+- completeness@purity 0.879; AP 0.952; per-class F1 [0.97, 0.96, 0.82, 0.97, 0.91, 0.88] (population/argmax; NonPSPL F1 precision-limited by detectability-floor demotion, recall 0.95)
 - cascade: premature NonPSPL flag 42%→9%; pre-onset P(NonPSPL) 0.411→0.033
 - NonPSPL→PSPL (missed planet) 0.055→0.048; stress test 12.9M events, macroF1 0.927
 

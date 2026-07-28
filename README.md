@@ -66,11 +66,18 @@ Details: [`docs/architecture.md`](docs/architecture.md).
 
 ## Results (independent 450,589-event test set)
 
-Per-class F1 (population-weighted):
+Per-class F1 (population-weighted, selection-corrected):
 
 | Flat | PSPL | NonPSPL | PeriodicVar | LongPeriodVar | Eruptive |
 |---|---|---|---|---|---|
-| 0.99 | 0.92 | 0.93 | 0.96 | 0.95 | 0.88 |
+| 0.97 | 0.96 | 0.82 | 0.97 | 0.91 | 0.88 |
+
+> The NonPSPL F1 (0.82) is held down by *precision*, and that precision is a labelling artefact,
+> not model error: **71% of its "false positives" are genuine binaries whose caustic anomaly
+> falls below the detectability floor** and were therefore labelled PSPL (see detectability
+> conditioning above). Counting those as correct — they *are* physically anomalous — the physical
+> precision is 0.99. NonPSPL **recall is 0.95**. This is why completeness@purity, not F1, is the
+> headline.
 
 - **Completeness at fixed purity: 0.879** (the headline a follow-up pipeline is specified
   against, not accuracy or F1). Average precision 0.952.

@@ -1,0 +1,82 @@
+{
+  "_comment": "Single source of truth for every number in the manuscript. Values are drawn from paper/results/metrics.json (the independent 450,589-event evaluation of the production model) and from the project's cascade / stress-test analyses. make_macros.py turns this file (plus figures_stats.json, produced by make_figures.py) into paper_macros.tex. NEVER hand-edit numbers in paper.tex.",
+
+  "test": {
+    "n_events": 450589,
+    "checkpoint": "binml.pt",
+    "trained_epoch": 4
+  },
+
+  "headline": {
+    "completeness_at_purity": 0.879,
+    "completeness_ci_lo": 0.876,
+    "completeness_ci_hi": 0.882,
+    "purity_achieved": 0.908,
+    "purity_target": 0.90,
+    "threshold": 0.904,
+    "average_precision": 0.952,
+    "macro_f1": 0.919
+  },
+
+  "per_class": {
+    "note": "population-weighted (selection-corrected) recall / precision / F1; argmax over the six classes",
+    "Flat":          {"recall": 0.960, "precision": 0.982, "f1": 0.971},
+    "PSPL":          {"recall": 0.936, "precision": 0.988, "f1": 0.962},
+    "NonPSPL":       {"recall": 0.948, "precision": 0.716, "f1": 0.816},
+    "PeriodicVar":   {"recall": 0.990, "precision": 0.952, "f1": 0.971},
+    "LongPeriodVar": {"recall": 0.982, "precision": 0.851, "f1": 0.912},
+    "Eruptive":      {"recall": 0.985, "precision": 0.795, "f1": 0.880}
+  },
+
+  "nonpspl_physical_precision": 0.986,
+  "nonpspl_demoted_fraction": 0.71,
+
+  "nonpspl_recall_by_dchi2": {
+    "160_2000":       0.904,
+    "2000_10000":     0.944,
+    "10000_100000":   0.949,
+    "100000_inf":     0.972
+  },
+
+  "cascade": {
+    "premature_flag_before": 0.42,
+    "premature_flag_after":  0.09,
+    "preonset_p_before": 0.411,
+    "preonset_p_after":  0.033,
+    "missed_planet_before": 0.055,
+    "missed_planet_after":  0.048
+  },
+
+  "slices": {
+    "planetary_q_lt_1e-2":     {"n": 7624,  "recall": 0.947},
+    "deep_planetary_q_lt_1e-3":{"n": 2477,  "recall": 0.892},
+    "near_suzuki_break":       {"n": 2308,  "recall": 0.905},
+    "faint_mbase_gt_22p5":     {"n": 19737, "recall": 0.943},
+    "high_extinction":         {"n": 21396, "recall": 0.949},
+    "no_blue_band":            {"n": 9243,  "recall": 0.918}
+  },
+
+  "stress": {
+    "n_events_millions": 12.9,
+    "natural_macro_f1": 0.927,
+    "seed_base_train": 20260720,
+    "seed_base_stress": 900000000
+  },
+
+  "model": {
+    "n_params": 505479,
+    "n_tokens": 156,
+    "n_tokens_f146": 108,
+    "n_tokens_colour": 24,
+    "d_model": 96,
+    "n_layers": 4,
+    "n_heads": 4,
+    "n_channels": 5,
+    "bins_f146": 864,
+    "bins_colour": 96,
+    "epochs_f146": 6912,
+    "cadence_f146_min": 15,
+    "cadence_colour_hr": 6,
+    "window_days": 72
+  }
+}

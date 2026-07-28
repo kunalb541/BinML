@@ -1,0 +1,1278 @@
+{
+  "regimes": {
+    "boundary": {
+      "n": 1056587,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9801,
+          "precision": 0.9939,
+          "f1": 0.9869,
+          "n": 781578
+        },
+        "PSPL": {
+          "recall": 0.9522,
+          "precision": 0.8837,
+          "f1": 0.9167,
+          "n": 30013
+        },
+        "NonPSPL": {
+          "recall": 0.9399,
+          "precision": 0.6529,
+          "f1": 0.7706,
+          "n": 2496
+        },
+        "PeriodicVar": {
+          "recall": 0.973,
+          "precision": 0.8853,
+          "f1": 0.9271,
+          "n": 77916
+        },
+        "LongPeriodVar": {
+          "recall": 0.8864,
+          "precision": 0.9067,
+          "f1": 0.8964,
+          "n": 36915
+        },
+        "Eruptive": {
+          "recall": 0.9636,
+          "precision": 0.9712,
+          "f1": 0.9673,
+          "n": 127669
+        }
+      }
+    },
+    "boundary2": {
+      "n": 1056649,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9894,
+          "precision": 0.9952,
+          "f1": 0.9923,
+          "n": 900750
+        },
+        "PSPL": {
+          "recall": 0.9431,
+          "precision": 0.8854,
+          "f1": 0.9134,
+          "n": 29990
+        },
+        "NonPSPL": {
+          "recall": 0.9373,
+          "precision": 0.6007,
+          "f1": 0.7321,
+          "n": 2535
+        },
+        "PeriodicVar": {
+          "recall": 0.9502,
+          "precision": 0.7974,
+          "f1": 0.8671,
+          "n": 20859
+        },
+        "LongPeriodVar": {
+          "recall": 0.7604,
+          "precision": 0.8683,
+          "f1": 0.8108,
+          "n": 11920
+        },
+        "Eruptive": {
+          "recall": 0.9328,
+          "precision": 0.9535,
+          "f1": 0.943,
+          "n": 90595
+        }
+      }
+    },
+    "close": {
+      "n": 571970,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9734,
+          "precision": 0.9745,
+          "f1": 0.974,
+          "n": 193093
+        },
+        "PSPL": {
+          "recall": 0.947,
+          "precision": 0.9944,
+          "f1": 0.9701,
+          "n": 179624
+        },
+        "NonPSPL": {
+          "recall": 0.9708,
+          "precision": 0.6443,
+          "f1": 0.7745,
+          "n": 37832
+        },
+        "PeriodicVar": {
+          "recall": 0.9873,
+          "precision": 0.9622,
+          "f1": 0.9746,
+          "n": 53527
+        },
+        "LongPeriodVar": {
+          "recall": 0.9794,
+          "precision": 0.8527,
+          "f1": 0.9116,
+          "n": 50723
+        },
+        "Eruptive": {
+          "recall": 0.9835,
+          "precision": 0.8346,
+          "f1": 0.903,
+          "n": 57171
+        }
+      }
+    },
+    "erupthard": {
+      "n": 913285,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9717,
+          "precision": 0.9878,
+          "f1": 0.9796,
+          "n": 349146
+        },
+        "PSPL": {
+          "recall": 0.9547,
+          "precision": 0.9468,
+          "f1": 0.9507,
+          "n": 139871
+        },
+        "NonPSPL": {
+          "recall": 0.9451,
+          "precision": 0.543,
+          "f1": 0.6897,
+          "n": 4845
+        },
+        "PeriodicVar": {
+          "recall": 0.9766,
+          "precision": 0.9077,
+          "f1": 0.9409,
+          "n": 23080
+        },
+        "LongPeriodVar": {
+          "recall": 0.9136,
+          "precision": 0.8042,
+          "f1": 0.8554,
+          "n": 13650
+        },
+        "Eruptive": {
+          "recall": 0.971,
+          "precision": 0.9785,
+          "f1": 0.9747,
+          "n": 382693
+        }
+      }
+    },
+    "flatrich": {
+      "n": 936655,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9894,
+          "precision": 0.9966,
+          "f1": 0.993,
+          "n": 672115
+        },
+        "PSPL": {
+          "recall": 0.9508,
+          "precision": 0.9614,
+          "f1": 0.9561,
+          "n": 29963
+        },
+        "NonPSPL": {
+          "recall": 0.9508,
+          "precision": 0.6706,
+          "f1": 0.7865,
+          "n": 2500
+        },
+        "PeriodicVar": {
+          "recall": 0.9873,
+          "precision": 0.9599,
+          "f1": 0.9734,
+          "n": 91885
+        },
+        "LongPeriodVar": {
+          "recall": 0.9773,
+          "precision": 0.9419,
+          "f1": 0.9593,
+          "n": 54459
+        },
+        "Eruptive": {
+          "recall": 0.9832,
+          "precision": 0.9862,
+          "f1": 0.9847,
+          "n": 85733
+        }
+      }
+    },
+    "longte": {
+      "n": 436151,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9674,
+          "precision": 0.9767,
+          "f1": 0.9721,
+          "n": 140945
+        },
+        "PSPL": {
+          "recall": 0.8125,
+          "precision": 0.9851,
+          "f1": 0.8905,
+          "n": 136972
+        },
+        "NonPSPL": {
+          "recall": 0.8304,
+          "precision": 0.6552,
+          "f1": 0.7325,
+          "n": 36985
+        },
+        "PeriodicVar": {
+          "recall": 0.987,
+          "precision": 0.9633,
+          "f1": 0.975,
+          "n": 40186
+        },
+        "LongPeriodVar": {
+          "recall": 0.9789,
+          "precision": 0.4071,
+          "f1": 0.5751,
+          "n": 38148
+        },
+        "Eruptive": {
+          "recall": 0.9837,
+          "precision": 0.4895,
+          "f1": 0.6537,
+          "n": 42915
+        }
+      }
+    },
+    "lpvhard": {
+      "n": 883490,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9794,
+          "precision": 0.9933,
+          "f1": 0.9863,
+          "n": 510759
+        },
+        "PSPL": {
+          "recall": 0.9549,
+          "precision": 0.9786,
+          "f1": 0.9666,
+          "n": 166658
+        },
+        "NonPSPL": {
+          "recall": 0.9395,
+          "precision": 0.538,
+          "f1": 0.6842,
+          "n": 5126
+        },
+        "PeriodicVar": {
+          "recall": 0.9855,
+          "precision": 0.9434,
+          "f1": 0.964,
+          "n": 19434
+        },
+        "LongPeriodVar": {
+          "recall": 0.9656,
+          "precision": 0.9368,
+          "f1": 0.951,
+          "n": 154174
+        },
+        "Eruptive": {
+          "recall": 0.98,
+          "precision": 0.8876,
+          "f1": 0.9315,
+          "n": 27339
+        }
+      }
+    },
+    "natural": {
+      "n": 4502855,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9727,
+          "precision": 0.9732,
+          "f1": 0.973,
+          "n": 1448588
+        },
+        "PSPL": {
+          "recall": 0.9418,
+          "precision": 0.9899,
+          "f1": 0.9652,
+          "n": 1307212
+        },
+        "NonPSPL": {
+          "recall": 0.9412,
+          "precision": 0.752,
+          "f1": 0.836,
+          "n": 535700
+        },
+        "PeriodicVar": {
+          "recall": 0.9875,
+          "precision": 0.962,
+          "f1": 0.9745,
+          "n": 401406
+        },
+        "LongPeriodVar": {
+          "recall": 0.9789,
+          "precision": 0.8579,
+          "f1": 0.9144,
+          "n": 380928
+        },
+        "Eruptive": {
+          "recall": 0.984,
+          "precision": 0.8301,
+          "f1": 0.9005,
+          "n": 429021
+        }
+      }
+    },
+    "oor_erupt_bigamp": {
+      "n": 82233,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9859,
+          "precision": 0.9917,
+          "f1": 0.9888,
+          "n": 41314
+        },
+        "PSPL": {
+          "recall": 0.9542,
+          "precision": 0.9898,
+          "f1": 0.9716,
+          "n": 18921
+        },
+        "NonPSPL": {
+          "recall": 0.9398,
+          "precision": 0.4097,
+          "f1": 0.5706,
+          "n": 798
+        },
+        "PeriodicVar": {
+          "recall": 0.9871,
+          "precision": 0.962,
+          "f1": 0.9744,
+          "n": 7674
+        },
+        "LongPeriodVar": {
+          "recall": 0.9747,
+          "precision": 0.9029,
+          "f1": 0.9374,
+          "n": 3598
+        },
+        "Eruptive": {
+          "recall": 0.9322,
+          "precision": 0.965,
+          "f1": 0.9483,
+          "n": 9928
+        }
+      }
+    },
+    "oor_erupt_slowrise": {
+      "n": 82194,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9856,
+          "precision": 0.9929,
+          "f1": 0.9892,
+          "n": 41692
+        },
+        "PSPL": {
+          "recall": 0.9583,
+          "precision": 0.9884,
+          "f1": 0.9732,
+          "n": 18766
+        },
+        "NonPSPL": {
+          "recall": 0.9126,
+          "precision": 0.3171,
+          "f1": 0.4707,
+          "n": 812
+        },
+        "PeriodicVar": {
+          "recall": 0.9879,
+          "precision": 0.9597,
+          "f1": 0.9736,
+          "n": 7675
+        },
+        "LongPeriodVar": {
+          "recall": 0.9847,
+          "precision": 0.9237,
+          "f1": 0.9532,
+          "n": 3651
+        },
+        "Eruptive": {
+          "recall": 0.8732,
+          "precision": 0.9636,
+          "f1": 0.9162,
+          "n": 9598
+        }
+      }
+    },
+    "oor_flat_bright": {
+      "n": 312259,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9897,
+          "precision": 0.9971,
+          "f1": 0.9934,
+          "n": 215327
+        },
+        "PSPL": {
+          "recall": 0.9571,
+          "precision": 0.9909,
+          "f1": 0.9737,
+          "n": 10446
+        },
+        "NonPSPL": {
+          "recall": 0.9611,
+          "precision": 0.6324,
+          "f1": 0.7629,
+          "n": 926
+        },
+        "PeriodicVar": {
+          "recall": 0.9951,
+          "precision": 0.975,
+          "f1": 0.985,
+          "n": 34753
+        },
+        "LongPeriodVar": {
+          "recall": 0.9858,
+          "precision": 0.9472,
+          "f1": 0.9661,
+          "n": 21586
+        },
+        "Eruptive": {
+          "recall": 0.995,
+          "precision": 0.9912,
+          "f1": 0.9931,
+          "n": 29221
+        }
+      }
+    },
+    "oor_flat_faint": {
+      "n": 159962,
+      "per_class": {
+        "Flat": {
+          "recall": 0.6364,
+          "precision": 0.9967,
+          "f1": 0.7768,
+          "n": 130133
+        },
+        "PSPL": {
+          "recall": 0.4907,
+          "precision": 0.1132,
+          "f1": 0.1839,
+          "n": 3721
+        },
+        "NonPSPL": {
+          "recall": 0.8489,
+          "precision": 0.0332,
+          "f1": 0.0639,
+          "n": 331
+        },
+        "PeriodicVar": {
+          "recall": 0.9456,
+          "precision": 0.5937,
+          "f1": 0.7294,
+          "n": 3330
+        },
+        "LongPeriodVar": {
+          "recall": 0.7732,
+          "precision": 0.1005,
+          "f1": 0.1779,
+          "n": 2553
+        },
+        "Eruptive": {
+          "recall": 0.7852,
+          "precision": 0.7996,
+          "f1": 0.7923,
+          "n": 19894
+        }
+      }
+    },
+    "oor_lpv_bigamp": {
+      "n": 82337,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9884,
+          "precision": 0.9913,
+          "f1": 0.9899,
+          "n": 35316
+        },
+        "PSPL": {
+          "recall": 0.9535,
+          "precision": 0.9896,
+          "f1": 0.9712,
+          "n": 19007
+        },
+        "NonPSPL": {
+          "recall": 0.9478,
+          "precision": 0.5852,
+          "f1": 0.7236,
+          "n": 882
+        },
+        "PeriodicVar": {
+          "recall": 0.9858,
+          "precision": 0.9594,
+          "f1": 0.9724,
+          "n": 7596
+        },
+        "LongPeriodVar": {
+          "recall": 0.9707,
+          "precision": 0.9822,
+          "f1": 0.9764,
+          "n": 9995
+        },
+        "Eruptive": {
+          "recall": 0.9823,
+          "precision": 0.9404,
+          "f1": 0.9609,
+          "n": 9541
+        }
+      }
+    },
+    "oor_lpv_longp": {
+      "n": 82148,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9856,
+          "precision": 0.9878,
+          "f1": 0.9867,
+          "n": 42181
+        },
+        "PSPL": {
+          "recall": 0.9571,
+          "precision": 0.9596,
+          "f1": 0.9583,
+          "n": 18905
+        },
+        "NonPSPL": {
+          "recall": 0.9513,
+          "precision": 0.5777,
+          "f1": 0.7189,
+          "n": 780
+        },
+        "PeriodicVar": {
+          "recall": 0.9915,
+          "precision": 0.9595,
+          "f1": 0.9752,
+          "n": 7623
+        },
+        "LongPeriodVar": {
+          "recall": 0.6047,
+          "precision": 0.8625,
+          "f1": 0.7109,
+          "n": 3104
+        },
+        "Eruptive": {
+          "recall": 0.9847,
+          "precision": 0.9519,
+          "f1": 0.9681,
+          "n": 9555
+        }
+      }
+    },
+    "oor_np_bigrho": {
+      "n": 82274,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9857,
+          "precision": 0.992,
+          "f1": 0.9888,
+          "n": 41569
+        },
+        "PSPL": {
+          "recall": 0.9574,
+          "precision": 0.9888,
+          "f1": 0.9728,
+          "n": 18926
+        },
+        "NonPSPL": {
+          "recall": 0.9436,
+          "precision": 0.6448,
+          "f1": 0.7661,
+          "n": 887
+        },
+        "PeriodicVar": {
+          "recall": 0.9897,
+          "precision": 0.9607,
+          "f1": 0.975,
+          "n": 7703
+        },
+        "LongPeriodVar": {
+          "recall": 0.9796,
+          "precision": 0.8986,
+          "f1": 0.9373,
+          "n": 3627
+        },
+        "Eruptive": {
+          "recall": 0.9831,
+          "precision": 0.9709,
+          "f1": 0.9769,
+          "n": 9562
+        }
+      }
+    },
+    "oor_np_closesep": {
+      "n": 81497,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9858,
+          "precision": 0.9917,
+          "f1": 0.9887,
+          "n": 41685
+        },
+        "PSPL": {
+          "recall": 0.9613,
+          "precision": 0.9925,
+          "f1": 0.9766,
+          "n": 18956
+        },
+        "NonPSPL": {
+          "recall": 0.973,
+          "precision": 0.0774,
+          "f1": 0.1433,
+          "n": 37
+        },
+        "PeriodicVar": {
+          "recall": 0.9867,
+          "precision": 0.9623,
+          "f1": 0.9744,
+          "n": 7664
+        },
+        "LongPeriodVar": {
+          "recall": 0.9803,
+          "precision": 0.9007,
+          "f1": 0.9388,
+          "n": 3607
+        },
+        "Eruptive": {
+          "recall": 0.9851,
+          "precision": 0.971,
+          "f1": 0.978,
+          "n": 9548
+        }
+      }
+    },
+    "oor_np_tinyq": {
+      "n": 81516,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9849,
+          "precision": 0.9918,
+          "f1": 0.9883,
+          "n": 41704
+        },
+        "PSPL": {
+          "recall": 0.957,
+          "precision": 0.9899,
+          "f1": 0.9732,
+          "n": 18928
+        },
+        "NonPSPL": {
+          "recall": 0.8333,
+          "precision": 0.011,
+          "f1": 0.0218,
+          "n": 6
+        },
+        "PeriodicVar": {
+          "recall": 0.9885,
+          "precision": 0.9577,
+          "f1": 0.9729,
+          "n": 7632
+        },
+        "LongPeriodVar": {
+          "recall": 0.9777,
+          "precision": 0.9133,
+          "f1": 0.9444,
+          "n": 3723
+        },
+        "Eruptive": {
+          "recall": 0.9834,
+          "precision": 0.9614,
+          "f1": 0.9723,
+          "n": 9523
+        }
+      }
+    },
+    "oor_np_widesep": {
+      "n": 81904,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9856,
+          "precision": 0.9906,
+          "f1": 0.9881,
+          "n": 41688
+        },
+        "PSPL": {
+          "recall": 0.9566,
+          "precision": 0.9788,
+          "f1": 0.9675,
+          "n": 18969
+        },
+        "NonPSPL": {
+          "recall": 0.2215,
+          "precision": 0.1755,
+          "f1": 0.1958,
+          "n": 438
+        },
+        "PeriodicVar": {
+          "recall": 0.9872,
+          "precision": 0.96,
+          "f1": 0.9734,
+          "n": 7563
+        },
+        "LongPeriodVar": {
+          "recall": 0.9776,
+          "precision": 0.9038,
+          "f1": 0.9392,
+          "n": 3698
+        },
+        "Eruptive": {
+          "recall": 0.9841,
+          "precision": 0.9666,
+          "f1": 0.9753,
+          "n": 9548
+        }
+      }
+    },
+    "oor_per_bigamp": {
+      "n": 82215,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9911,
+          "precision": 0.9878,
+          "f1": 0.9894,
+          "n": 39432
+        },
+        "PSPL": {
+          "recall": 0.952,
+          "precision": 0.9855,
+          "f1": 0.9684,
+          "n": 18852
+        },
+        "NonPSPL": {
+          "recall": 0.9376,
+          "precision": 0.5829,
+          "f1": 0.7188,
+          "n": 849
+        },
+        "PeriodicVar": {
+          "recall": 0.9451,
+          "precision": 0.997,
+          "f1": 0.9704,
+          "n": 9960
+        },
+        "LongPeriodVar": {
+          "recall": 0.9742,
+          "precision": 0.8995,
+          "f1": 0.9354,
+          "n": 3602
+        },
+        "Eruptive": {
+          "recall": 0.9845,
+          "precision": 0.941,
+          "f1": 0.9622,
+          "n": 9520
+        }
+      }
+    },
+    "oor_per_longp": {
+      "n": 82219,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9885,
+          "precision": 0.9886,
+          "f1": 0.9885,
+          "n": 42037
+        },
+        "PSPL": {
+          "recall": 0.9537,
+          "precision": 0.9871,
+          "f1": 0.9701,
+          "n": 18754
+        },
+        "NonPSPL": {
+          "recall": 0.9316,
+          "precision": 0.5579,
+          "f1": 0.6978,
+          "n": 833
+        },
+        "PeriodicVar": {
+          "recall": 0.0536,
+          "precision": 0.9349,
+          "f1": 0.1015,
+          "n": 7494
+        },
+        "LongPeriodVar": {
+          "recall": 0.9794,
+          "precision": 0.3263,
+          "f1": 0.4896,
+          "n": 3547
+        },
+        "Eruptive": {
+          "recall": 0.9828,
+          "precision": 0.9549,
+          "f1": 0.9687,
+          "n": 9554
+        }
+      }
+    },
+    "oor_per_tinyamp": {
+      "n": 82140,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9932,
+          "precision": 0.9949,
+          "f1": 0.9941,
+          "n": 49285
+        },
+        "PSPL": {
+          "recall": 0.9539,
+          "precision": 0.9877,
+          "f1": 0.9705,
+          "n": 18810
+        },
+        "NonPSPL": {
+          "recall": 0.9348,
+          "precision": 0.5718,
+          "f1": 0.7095,
+          "n": 767
+        },
+        "LongPeriodVar": {
+          "recall": 0.9798,
+          "precision": 0.9058,
+          "f1": 0.9414,
+          "n": 3715
+        },
+        "Eruptive": {
+          "recall": 0.9829,
+          "precision": 0.9686,
+          "f1": 0.9757,
+          "n": 9563
+        }
+      }
+    },
+    "oor_pspl_highu0": {
+      "n": 82200,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9874,
+          "precision": 0.9954,
+          "f1": 0.9914,
+          "n": 57476
+        },
+        "PSPL": {
+          "recall": 0.9445,
+          "precision": 0.9673,
+          "f1": 0.9558,
+          "n": 3193
+        },
+        "NonPSPL": {
+          "recall": 0.9231,
+          "precision": 0.7862,
+          "f1": 0.8492,
+          "n": 806
+        },
+        "PeriodicVar": {
+          "recall": 0.9881,
+          "precision": 0.9559,
+          "f1": 0.9718,
+          "n": 7590
+        },
+        "LongPeriodVar": {
+          "recall": 0.9801,
+          "precision": 0.9287,
+          "f1": 0.9537,
+          "n": 3626
+        },
+        "Eruptive": {
+          "recall": 0.9836,
+          "precision": 0.9725,
+          "f1": 0.978,
+          "n": 9509
+        }
+      }
+    },
+    "oor_pspl_longte": {
+      "n": 82223,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9844,
+          "precision": 0.9935,
+          "f1": 0.9889,
+          "n": 41138
+        },
+        "PSPL": {
+          "recall": 0.7149,
+          "precision": 0.9828,
+          "f1": 0.8277,
+          "n": 19449
+        },
+        "NonPSPL": {
+          "recall": 0.9392,
+          "precision": 0.3505,
+          "f1": 0.5105,
+          "n": 872
+        },
+        "PeriodicVar": {
+          "recall": 0.9891,
+          "precision": 0.9634,
+          "f1": 0.9761,
+          "n": 7637
+        },
+        "LongPeriodVar": {
+          "recall": 0.9817,
+          "precision": 0.3846,
+          "f1": 0.5526,
+          "n": 3607
+        },
+        "Eruptive": {
+          "recall": 0.9853,
+          "precision": 0.9619,
+          "f1": 0.9735,
+          "n": 9520
+        }
+      }
+    },
+    "oor_pspl_lowfs": {
+      "n": 82204,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9861,
+          "precision": 0.9932,
+          "f1": 0.9896,
+          "n": 41739
+        },
+        "PSPL": {
+          "recall": 0.9548,
+          "precision": 0.9892,
+          "f1": 0.9717,
+          "n": 18775
+        },
+        "NonPSPL": {
+          "recall": 0.9381,
+          "precision": 0.5851,
+          "f1": 0.7207,
+          "n": 840
+        },
+        "PeriodicVar": {
+          "recall": 0.9876,
+          "precision": 0.9625,
+          "f1": 0.9749,
+          "n": 7640
+        },
+        "LongPeriodVar": {
+          "recall": 0.9786,
+          "precision": 0.9103,
+          "f1": 0.9433,
+          "n": 3697
+        },
+        "Eruptive": {
+          "recall": 0.9837,
+          "precision": 0.9626,
+          "f1": 0.9731,
+          "n": 9513
+        }
+      }
+    },
+    "oor_pspl_shortte": {
+      "n": 82180,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9822,
+          "precision": 0.9787,
+          "f1": 0.9805,
+          "n": 48543
+        },
+        "PSPL": {
+          "recall": 0.524,
+          "precision": 0.97,
+          "f1": 0.6804,
+          "n": 12122
+        },
+        "NonPSPL": {
+          "recall": 0.9335,
+          "precision": 0.1096,
+          "f1": 0.1962,
+          "n": 827
+        },
+        "PeriodicVar": {
+          "recall": 0.9881,
+          "precision": 0.9591,
+          "f1": 0.9734,
+          "n": 7593
+        },
+        "LongPeriodVar": {
+          "recall": 0.9799,
+          "precision": 0.9301,
+          "f1": 0.9543,
+          "n": 3583
+        },
+        "Eruptive": {
+          "recall": 0.9843,
+          "precision": 0.8229,
+          "f1": 0.8964,
+          "n": 9512
+        }
+      }
+    },
+    "perhard": {
+      "n": 912976,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9592,
+          "precision": 0.9879,
+          "f1": 0.9733,
+          "n": 510890
+        },
+        "PSPL": {
+          "recall": 0.9539,
+          "precision": 0.9849,
+          "f1": 0.9692,
+          "n": 113213
+        },
+        "NonPSPL": {
+          "recall": 0.9439,
+          "precision": 0.5906,
+          "f1": 0.7266,
+          "n": 4816
+        },
+        "PeriodicVar": {
+          "recall": 0.9813,
+          "precision": 0.9249,
+          "f1": 0.9523,
+          "n": 229552
+        },
+        "LongPeriodVar": {
+          "recall": 0.9385,
+          "precision": 0.9003,
+          "f1": 0.919,
+          "n": 29090
+        },
+        "Eruptive": {
+          "recall": 0.976,
+          "precision": 0.9124,
+          "f1": 0.9431,
+          "n": 25415
+        }
+      }
+    },
+    "planet_res": {
+      "n": 422057,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9723,
+          "precision": 0.9727,
+          "f1": 0.9725,
+          "n": 144450
+        },
+        "PSPL": {
+          "recall": 0.9615,
+          "precision": 0.9897,
+          "f1": 0.9754,
+          "n": 135796
+        },
+        "NonPSPL": {
+          "recall": 0.8372,
+          "precision": 0.6777,
+          "f1": 0.749,
+          "n": 20476
+        },
+        "PeriodicVar": {
+          "recall": 0.9866,
+          "precision": 0.9628,
+          "f1": 0.9746,
+          "n": 40195
+        },
+        "LongPeriodVar": {
+          "recall": 0.9791,
+          "precision": 0.8645,
+          "f1": 0.9182,
+          "n": 38248
+        },
+        "Eruptive": {
+          "recall": 0.9843,
+          "precision": 0.8564,
+          "f1": 0.9159,
+          "n": 42892
+        }
+      }
+    },
+    "planet_wide": {
+      "n": 406561,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9727,
+          "precision": 0.9727,
+          "f1": 0.9727,
+          "n": 144950
+        },
+        "PSPL": {
+          "recall": 0.9597,
+          "precision": 0.9956,
+          "f1": 0.9773,
+          "n": 138544
+        },
+        "NonPSPL": {
+          "recall": 0.948,
+          "precision": 0.1693,
+          "f1": 0.2873,
+          "n": 2117
+        },
+        "PeriodicVar": {
+          "recall": 0.9871,
+          "precision": 0.9617,
+          "f1": 0.9742,
+          "n": 40120
+        },
+        "LongPeriodVar": {
+          "recall": 0.9786,
+          "precision": 0.8638,
+          "f1": 0.9176,
+          "n": 37901
+        },
+        "Eruptive": {
+          "recall": 0.9843,
+          "precision": 0.8516,
+          "f1": 0.9132,
+          "n": 42929
+        }
+      }
+    },
+    "planetary": {
+      "n": 546735,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9731,
+          "precision": 0.9739,
+          "f1": 0.9735,
+          "n": 192802
+        },
+        "PSPL": {
+          "recall": 0.9593,
+          "precision": 0.9944,
+          "f1": 0.9766,
+          "n": 183783
+        },
+        "NonPSPL": {
+          "recall": 0.8841,
+          "precision": 0.3605,
+          "f1": 0.5122,
+          "n": 8243
+        },
+        "PeriodicVar": {
+          "recall": 0.9873,
+          "precision": 0.9625,
+          "f1": 0.9747,
+          "n": 53501
+        },
+        "LongPeriodVar": {
+          "recall": 0.9783,
+          "precision": 0.8586,
+          "f1": 0.9145,
+          "n": 51182
+        },
+        "Eruptive": {
+          "recall": 0.9829,
+          "precision": 0.8509,
+          "f1": 0.9121,
+          "n": 57224
+        }
+      }
+    },
+    "wide": {
+      "n": 591370,
+      "per_class": {
+        "Flat": {
+          "recall": 0.9724,
+          "precision": 0.973,
+          "f1": 0.9727,
+          "n": 193310
+        },
+        "PSPL": {
+          "recall": 0.9365,
+          "precision": 0.9828,
+          "f1": 0.9591,
+          "n": 175729
+        },
+        "NonPSPL": {
+          "recall": 0.8388,
+          "precision": 0.6491,
+          "f1": 0.7319,
+          "n": 60607
+        },
+        "PeriodicVar": {
+          "recall": 0.988,
+          "precision": 0.9616,
+          "f1": 0.9747,
+          "n": 53615
+        },
+        "LongPeriodVar": {
+          "recall": 0.9784,
+          "precision": 0.8645,
+          "f1": 0.9179,
+          "n": 50996
+        },
+        "Eruptive": {
+          "recall": 0.985,
+          "precision": 0.8308,
+          "f1": 0.9014,
+          "n": 57113
+        }
+      }
+    }
+  },
+  "class_names": [
+    "Flat",
+    "PSPL",
+    "NonPSPL",
+    "PeriodicVar",
+    "LongPeriodVar",
+    "Eruptive"
+  ],
+  "natural_population": {
+    "n": 4502855,
+    "per_class": {
+      "Flat": {
+        "recall": 0.9727,
+        "precision": 0.9732,
+        "f1": 0.973,
+        "n": 1448588
+      },
+      "PSPL": {
+        "recall": 0.9418,
+        "precision": 0.9899,
+        "f1": 0.9652,
+        "n": 1307212
+      },
+      "NonPSPL": {
+        "recall": 0.9412,
+        "precision": 0.752,
+        "f1": 0.836,
+        "n": 535700
+      },
+      "PeriodicVar": {
+        "recall": 0.9875,
+        "precision": 0.962,
+        "f1": 0.9745,
+        "n": 401406
+      },
+      "LongPeriodVar": {
+        "recall": 0.9789,
+        "precision": 0.8579,
+        "f1": 0.9144,
+        "n": 380928
+      },
+      "Eruptive": {
+        "recall": 0.984,
+        "precision": 0.8301,
+        "f1": 0.9005,
+        "n": 429021
+      }
+    },
+    "macro_f1": 0.9273
+  }
+}

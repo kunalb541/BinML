@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "binml"
 version = "1.0.0"
-description = "BinML: a 6-class, multi-band deep-learning classifier for Nancy Grace Roman Space Telescope microlensing and variable light curves (Flat, PSPL, NonPSPL, PeriodicVar, LongPeriodVar, Eruptive). The earlier 3-class model is preserved at binml.legacy."
+description = "A real-time, detectability-conditioned deep-learning classifier for Nancy Grace Roman Space Telescope microlensing and variable light curves (6 classes: Flat, PSPL, NonPSPL, PeriodicVar, LongPeriodVar, Eruptive)."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
