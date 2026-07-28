@@ -183,7 +183,8 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
 
 - [Usage](docs/usage.md) · [Pipeline](docs/pipeline.md) · [Architecture](docs/architecture.md)
 - [Evaluation](docs/evaluation.md) · [Data format](docs/data_format.md) · [Model card](docs/model_card.md)
-- [Leakage audit](docs/leakage_audit.md) · [Legacy 3-class model](docs/legacy_3class.md)
+- [Glossary](docs/glossary.md) · [Leakage audit](docs/leakage_audit.md) · [Legacy 3-class model](docs/legacy_3class.md)
+- Runnable example: [`examples/quickstart.py`](examples/quickstart.py)
 
 ## Citing
 

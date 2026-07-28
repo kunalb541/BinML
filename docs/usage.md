@@ -38,6 +38,11 @@ r = clf.predict(t146, m146, m_base_ref=22.1)
   exactly what the model was trained on, and it lets the colour bands carry the source colour).
   Provide a catalogue value when you have one. If omitted, it is estimated from the faint tail of
   F146 — only reliable for short, well-sampled events.
+- **Realistic photometry matters.** The model was trained on Roman photometry *with*
+  blending and per-epoch noise/detectability. A perfectly-sampled, near-noiseless toy curve is
+  out-of-distribution and may be misread (e.g. a cuspy high-magnification peak with no scatter can
+  look like a caustic). Feed real observed light curves; for synthetic tests include a blend
+  fraction and realistic noise.
 - **Cadence.** The model expects Roman-quality sampling (dense 15-min F146). It bins your points
   onto the Roman epoch grid; sparse data yields low `observed-fraction` bins, which the model
   reads as "poorly observed."
