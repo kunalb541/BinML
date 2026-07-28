@@ -158,6 +158,60 @@ def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Gen
     return label
 
 
+def _apply_cadence(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
+                   params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
+                   min_keep: float = 0.02) -> int:
+    """Thin the OBSERVED bins to a random density and RE-LABEL by what survives.
+
+    BinML is trained on Roman's dense F146 sampling; a sparsely-sampled light curve is
+    out-of-distribution, and the base model reads it as a variable star (see the
+    validation/ cadence sweep). This augmentation drops a random fraction of the observed bins
+    so the model learns to classify from sparse coverage.
+
+    Crucially it relabels, on the same principle as ``_apply_truncation``: the point is NOT to
+    teach the model to detect an anomaly it never sampled -- that information is genuinely gone --
+    but to make it degrade GRACEFULLY. So (i) if the surviving bins no longer carry a detectable
+    signal, the event is Flat; and (ii) a binary whose caustic bin was dropped is, in the thinned
+    data, an ordinary PSPL, and is taught as such. This yields correct behaviour at ground-survey
+    cadence (a real single lens reads PSPL, an unsampled caustic reads PSPL) instead of the
+    catastrophic collapse to PeriodicVar.
+    """
+    # log-uniform keep fraction: emphasise the sparse regime that is most out-of-distribution
+    keep = float(np.exp(rng.uniform(np.log(min_keep), np.log(1.0))))
+    ref = out["F146"]
+    obs_idx = np.nonzero(ref[:, 4] > 0)[0]
+    if obs_idx.size == 0:
+        return label
+    n_keep = max(1, int(round(keep * obs_idx.size)))
+    drop = rng.permutation(obs_idx)[n_keep:]
+    for b, x in out.items():
+        # scale colour-band drops to the same keep fraction, independently
+        if b == "F146":
+            d = drop
+        else:
+            oi = np.nonzero(x[:, 4] > 0)[0]
+            nk = max(0, int(round(keep * oi.size)))
+            d = rng.permutation(oi)[nk:] if oi.size else oi
+        x[d, :3] = 0.0; x[d, 3] = 0.0; x[d, 4] = 0.0
+    if label == I_FLAT:
+        return label
+    # largest surviving baseline-relative deviation (channels are already /MAG_SCALE)
+    surv = ref[ref[:, 4] > 0]
+    peak = float(np.abs(surv[:, :3]).max()) * MAG_SCALE if surv.size else 0.0
+    if peak < TRUNC_MIN_AMP_MAG:
+        return I_FLAT                          # nothing detectable survives -> Flat
+    # a binary whose caustic bin did not survive is, as sampled, a plain PSPL
+    if label == I_NON and params is not None and pf_idx is not None and "t_anom" in pf_idx:
+        ta = params[pf_idx["t_anom"]]
+        if np.isfinite(ta):
+            nb = ref.shape[0]
+            anom_bin = int(np.clip(ta / 72.0 * nb, 0, nb - 1))
+            lo, hi = max(0, anom_bin - 1), min(nb, anom_bin + 2)   # caustic +/- 1 bin
+            if ref[lo:hi, 4].sum() == 0:        # anomaly window fully dropped
+                return I_PSPL
+    return label
+
+
 class CacheDataset(Dataset):
     """Serves pre-binned events from memory-mapped fp16 arrays.
 
@@ -172,13 +226,14 @@ class CacheDataset(Dataset):
                  weights: np.ndarray, dchi2_anom: np.ndarray, idx: np.ndarray,
                  truncate_aug: float = 0.0, seed: int = 0,
                  params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
-                 f_s_ref: Optional[np.ndarray] = None):
+                 f_s_ref: Optional[np.ndarray] = None, cadence_aug: float = 0.0):
         self.a = arrays
         self.labels = labels
         self.weights = weights
         self.dchi2_anom = dchi2_anom
         self.idx = idx
         self.truncate_aug = truncate_aug
+        self.cadence_aug = cadence_aug
         self._rng = np.random.default_rng(seed)
         self.params = params
         self.pf_idx = pf_idx
@@ -208,6 +263,9 @@ class CacheDataset(Dataset):
         if self.truncate_aug > 0 and self._rng.random() < self.truncate_aug:
             fs = float(self.f_s_ref[j]) if self.f_s_ref is not None else 0.5
             lab = _apply_truncation(out, lab, self._rng, self.params[j], self.pf_idx, fs)
+        if self.cadence_aug > 0 and self._rng.random() < self.cadence_aug:
+            pj = self.params[j] if self.params is not None else None
+            lab = _apply_cadence(out, lab, self._rng, pj, self.pf_idx)
         return (out, lab, float(self.weights[j]), float(self.dchi2_anom[j]))
 
 
@@ -314,6 +372,12 @@ def main(argv=None) -> int:
                          "Eruptive for 100%% of events at 0.985 confidence, because the "
                          "truncation edge reads as an outburst. This augmentation is what "
                          "makes early/online detection possible at all.")
+    ap.add_argument("--cadence-aug", type=float, default=0.0,
+                    help="probability of thinning an event's observed bins to a random density "
+                         "and relabelling by what survives (see _apply_cadence). Teaches graceful "
+                         "degradation to sparse, ground-survey-like cadence: the base model, "
+                         "trained only on Roman's dense grid, misreads a sparse light curve as a "
+                         "variable star (see validation/cadence_robustness.py).")
     ap.add_argument("--num-workers", type=int, default=0,
                     help="dataloader workers; safe with a memmap (workers share file pages, "
                          "so there is no per-worker copy of the dataset)")
@@ -364,7 +428,8 @@ def main(argv=None) -> int:
     mk = lambda idx, shuf: DataLoader(
         CacheDataset(arrays, labels, w_all, dchi2_anom, idx,
                      truncate_aug=args.truncate_aug if shuf else 0.0, seed=args.seed,
-                     params=params, pf_idx=pf_idx, f_s_ref=f_s_ref),
+                     params=params, pf_idx=pf_idx, f_s_ref=f_s_ref,
+                     cadence_aug=args.cadence_aug if shuf else 0.0),
         batch_size=args.batch_size, shuffle=shuf, collate_fn=collate,
         num_workers=args.num_workers, pin_memory=False,
         worker_init_fn=_seed_worker,          # else forked workers share one RNG -> correlated truncation
