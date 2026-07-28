@@ -54,6 +54,16 @@ cmd("bmlStressMacroF", three(s["natural_macro_f1"]))
 cmd("bmlSeedTrain", str(s["seed_base_train"]))
 cmd("bmlSeedStress", str(s["seed_base_stress"]))
 
+inf = cn["inference"]
+cmd("bmlInferEps", f"{inf['events_per_sec']:,}")
+cmd("bmlInferMs", two(inf["ms_per_event"]))
+cmd("bmlInferCores", str(inf["cpu_cores"]))
+cmd("bmlDetLag", str(inf["median_detection_lag_days"]))
+
+fp = cn["false_positive"]
+cmd("bmlMissedRate", three(fp["missed_planet_rate"]))
+cmd("bmlLPVtoPSPL", three(fp["long_period_var_to_pspl"]))
+
 sl = cn["slices"]
 cmd("bmlSliceDeepPlanet", three(sl["deep_planetary_q_lt_1e-3"]["recall"]))
 cmd("bmlSlicePlanet", three(sl["planetary_q_lt_1e-2"]["recall"]))

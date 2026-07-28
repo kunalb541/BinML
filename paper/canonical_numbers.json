@@ -63,6 +63,20 @@
     "seed_base_stress": 900000000
   },
 
+  "inference": {
+    "_comment": "measured on CPU, batch 1024, torch inference_mode; see make_data_figures notes",
+    "events_per_sec": 1224,
+    "ms_per_event": 0.82,
+    "cpu_cores": 10,
+    "median_detection_lag_days": 5
+  },
+
+  "false_positive": {
+    "_comment": "timing false positives = premature flags; missed planets = false negatives",
+    "missed_planet_rate": 0.048,
+    "long_period_var_to_pspl": 0.010
+  },
+
   "model": {
     "n_params": 505479,
     "n_tokens": 156,

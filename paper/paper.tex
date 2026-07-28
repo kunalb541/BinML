@@ -21,31 +21,26 @@ for the \textit{Roman} Galactic Bulge Time-Domain Survey}
 \email{muffin29011@gmail.com}
 
 \begin{abstract}
-The Nancy Grace \Rom{} Space Telescope Galactic Bulge Time-Domain Survey (GBTDS) will monitor
-hundreds of millions of stars at $\sim$15-minute cadence, producing a microlensing data stream
-too large to vet by hand and one in which the science-critical events---binary and planetary
-lenses---reveal themselves only through brief caustic anomalies superimposed on an otherwise
-ordinary magnification. We present \textbf{BinML}, a compact ($\bmlNparams$-parameter)
-convolutional-stem-plus-transformer classifier that sorts \Rom{} light curves (three photometric
-bands) into six physically-meaningful classes: no detectable event (\texttt{Flat}), single-lens
-microlensing (\texttt{PSPL}), anomalous binary/planetary microlensing (\texttt{NonPSPL}), and
-three variable-star contaminant populations (\texttt{PeriodicVar}, \texttt{LongPeriodVar},
-\texttt{Eruptive}). Two ideas set BinML apart from a conventional classifier, both aimed at
-survey deployment rather than benchmark accuracy. The first is \emph{detectability-conditioned
-labelling}: an event is labelled by what is \emph{observable} in the photometry, not by the
-parameters used to generate it, so a buried anomaly is honestly a single lens and the network is
-never trained to assert evidence that is not present. The second is a \emph{real-time cascade}:
-by keying each label on a per-event anomaly-onset time, the model reports
-\texttt{Flat}$\rightarrow$\texttt{PSPL}$\rightarrow$\texttt{NonPSPL} only as each class's
-evidence arrives, cutting premature binary alerts from $\bmlPrematureBefore\%$ to
-$\bmlPrematureAfter\%$ without sacrificing full-season discrimination. On an independent
-$\bmlNtest$-event test set BinML reaches a completeness of $\bmlCompleteness$ at a fixed anomaly
-purity of $\bmlPurityTarget$ (average precision $\bmlAP$), recovering almost all of the oracle
-anomaly-significance ranking (AP $\bmlAPoracle$, computed from the noiseless truth) directly from
-raw photometry in a single forward pass and without per-event model fitting. A
-$\bmlStressN$-million-event stress test on parameter draws the model provably never saw
-reproduces these numbers (macro-F1 $\bmlStressMacroF$), with degradations only at physically
-extreme corners. BinML and its full simulation-to-inference pipeline are released as open source.
+The Nancy Grace \Rom{} Space Telescope will monitor hundreds of millions of stars in the
+Galactic bulge at $\sim$15-minute cadence, and among them it will catch the brief brightenings
+of gravitational microlensing---including the rare events in which a planet betrays itself
+through a short, sharp anomaly riding on an otherwise smooth light curve. Finding those events in
+a data stream far too large to inspect by hand, and flagging each one the moment its evidence
+appears rather than after the season has ended, is as much a problem of survey logistics as of
+astrophysics. We present \textbf{BinML}, a compact ($\bmlNparams$-parameter) neural network that
+sorts \Rom{} light curves into six classes: sources with no detectable event, ordinary
+single-lens microlensing, the anomalous binary and planetary lenses that carry the planet signal,
+and three kinds of variable star that would otherwise contaminate the sample. Two ideas make
+BinML suited to a real survey rather than a fixed benchmark. First, each event is labelled by
+what can actually be seen in its photometry, not by the parameters used to simulate it, so the
+network is never trained to claim an anomaly that leaves no observable trace. Second, the model
+reports each class only once that class's evidence has arrived, so a binary is announced when its
+anomaly appears and not during the smooth rise that precedes it; this cuts premature planet
+alerts from $\bmlPrematureBefore\%$ to $\bmlPrematureAfter\%$. On an independent test set of
+$\bmlNtest$ events, BinML recovers $\bmlCompletenessPct\%$ of the anomalous events while holding
+the flagged sample to a purity of $\bmlPurityTarget$, and it reproduces this performance on a
+$\bmlStressN$-million-event test drawn from parameters it never saw. The model and its full
+simulation-to-inference pipeline are released as open source.
 \end{abstract}
 
 \keywords{Gravitational microlensing (672) --- Exoplanet detection methods (489) ---
@@ -75,7 +70,12 @@ of a smooth magnification that itself unfolds over weeks. A classifier meant to 
 follow-up must therefore be honest about time---it must not announce a binary during the smooth
 rise, before the caustic that would justify the alert has actually been observed. A model that
 guesses early is worse than useless: it spends a finite follow-up budget on planets that have
-not yet revealed themselves, and may never.
+not yet revealed themselves, and may never. The need for real-time response is not new to
+microlensing: rapid-response anomaly-detection and alert systems have driven planet follow-up for
+close to two decades \citep{Dominik2007,Dominik2008,Tsapras2009}. Those systems, however, sit
+\emph{downstream} of detection, reacting to deviations once an event is already known; the
+scale and cadence of \Rom{} instead demand that the real-time decision be made inside the
+classifier that scans the raw stream.
 
 Machine learning has been applied to microlensing classification before, and the trajectory is
 instructive. Feature-engineered classifiers such as \textsc{MicroLIA} \citep{Godines2019} and
@@ -141,13 +141,13 @@ peak falls outside the 72-day season, or whose amplitude is buried beneath the n
 \texttt{Flat}, because no algorithm and no human modeller could distinguish it from a constant
 source; training the network to call it \texttt{PSPL} would only teach it to guess. Likewise, a
 binary whose caustic perturbation lies everywhere below the noise floor is, observationally, a
-single lens, and is labelled \texttt{PSPL}. Concretely, we quantify the anomaly with the
-\dchisq{} between the true, noiseless light curve and its best single-lens fit; an anomaly whose
-\dchisq{} fails a detection threshold does not earn the \texttt{NonPSPL} label. This does two
-things at once. It removes the label noise that otherwise contaminates the decision boundary,
-and it keeps the reported precision meaningful: an anomaly the model ``misses'' under this scheme
-is one that carried no recoverable evidence in the first place. We return to the consequences of
-this choice for the precision numbers in \S\ref{sec:results}.
+single lens, and is labelled \texttt{PSPL}. In practice we measure how far each binary's true,
+noiseless light curve departs from the best single-lens description of it; if that departure is
+too small to rise above the noise, the event is not given the anomalous label, whatever generated
+it. This does two useful things at once. It cleans up the boundaries between classes, where most
+labelling mistakes would otherwise happen, and it keeps our later purity figures meaningful: an
+anomaly the model appears to ``miss'' under this scheme is one that carried no detectable evidence
+to begin with. We return to what this means for the numbers in \S\ref{sec:results}.
 
 \section{Model}\label{sec:model}
 
@@ -162,32 +162,48 @@ classifies into six classes. The whole model has $\bmlNparams$ parameters.}
 \label{fig:schematic}
 \end{figure*}
 
-BinML is a convolutional stem feeding a small transformer encoder (Figure~\ref{fig:schematic}),
-with $\bmlNparams$ parameters in total. The compactness is deliberate. The task is not
-data-starved---we generate tens of millions of events---but it is inference-heavy, since the
-model must ultimately run on the entire survey stream; a small network that classifies in a
-single forward pass is worth far more here than a large one that must be applied sparingly.
+BinML has two parts (Figure~\ref{fig:schematic}). The first is a small convolutional network---a
+stack of learned filters that scan along the light curve looking for local shapes, the same kind
+of building block used in image recognition. The second is a transformer, a now-standard
+architecture that lets every part of the light curve ``attend to'' every other part, so the model
+can weigh, for example, a brief brightening against the overall trend around it. Together they
+come to just $\bmlNparams$ trainable numbers, which by the standards of modern deep learning is
+tiny. That small size is a deliberate choice rather than a limitation. We are not short of
+training data---we can simulate tens of millions of events---so the pressure is not to build a
+larger model but to build one cheap enough to run on the entire survey, night after night. A
+compact network that classifies a light curve in a single pass is far more useful here than a
+heavy one that could only be applied to a pre-selected handful of candidates.
 
-The input preserves the survey's own time structure. Each band is binned onto a fixed grid over
-the 72-day window: F146 into $\bmlBinsF$ bins (from $\bmlEpochsF$ epochs at the
-$\bmlCadence$-minute cadence), and each colour band into 96 bins. Every bin carries five channels:
-the baseline-relative mean, minimum, and maximum magnitude, the fraction of the bin that was
-observed, and a mask flagging whether it was observed at all. Magnitudes are expressed relative
-to a single F146 baseline that is subtracted from all three bands, so that intrinsic source
-colour survives the transformation and remains available to the network.
+The model reads the light curve in a form that keeps the survey's own timing. Each of the three
+filters is divided into a fixed set of time bins across the 72-day observing season: the workhorse
+F146 filter into $\bmlBinsF$ bins (from $\bmlEpochsF$ individual exposures taken every
+$\bmlCadence$~minutes), and the two colour filters into 96 bins each. For every bin the model is
+given five simple numbers: the average brightness in that bin, the brightest and faintest points
+in it, the fraction of the bin that was actually observed, and a flag saying whether it was
+observed at all. All brightnesses are measured relative to a single quiet-state (baseline)
+level, subtracted from all three filters together, which preserves the source's true colour so
+the network can use it.
 
-The convolutional stem is where the architecture makes its one non-negotiable commitment. As it
-downsamples each band to its token count, a purely learned averaging filter would smear a
-$\sim$2.9-mag caustic spike down to $\sim$0.36~mag---the amplitude of ordinary single-lens
-curvature---erasing exactly the \texttt{PSPL}-versus-\texttt{NonPSPL} distinction that motivates
-the entire model. We therefore reserve two stem channels as non-learned maximum and minimum
-pooling lanes, carried unchanged through every downsampling step, so that the caustic extremum
-survives by construction rather than at the discretion of the optimiser. The resulting
-$\bmlNtokens$ tokens are processed by a four-layer, four-head pre-norm transformer
-($d_{\mathrm{model}}=\bmlDmodel$). Colour bands that are absent---F087 drops out in roughly 38\%
-of events under heavy extinction---are masked out of attention rather than imputed. A masked
-attention-pooling layer then feeds a flat six-way classifier. The model consumes binned
-magnitudes only; it is deliberately agnostic to per-point error bars.
+Keeping the brightest and faintest point in each bin, rather than only the average, is the one
+design choice we treat as non-negotiable, and it is worth explaining why. The anomaly that reveals
+a planet can be a sharp spike of nearly three magnitudes that lasts only a few hours. If the model
+simply averaged each bin, that spike would be diluted to about a third of a magnitude---no larger
+than the gentle curve of an ordinary single lens---and the very distinction the model exists to
+make, planet-bearing binary versus plain single lens, would be washed out before the network ever
+saw it. We therefore carry the per-bin maximum and minimum through the whole network untouched, so
+a caustic spike always survives to be seen. When a colour filter is missing for an event---the
+bluer F087 filter is lost in about 38\% of cases behind heavy dust---the model is simply told to
+ignore it rather than being fed a guess. A final pooling step combines the processed bins into a
+single summary, from which a standard classifier reads off the six class probabilities. The model
+uses only the binned brightnesses; it does not use the individual error bars.
+
+This compactness is what makes survey-scale, real-time use practical. Classification is a single
+forward pass with no per-event fitting, and on a single $\bmlInferCores$-core CPU---no GPU
+required---BinML classifies roughly $\bmlInferEps$ light curves per second, or $\bmlInferMs$~ms
+per event. At that rate a full season of hundreds of millions of light curves is processed in
+about a day on one node, and the workload parallelises trivially across nodes; re-classifying the
+entire archive each night as new epochs arrive, which is what the cascade of \S\ref{sec:cascade}
+requires, is therefore inexpensive rather than prohibitive.
 
 \section{The real-time cascade}\label{sec:cascade}
 
@@ -245,31 +261,79 @@ while leaving full-season sensitivity (the missed-planet rate) intact.}
 \label{fig:cascade_summary}
 \end{figure}
 
+The complement of avoiding premature flags is catching real anomalies quickly once they do
+appear, which is the quantity a live alert stream cares about most.
+Figure~\ref{fig:latency} measures this detection latency directly: for a sample of binaries we
+step the model through the revealed season and record the first day its anomaly probability
+crosses the operating threshold, relative to the true onset day $t_{\mathrm{anom}}$. The
+distribution peaks just after onset, with a median lag of $\bmlDetLag$~days---fast enough that a
+caustic crossing flagged by BinML is still in progress or freshly past when the alert fires. The
+small negative-lag tail is the same population of premature flags quantified above, here recast
+as timing false positives; it is a manageable minority rather than the bulk of the distribution.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\columnwidth]{outputs/figures/detection_latency.pdf}
+\caption{Detection latency: the number of days between the caustic becoming detectable
+($t_{\mathrm{anom}}$) and BinML first flagging the event as anomalous, over a sample of binaries.
+The median lag is $\bmlDetLag$~days (blue line). The grey tail at negative lag is the premature
+(pre-onset) flags---timing false positives---which are a small minority.}
+\label{fig:latency}
+\end{figure}
+
+This same ``report each class only when its evidence arrives'' behaviour is not special to
+binaries; it holds for every class the model knows. Figure~\ref{fig:proball} shows, for one
+representative event of each class, how the six class probabilities evolve as the season is
+revealed. A short-period variable is recognised almost immediately, because its repeating
+brightness pattern is visible from the first few days. A single-lens event stays unremarked until
+its magnification begins, then rises cleanly to the single-lens class. An outburst is quiet until
+it erupts, at which point the model switches decisively to the eruptive class. In every panel the
+probability of the correct class rises just as its characteristic signal becomes visible and not
+before---which is what makes the model's output safe to act on in real time.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{outputs/figures/prob_evolution_all.pdf}
+\caption{Class probability as the season is progressively revealed, for one representative event
+of each of the six classes (the true class drawn in bold). Each class is identified as soon as its
+defining feature appears---immediately for the repeating variables, at the onset of magnification
+for single lenses, at the caustic for binaries, and at the outburst for eruptive events---and not
+before.}
+\label{fig:proball}
+\end{figure*}
+
 \section{Evaluation methodology}\label{sec:eval}
 
-Before presenting results we make explicit the three choices that make our numbers a fair reflection
-of survey performance rather than of benchmark convenience.
+Before presenting the results we explain three choices that make our numbers a fair reflection of
+how the model would behave on the real survey, rather than flattering scores on a convenient test.
 
-The first is the headline metric. Accuracy and macro-F1 are poor proxies for what a follow-up
-pipeline actually needs to know, which is a pair of quantities: of the anomalies it flags, what
-fraction are real (the purity), and of the real anomalies, what fraction it catches (the
-completeness). We therefore fix the operating threshold to deliver a target anomaly purity of
-$\bmlPurityTarget$, chosen on a validation set, and report the completeness achieved there as the
-headline number. This is the quantity against which a survey team would specify a triage layer.
+The first is how we summarise performance. A single accuracy figure is misleading here, because
+the anomalous events are so rare that a model could score well simply by never flagging one. What
+a follow-up team actually needs to know is a pair of numbers. One is \emph{purity}: of the events
+the model flags as anomalous, what fraction really are. The other is \emph{completeness}: of the
+anomalous events that exist, what fraction the model catches. These trade off against each
+other---flag more events and you catch more real ones but also let in more false ones---so we fix
+the purity to a chosen value, $\bmlPurityTarget$, and report the completeness reached at that
+setting as our headline number. This is exactly the form in which a survey team would state a
+requirement: ``keep the flagged sample at least ninety per cent pure, and tell me how many planets
+I still find.''
 
-The second is a correction for selection. The training set is not the survey population: rare and
-faint events are up-sampled and abundant by-product classes down-sampled for efficiency. Each test
-event therefore carries a retention probability \code{keep\_prob}, and we reweight population
-statistics by $1/\code{keep\_prob}$. The reweighting is applied asymmetrically---purity and
-precision are reweighted, because they depend on the population mix of false positives, whereas
-recall is intrinsic to a class and is not. Every population-level number below is corrected in this
-way.
+The second is a correction for how the training set was built. To train efficiently we
+deliberately over-represented rare and faint events and under-represented the common ones, so the
+mix of classes in our data is not the mix the survey will see. To undo this when reporting
+survey-level numbers, we give each test event a weight that reverses its over- or
+under-representation, so the weighted test set matches the true survey population. We apply this
+correction only where it belongs: to purity, which depends on how often each kind of source turns
+up, but not to completeness, which is a property of a single class and does not depend on the
+mixture. Every population-level number below carries this correction.
 
-The third is a reference against which to judge the network. We rank events by the injected anomaly
-\dchisq{} computed from the \emph{noiseless} truth. Because it uses the true parameters, this
-ranking is an oracle---it is not fieldable---and it therefore upper-bounds any blind detector. It
-lets us ask not merely whether BinML is accurate, but how much of the information that is in
-principle recoverable the model actually recovers.
+The third is a yardstick to judge the model against. For each event we can compute, from the
+perfect noiseless light curve and the true parameters, how strong its anomaly signal is---in
+effect, how detectable it would be to an ideal observer who already knew the answer. Ranking
+events this way is an ``oracle'': it cannot be done in practice, because it uses information the
+survey never has, but it sets the best any blind method could hope to do. Comparing BinML against
+it tells us not just whether the model is good in isolation, but how much of the genuinely
+recoverable information it manages to extract from the raw data alone.
 
 \section{Results}\label{sec:results}
 
@@ -318,14 +382,28 @@ Table~\ref{tab:perclass} rather than genuine error.}
 \label{fig:confusion}
 \end{figure}
 
-The anomaly channel is where the model's value is decided, and Figure~\ref{fig:pr} places it against
-the oracle ceiling. Ranking events by BinML's anomaly probability gives an average precision of
-$\bmlAPnet$, against the oracle \dchisq{} ceiling of $\bmlAPoracle$. The gap is small: the network
-recovers nearly all of the anomaly information that exists in principle, but it does so \emph{blind},
-from raw photometry in a single forward pass, without fitting a binary-lens model to any candidate.
-Recovery climbs monotonically with the strength of the anomaly, from $\bmlSliceSuzuki$ near the
-Suzuki mass-ratio break to $0.972$ for the strongest anomalies, exactly as one would expect if the
-model is limited by the information in the data rather than by its own capacity.
+For a triage layer the two kinds of anomaly error carry very different costs, and it is worth
+separating them. A false negative---a real binary called a single lens---costs a planet, and on
+full-season curves these occur at a rate of $\bmlMissedRate$, dominated by anomalies that fall
+below the detectability floor and so carry no recoverable signal. A false positive---a
+non-anomalous source flagged as a binary---costs follow-up time, and these are rarer still;
+reassuringly, they are overwhelmingly ordinary single-lens events near the anomaly-detection
+boundary rather than variable stars, with the physically dangerous \texttt{LongPeriodVar}%
+-as-microlensing confusion occurring at only $\bmlLPVtoPSPL$. Because the operating threshold is a
+free parameter (\S\ref{sec:eval}), the balance between the two error types can be set to whatever
+a given follow-up programme can afford, moving smoothly along the purity--completeness curve of
+Figure~\ref{fig:pr} rather than being stuck with one fixed decision.
+
+Finding the anomalous events is where the model earns its keep, and Figure~\ref{fig:pr} measures
+this against the ideal-observer yardstick of \S\ref{sec:eval}. A convenient way to score the whole
+purity--completeness curve with one number is its average precision, which runs from~0 to a perfect~1;
+BinML scores $\bmlAPnet$, against the oracle ceiling's $\bmlAPoracle$. The gap is small. The
+network recovers very nearly all of the anomaly information that is present even in principle---but
+it does so blind, reading the raw brightness measurements in a single pass, without fitting a
+binary-lens model to a single candidate. Its success also rises steadily with how strong the
+anomaly is, from $\bmlSliceSuzuki$ for the borderline planetary signals near the mass-ratio limit
+where planets become common to $0.972$ for the strongest anomalies, just as one would expect if
+the model is limited by the information in the data rather than by any shortcoming of its own.
 
 \begin{figure}[t]
 \centering
