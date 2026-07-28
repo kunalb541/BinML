@@ -7,9 +7,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-echo "[1/3] figures";  python3 make_figures.py
-echo "[2/3] macros";   python3 make_macros.py
-echo "[3/3] latex"
+echo "[1/4] figures from eval artifact"; python3 make_figures.py
+echo "[2/4] figures from simulated events (slower)"; python3 make_data_figures.py
+echo "[3/4] macros";   python3 make_macros.py
+echo "[4/4] latex"
 export PATH="/Library/TeX/texbin:$PATH"
 pdflatex -interaction=nonstopmode -halt-on-error paper.tex >build.log 2>&1 || { tail -40 build.log; exit 1; }
 bibtex paper            >>build.log 2>&1 || { tail -40 build.log; exit 1; }

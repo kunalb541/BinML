@@ -12,13 +12,18 @@ cd paper && ./build.sh
 Produces `paper.pdf`. Requires a TeX Live distribution (`pdflatex`, `bibtex`) and Python with
 `numpy` + `matplotlib`. The build is three deterministic steps:
 
-1. **`make_figures.py`** — regenerates every figure in `outputs/figures/` from the archived
-   evaluation artifact in `results/` (the independent 450,589-event evaluation of the production
-   model). Also writes `outputs/figures_stats.json` with numbers derived here (the oracle Δχ²
-   average precision).
-2. **`make_macros.py`** — turns `canonical_numbers.json` (+ `figures_stats.json`) into
+1. **`make_figures.py`** — the figures derivable from the archived evaluation artifact in
+   `results/` (confusion matrix, NonPSPL PR vs oracle Δχ² ceiling, efficiency plane, parameter
+   dependence, cascade summary, model schematic). Also writes `outputs/figures_stats.json` with
+   numbers derived here (the oracle Δχ² average precision).
+2. **`make_data_figures.py`** — the figures that need raw light curves: it *simulates*
+   representative events (deterministic seeds) with the `pipeline` stack, runs them through the
+   shipped model, and renders the per-class light-curve gallery and the real-time-cascade
+   probability-evolution figure. Slower (~1 min) because it simulates and classifies many events
+   to pick clean examples; needs `VBBinaryLensing`, `h5py`, `scipy`.
+3. **`make_macros.py`** — turns `canonical_numbers.json` (+ `figures_stats.json`) into
    `paper_macros.tex`, the `\bml*` command set the manuscript cites.
-3. **`pdflatex × bibtex × pdflatex × 2`** — compiles `paper.tex`.
+4. **`pdflatex × bibtex × pdflatex × 2`** — compiles `paper.tex`.
 
 ## Why it's reproducible
 
@@ -37,6 +42,7 @@ other papers.
 | `canonical_numbers.json` | single source of truth for all numbers |
 | `make_macros.py` | JSON → `paper_macros.tex` |
 | `make_figures.py` | artifact → `outputs/figures/*.pdf` |
+| `make_data_figures.py` | simulated events → light-curve gallery + cascade evolution |
 | `refs.bib` | bibliography |
 | `build.sh` | one-command reproducible build |
 | `results/` | archived evaluation artifact (logits, labels, keep_prob, metrics.json, …) |
