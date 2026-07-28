@@ -114,7 +114,9 @@ in all three bands together, as microlensing is achromatic; the three
 variable-star classes span short-period pulsators and eclipsing binaries (\texttt{PeriodicVar},
 shown phase-folded), slow red-giant variability (\texttt{LongPeriodVar}), and outbursts
 (\texttt{Eruptive}). The visual separability of the caustic signature from ordinary single-lens
-curvature is precisely what the model must preserve.}
+curvature is precisely what the model must preserve. Throughout this paper, illustrative events are
+selected as high-confidence, correctly-classified representatives of each class rather than at
+random; aggregate performance across all events is reported in \S\ref{sec:results}.}
 \label{fig:gallery}
 \end{figure*}
 
@@ -151,6 +153,21 @@ it. This does two useful things at once. It cleans up the boundaries between cla
 labelling mistakes would otherwise happen, and it keeps our later purity figures meaningful: an
 anomaly the model appears to ``miss'' under this scheme is one that carried no detectable evidence
 to begin with. We return to what this means for the numbers in \S\ref{sec:results}.
+
+The scale of this relabelling is not a detail but the point. Across the test set,
+$\bmlRelabelled\%$ of events receive an observational label that differs from the class they were
+generated as---that is, more than a third of all events would carry a demonstrably misleading
+label under the naive scheme of labelling by generator intent. The effect is concentrated exactly
+where it should be: of the events generated as binary or planetary lenses, only $\bmlNonpsplKept\%$
+show a detectable anomaly and keep the anomalous label, while $\bmlNonpsplToPspl\%$ have a caustic
+perturbation buried below the noise and are, correctly, indistinguishable from single lenses;
+similarly, $\bmlLpvToFlat\%$ of the long-period variables vary too weakly within a single season
+to be detected and are labelled flat. Training a network against generator intent would therefore
+ask it to assert, on more than a third of its examples, evidence that is physically absent---the
+definition of label noise. Conditioning the labels on detectability removes it at the source. A
+full ablation that retrains the network on generator-intent labels and measures the resulting
+degradation is the natural next experiment, and we flag it as such; here we establish the size of
+the mislabelling the scheme corrects.
 
 \section{Model}\label{sec:model}
 
@@ -203,9 +220,11 @@ uses only the binned brightnesses; it does not use the individual error bars.
 This compactness is what makes survey-scale, real-time use practical. Classification is a single
 forward pass with no per-event fitting, and on a single $\bmlInferCores$-core CPU---no GPU
 required---BinML classifies roughly $\bmlInferEps$ light curves per second, or $\bmlInferMs$~ms
-per event. At that rate a full season of hundreds of millions of light curves is processed in
-about a day on one node, and the workload parallelises trivially across nodes; re-classifying the
-entire archive each night as new epochs arrive, which is what the cascade of \S\ref{sec:cascade}
+per event. At that rate the network's own arithmetic keeps
+pace with a full season of hundreds of millions of light curves in about a day on one node---in
+a real deployment, reading and binning the light curves, rather than the forward pass, would set
+the throughput---and the workload parallelises trivially across nodes. Re-classifying the entire
+archive each night as new epochs arrive, which is what the cascade of \S\ref{sec:cascade}
 requires, is therefore inexpensive rather than prohibitive.
 
 \section{The real-time cascade}\label{sec:cascade}
@@ -347,19 +366,19 @@ anomaly purity of $\bmlPurity$, with an anomaly average precision of $\bmlAP$. P
 performance is collected in Table~\ref{tab:perclass}, and the full confusion structure in
 Figure~\ref{fig:confusion}.
 
-\begin{deluxetable}{lccc}
+\begin{deluxetable}{lcccc}
 \tablecaption{Per-class performance on the independent $\bmlNtest$-event test set
-(population-weighted).\label{tab:perclass}}
-\tablehead{\colhead{Class} & \colhead{Recall} & \colhead{Precision} & \colhead{F1}}
+(population-weighted). Support is the number of test events carrying each label.\label{tab:perclass}}
+\tablehead{\colhead{Class} & \colhead{Support} & \colhead{Recall} & \colhead{Precision} & \colhead{F1}}
 \startdata
-Flat          & \bmlFlatR          & \bmlFlatP          & \bmlFlatF \\
-PSPL          & \bmlPSPLR          & \bmlPSPLP          & \bmlPSPLF \\
-NonPSPL       & \bmlNonPSPLR       & \bmlNonPSPLP       & \bmlNonPSPLF \\
-PeriodicVar   & \bmlPeriodicVarR   & \bmlPeriodicVarP   & \bmlPeriodicVarF \\
-LongPeriodVar & \bmlLongPeriodVarR & \bmlLongPeriodVarP & \bmlLongPeriodVarF \\
-Eruptive      & \bmlEruptiveR      & \bmlEruptiveP      & \bmlEruptiveF \\
+Flat          & \bmlSupFlat          & \bmlFlatR          & \bmlFlatP          & \bmlFlatF \\
+PSPL          & \bmlSupPSPL          & \bmlPSPLR          & \bmlPSPLP          & \bmlPSPLF \\
+NonPSPL       & \bmlSupNonPSPL       & \bmlNonPSPLR       & \bmlNonPSPLP       & \bmlNonPSPLF \\
+PeriodicVar   & \bmlSupPeriodicVar   & \bmlPeriodicVarR   & \bmlPeriodicVarP   & \bmlPeriodicVarF \\
+LongPeriodVar & \bmlSupLongPeriodVar & \bmlLongPeriodVarR & \bmlLongPeriodVarP & \bmlLongPeriodVarF \\
+Eruptive      & \bmlSupEruptive      & \bmlEruptiveR      & \bmlEruptiveP      & \bmlEruptiveF \\
 \hline
-\multicolumn{3}{l}{Macro-F1} & \bmlMacroF \\
+\multicolumn{4}{l}{Macro-F1} & \bmlMacroF \\
 \enddata
 \tablecomments{The apparently low \texttt{NonPSPL} precision ($\bmlNonPSPLP$) is dominated by
 labelling, not error: $\bmlNonpsplDemoted$ of its ``false positives'' are genuine binaries whose
@@ -467,6 +486,21 @@ to missing data is likewise encouraging: events observed without the blue band a
 $\bmlSliceNoBlue$, confirming that the model degrades gracefully rather than failing when colour
 information is unavailable.
 
+One assumption underlying every number in this paper deserves to be stated plainly, because it is
+the most consequential modelling choice we make. The boundaries between our classes---flat versus
+event, and single lens versus anomalous---are set not only by a goodness-of-fit threshold but also
+by a minimum detectable amplitude, which we fix at twenty times an assumed one-millimagnitude
+systematic floor. This floor stands in for the correlated, night-to-week photometric systematics
+that do not average down the way independent per-epoch noise does, and which no real pipeline can
+follow below some level; we adopt a fixed amplitude cut rather than modelling a full red-noise
+process. It is, however, a modelling choice and not a measured property of \Rom{}, and because it
+sits on both class boundaries at once, the absolute completeness and purity we quote will shift if
+the true systematic floor differs from our assumption. The \emph{relative} results---the size of
+the label surgery, the direction and magnitude of the cascade effect, the shape of the parameter
+dependence---are far less sensitive to it, but a quantitative recalibration of this floor against a
+real \Rom{} red-noise estimate is a prerequisite before the absolute numbers are used to set a
+survey requirement.
+
 \section{Discussion}\label{sec:discussion}
 
 BinML is built to be a triage layer for the \Rom{} GBTDS: a cheap first pass that flags candidate
@@ -519,7 +553,10 @@ against the underlying data.
 \section*{Data availability}
 BinML, its trained weights, and the full simulation-to-inference pipeline are openly available at
 \url{https://github.com/kunalb541/BinML}. Every figure and number in this paper is regenerated
-from the archived evaluation artifact by the build script in that repository.
+from an archived evaluation artifact by the build script in that repository, so the results and
+figures are reproducible from the repository alone. The full multi-million-event training set is
+too large to host there and is available on request; it can also be regenerated from the released
+simulation code, since each shard is seeded deterministically by its index.
 
 \appendix
 
@@ -542,14 +579,14 @@ the compact binned shards, a few dollars per month.
 
 \paragraph{Training (local, with a cloud comparison).} The network is small enough that it was
 trained end to end on a personal computer, on the \bmlTrainDevice, at a batch size of
-$\bmlTrainBatch$. We measured a sustained training throughput of about $\bmlTrainEps$ events per
-second including the backward pass, so a full training run of a few passes over the
-$\bmlSimEvents$-million-event set completes in roughly $\bmlTrainHours$~hours. On local hardware the
-marginal cost of this is essentially only electricity---of order ten cents' worth---since no compute
-is rented. For comparison, renting a modest cloud GPU (for example on AWS or Modal) would train the
-same model appreciably faster but at a cost of only a few dollars, given the model's small size;
-either way, the end-to-end cost of building BinML from scratch is dominated by neither training nor
-inference but is negligible. This is a direct consequence of the design choice to keep the network
+$\bmlTrainBatch$. A benchmark of the training step (forward and backward pass on a full batch)
+sustains about $\bmlTrainEps$ events per second, which puts a full training run of a few passes
+over the $\bmlSimEvents$-million-event set at roughly $\bmlTrainHours$~hours of wall-clock, and the
+production model was trained in this range. On local hardware the marginal cost is essentially only
+electricity---of order ten cents' worth---since no compute is rented. For comparison, renting a
+modest cloud GPU (for example on AWS or Modal) would train the same model faster but for a cost of
+order a few dollars, given its small size. Either way, the end-to-end cost of building BinML from
+scratch is dominated by neither training nor inference and is negligible. This is a direct consequence of the design choice to keep the network
 compact (\S\ref{sec:model}): the entire pipeline, from simulation through training to survey-scale
 inference, runs at hobbyist cost rather than requiring a dedicated computing allocation.
 

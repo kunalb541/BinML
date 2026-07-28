@@ -40,6 +40,16 @@ for c, v in cn["per_class"].items():
 cmd("bmlNonpsplPhysP", three(cn["nonpspl_physical_precision"]))
 cmd("bmlNonpsplDemoted", pct(cn["nonpspl_demoted_fraction"]))
 
+sup = cn["per_class_support"]
+for c in ["Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"]:
+    cmd(f"bmlSup{c}", f"{sup[c]:,}")
+
+lab = cn["labelling"]
+cmd("bmlRelabelled", f"{lab['overall_relabelled_pct']:.1f}")
+cmd("bmlNonpsplKept", f"{lab['nonpspl_kept_pct']:.1f}")
+cmd("bmlNonpsplToPspl", f"{lab['nonpspl_to_pspl_pct']:.1f}")
+cmd("bmlLpvToFlat", f"{lab['lpv_to_flat_pct']:.1f}")
+
 cas = cn["cascade"]
 cmd("bmlPrematureBefore", pct(cas["premature_flag_before"]))
 cmd("bmlPrematureAfter", pct(cas["premature_flag_after"]))

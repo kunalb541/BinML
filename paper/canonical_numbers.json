@@ -28,6 +28,21 @@
     "Eruptive":      {"recall": 0.985, "precision": 0.795, "f1": 0.880}
   },
 
+  "per_class_support": {
+    "_comment": "number of test events carrying each observational label (of 450,589)",
+    "Flat": 144829, "PSPL": 131125, "NonPSPL": 53404,
+    "PeriodicVar": 40119, "LongPeriodVar": 38179, "Eruptive": 42933
+  },
+
+  "labelling": {
+    "_comment": "label surgery performed by detectability-conditioned labelling, vs generation class",
+    "overall_relabelled_pct": 39.5,
+    "nonpspl_kept_pct": 37.3,
+    "nonpspl_to_pspl_pct": 54.6,
+    "lpv_to_flat_pct": 63.6,
+    "pspl_to_flat_pct": 11.7
+  },
+
   "nonpspl_physical_precision": 0.986,
   "nonpspl_demoted_fraction": 0.71,
 
