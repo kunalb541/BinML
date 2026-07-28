@@ -26,9 +26,11 @@ monitor hundreds of millions of stars at $\sim$15-minute cadence, yielding a mic
 data stream far too large to vet by hand and rich enough that the science-critical events---%
 binary and planetary lenses---announce themselves only during brief caustic anomalies. We
 present \textbf{BinML}, a compact ($\bmlNparams$-parameter) convolutional-stem-plus-transformer
-classifier that sorts three-band \Rom{} light curves into six physically-meaningful classes
-(flat, single-lens \texttt{PSPL}, anomalous \texttt{NonPSPL}, and three variable-star
-contaminant classes). BinML introduces two ideas aimed at survey deployment rather than
+classifier that sorts \Rom{} light curves (three photometric bands) into six
+physically-meaningful classes: no detectable event (\texttt{Flat}), single-lens microlensing
+(\texttt{PSPL}), anomalous binary/planetary microlensing (\texttt{NonPSPL}), and three
+variable-star contaminant populations (\texttt{PeriodicVar}, \texttt{LongPeriodVar},
+\texttt{Eruptive}). BinML introduces two ideas aimed at survey deployment rather than
 benchmark accuracy. First, \emph{detectability-conditioned labelling}: an event is labelled by
 what is \emph{observable} in the photometry, not by the parameters used to generate it, so a
 buried anomaly is honestly a single lens and the model is never trained to hallucinate evidence
