@@ -49,6 +49,16 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
+
+def _seed_worker(worker_id):
+    """Re-seed each DataLoader worker's RNG. Without this, forked workers inherit an identical
+    numpy RNG state, so the random truncation fraction (and thus the detectability relabelling)
+    is correlated across workers -- the augmentation degenerates as num_workers grows."""
+    import numpy as _np, torch as _t
+    info = _t.utils.data.get_worker_info()
+    if info is not None and hasattr(info.dataset, "_rng"):
+        info.dataset._rng = _np.random.default_rng(info.seed % (2**32))
+
 from .classes import CLASS_NAMES, N_CLASSES
 from .model import BAND_BINS, IN_CH, BinMLv5, ModelConfigV5
 
@@ -357,6 +367,7 @@ def main(argv=None) -> int:
                      params=params, pf_idx=pf_idx, f_s_ref=f_s_ref),
         batch_size=args.batch_size, shuffle=shuf, collate_fn=collate,
         num_workers=args.num_workers, pin_memory=False,
+        worker_init_fn=_seed_worker,          # else forked workers share one RNG -> correlated truncation
         persistent_workers=args.num_workers > 0)
     dl_tr, dl_va, dl_te = mk(tr, True), mk(va, False), mk(te, False)
 
@@ -454,10 +465,9 @@ def main(argv=None) -> int:
         # makedirs before EVERY save, not just the best one. A run whose output directory
         # disappears mid-flight (moved, unmounted) would otherwise die here at the end of an
         # epoch with a bare FileNotFoundError, losing the whole run.
-        os.makedirs(os.path.dirname(last_path) or ".", exist_ok=True)
-        torch.save({"model": model.state_dict(), "opt": opt.state_dict(),
-                    "sched": sched.state_dict(), "epoch": ep, "best": best,
-                    "best_ep": best_ep, "history": hist}, last_path)
+        # Update the best-tracking BEFORE writing .last, so the resume checkpoint records the
+        # up-to-date best/best_ep. Writing .last first stored a stale `best`, so a resumed run
+        # could re-evaluate an early worse epoch as "new best" and overwrite args.out.
         if score > best:
             best, best_ep = score, ep
             os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
@@ -467,6 +477,10 @@ def main(argv=None) -> int:
                         "val_nonpspl_recall": m["recall"]["NonPSPL"],
                         "val_nonpspl_precision": m["precision"]["NonPSPL"],
                         "class_names": CLASS_NAMES, "seed": args.seed}, args.out)
+        os.makedirs(os.path.dirname(last_path) or ".", exist_ok=True)
+        torch.save({"model": model.state_dict(), "opt": opt.state_dict(),
+                    "sched": sched.state_dict(), "epoch": ep, "best": best,
+                    "best_ep": best_ep, "history": hist}, last_path)
 
     print(f"\nbest epoch {best_ep}, val NonPSPL F1 {best:.3f}")
     model.load_state_dict(torch.load(args.out, map_location=dev)["model"])

@@ -260,6 +260,9 @@ CONTAMINANT_IDS = (3, 4, 5)
 
 
 class HierarchicalHead(nn.Module):
+    # NOTE: UNUSED. BinMLv5.forward ships a flat 6-way softmax head; this factored head and
+    # ``hierarchical_loss`` were evaluated and scored slightly worse, so they are NOT wired in.
+    # Kept for reference/experiments. The prose below describes the tested-but-unused design.
     """Factorised head: P(class) = P(event) * P(kind | event) * P(sub | kind)."""
 
     def __init__(self, d_model: int, dropout: float = 0.1):

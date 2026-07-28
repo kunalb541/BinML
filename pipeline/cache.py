@@ -103,6 +103,8 @@ def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:
         if verbose and (i + 1) % 20 == 0:
             print(f"  binned {i+1} shards, {n_total:,} events", flush=True)
 
+    if n_total == 0:
+        raise ValueError("build_cache: no non-empty shards in input (nothing to bin)")
     m_base = np.concatenate(scal["m_base_ref"]).astype(np.float32)
     with h5py.File(out_path, "w") as o:
         o.attrs["cache_version"] = CACHE_VERSION

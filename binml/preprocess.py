@@ -15,6 +15,7 @@ Key inputs a user controls:
 """
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Dict, Optional, Tuple
 
@@ -41,12 +42,17 @@ class Tokens:
 
 
 def estimate_baseline(mag: np.ndarray) -> float:
-    """Faint-tail baseline estimate. Microlensing brightens the source, so the quiescent
-    level is the FAINT side of the distribution; the 80th percentile is a robust proxy for a
-    short event where most epochs are at baseline. Prefer passing a catalogue value."""
+    """Faint-tail baseline estimate (a FALLBACK; pass a catalogue value when you can).
+
+    Microlensing brightens the source, so the quiescent level is the FAINT (large-magnitude)
+    side. The 90th percentile is used rather than the median because a blended or long event
+    keeps most epochs slightly brightened, so the median is biased bright — and a bright
+    baseline error makes the whole (baseline-relative) curve read as slow variability, which
+    can flip a real microlensing event to LongPeriodVar. Even so this is only reliable for
+    short, well-sampled events; provide ``m_base_ref`` for anything else."""
     mag = np.asarray(mag, float)
     mag = mag[np.isfinite(mag)]
-    return float(np.percentile(mag, 80)) if mag.size else 0.0
+    return float(np.percentile(mag, 90)) if mag.size else 0.0
 
 
 def bin_band(time: np.ndarray, mag: np.ndarray, band: str, m_base_ref: float,
@@ -96,18 +102,36 @@ def to_tokens(bands: Dict[str, Tuple[np.ndarray, np.ndarray]],
     """
     if "F146" not in bands:
         raise ValueError("F146 is required (it is the band the model always expects present)")
+    t146, m146 = bands["F146"]
+    if not np.isfinite(np.asarray(t146, float)).any() or not np.isfinite(np.asarray(m146, float)).any():
+        raise ValueError("F146 has no finite (time, magnitude) observations")
     if t_start is None:
-        t_start = min(float(np.nanmin(np.asarray(t))) for t, _ in bands.values())
+        t_start = min(float(np.nanmin(np.asarray(t))) for t, _ in bands.values()
+                      if np.isfinite(np.asarray(t, float)).any())
     if m_base_ref is None:
-        m_base_ref = estimate_baseline(bands["F146"][1])
+        m_base_ref = estimate_baseline(m146)
+        warnings.warn(
+            "m_base_ref not given; estimating the F146 baseline from the faint tail. This is "
+            "unreliable except for short, well-sampled events and can misclassify (e.g. "
+            "microlensing -> LongPeriodVar). Pass the catalogue F146 baseline magnitude.",
+            stacklevel=2)
     feat, frac, npts = {}, {}, {}
     for b in BAND_BINS:
         if b in bands:
             t, m = bands[b]
+            ta = np.asarray(t, float)
+            n_out = int(((ta < t_start) | (ta > t_start + WINDOW_DAYS)).sum())
+            if n_out and n_out > 0.05 * max(np.isfinite(ta).sum(), 1):
+                warnings.warn(f"{b}: {n_out} observations fall outside the 72-day window from "
+                              f"t_start={t_start:.1f} and are dropped; set t_start to window them.",
+                              stacklevel=2)
             feat[b], frac[b], npts[b] = bin_band(t, m, b, m_base_ref, t_start)
         else:                                   # absent band -> all-empty (model masks it out)
             feat[b] = np.full((BAND_BINS[b], 3), np.nan, np.float32)
             frac[b] = np.zeros(BAND_BINS[b], np.float32)
             npts[b] = 0
+    if npts.get("F146", 0) == 0:
+        raise ValueError("no F146 observations fell inside the 72-day window from "
+                         f"t_start={t_start:.1f}; check units (days) and t_start")
     return Tokens(feat=feat, frac=frac, m_base={"ref": float(m_base_ref)},
                   t_start=float(t_start), n_points=npts)

@@ -28,7 +28,7 @@ import numpy as np
 from .model import BAND_BINS
 
 SCALARS = ("label", "true_class", "keep_prob", "dchi2_event", "dchi2_anomaly",
-           "m_base_ref", "a_ks", "n_usable_bands")
+           "m_base_ref", "a_ks")  # n_usable_bands dropped: it was buffered but never saved
 # Per-band bookkeeping kept for slicing (colour-band present/absent, blending).
 PERBAND = ("f_s", "n_kept")
 

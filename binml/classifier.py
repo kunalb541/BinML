@@ -104,7 +104,9 @@ class Classifier:
         """Classify one event.
 
         ``predict({"F146": (t, mag), ...})`` for multi-band, or ``predict(t, mag)`` for
-        F146-only. ``m_base_ref`` (the F146 baseline magnitude) is recommended; otherwise estimated.
+        F146-only. ``m_base_ref`` (the F146 baseline magnitude) is recommended; otherwise
+        estimated (with a warning). NOTE: ``mag_err`` is accepted for call-signature convenience
+        but IGNORED — the model is error-agnostic (it consumes binned magnitudes only).
         """
         if isinstance(light_curve, dict):
             bands = {b: (np.asarray(v[0], float), np.asarray(v[1], float))

@@ -265,7 +265,9 @@ def main(argv=None) -> int:
     ap.add_argument("--worker", type=int, default=0)
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--bucket", type=str, default=None)
-    ap.add_argument("--prefix", type=str, default="v5/raw")
+    ap.add_argument("--prefix", type=str, default="v5/raw",
+                    help="output prefix. MUST be regime-specific: the resume skip-check keys on "
+                         "prefix/shard_NNNNN.h5, so two --regime runs sharing a prefix collide.")
     ap.add_argument("--out", type=str, default=None)
     ap.add_argument("--regime", type=str, default=None,
                     help="regime override: " + ", ".join(list(HARD_REGIMES) + list(CONFIG_REGIMES) + list(OOR_REGIMES) + list(OOR_CONFIG)))

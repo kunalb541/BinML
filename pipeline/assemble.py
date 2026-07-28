@@ -31,6 +31,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from .classes import CLASS_REGISTRY, label_of
+from .priors import DEFAULT_PRIORS
 from .generators import GENERATORS, pspl_magnification
 from .photometry import (ROMAN_BANDS, BulgeExtinction, observe,
                          blend_fraction_in_band, photometric_sigma)
@@ -231,7 +232,7 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     # detection limit -- which made every light curve noise-dominated.
     m_base_ref_obs = float(rng.uniform(cfg.m_base_min, cfg.m_base_max))
     ext_ref = ext.extinction_mag(ref_band, a_ks)
-    f_s_ref = float(10.0 ** rng.uniform(math.log10(0.1), math.log10(1.0)))
+    f_s_ref = (priors or DEFAULT_PRIORS).sample_fs(rng)   # was hardcoded 0.1-1.0 (== default prior)
     blend_colour = float(rng.normal(0.0, 0.6))   # (blend - source) colour, mag/dex
 
     # --- event parameters, with t0 drawn over a PADDED range (never centred) -----
@@ -253,9 +254,11 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     # the grading the rest of the pipeline uses.
     if param_override is not None:
         param_override(true_class, params, rng)
-        if "tE" in params:                       # re-pad t0 if tE was changed
+        if "tE" in params:                       # re-pad t0 when the override changed tE
             pad = min(cfg.t0_pad_tE * params["tE"], cfg.t0_pad_max_frac * cfg.window_days)
-            params.setdefault("t0", float(rng.uniform(-pad, cfg.window_days + pad)))
+            # unconditional: t0 was already drawn above, so setdefault was a no-op and the
+            # t0 pad never tracked an overridden tE (corrupted tE-sweep OOR populations).
+            params["t0"] = float(rng.uniform(-pad, cfg.window_days + pad))
 
     # An ACHROMATIC signal is evaluated ONCE on the finest grid and indexed down to the
     # coarser bands, making "identical in every band" structural rather than a consequence
@@ -282,7 +285,10 @@ def simulate_event(true_class: str, rng: np.random.Generator,
         flux_ratio = 1.0 + f_s_b * delta                  # SHARED dilution machinery
         flux_ratio = np.maximum(flux_ratio, 1e-8)
 
-        # differential extinction relative to the reference band
+        # Per-band baseline = reference baseline + DIFFERENTIAL EXTINCTION only. SIMPLIFICATION:
+        # the source's intrinsic SED colour is not modelled (the source is treated as grey in
+        # AB); band-to-band baseline offsets come purely from extinction. Colour information the
+        # model uses is therefore extinction- and blending-driven, not intrinsic-colour-driven.
         m_base_band = m_base_ref_obs + (ext.extinction_mag(band, a_ks) - ext_ref)
         mag_true = m_base_band - 2.5 * np.log10(flux_ratio)
 
