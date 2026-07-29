@@ -1,19 +1,35 @@
 # Real-data validation
 
-BinML is trained on Roman's dense three-band cadence. These scripts probe how it behaves on
-real, single-band, sparse archival data — and quantify the domain gap.
+Two models, two regimes. **BinML v1** (6-class, 3-band) is a *specialist* for Roman's dense
+15-min cadence. The **legacy 3-class single-band model** (`binml.legacy`) is the tool for real,
+sparse, ground-based light curves. These scripts establish that division with real OGLE-IV events.
 
-- **`cadence_robustness.py`** — subsamples dense simulated events to a range of point densities
-  and measures anomaly recovery. Result: recovery is intact at Roman's native ~96 pts/day,
-  degrades by ~40 pts/day, and **collapses below ~20 pts/day** (sparse peaks read as variable
-  stars). This is the quantitative statement of the sparse-cadence limitation.
+## Scripts
 
-- **`real_data_validate.py`** — fetches real OGLE-IV EWS events (single I-band) and runs BinML in
-  single-band mode (colour masked). Confirms the sweep on real data: at OGLE's ~nightly cadence
-  BinML does not recognise known events, because that cadence is far below the ~20 pts/day floor.
+- **`cadence_robustness.py`** — subsamples dense simulated events across point densities and
+  measures anomaly recovery. Recovery is intact at Roman's native ~96 pts/day, ~0.71 at ~40/day,
+  and **collapses below ~20 pts/day** (sparse peaks read as variable stars). This is the
+  quantitative *scope boundary* of v1, not a bug: Roman will deliver dense cadence.
+
+- **`real_data_validate.py`** — runs BinML v1 (single-band mode) on real OGLE-IV events. Every
+  event → PeriodicVar, confirming the sweep: OGLE's ~nightly cadence is an order of magnitude
+  below v1's floor. v1 is out of scope for sparse ground data by design.
+
+- **`microlia_compare.py`** — MicroLIA (Godines+2019) on the same real events. **Health warning:**
+  MicroLIA is bit-rotted (PyPI 2.8.1 missing its Mira simulator; GitHub main won't import — dead
+  RRLyrae template URL), so this monkeypatches two simulators; numbers are indicative.
+
+## Real-data results (8 known OGLE-IV anomalous events)
+
+| model | what it answers | result |
+|---|---|---|
+| **legacy 3-class (single-band)** | Flat / PSPL / **Binary** | **4/8 flagged Binary** — every strong caustic-crossing binary correct (2014-BLG-0289, 2013-BLG-0578, 2013-BLG-0341, 2015-BLG-0966); misses are subtle low-amplitude planets |
+| **MicroLIA** | microlensing / variable / CV / … | 6/8 detected as microlensing, but **no binary/anomaly class** — cannot flag the planet |
+| **BinML v1 (6-class, single-band mode)** | 6 classes | fails: OGLE cadence far below its dense-cadence floor (out of scope) |
 
 ## Conclusion
-The current model needs ~Roman-like dense cadence. Meaningful real-data validation therefore
-requires either (a) dense-cadence real events (KMTNet, or Roman itself), or (b) making the model
-cadence-robust via subsampling augmentation during training. Single-band mode itself works — a
-dense simulated event classifies correctly with F146 alone; only sparsity breaks it.
+The legacy single-band model validates on real ground data — it correctly flags the strong real
+binaries and recognises microlensing. MicroLIA detects microlensing but stops there; distinguishing
+the anomaly is exactly what BinML adds. BinML v1 is a Roman-cadence specialist and is validated on
+simulations until Roman (or a comparably dense survey) flies; real sparse data is served by the
+legacy model.
