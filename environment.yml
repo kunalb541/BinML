@@ -1,4 +1,4 @@
-name: microlens
+name: binml
 channels:
   - pytorch
   - conda-forge

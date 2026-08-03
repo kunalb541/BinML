@@ -82,17 +82,20 @@ Per-class F1 (population-weighted, selection-corrected):
 - **Completeness at fixed purity: 0.879** (the headline a follow-up pipeline is specified
   against, not accuracy or F1). Average precision 0.952.
 - **The cascade works:** premature NonPSPL flagging (calling a binary before its anomaly is
-  observable) dropped **42% → 9%** — a 12× reduction — with no loss on full-season discrimination.
-- **Generalises to unseen parameters:** a 12.9-million-event stress test on parameter draws the
-  model never saw reproduces the held-out numbers, with documented failure modes only at the
-  out-of-range extremes.
+  observable) dropped **42% → 9%** — a factor of ~4.7 (78% fewer) — with no loss on full-season
+  discrimination; the mean pre-onset anomaly probability fell further, 0.411 → 0.033.
+- **Generalises to unseen parameter draws:** a ~19-million-event stress set from a disjoint seed
+  reproduces the held-out numbers on its natural-population subset; several out-of-range regimes
+  degrade, and are documented rather than hidden.
 
 Full methodology and the honest reading of each number: [`docs/evaluation.md`](docs/evaluation.md).
 
 ## Install
 
+BinML is not yet on PyPI; install the inference package (torch ≥ 2.0 + numpy, weights bundled)
+from source:
 ```bash
-pip install binml            # inference: torch + numpy, weights bundled
+pip install git+https://github.com/kunalb541/BinML.git
 ```
 For the full simulation/training pipeline (adds `h5py`, `scipy`, and `VBBinaryLensing` for
 binary-lens generation) use the conda environment:
