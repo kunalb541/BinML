@@ -15,6 +15,14 @@ sparse, ground-based light curves. These scripts establish that division with re
   event → PeriodicVar, confirming the sweep: OGLE's ~nightly cadence is an order of magnitude
   below v1's floor. v1 is out of scope for sparse ground data by design.
 
+- **`kmtnet_validate.py`** — BinML v1 on real KMTNet events (the densest ground survey, ~3-site
+  10-15 min cadence). Still fails: even events at 60-80 pts/day → PeriodicVar. A controlled test
+  shows why — dense simulated events thinned *uniformly* to ~60/day keep ~0.7 anomaly recall, but
+  the same events observed through a realistic ~8h *nightly* window collapse to 0.00. It is the
+  diurnal sampling gap (read as ~1-day variability), not the average rate. No ground network
+  escapes the day/night cycle; v1 needs Roman's continuous space cadence. **Validation of v1
+  genuinely awaits Roman.**
+
 - **`microlia_compare.py`** — MicroLIA (Godines+2019) on the same real events. **Health warning:**
   MicroLIA is bit-rotted (PyPI 2.8.1 missing its Mira simulator; GitHub main won't import — dead
   RRLyrae template URL), so this monkeypatches two simulators; numbers are indicative.

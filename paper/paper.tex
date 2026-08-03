@@ -491,12 +491,21 @@ cadence. Its discriminating power---the non-learned min/max lanes that preserve 
 colour bands, the fine time grid---presumes the $\sim$15-minute F146 sampling the survey will
 deliver. On the far sparser cadence of an archival ground survey the model is out of its regime, and
 should not be applied there: this is a matter of scope, not of accuracy, since \Rom{} will supply
-exactly the sampling the model is built for. Where dense-cadence real events are wanted before
-\Rom{} flies, the natural test bed is a high-cadence ground network such as KMTNet. Sparse
-single-band archival data is instead the province of simpler feature- or single-band models---and,
-as a sanity check that the overall approach transfers to real photometry at all, an earlier
-single-band variant of this model correctly flagged the caustic-crossing binary lenses
-OGLE-2014-BLG-0289 and OGLE-2013-BLG-0578 in real OGLE-IV data.
+exactly the sampling the model is built for. The obstacle is more fundamental than raw cadence.
+Even the densest existing survey, the three-site KMTNet, does not validate the model: applied to
+real KMTNet events---including several sampled at $60$--$80$ points per day, above the density at
+which \emph{uniform} subsampling of our simulations still works---the model misclassifies them as
+periodic variables. The cause is the sampling \emph{pattern}, not its mean rate: ground data is
+clustered into nightly visits separated by daytime gaps, and that near-diurnal periodicity is read
+as stellar variability. A controlled test makes the point cleanly---dense simulated events thinned
+uniformly to $60$ points per day retain anomaly recall near $0.7$, but the same events observed
+through a realistic eight-hour nightly window collapse to zero. Roman's uninterrupted,
+space-based cadence has no such gaps, and no ground network can reproduce it. Genuine validation of
+the model in its own regime therefore awaits \Rom{}. Sparse single-band archival data is meanwhile
+the province of simpler feature- or single-band models---and, as a sanity check that the overall
+approach transfers to real photometry at all, an earlier single-band variant of this model
+correctly flagged the caustic-crossing binary lenses OGLE-2014-BLG-0289 and OGLE-2013-BLG-0578 in
+real OGLE-IV data.
 
 One assumption underlying every number in this paper deserves to be stated plainly, because it is
 the most consequential modelling choice we make. The boundaries between our classes---flat versus
@@ -526,11 +535,12 @@ anticipated, which is the precondition for autonomous follow-up. That BinML atta
 anomaly ranking blind, in a single forward pass, is what makes running it across the full survey
 stream feasible where per-event binary-lens fitting never could be.
 
-The natural next step is validation on dense-cadence real events---high-cadence ground data from a
-network such as KMTNet, and ultimately \Rom{} itself---which is what will turn ``works on
-simulations'' into ``works'' in the regime the model is actually built for. We stress that this is
-not a request to make BinML cadence-agnostic: a model tuned to \Rom{}'s sampling should stay tuned
-to it, and sparse archival data is better served by simpler single-band classifiers. The one weak
+The natural next step is validation on real events in the model's own regime. As shown in
+\S\ref{sec:limits}, this cannot be done from the ground---even KMTNet's dense but nightly-gapped
+sampling defeats the model---so it genuinely awaits \Rom{} itself, whose continuous cadence is what
+the model is built for. We stress that this is not a request to make BinML cadence-agnostic: a
+model tuned to \Rom{}'s sampling should stay tuned to it, and sparse archival data is better served
+by simpler single-band classifiers. The one weak
 spot with real follow-up implications---faint-source false anomalies---is the obvious thing to watch
 in that validation, should it matter in practice; the remaining limits sit close enough to the
 physics that we expect little return from chasing them.
