@@ -190,7 +190,7 @@ architecture that lets every part of the light curve ``attend to'' every other p
 can weigh, for example, a brief brightening against the overall trend around it. Together they
 come to just $\bmlNparams$ trainable numbers, which by the standards of modern deep learning is
 tiny. That small size is a deliberate choice rather than a limitation. We are not short of
-training data---we can simulate tens of millions of events---so the pressure is not to build a
+training data---we simulate of order ten million events---so the pressure is not to build a
 larger model but to build one cheap enough to run on the entire survey, night after night. A
 compact network that classifies a light curve in a single pass is far more useful here than a
 heavy one that could only be applied to a pre-selected handful of candidates.
@@ -221,10 +221,10 @@ uses only the binned brightnesses; it does not use the individual error bars.
 This compactness is what makes survey-scale, real-time use practical. Classification is a single
 forward pass with no per-event fitting, and on a single $\bmlInferCores$-core CPU---no GPU
 required---BinML classifies roughly $\bmlInferEps$ light curves per second, or $\bmlInferMs$~ms
-per event. At that rate the network's own arithmetic keeps
-pace with a full season of hundreds of millions of light curves in about a day on one node---in
-a real deployment, reading and binning the light curves, rather than the forward pass, would set
-the throughput---and the workload parallelises trivially across nodes. Re-classifying the entire
+per event. At that rate one node classifies of order a hundred million light curves per day, so a
+handful of nodes cover a full season of hundreds of millions of curves in a day or two---and in a
+real deployment it is reading and binning the light curves, not the forward pass, that would set
+the throughput. The workload parallelises trivially across nodes. Re-classifying the entire
 archive each night as new epochs arrive, which is what the cascade of \S\ref{sec:cascade}
 requires, is therefore inexpensive rather than prohibitive.
 
@@ -273,7 +273,7 @@ flags---calling a binary \texttt{NonPSPL} before its anomaly is observable---fal
 $\bmlPrematureBefore\%$ to $\bmlPrematureAfter\%$, and the mean pre-onset \texttt{NonPSPL}
 probability drops from $\bmlPreonsetBefore$ to $\bmlPreonsetAfter$. This costs essentially nothing
 on the full-season task for which conventional classifiers are optimised: the missed-planet rate,
-a true \texttt{NonPSPL} called \texttt{PSPL} on the complete curve, is statistically unchanged
+a true \texttt{NonPSPL} called \texttt{PSPL} on the complete curve, is if anything slightly lower
 ($\bmlMissedBefore\rightarrow\bmlMissedAfter$).
 
 \begin{figure}[htbp]
@@ -415,9 +415,9 @@ detectability-floor-demoted binaries, is what depresses \texttt{NonPSPL} precisi
 \end{figure}
 
 For a triage layer the two kinds of anomaly error carry very different costs, and it is worth
-separating them. A false negative---a real binary called a single lens---costs a planet, and on
-full-season curves these occur at a rate of $\bmlMissedRate$, dominated by anomalies that fall
-below the detectability floor and so carry no recoverable signal. A false positive---a
+separating them. A false negative---a detectable binary called a single lens---costs a planet, and
+on full-season curves these occur at a rate of $\bmlMissedRate$, concentrated just above the
+detectability floor where the anomaly signal is weakest (Figure~\ref{fig:params}). A false positive---a
 non-anomalous source flagged as a binary---costs follow-up time, and these are rarer still;
 reassuringly, they are overwhelmingly ordinary single-lens events near the anomaly-detection
 boundary rather than variable stars, with the physically dangerous \texttt{LongPeriodVar}%
@@ -429,10 +429,13 @@ Figure~\ref{fig:pr} rather than being stuck with one fixed decision.
 Finding the anomalous events is where the model earns its keep, and Figure~\ref{fig:pr} measures
 this against the ideal-observer yardstick of \S\ref{sec:eval}. A convenient way to score the whole
 purity--completeness curve with one number is its average precision, which runs from~0 to a perfect~1;
-BinML scores $\bmlAPnet$, against the oracle ceiling's $\bmlAPoracle$. The gap is small. The
-network recovers very nearly all of the anomaly information that is present even in principle---but
-it does so blind, reading the raw brightness measurements in a single pass, without fitting a
-binary-lens model to a single candidate. Its success also rises steadily with how strong the
+BinML scores $\bmlAPnet$, against the oracle ceiling's $\bmlAPoracle$. The gap is small---though it
+should be read with a caveat: the oracle ranks by the same anomaly \dchisq{} that, on the noiseless
+curve, defines the \texttt{NonPSPL} label itself, so this is not an independent information bound
+but a measure of how faithfully BinML reconstructs the label-defining quantity. What it establishes
+is nonetheless the operative point: the network recovers that ordering \emph{blind}, from the raw
+noisy brightness measurements in a single pass, without ever computing the \dchisq{} or fitting a
+binary-lens model to a candidate. Its success also rises steadily with how strong the
 anomaly is, from $\bmlSliceSuzuki$ for the borderline planetary signals near the mass-ratio limit
 where planets become common to $\bmlSliceStrongAnom$ for the strongest anomalies, just as one would expect if
 the model is limited by the information in the data rather than by any shortcoming of its own.
@@ -479,8 +482,10 @@ pathology.}
 
 \section{Generalisation and limits}\label{sec:limits}
 
-A model can reproduce held-out numbers by memorising the distribution it was trained on, so we test
-generalisation directly. We generated a $\bmlStressN$-million-event stress set from a disjoint
+A model can reproduce held-out numbers by memorising individual training examples rather than
+learning the underlying mapping, so we test generalisation directly---both to unseen parameter
+draws from the same priors and, through the out-of-range regimes below, to parts of parameter space
+the training distribution barely populates. We generated a $\bmlStressN$-million-event stress set from a disjoint
 pseudo-random stream---seed base $\bmlSeedStress$ against $\bmlSeedTrain$ for the
 train/validation/test data---which guarantees parameter tuples the model provably never encountered;
 it comprises a $\bmlStressNatN$-million-event natural-population subset and a suite of
