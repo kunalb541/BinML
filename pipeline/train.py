@@ -372,6 +372,10 @@ def main(argv=None) -> int:
                          "Eruptive for 100%% of events at 0.985 confidence, because the "
                          "truncation edge reads as an outburst. This augmentation is what "
                          "makes early/online detection possible at all.")
+    ap.add_argument("--label-source", choices=["observational", "generator"],
+                    default="observational",
+                    help="'observational' = detectability-conditioned label (shipped); 'generator' "
+                         "= raw generation class (true_class), the ablation of the labelling scheme.")
     ap.add_argument("--cadence-aug", type=float, default=0.0,
                     help="probability of thinning an event's observed bins to a random density "
                          "and relabelling by what survives (see _apply_cadence). Teaches graceful "
@@ -407,7 +411,13 @@ def main(argv=None) -> int:
     fpath = os.path.join(args.cache, "f_s_F146.npy")
     if os.path.exists(fpath):
         f_s_ref = np.load(fpath)
-    labels = np.load(os.path.join(args.cache, "label.npy"))
+    # --label-source: 'observational' is the detectability-conditioned label the model ships with;
+    # 'generator' uses the raw generation class (true_class), i.e. labels an event by what it was
+    # SIMULATED as regardless of whether that is observable. The latter is the ablation of the
+    # detectability-conditioned labelling scheme -- it reintroduces the label noise that scheme
+    # removes, and is expected to teach the model to assert anomalies with no observable evidence.
+    _label_file = "true_class.npy" if args.label_source == "generator" else "label.npy"
+    labels = np.load(os.path.join(args.cache, _label_file))
     keep_prob = np.load(os.path.join(args.cache, "keep_prob.npy"))
     dchi2_anom = np.load(os.path.join(args.cache, "dchi2_anomaly.npy"))
 
