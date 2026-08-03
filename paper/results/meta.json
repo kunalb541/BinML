@@ -16,7 +16,7 @@
     "plateau",
     "recur"
   ],
-  "checkpoint": "/Users/kunalbhatia/Desktop/Research/microlensing/v5runs/binml_v5_stage6.pt",
+  "checkpoint": "binml_v5_stage6.pt",
   "checkpoint_sha256": "897a9aec1785dc15",
-  "cache": "/Users/kunalbhatia/Desktop/Research/microlensing/v5data/v5mm_test"
+  "cache": "v5mm_test"
 }

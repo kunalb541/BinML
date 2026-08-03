@@ -2,7 +2,10 @@
   "_comment": "Single source of truth for every number in the manuscript. Values are drawn from paper/results/metrics.json (the independent 450,589-event evaluation of the production model) and from the project's cascade / stress-test analyses. make_macros.py turns this file (plus figures_stats.json, produced by make_figures.py) into paper_macros.tex. NEVER hand-edit numbers in paper.tex.",
 
   "test": {
-    "n_events": 450589,
+    "_comment": "evaluation pool split by rng(7): 20% validation (threshold selection), 80% final test. All reported metrics AND figures use the final-test rows only (test_idx.npy).",
+    "n_pool": 450589,
+    "n_val": 90117,
+    "n_events": 360472,
     "checkpoint": "binml.pt",
     "trained_epoch": 4
   },

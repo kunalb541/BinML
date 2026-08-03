@@ -46,7 +46,7 @@ EV=[("2014-BLG-0289",2014,289,"strong bin"),("2013-BLG-0578",2013,578,"strong bi
     ("2015-BLG-0966",2015,966,"planet"),("2018-BLG-0677",2018,677,"planet")]
 print(f"{'event':16s} {'note':13s} {'MicroLIA top':14s} {'P(ML)':>6s}")
 print("-"*54)
-CACHE="/Users/kunalbhatia/Desktop/Research/microlensing/BinML-repo/validation/ogle_cache"
+CACHE=os.path.join(os.path.dirname(os.path.abspath(__file__)),"ogle_cache")
 nml=0
 for name,yr,ev,note in EV:
     tt,mm,ee=fetch_ogle_ews(yr,ev,cache_dir=CACHE)

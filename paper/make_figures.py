@@ -34,11 +34,20 @@ plt.rcParams.update({
 def load(name):
     return np.load(os.path.join(RES, name))
 
-lg   = load("logits.npy").astype(np.float64)
-y    = load("label.npy").astype(int)
-kp   = load("keep_prob.npy").astype(np.float64)
-w    = 1.0 / np.clip(kp, 1e-3, 1.0)
 metrics = json.load(open(os.path.join(RES, "metrics.json")))
+
+# Restrict EVERY figure to the frozen final-test split (test_idx.npy = the rows held out from
+# threshold selection). The operating threshold was fixed on the disjoint validation rows and is
+# applied frozen here, so no figure sees a threshold-selection row. This is the same mask the
+# headline metrics use; loading the full pool would leak calibration rows into the figures.
+_ti = load("test_idx.npy").astype(int)
+lg   = load("logits.npy").astype(np.float64)[_ti]
+y    = load("label.npy").astype(int)[_ti]
+tc   = load("true_class.npy").astype(int)[_ti]
+params = load("params.npy")[_ti]
+kp   = load("keep_prob.npy").astype(np.float64)[_ti]
+w    = 1.0 / np.clip(kp, 1e-3, 1.0)
+PARAM_FIELDS = (json.load(open(os.path.join(RES, "meta.json"))).get("param_fields") or [])
 
 # softmax probabilities
 z = lg - lg.max(1, keepdims=True)
@@ -46,7 +55,7 @@ P = np.exp(z); P /= P.sum(1, keepdims=True)
 pred = P.argmax(1)
 NONP = CLASSES.index("NonPSPL")
 
-stats = {}   # derived numbers -> figures_stats.json
+stats = {"n_test": int(len(_ti))}   # derived numbers -> figures_stats.json
 
 
 # ---------------------------------------------------------------- Fig: confusion matrix
@@ -91,7 +100,7 @@ def fig_pr_nonpspl():
     # oracle: rank by the injected anomaly Delta-chi^2 (PSPL vs true binary on the NOISELESS
     # truth). This is an upper bound on any blind detector -- it uses the true parameters --
     # NOT a fieldable baseline. BinML must recover this ranking from raw photometry alone.
-    dchi2 = load("dchi2_anomaly.npy").astype(np.float64)
+    dchi2 = load("dchi2_anomaly.npy").astype(np.float64)[_ti]   # frozen-test rows only
     rec_c, prec_c, ap_c = _pr_curve(dchi2, tgt, w)
     # Report the SAME average precision as metrics.json (the authoritative value) so the figure
     # legend and the manuscript text cannot disagree; the tiny difference from this curve's own
@@ -123,35 +132,56 @@ def fig_pr_nonpspl():
 
 # ------------------------------------------------------ Fig: (log s, log q) efficiency plane
 def fig_efficiency_plane():
-    ep = metrics["efficiency_plane"]
-    qe = np.array(ep["log_q_edges"]); se = np.array(ep["log_s_edges"])
-    det = np.array(ep["survey_detectability"], float)
-    e2e = np.array(ep["end_to_end_recovery"], float)
-    clf = np.array(ep["classifier_efficiency"], float)
-    neff = np.array(ep["n_eff"], float)
-    for M in (det, e2e, clf):
-        M[neff < 20] = np.nan
-    fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.9), sharey=True)
-    titles = ["Survey detectability", "End-to-end recovery", "Classifier efficiency"]
-    for ax, M, ttl in zip(axes, (det, e2e, clf), titles):
-        im = ax.pcolormesh(se, qe, M, cmap="viridis", vmin=0, vmax=1,
-                           shading="flat")
-        ax.set_title(ttl)
-        ax.set_xlabel(r"$\log_{10} s$")
-    axes[0].set_ylabel(r"$\log_{10} q$")
-    # planetary regime marker
-    for ax in axes:
+    """Recomputed on the frozen test split with a BOUNDED conditional quantity.
+
+    The earlier 'classifier efficiency' was B/A with mismatched bases (numerator counted all
+    generated binaries predicted NonPSPL, denominator only the detectable ones), giving a ratio
+    that exceeded 1 (up to 31) and was silently clipped. Here the classifier panel is instead the
+    conditional recall P(predicted NonPSPL | detectable NonPSPL, q, s), which is a probability in
+    [0,1]. Cells with fewer than 30 effective events (or 30 effective detectable events, for the
+    recall panel) are left blank; effective counts are shown so low-support cells are visible.
+    """
+    iq, isx = PARAM_FIELDS.index("q"), PARAM_FIELDS.index("s")
+    gen = (tc == NONP) & np.isfinite(params[:, iq]) & np.isfinite(params[:, isx])
+    lq = np.log10(params[gen, iq]); ls = np.log10(params[gen, isx])
+    det = (y[gen] == NONP); rec = (pred[gen] == NONP); ww = w[gen]
+    n_q, n_s = 12, 6
+    qe = np.linspace(-6, 0, n_q + 1); se = np.linspace(np.log10(0.2), np.log10(5.0), n_s + 1)
+    qi = np.clip(np.digitize(lq, qe) - 1, 0, n_q - 1)
+    si = np.clip(np.digitize(ls, se) - 1, 0, n_s - 1)
+    A = np.full((n_q, n_s), np.nan); Cc = np.full((n_q, n_s), np.nan); N = np.zeros((n_q, n_s))
+    for i in range(n_q):
+        for j in range(n_s):
+            cell = (qi == i) & (si == j)
+            neff = ww[cell].sum(); N[i, j] = neff
+            if neff < 30:
+                continue
+            A[i, j] = (ww[cell] * det[cell]).sum() / neff
+            dcell = cell & det; nd = ww[dcell].sum()
+            if nd >= 30:
+                Cc[i, j] = (ww[dcell] * rec[dcell]).sum() / nd
+    stats["eff_cond_recall_median"] = round(float(np.nanmedian(Cc)), 3)
+    stats["eff_cond_recall_min"] = round(float(np.nanmin(Cc)), 3)
+
+    fig, axes = plt.subplots(1, 3, figsize=(7.8, 2.9), sharey=True)
+    logN = np.log10(np.where(N > 0, N, np.nan))
+    panels = [(A, "Survey detectability", 0, 1, "viridis", "fraction detectable"),
+              (Cc, r"Classifier recall $|$ detectable", 0, 1, "viridis", "conditional recall"),
+              (logN, "Effective support", None, None, "magma", r"$\log_{10} n_{\rm eff}$")]
+    for ax, (M, ttl, vmn, vmx, cm, cl) in zip(axes, panels):
+        im = ax.pcolormesh(se, qe, M, cmap=cm, vmin=vmn, vmax=vmx, shading="flat")
+        ax.set_title(ttl, fontsize=8.5); ax.set_xlabel(r"$\log_{10} s$")
         ax.axhline(-2.0, color="white", lw=0.6, ls=":")
-    cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.02)
-    cb.set_label("fraction")
+        cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04); cb.set_label(cl, fontsize=7)
+    axes[0].set_ylabel(r"$\log_{10} q$")
+    fig.tight_layout()
     fig.savefig(os.path.join(OUT, "efficiency_plane.pdf"))
     plt.close(fig)
 
 
 # ------------------------------------------------ Fig: NonPSPL recall vs source brightness & tE
 def fig_param_dependence():
-    params = load("params.npy")  # structured or 2D; try structured field access
-    mb = load("m_base_ref.npy").astype(float)
+    mb = load("m_base_ref.npy").astype(float)[_ti]   # frozen-test rows only
     tgt = y == NONP
     fig, axes = plt.subplots(1, 2, figsize=(6.8, 2.9))
 

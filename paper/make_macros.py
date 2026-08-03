@@ -21,6 +21,8 @@ def three(x): return f"{x:.3f}"
 
 h = cn["headline"]
 cmd("bmlNtest", f"{cn['test']['n_events']:,}")
+cmd("bmlNpool", f"{cn['test']['n_pool']:,}")
+cmd("bmlNval", f"{cn['test']['n_val']:,}")
 cmd("bmlCompleteness", three(h["completeness_at_purity"]))
 cmd("bmlCompletenessPct", pct(h["completeness_at_purity"]))
 cmd("bmlCompletenessLo", three(h["completeness_ci_lo"]))

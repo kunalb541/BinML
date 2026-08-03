@@ -363,11 +363,15 @@ recoverable information it manages to extract from the raw data alone.
 
 \section{Results}\label{sec:results}
 
-On an independent $\bmlNtest$-event test set drawn from the survey population, BinML reaches a
-completeness of $\bmlCompleteness$ (95\% CI $[\bmlCompletenessLo,\bmlCompletenessHi]$) at the fixed
-anomaly purity of $\bmlPurity$, with an anomaly average precision of $\bmlAP$. Per-class
-performance is collected in Table~\ref{tab:perclass}, and the full confusion structure in
-Figure~\ref{fig:confusion}.
+We evaluate on a held-out pool of $\bmlNpool$ events, split once into a $\bmlNval$-event
+validation set---on which the operating threshold is fixed---and a disjoint $\bmlNtest$-event
+final-test set on which every metric, table, and figure below is computed; no figure or headline
+number sees a threshold-selection row. On that final test set BinML reaches a completeness of
+$\bmlCompleteness$ (95\% CI $[\bmlCompletenessLo,\bmlCompletenessHi]$) at the fixed anomaly purity
+of $\bmlPurity$, with an anomaly average precision of $\bmlAP$. These are metrics of the model on
+the adopted synthetic class mixture, not a forecast of \Rom{}-population yields, for which survey
+event-rate priors would be needed (\S\ref{sec:limits}). Per-class performance is collected in
+Table~\ref{tab:perclass}, and the full confusion structure in Figure~\ref{fig:confusion}.
 
 \begin{deluxetable}{lcccc}
 \tablecaption{Per-class performance on the independent $\bmlNtest$-event test set
@@ -450,19 +454,24 @@ the fixed-purity operating point adopted for the headline number.}
 \end{figure}
 
 Where that sensitivity lives across parameter space is resolved in Figure~\ref{fig:plane}, which
-factors recovery in the $(\log s,\log q)$ separation--mass-ratio plane into three stages: whether
-the survey can detect the anomaly at all, the end-to-end recovery, and the classifier's own
-efficiency given that the anomaly is detectable. The classifier panel is near-uniform wherever an
-anomaly is present, which means the structure visible in the end-to-end map is inherited from the
-survey's detectability rather than introduced by BinML. Even deep planetary events with
-$q<10^{-3}$ are recovered at $\bmlSliceDeepPlanet$.
+separates two effects in the $(\log s,\log q)$ separation--mass-ratio plane: whether the survey can
+detect the anomaly at all (left), and---conditional on it being detectable---how often BinML
+recovers it (centre). The conditional recall is a probability in $[0,1]$: it is high, with a median
+of $0.97$ over populated cells, across most of the plane where a detectable anomaly exists, and
+falls (to $\sim$0.5) only in the deep-planetary, low-support corners at $\log q \lesssim -4$. The
+strong gradient in the left panel---detectability collapsing toward small mass ratios---is therefore
+a property of the survey and the photometry, not of the classifier. Even deep planetary events with
+$q<10^{-3}$ are recovered at $\bmlSliceDeepPlanet$ where they are detectable.
 
 \begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.95\textwidth]{outputs/figures/efficiency_plane.pdf}
-\caption{Recovery across the $(\log s,\log q)$ plane, factored into survey detectability, end-to-end
-recovery, and classifier efficiency given detectability. Cells with fewer than 20 effective events
-are left blank; the dotted line marks the planetary regime $q=10^{-2}$.}
+\caption{Recovery across the $(\log s,\log q)$ plane, computed on the frozen final-test split.
+\emph{Left:} survey detectability---of generated binaries, the weighted fraction whose anomaly
+clears the detectability floor. \emph{Centre:} the classifier's conditional recall, $P(\mathrm{
+predicted~NonPSPL}\mid\mathrm{detectable~NonPSPL})$, a bounded probability in $[0,1]$. \emph{Right:}
+the effective event count per cell, so low-support regions are visible. Cells with fewer than 30
+effective (or 30 detectable, centre) events are left blank; the dotted line marks $q=10^{-2}$.}
 \label{fig:plane}
 \end{figure*}
 
@@ -591,11 +600,13 @@ against the underlying data.
 
 \section*{Data availability}
 BinML, its trained weights, and the full simulation-to-inference pipeline are openly available at
-\url{https://github.com/kunalb541/BinML}. Every figure and number in this paper is regenerated
-from an archived evaluation artifact by the build script in that repository, so the results and
-figures are reproducible from the repository alone. The full multi-million-event training set is
-too large to host there and is available on request; it can also be regenerated from the released
-simulation code, since each shard is seeded deterministically by its index.
+\url{https://github.com/kunalb541/BinML}. The frozen evaluation artifact---the per-event logits,
+labels, generator classes, selection weights, event parameters, and the final-test index, with a
+manifest recording each array's shape, dtype, and hash---is committed alongside the paper, and
+every table and figure regenerates from it via the build script, so the results reproduce from the
+repository alone without access to any local output directory. The full multi-million-event
+training set is too large to host there and is available on request; it can also be regenerated
+from the released simulation code, since each shard is seeded deterministically by its index.
 
 \appendix
 
