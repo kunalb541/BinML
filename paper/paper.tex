@@ -56,7 +56,8 @@ recover least well \citep{Mao1991,GouldLoeb1992,Suzuki2016}. The Nancy Grace \Ro
 this sensitivity systematically. Its Galactic Bulge Time-Domain Survey (GBTDS) will monitor the
 crowded bulge fields at high cadence in the near-infrared, and is predicted to detect of order a
 thousand bound planets and to pin down the free-floating planet mass function
-\citep{Spergel2015,Penny2019,Johnson2020,Sumi2023,Gaudi2012,Wilson2023}. The wide F146 filter samples the light curve every
+\citep{Spergel2015,Penny2019,Johnson2020,Sumi2023,Gaudi2012}. In its design
+\citep{Penny2019}, the wide F146 filter samples the light curve every
 $\sim\bmlCadence$~minutes; two auxiliary bands, F087 and F213, add colour information on a
 $\sim$6-hour cycle.
 
@@ -130,11 +131,11 @@ binary and planetary lenses, computed with the contour-integration code \textsc{
 third panel of Figure~\ref{fig:gallery}. The remaining three classes are the variable-star
 populations that dominate the real bulge and are the classifier's most dangerous contaminants:
 \texttt{PeriodicVar} (RR~Lyrae, eclipsing binaries, $\delta$~Scuti), \texttt{LongPeriodVar}
-(Miras, semiregulars, and OSARGs, whose slow rise most readily mimics a long-timescale
-microlensing event), and \texttt{Eruptive} (dwarf novae and Be outbursts). Event-timescale,
-mass-ratio, and separation priors follow the measured bulge distributions
-\citep{Mroz2019,Suzuki2016}; the variable-star templates follow the OGLE bulge catalogues
-\citep{Soszynski2013,Soszynski2017}. Every event is realised on the true \Rom{} cadence in all
+(Miras, semiregulars, and OSARGs---small-amplitude red-giant pulsators---whose slow rise most
+readily mimics a long-timescale microlensing event), and \texttt{Eruptive} (dwarf novae and Be
+outbursts). Event-timescale, mass-ratio, and separation priors follow the measured bulge
+distributions \citep{Mroz2019,Suzuki2016}; the variable-star templates follow the OGLE bulge
+catalogues \citep{Soszynski2013,Soszynski2014}. Every event is realised on the true \Rom{} cadence in all
 three bands and degraded by survey-realistic photometric noise, blending, and interstellar
 extinction, so that the training distribution matches what the telescope will actually deliver.
 
@@ -334,7 +335,9 @@ The first is how we summarise performance. A single accuracy figure is misleadin
 the anomalous events are so rare that a model could score well simply by never flagging one. What
 a follow-up team actually needs to know is a pair of numbers. One is \emph{purity}: of the events
 the model flags as anomalous, what fraction really are. The other is \emph{completeness}: of the
-anomalous events that exist, what fraction the model catches. These trade off against each
+anomalous events that exist, what fraction the model catches. These are precisely the quantities
+tabulated as precision and recall in Table~\ref{tab:perclass}, and their harmonic mean is the F1
+score there (macro-F1 being its unweighted average over the six classes). These trade off against each
 other---flag more events and you catch more real ones but also let in more false ones---so we fix
 the purity to a chosen value, $\bmlPurityTarget$, and report the completeness reached at that
 setting as our headline number. This is exactly the form in which a survey team would state a
@@ -381,27 +384,33 @@ Eruptive      & \bmlSupEruptive      & \bmlEruptiveR      & \bmlEruptiveP      &
 \multicolumn{4}{l}{Macro-F1} & \bmlMacroF \\
 \enddata
 \tablecomments{The apparently low \texttt{NonPSPL} precision ($\bmlNonPSPLP$) is dominated by
-labelling, not error: $\bmlNonpsplDemoted$ of its ``false positives'' are genuine binaries whose
+labelling, not error: $\bmlNonpsplDemoted\%$ of its ``false positives'' are genuine binaries whose
 anomaly falls below the detectability floor and were therefore demoted to \texttt{PSPL} by the
 labelling of \S\ref{sec:detcond}. Counting those as correct---they are physically anomalous---gives
 a physical precision of $\bmlNonpsplPhysP$, and the recall of $\bmlNonPSPLR$ shows the model in fact
 finds the anomalies.}
 \end{deluxetable}
 
-The confusion matrix in Figure~\ref{fig:confusion} makes the shape of the errors plain. The dominant
-off-diagonal term is \texttt{NonPSPL}$\rightarrow$\texttt{PSPL}, and it is not misclassification in
-any ordinary sense: it is overwhelmingly the detectability-floor demotion described in
-Table~\ref{tab:perclass}, in which a binary with no observable caustic is labelled---and predicted---%
-as the single lens it observationally resembles. The variable-star classes sit close to the
-diagonal, and the most dangerous physical confusion, a \texttt{LongPeriodVar} masquerading as
-microlensing, is rare.
+The confusion matrix in Figure~\ref{fig:confusion} makes the shape of the errors plain. The
+largest off-diagonal term is \texttt{NonPSPL}$\rightarrow$\texttt{PSPL} at $4.9\%$ of the true
+anomaly row: these are genuine recovery misses, weak but detectable anomalies the model fails to
+flag, and they concentrate at the lowest evidence strengths (Figure~\ref{fig:params}). The
+complementary direction, \texttt{PSPL}$\rightarrow$%
+\texttt{NonPSPL}, is smaller ($3.5\%$) but is what depresses \texttt{NonPSPL} precision, and it is
+$95\%$ made of the demoted binaries of Table~\ref{tab:perclass}: events generated as binary lenses
+whose caustic is below the detectability floor, correctly labelled \texttt{PSPL} yet flagged
+\texttt{NonPSPL} by the model, which sees an anomaly the labelling has---correctly---declared
+unobservable. The variable-star classes sit close to the diagonal, and the most dangerous physical
+confusion, a \texttt{LongPeriodVar} masquerading as microlensing, is rare.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{outputs/figures/confusion.pdf}
-\caption{Row-normalised, selection-corrected confusion matrix. The dominant off-diagonal,
-\texttt{NonPSPL}$\rightarrow$\texttt{PSPL}, is largely the detectability-floor demotion of
-Table~\ref{tab:perclass} rather than genuine error.}
+\caption{Row-normalised, selection-corrected confusion matrix. The largest off-diagonal,
+\texttt{NonPSPL}$\rightarrow$\texttt{PSPL} ($4.9\%$), is genuine recovery loss on weak anomalies;
+the smaller \texttt{PSPL}$\rightarrow$\texttt{NonPSPL} term ($3.5\%$), dominated by
+detectability-floor-demoted binaries, is what depresses \texttt{NonPSPL} precision
+(Table~\ref{tab:perclass}).}
 \label{fig:confusion}
 \end{figure}
 
@@ -425,7 +434,7 @@ network recovers very nearly all of the anomaly information that is present even
 it does so blind, reading the raw brightness measurements in a single pass, without fitting a
 binary-lens model to a single candidate. Its success also rises steadily with how strong the
 anomaly is, from $\bmlSliceSuzuki$ for the borderline planetary signals near the mass-ratio limit
-where planets become common to $0.972$ for the strongest anomalies, just as one would expect if
+where planets become common to $\bmlSliceStrongAnom$ for the strongest anomalies, just as one would expect if
 the model is limited by the information in the data rather than by any shortcoming of its own.
 
 \begin{figure}[htbp]
@@ -473,9 +482,10 @@ pathology.}
 A model can reproduce held-out numbers by memorising the distribution it was trained on, so we test
 generalisation directly. We generated a $\bmlStressN$-million-event stress set from a disjoint
 pseudo-random stream---seed base $\bmlSeedStress$ against $\bmlSeedTrain$ for the
-train/validation/test data---which guarantees parameter tuples the model provably never encountered.
-On the natural-population subset BinML reproduces its held-out performance, with a macro-F1 of
-$\bmlStressMacroF$.
+train/validation/test data---which guarantees parameter tuples the model provably never encountered;
+it comprises a $\bmlStressNatN$-million-event natural-population subset and a suite of
+deliberately out-of-range regimes. On the natural-population subset BinML reproduces its held-out
+performance, with a macro-F1 of $\bmlStressMacroF$.
 
 The degradations that do appear are confined to physically extreme corners, and each has a physical
 cause rather than a modelling one: sources fainter than $m\approx25$, where noise begins to
@@ -563,7 +573,7 @@ discussions that shaped this work. Simulations were run on Amazon Web Services (
 model development used a combination of local Apple Silicon hardware and cloud GPU credits from
 AWS and Modal; I gratefully acknowledge both for computational credits. This work made use of
 \textsc{VBBinaryLensing} \citep{Bozza2018} and the OGLE variable-star catalogues
-\citep{Soszynski2013,Soszynski2017}. In the interest of transparency, I note that AI assistants
+\citep{Soszynski2013,Soszynski2014}. In the interest of transparency, I note that AI assistants
 (Anthropic's Claude and OpenAI's GPT) were used to assist with code development, refactoring, and
 manuscript editing; all scientific content, results, and conclusions are my own and were checked
 against the underlying data.

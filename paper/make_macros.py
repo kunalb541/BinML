@@ -39,6 +39,7 @@ for c, v in cn["per_class"].items():
 
 cmd("bmlNonpsplPhysP", three(cn["nonpspl_physical_precision"]))
 cmd("bmlNonpsplDemoted", pct(cn["nonpspl_demoted_fraction"]))
+cmd("bmlSliceStrongAnom", three(cn["nonpspl_recall_strong_anomaly"]))
 
 sup = cn["per_class_support"]
 for c in ["Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"]:
@@ -60,6 +61,7 @@ cmd("bmlMissedAfter", three(cas["missed_planet_after"]))
 
 s = cn["stress"]
 cmd("bmlStressN", f"{s['n_events_millions']:.1f}")
+cmd("bmlStressNatN", f"{s['natural_events_millions']:.1f}")
 cmd("bmlStressMacroF", three(s["natural_macro_f1"]))
 cmd("bmlSeedTrain", str(s["seed_base_train"]))
 cmd("bmlSeedStress", str(s["seed_base_stress"]))

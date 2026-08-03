@@ -43,8 +43,8 @@
     "pspl_to_flat_pct": 11.7
   },
 
-  "nonpspl_physical_precision": 0.986,
-  "nonpspl_demoted_fraction": 0.71,
+  "nonpspl_physical_precision": 0.985,
+  "nonpspl_demoted_fraction": 0.947,
 
   "nonpspl_recall_by_dchi2": {
     "160_2000":       0.904,
@@ -52,6 +52,7 @@
     "10000_100000":   0.949,
     "100000_inf":     0.972
   },
+  "nonpspl_recall_strong_anomaly": 0.972,
 
   "cascade": {
     "premature_flag_before": 0.42,
@@ -72,7 +73,9 @@
   },
 
   "stress": {
-    "n_events_millions": 12.9,
+    "_comment": "30 unseen-parameter regimes (14.9M) + natural-population subset (4.5M) = 19.4M; macro-F1 is the natural-population subset",
+    "n_events_millions": 19.4,
+    "natural_events_millions": 4.5,
     "natural_macro_f1": 0.927,
     "seed_base_train": 20260720,
     "seed_base_stress": 900000000

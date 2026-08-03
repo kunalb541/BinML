@@ -93,6 +93,10 @@ def fig_pr_nonpspl():
     # NOT a fieldable baseline. BinML must recover this ranking from raw photometry alone.
     dchi2 = load("dchi2_anomaly.npy").astype(np.float64)
     rec_c, prec_c, ap_c = _pr_curve(dchi2, tgt, w)
+    # Report the SAME average precision as metrics.json (the authoritative value) so the figure
+    # legend and the manuscript text cannot disagree; the tiny difference from this curve's own
+    # trapezoidal AP is just the integration scheme.
+    ap_n = metrics["average_precision_population"]
     stats["ap_network"] = round(float(ap_n), 3)
     stats["ap_oracle_dchi2"] = round(float(ap_c), 3)
 
