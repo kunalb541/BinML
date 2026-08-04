@@ -68,6 +68,13 @@ cmd("bmlStressMacroF", three(s["natural_macro_f1"]))
 cmd("bmlSeedTrain", str(s["seed_base_train"]))
 cmd("bmlSeedStress", str(s["seed_base_stress"]))
 
+bl = cn["baselines"]
+cmd("bmlBaseBinml", three(bl["ap_binml"]))
+cmd("bmlBaseGbt", three(bl["ap_gbt"]))
+cmd("bmlBaseLogistic", three(bl["ap_logistic"]))
+cmd("bmlBasePspl", three(bl["ap_fitted_pspl"]))
+cmd("bmlBaseNtest", f"{bl['n_test']:,}")
+
 inf = cn["inference"]
 cmd("bmlInferEps", f"{inf['events_per_sec']:,}")
 cmd("bmlInferMs", two(inf["ms_per_event"]))

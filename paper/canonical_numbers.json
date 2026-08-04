@@ -84,6 +84,16 @@
     "seed_base_stress": 900000000
   },
 
+  "baselines": {
+    "_comment": "fieldable-baseline comparison on 9000 freshly simulated events (3600-event test), same rows for all methods; source validation/baselines_result.json. AP for NonPSPL-vs-rest.",
+    "n_test": 3600,
+    "prevalence": 0.041,
+    "ap_binml": 0.843,
+    "ap_gbt": 0.350,
+    "ap_logistic": 0.270,
+    "ap_fitted_pspl": 0.191
+  },
+
   "inference": {
     "_comment": "measured on CPU, batch 1024, torch inference_mode; see make_data_figures notes",
     "events_per_sec": 1224,
