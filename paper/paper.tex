@@ -393,12 +393,15 @@ Eruptive      & \bmlSupEruptive      & \bmlEruptiveR      & \bmlEruptiveP      &
 \hline
 \multicolumn{4}{l}{Macro-F1} & \bmlMacroF \\
 \enddata
-\tablecomments{The apparently low \texttt{NonPSPL} precision ($\bmlNonPSPLP$) is dominated by
-labelling, not error: $\bmlNonpsplDemoted\%$ of its ``false positives'' are genuine binaries whose
-anomaly falls below the detectability floor and were therefore demoted to \texttt{PSPL} by the
-labelling of \S\ref{sec:detcond}. Counting those as correct---they are physically anomalous---gives
-a physical precision of $\bmlNonpsplPhysP$, and the recall of $\bmlNonPSPLR$ shows the model in fact
-finds the anomalies.}
+\tablecomments{Under the observational task the \texttt{NonPSPL} precision is $\bmlNonPSPLP$. A
+diagnostic on its false positives: $\bmlNonpsplDemoted\%$ of them are events \emph{generated} as
+binaries whose anomaly falls below the detectability floor and were therefore labelled \texttt{PSPL}
+(\S\ref{sec:detcond}). They remain false positives for a follow-up trigger---the anomaly is, by our
+own definition, not observable---but the fact that the model flags them suggests it responds to
+sub-threshold anomaly signal (or to correlated source properties) rather than emitting random false
+alerts. We do not treat these as a second, higher precision; the detectability floor is a modelling
+convention, not a theorem about what is inferable, and whether this sensitivity is real requires
+independent detection statistics and blinded review (\S\ref{sec:limits}).}
 \end{deluxetable}
 
 The confusion matrix in Figure~\ref{fig:confusion} makes the shape of the errors plain. The
