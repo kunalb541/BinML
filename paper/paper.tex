@@ -548,6 +548,30 @@ re-training, and re-evaluating under the current multi-season design---including
 and low-cadence phases---is required before any operational claim, and is the most important single
 extension of this work.
 
+The single most important caveat on the headline numbers concerns the class mixture. The purity we
+quote is not a property of the classifier alone but of the classifier \emph{and} the assumed
+prevalence of anomalous events in the input stream. Our synthetic evaluation mixture contains
+detectable anomalies at a prevalence of $\bmlPriorPiZero\%$; the prevalence in a real survey stream
+is set by microlensing event rates and any upstream candidate selection, and is typically far
+lower. Figure~\ref{fig:prior} makes the dependence explicit. Completeness is prevalence-independent
+and stays at $\bmlCompleteness$; but at the fixed operating threshold the purity falls from the
+$\bmlPurity$ we report at the synthetic prevalence to $\bmlPurityOnePct$ at a $1\%$ anomaly
+prevalence and $\bmlPurityTenthPct$ at $0.1\%$. The $\bmlPurity$ figure should therefore be read as
+conditional on the adopted mixture, not as a survey purity; establishing the latter requires cited
+event-rate priors for the specific input population, which we do not attempt here. This is exactly
+why we frame completeness at fixed purity, rather than a single accuracy, as the reportable
+quantity---and why the completeness, not the purity, is the number that transfers.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\columnwidth]{outputs/figures/prior_sensitivity.pdf}
+\caption{Prior sensitivity of the operating point. At the fixed threshold, completeness (dotted)
+is independent of anomaly prevalence, but purity (solid) and the alert burden (dash-dot, right
+axis) are not. The dashed line marks our synthetic mixture's $\bmlPriorPiZero\%$ prevalence, where
+purity is $\bmlPurity$; at the lower prevalences of a real stream, purity is substantially smaller.}
+\label{fig:prior}
+\end{figure}
+
 One assumption underlying every number in this paper deserves to be stated plainly, because it is
 the most consequential modelling choice we make. The boundaries between our classes---flat versus
 event, and single lens versus anomalous---are set not only by a goodness-of-fit threshold but also

@@ -272,10 +272,52 @@ def fig_schematic():
     plt.close(fig)
 
 
+# ------------------------------------------------ Fig: prior-sensitivity of purity/alert burden
+def fig_prior_sensitivity():
+    """Purity and alert burden as a function of the ASSUMED anomaly prevalence.
+
+    At the fixed operating threshold, completeness (recall) is prevalence-independent, but purity
+    and the alert burden are not. The synthetic training mixture has a detectable-anomaly prevalence
+    of ~5.6%; the real survey prevalence in a given input stream is set by event rates and any
+    upstream selection, and is generally much lower. This figure makes the dependence explicit, so
+    the headline purity is read as conditional on the mixture rather than as a survey number.
+    """
+    thr = metrics["headline"]["threshold"]
+    pn = P[:, NONP]; yb = (y == NONP); flagged = pn >= thr
+    Rc = (w * (flagged & yb)).sum() / (w * yb).sum()              # recall (prevalence-independent)
+    fpr = (w * (flagged & ~yb)).sum() / (w * ~yb).sum()
+    pi0 = (w * yb).sum() / w.sum()
+    stats["prior_recall"] = round(float(Rc), 3)
+    stats["prior_fpr"] = round(float(fpr), 4)
+    stats["prior_pi0"] = round(float(pi0), 4)
+    for tag, pival in [("purity_pi_1pct", 0.01), ("purity_pi_p1pct", 0.001)]:
+        stats[tag] = round(float(pival * Rc / (pival * Rc + (1 - pival) * fpr)), 3)
+    pis = np.logspace(-3.3, np.log10(0.3), 200)
+    purity = pis * Rc / (pis * Rc + (1 - pis) * fpr)
+    burden = pis * Rc + (1 - pis) * fpr
+    fig, ax = plt.subplots(figsize=(4.6, 3.2))
+    ax.semilogx(pis, purity, color="#1f4e79", lw=1.8, label="purity")
+    ax.axvline(pi0, color="grey", ls="--", lw=1.0)
+    ax.text(pi0 * 1.1, 0.05, "synthetic\nmixture", fontsize=6.5, color="grey")
+    ax.axhline(Rc, color="#b0562a", ls=":", lw=1.2, label=f"completeness {Rc:.3f} (fixed)")
+    ax.set_xlabel("assumed detectable-anomaly prevalence"); ax.set_ylabel("purity")
+    ax.set_ylim(0, 1.02)
+    ax2 = ax.twinx()
+    ax2.semilogx(pis, 100 * burden, color="#2ca02c", lw=1.3, ls="-.")
+    ax2.set_ylabel("alert burden (\\% of light curves)", color="#2ca02c")
+    ax2.tick_params(axis="y", labelcolor="#2ca02c")
+    ax.legend(loc="upper left", frameon=False, fontsize=7.5)
+    ax.set_title("Purity depends on the assumed anomaly prevalence", fontsize=9)
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "prior_sensitivity.pdf"))
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_confusion();        print("confusion.pdf")
     fig_pr_nonpspl();       print("pr_nonpspl.pdf")
     fig_efficiency_plane(); print("efficiency_plane.pdf")
+    fig_prior_sensitivity(); print("prior_sensitivity.pdf")
     fig_param_dependence(); print("param_dependence.pdf")
     fig_cascade_summary();  print("cascade_summary.pdf")
     fig_schematic();        print("schematic.pdf")
