@@ -1,0 +1,337 @@
+{
+  "none": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.953,
+        "precision": 0.975,
+        "n": 4856
+      },
+      "PSPL": {
+        "recall": 0.931,
+        "precision": 0.988,
+        "n": 4466
+      },
+      "NonPSPL": {
+        "recall": 0.96,
+        "precision": 0.698,
+        "n": 1761
+      },
+      "PeriodicVar": {
+        "recall": 0.989,
+        "precision": 0.948,
+        "n": 1316
+      },
+      "LongPeriodVar": {
+        "recall": 0.984,
+        "precision": 0.845,
+        "n": 1277
+      },
+      "Eruptive": {
+        "recall": 0.99,
+        "precision": 0.78,
+        "n": 1411
+      }
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.966,
+        "precision": 0.968,
+        "n": 4856
+      },
+      "PSPL": {
+        "recall": 0.929,
+        "precision": 0.989,
+        "n": 4466
+      },
+      "NonPSPL": {
+        "recall": 0.953,
+        "precision": 0.659,
+        "n": 1761
+      },
+      "PeriodicVar": {
+        "recall": 0.988,
+        "precision": 0.955,
+        "n": 1316
+      },
+      "LongPeriodVar": {
+        "recall": 0.98,
+        "precision": 0.864,
+        "n": 1277
+      },
+      "Eruptive": {
+        "recall": 0.982,
+        "precision": 0.859,
+        "n": 1411
+      }
+    },
+    "n_events": 15087
+  },
+  "oor_np_widesep": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.979,
+        "precision": 0.994,
+        "n": 4190
+      },
+      "PSPL": {
+        "recall": 0.96,
+        "precision": 0.982,
+        "n": 1866
+      },
+      "NonPSPL": {
+        "recall": 0.44,
+        "precision": 0.209,
+        "n": 25
+      },
+      "PeriodicVar": {
+        "recall": 0.988,
+        "precision": 0.945,
+        "n": 762
+      },
+      "LongPeriodVar": {
+        "recall": 0.986,
+        "precision": 0.912,
+        "n": 367
+      },
+      "Eruptive": {
+        "recall": 0.984,
+        "precision": 0.953,
+        "n": 962
+      }
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.978,
+        "precision": 0.989,
+        "n": 4190
+      },
+      "PSPL": {
+        "recall": 0.954,
+        "precision": 0.973,
+        "n": 1866
+      },
+      "NonPSPL": {
+        "recall": 0.44,
+        "precision": 0.154,
+        "n": 25
+      },
+      "PeriodicVar": {
+        "recall": 0.984,
+        "precision": 0.938,
+        "n": 762
+      },
+      "LongPeriodVar": {
+        "recall": 0.97,
+        "precision": 0.927,
+        "n": 367
+      },
+      "Eruptive": {
+        "recall": 0.971,
+        "precision": 0.973,
+        "n": 962
+      }
+    },
+    "n_events": 8172
+  },
+  "oor_per_longp": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.985,
+        "precision": 0.989,
+        "n": 4173
+      },
+      "PSPL": {
+        "recall": 0.932,
+        "precision": 0.987,
+        "n": 1877
+      },
+      "NonPSPL": {
+        "recall": 0.947,
+        "precision": 0.452,
+        "n": 94
+      },
+      "PeriodicVar": {
+        "recall": 0.046,
+        "precision": 0.872,
+        "n": 738
+      },
+      "LongPeriodVar": {
+        "recall": 0.984,
+        "precision": 0.343,
+        "n": 383
+      },
+      "Eruptive": {
+        "recall": 0.991,
+        "precision": 0.956,
+        "n": 958
+      }
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.989,
+        "precision": 0.987,
+        "n": 4173
+      },
+      "PSPL": {
+        "recall": 0.931,
+        "precision": 0.98,
+        "n": 1877
+      },
+      "NonPSPL": {
+        "recall": 0.957,
+        "precision": 0.419,
+        "n": 94
+      },
+      "PeriodicVar": {
+        "recall": 0.049,
+        "precision": 0.947,
+        "n": 738
+      },
+      "LongPeriodVar": {
+        "recall": 0.969,
+        "precision": 0.346,
+        "n": 383
+      },
+      "Eruptive": {
+        "recall": 0.976,
+        "precision": 0.972,
+        "n": 958
+      }
+    },
+    "n_events": 8223
+  },
+  "oor_pspl_shortte": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.963,
+        "precision": 0.994,
+        "n": 4575
+      },
+      "PSPL": {
+        "recall": 0.508,
+        "precision": 0.918,
+        "n": 1460
+      },
+      "NonPSPL": {
+        "recall": 0.928,
+        "precision": 0.071,
+        "n": 83
+      },
+      "PeriodicVar": {
+        "recall": 0.988,
+        "precision": 0.945,
+        "n": 752
+      },
+      "LongPeriodVar": {
+        "recall": 0.989,
+        "precision": 0.92,
+        "n": 366
+      },
+      "Eruptive": {
+        "recall": 0.982,
+        "precision": 0.978,
+        "n": 966
+      }
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.973,
+        "precision": 0.99,
+        "n": 4575
+      },
+      "PSPL": {
+        "recall": 0.567,
+        "precision": 0.931,
+        "n": 1460
+      },
+      "NonPSPL": {
+        "recall": 0.916,
+        "precision": 0.08,
+        "n": 83
+      },
+      "PeriodicVar": {
+        "recall": 0.988,
+        "precision": 0.954,
+        "n": 752
+      },
+      "LongPeriodVar": {
+        "recall": 0.981,
+        "precision": 0.951,
+        "n": 366
+      },
+      "Eruptive": {
+        "recall": 0.969,
+        "precision": 0.985,
+        "n": 966
+      }
+    },
+    "n_events": 8202
+  },
+  "oor_flat_faint": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.629,
+        "precision": 0.997,
+        "n": 12836
+      },
+      "PSPL": {
+        "recall": 0.483,
+        "precision": 0.121,
+        "n": 371
+      },
+      "NonPSPL": {
+        "recall": 0.848,
+        "precision": 0.031,
+        "n": 33
+      },
+      "PeriodicVar": {
+        "recall": 0.955,
+        "precision": 0.542,
+        "n": 313
+      },
+      "LongPeriodVar": {
+        "recall": 0.774,
+        "precision": 0.099,
+        "n": 248
+      },
+      "Eruptive": {
+        "recall": 0.839,
+        "precision": 0.79,
+        "n": 2043
+      }
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.636,
+        "precision": 0.997,
+        "n": 12836
+      },
+      "PSPL": {
+        "recall": 0.552,
+        "precision": 0.078,
+        "n": 371
+      },
+      "NonPSPL": {
+        "recall": 0.879,
+        "precision": 0.045,
+        "n": 33
+      },
+      "PeriodicVar": {
+        "recall": 0.952,
+        "precision": 0.53,
+        "n": 313
+      },
+      "LongPeriodVar": {
+        "recall": 0.661,
+        "precision": 0.421,
+        "n": 248
+      },
+      "Eruptive": {
+        "recall": 0.828,
+        "precision": 0.881,
+        "n": 2043
+      }
+    },
+    "n_events": 15844
+  }
+}

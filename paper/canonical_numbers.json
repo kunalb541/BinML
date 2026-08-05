@@ -174,6 +174,18 @@
     "f1_periodic_delta": 0.003, "f1_lpv_delta": 0.016, "f1_eruptive_delta": 0.012
   },
 
+  "hardregime_finetune": {
+    "_comment": "Second fine-tune: 11 hard regimes (wide/wider/planet_wide, perhard, shortte, longte, faint, flatrich, lpvhard, planetary, planet_res), 164,390 events, 8 epochs at lr 5e-5 from the shipped checkpoint. Both models scored on the SAME eval sets from an unseen seed base, per class per regime. Source: validation/modal_hardregime_finetune.py.",
+    "longp_periodic_before": 0.046, "longp_periodic_after": 0.049, "longp_n": 738,
+    "widesep_nonpspl_before": 0.440, "widesep_nonpspl_after": 0.440, "widesep_n": 25,
+    "shortte_pspl_before": 0.508, "shortte_pspl_after": 0.567, "shortte_n": 1460,
+    "faint_pspl_before": 0.483, "faint_pspl_after": 0.552, "faint_n": 371,
+    "faint_lpv_prec_before": 0.099, "faint_lpv_prec_after": 0.421,
+    "faint_lpv_recall_before": 0.774, "faint_lpv_recall_after": 0.661,
+    "natural_nonpspl_prec_before": 0.698, "natural_nonpspl_prec_after": 0.659,
+    "natural_eruptive_prec_before": 0.780, "natural_eruptive_prec_after": 0.859
+  },
+
   "cadence_experiment": {
     "_comment": "P0.5: matched-recipe comparison of the legacy 15-min F146 cadence vs the current GBTDS ~12-min rate. 12 shards (~90k events), 12 epochs, seed 20260720, trained from scratch per arm in isolated Modal containers. Source: validation/modal_cadence.py.",
     "n_events": 89911,

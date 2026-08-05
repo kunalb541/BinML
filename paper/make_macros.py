@@ -112,6 +112,18 @@ for key, name in (("stellar", "Stellar"), ("giant", "Giant"),
     cmd(f"bmlFt{name}N", str(ft[f"{key}_n"]))
 cmd("bmlFtWorstRegress", three(abs(min(ft[k] for k in ft if k.startswith("f1_") and k.endswith("_delta")))))
 
+hr = cn["hardregime_finetune"]
+for k, name in (("longp_periodic", "LongpPer"), ("widesep_nonpspl", "WidesepNp"),
+                ("shortte_pspl", "Shortte"), ("faint_pspl", "FaintPspl")):
+    cmd(f"bmlHr{name}Before", three(hr[f"{k}_before"]))
+    cmd(f"bmlHr{name}After", three(hr[f"{k}_after"]))
+cmd("bmlHrFaintLpvPrecBefore", three(hr["faint_lpv_prec_before"]))
+cmd("bmlHrFaintLpvPrecAfter", three(hr["faint_lpv_prec_after"]))
+cmd("bmlHrFaintLpvRecBefore", three(hr["faint_lpv_recall_before"]))
+cmd("bmlHrFaintLpvRecAfter", three(hr["faint_lpv_recall_after"]))
+cmd("bmlHrNatNpPrecBefore", three(hr["natural_nonpspl_prec_before"]))
+cmd("bmlHrNatNpPrecAfter", three(hr["natural_nonpspl_prec_after"]))
+
 cx = cn["cadence_experiment"]
 cmd("bmlCadN", f"{cx['n_events']:,}")
 cmd("bmlCadEpochs", str(cx["epochs"]))

@@ -729,10 +729,41 @@ planets in absolute terms, and the fine-tuning set itself is thin---in the deep-
 only about one simulated binary in seven produces a detectable anomaly at all, so targeted
 generation yields far fewer trainable examples than its raw event count suggests. What it does show
 is that the mass-ratio deficit reported above is substantially a matter of training exposure rather
-than an intrinsic limit of the architecture or the photometry, which is the more useful fact for
-anyone deploying or extending this model. It also supports the broader caution of
-\S\ref{sec:limits}: performance shortfalls in sparsely-populated regimes should not be assumed
-irreducible without an experiment of this kind.
+than an intrinsic limit of the architecture or the photometry.
+
+\subsection{Which failures targeted training \emph{cannot} fix}\label{sec:hardregime}
+
+The natural follow-up is whether the same treatment repairs the other weak regimes of
+\S\ref{sec:limits}. We repeated the experiment at larger scale, fine-tuning on a mixture of eleven
+hard regimes chosen to cover every documented failure---wide and resonant separations, short and
+long timescales, faint and flat-rich fields, and the difficult contaminant populations---and scored
+both models per class on out-of-range evaluation sets built where each failure actually occurs.
+
+The outcome is informative precisely because it is not uniform. Two failures barely move.
+\texttt{PeriodicVar} recall for variables whose period exceeds the observing season goes from
+$\bmlHrLongpPerBefore$ to $\bmlHrLongpPerAfter$, and \texttt{NonPSPL} recall for very wide
+separations from $\bmlHrWidesepNpBefore$ to $\bmlHrWidesepNpAfter$---no change at all, despite
+training data drawn specifically from those regimes. Both have an obvious physical reading: a
+variable whose period is longer than the window is not observably periodic within it, and a wide
+caustic that is never crossed leaves no anomaly in the photometry. Where the information is absent
+from the data, training cannot supply it. Two other failures do respond, modestly: \texttt{PSPL}
+recall improves from $\bmlHrShortteBefore$ to $\bmlHrShortteAfter$ on sub-day timescales and from
+$\bmlHrFaintPsplBefore$ to $\bmlHrFaintPsplAfter$ for faint sources.
+
+The fine-tune also rebalances precision against recall rather than improving both. The clearest
+case is \texttt{LongPeriodVar} in faint fields, where precision rises sharply from
+$\bmlHrFaintLpvPrecBefore$ to $\bmlHrFaintLpvPrecAfter$ while recall falls from
+$\bmlHrFaintLpvRecBefore$ to $\bmlHrFaintLpvRecAfter$; anomaly precision on the natural mixture
+drifts down slightly ($\bmlHrNatNpPrecBefore\rightarrow\bmlHrNatNpPrecAfter$). Aggressive multi-regime
+fine-tuning is therefore not a free improvement, unlike the narrowly targeted planetary case.
+
+Taken together the two experiments support a sharper statement than either alone, and one we can
+now make with evidence rather than assertion: the model's shortfalls are of two kinds. Deficits in
+regimes that are merely under-represented in training---the mass-ratio deficit above all---are
+substantially recoverable. Deficits in regimes where the observable signal is absent within a single
+season are not, and no amount of targeted data changed them. Distinguishing the two is what tells a
+prospective user which limitations are worth engineering around and which are properties of the
+observation itself.
 
 The natural next step is validation on real events in the model's own regime. As shown in
 \S\ref{sec:limits}, this cannot be done from the ground---even KMTNet's dense but nightly-gapped
