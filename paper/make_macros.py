@@ -73,6 +73,16 @@ cmd("bmlStressMacroF", three(s["natural_macro_f1"]))
 cmd("bmlSeedTrain", str(s["seed_base_train"]))
 cmd("bmlSeedStress", str(s["seed_base_stress"]))
 
+sr = cn["stress_regimes"]
+cmd("bmlStressNatNp", three(sr["natural_np_recall"]))
+cmd("bmlStressPlanetNp", three(sr["planetary_np_recall"]))
+cmd("bmlStressPlanetPrec", three(sr["planetary_np_prec"]))
+cmd("bmlStressWidesep", three(sr["widesep_np_recall"]))
+cmd("bmlStressLongp", three(sr["longp_per_recall"]))
+cmd("bmlStressShortte", three(sr["shortte_pspl_recall"]))
+cmd("bmlStressFaintPspl", three(sr["faint_pspl_recall"]))
+cmd("bmlStressFaintPrec", three(sr["faint_np_prec"]))
+
 lc = cn["latency_censored"]
 cmd("bmlLatN", str(lc["n_eligible"]))
 cmd("bmlLatDetFrac", pct(lc["detection_fraction"]))

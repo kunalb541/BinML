@@ -1,6 +1,5 @@
 {
   "_comment": "Single source of truth for every number in the manuscript. Values are drawn from paper/results/metrics.json (the independent 450,589-event evaluation of the production model) and from the project's cascade / stress-test analyses. make_macros.py turns this file (plus figures_stats.json, produced by make_figures.py) into paper_macros.tex. NEVER hand-edit numbers in paper.tex.",
-
   "test": {
     "_comment": "evaluation pool split by rng(7): 20% validation (threshold selection), 80% final test. All reported metrics AND figures use the final-test rows only (test_idx.npy).",
     "n_pool": 450589,
@@ -9,34 +8,58 @@
     "checkpoint": "binml.pt",
     "trained_epoch": 4
   },
-
   "headline": {
     "completeness_at_purity": 0.879,
     "completeness_ci_lo": 0.876,
     "completeness_ci_hi": 0.882,
     "purity_achieved": 0.908,
-    "purity_target": 0.90,
+    "purity_target": 0.9,
     "threshold": 0.904,
     "average_precision": 0.952,
     "macro_f1": 0.919
   },
-
   "per_class": {
     "note": "population-weighted (selection-corrected) recall / precision / F1; argmax over the six classes",
-    "Flat":          {"recall": 0.960, "precision": 0.982, "f1": 0.971},
-    "PSPL":          {"recall": 0.936, "precision": 0.988, "f1": 0.962},
-    "NonPSPL":       {"recall": 0.948, "precision": 0.716, "f1": 0.816},
-    "PeriodicVar":   {"recall": 0.990, "precision": 0.952, "f1": 0.971},
-    "LongPeriodVar": {"recall": 0.982, "precision": 0.851, "f1": 0.912},
-    "Eruptive":      {"recall": 0.985, "precision": 0.795, "f1": 0.880}
+    "Flat": {
+      "recall": 0.96,
+      "precision": 0.982,
+      "f1": 0.971
+    },
+    "PSPL": {
+      "recall": 0.936,
+      "precision": 0.988,
+      "f1": 0.962
+    },
+    "NonPSPL": {
+      "recall": 0.948,
+      "precision": 0.716,
+      "f1": 0.816
+    },
+    "PeriodicVar": {
+      "recall": 0.99,
+      "precision": 0.952,
+      "f1": 0.971
+    },
+    "LongPeriodVar": {
+      "recall": 0.982,
+      "precision": 0.851,
+      "f1": 0.912
+    },
+    "Eruptive": {
+      "recall": 0.985,
+      "precision": 0.795,
+      "f1": 0.88
+    }
   },
-
   "per_class_support": {
     "_comment": "number of test events carrying each observational label (of 450,589)",
-    "Flat": 144829, "PSPL": 131125, "NonPSPL": 53404,
-    "PeriodicVar": 40119, "LongPeriodVar": 38179, "Eruptive": 42933
+    "Flat": 144829,
+    "PSPL": 131125,
+    "NonPSPL": 53404,
+    "PeriodicVar": 40119,
+    "LongPeriodVar": 38179,
+    "Eruptive": 42933
   },
-
   "labelling": {
     "_comment": "label surgery performed by detectability-conditioned labelling, vs generation class",
     "overall_relabelled_pct": 39.5,
@@ -45,36 +68,49 @@
     "lpv_to_flat_pct": 63.6,
     "pspl_to_flat_pct": 11.7
   },
-
   "nonpspl_physical_precision": 0.985,
   "nonpspl_demoted_fraction": 0.947,
-
   "nonpspl_recall_by_dchi2": {
-    "160_2000":       0.904,
-    "2000_10000":     0.944,
-    "10000_100000":   0.949,
-    "100000_inf":     0.972
+    "160_2000": 0.904,
+    "2000_10000": 0.944,
+    "10000_100000": 0.949,
+    "100000_inf": 0.972
   },
   "nonpspl_recall_strong_anomaly": 0.972,
-
   "cascade": {
     "premature_flag_before": 0.42,
-    "premature_flag_after":  0.09,
+    "premature_flag_after": 0.09,
     "preonset_p_before": 0.411,
-    "preonset_p_after":  0.033,
+    "preonset_p_after": 0.033,
     "missed_planet_before": 0.055,
-    "missed_planet_after":  0.048
+    "missed_planet_after": 0.048
   },
-
   "slices": {
-    "planetary_q_lt_1e-2":     {"n": 7624,  "recall": 0.947},
-    "deep_planetary_q_lt_1e-3":{"n": 2477,  "recall": 0.892},
-    "near_suzuki_break":       {"n": 2308,  "recall": 0.905},
-    "faint_mbase_gt_22p5":     {"n": 19737, "recall": 0.943},
-    "high_extinction":         {"n": 21396, "recall": 0.949},
-    "no_blue_band":            {"n": 9243,  "recall": 0.918}
+    "planetary_q_lt_1e-2": {
+      "n": 7624,
+      "recall": 0.947
+    },
+    "deep_planetary_q_lt_1e-3": {
+      "n": 2477,
+      "recall": 0.892
+    },
+    "near_suzuki_break": {
+      "n": 2308,
+      "recall": 0.905
+    },
+    "faint_mbase_gt_22p5": {
+      "n": 19737,
+      "recall": 0.943
+    },
+    "high_extinction": {
+      "n": 21396,
+      "recall": 0.949
+    },
+    "no_blue_band": {
+      "n": 9243,
+      "recall": 0.918
+    }
   },
-
   "stress": {
     "_comment": "30 unseen-parameter regimes (14.9M) + natural-population subset (4.5M) = 19.4M; macro-F1 is the natural-population subset",
     "n_events_millions": 19.4,
@@ -83,7 +119,21 @@
     "seed_base_train": 20260720,
     "seed_base_stress": 900000000
   },
-
+  "stress_regimes": {
+    "_comment": "Per-regime stress-test numbers at the model's operating point, from results/stress_report.json. In-distribution ('natural') vs deliberately out-of-range (oor_*) regimes. Reported to replace the vague 'degradations are confined/near-fundamental' claim.",
+    "natural_n": 4502855,
+    "natural_np_recall": 0.941,
+    "natural_np_prec": 0.752,
+    "planetary_n": 546735,
+    "planetary_np_recall": 0.884,
+    "planetary_np_prec": 0.36,
+    "widesep_n": 81904,
+    "widesep_np_recall": 0.222,
+    "longp_per_recall": 0.054,
+    "shortte_pspl_recall": 0.524,
+    "faint_pspl_recall": 0.491,
+    "faint_np_prec": 0.033
+  },
   "latency_censored": {
     "_comment": "P0.7: censor-aware detection latency. ALL eligible detectable binaries kept (n=400); never-detected events are right-censored rather than dropped. Reveal grid 0.5 d (was 2 d). Source: validation/modal_latency_gaps.py.",
     "n_eligible": 400,
@@ -92,40 +142,49 @@
     "p90_lag_days": 13.1,
     "pre_onset_fraction": 0.338
   },
-
   "gap_matched": {
     "_comment": "P0.8: uniform vs nightly-gapped sampling at MATCHED visit counts, so gap topology is decoupled from density. Below ~20 visits/day both collapse (sparsity floor), so the discriminating comparison is at 25-32/day.",
-    "visits_per_day_a": 31.9, "uniform_a": 0.59, "nightly_a": 0.00,
-    "visits_per_day_b": 25.0, "uniform_b": 0.24, "nightly_b": 0.00,
+    "visits_per_day_a": 31.9,
+    "uniform_a": 0.59,
+    "nightly_a": 0.0,
+    "visits_per_day_b": 25.0,
+    "uniform_b": 0.24,
+    "nightly_b": 0.0,
     "n_events": 17
   },
-
   "mass_ratio_regimes": {
     "_comment": "P1: completeness at the FIXED operating threshold, split by lens mass ratio q, on the frozen test. Aggregate NonPSPL completeness is dominated by stellar binaries; planet recovery degrades with q.",
-    "stellar_n": 35181, "stellar_comp": 0.887,
-    "giant_n": 5147, "giant_comp": 0.888,
-    "neptune_n": 1798, "neptune_comp": 0.797,
-    "lowmass_n": 679, "lowmass_comp": 0.588
+    "stellar_n": 35181,
+    "stellar_comp": 0.887,
+    "giant_n": 5147,
+    "giant_comp": 0.888,
+    "neptune_n": 1798,
+    "neptune_comp": 0.797,
+    "lowmass_n": 679,
+    "lowmass_comp": 0.588
   },
-
   "cadence_experiment": {
     "_comment": "P0.5: matched-recipe comparison of the legacy 15-min F146 cadence vs the current GBTDS ~12-min rate. 12 shards (~90k events), 12 epochs, seed 20260720, trained from scratch per arm in isolated Modal containers. Source: validation/modal_cadence.py.",
     "n_events": 89911,
     "epochs": 12,
-    "c15_completeness": 0.643, "c15_purity": 0.887, "c15_ap": 0.839, "c15_nonpspl_f1": 0.596,
-    "c12_completeness": 0.622, "c12_purity": 0.916, "c12_ap": 0.847, "c12_nonpspl_f1": 0.582
+    "c15_completeness": 0.643,
+    "c15_purity": 0.887,
+    "c15_ap": 0.839,
+    "c15_nonpspl_f1": 0.596,
+    "c12_completeness": 0.622,
+    "c12_purity": 0.916,
+    "c12_ap": 0.847,
+    "c12_nonpspl_f1": 0.582
   },
-
   "baselines": {
     "_comment": "fieldable-baseline comparison on 9000 freshly simulated events (3600-event test), same rows for all methods; source validation/baselines_result.json. AP for NonPSPL-vs-rest.",
     "n_test": 3600,
     "prevalence": 0.041,
     "ap_binml": 0.843,
-    "ap_gbt": 0.350,
-    "ap_logistic": 0.270,
+    "ap_gbt": 0.35,
+    "ap_logistic": 0.27,
     "ap_fitted_pspl": 0.191
   },
-
   "inference": {
     "_comment": "measured on CPU, batch 1024, torch inference_mode; see make_data_figures notes",
     "events_per_sec": 1224,
@@ -133,7 +192,6 @@
     "cpu_cores": 10,
     "median_detection_lag_days": 5
   },
-
   "infra": {
     "_comment": "measured/recorded infrastructure numbers for the appendix",
     "sim_events_millions": 10.0,
@@ -148,13 +206,11 @@
     "train_hours": 15,
     "train_epochs_effective": 5
   },
-
   "false_positive": {
     "_comment": "timing false positives = premature flags; missed planets = false negatives",
     "missed_planet_rate": 0.048,
-    "long_period_var_to_pspl": 0.010
+    "long_period_var_to_pspl": 0.01
   },
-
   "model": {
     "n_params": 505479,
     "n_tokens": 156,

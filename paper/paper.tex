@@ -583,14 +583,26 @@ it comprises a $\bmlStressNatN$-million-event natural-population subset and a su
 deliberately out-of-range regimes. On the natural-population subset BinML reproduces its held-out
 performance, with a macro-F1 of $\bmlStressMacroF$.
 
-The degradations that do appear are confined to physically extreme corners, and each has a physical
-cause rather than a modelling one: sources fainter than $m\approx25$, where noise begins to
-manufacture spurious anomalies; very wide caustics with $s>5$, which are rarely crossed within a
-single season; and sub-day timescales, which place too few epochs on the peak to constrain it. These
-are near-fundamental limits of the photometry, not gaps a larger training set could close. Robustness
-to missing data is likewise encouraging: events observed without the blue band are still recovered at
-$\bmlSliceNoBlue$, confirming that the model degrades gracefully rather than failing when colour
-information is unavailable.
+The out-of-range regimes, by contrast, expose real failures, and we report them rather than
+characterising them as merely ``extreme''. Anomaly recall stays near its in-distribution value of
+$\bmlStressNatNp$ across most regimes, but collapses to $\bmlStressWidesep$ for very wide
+separations, where the caustic is rarely crossed within a season. Two contaminant regimes fail
+outright: long-period variables whose period exceeds the season are recovered as
+\texttt{PeriodicVar} only $\bmlStressLongp$ of the time (a nearly complete failure, since within one
+window they are not observably periodic), and sub-day-timescale single lenses are recovered at
+$\bmlStressShortte$. For faint sources, \texttt{PSPL} recall falls to $\bmlStressFaintPspl$ and
+anomaly \emph{precision} to $\bmlStressFaintPrec$---noise manufacturing spurious anomalies is the
+single most consequential failure mode for a follow-up programme. In the deep-planetary regime,
+recall holds at $\bmlStressPlanetNp$ but precision falls to $\bmlStressPlanetPrec$.
+
+We deliberately do not claim these are irreducible. Each has a plausible physical explanation---too
+few epochs on the peak, a signal that does not complete within the window, photometric noise
+comparable to the signal---but we have run no ablation showing that broader training coverage could
+not close them, and the deep-planetary deficit in particular is a regime the training distribution
+barely populates. They are better read as the current model's documented operating envelope than as
+limits of the method. Robustness to missing data is more encouraging: events observed without the
+blue band are still recovered at $\bmlSliceNoBlue$, so the model degrades gracefully when colour is
+unavailable.
 
 One boundary is deliberate and worth stating as such: BinML is a specialist for \Rom{}'s dense
 cadence. Its discriminating power---the non-learned min/max lanes that preserve a caustic spike, the
