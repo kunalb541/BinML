@@ -1,0 +1,16 @@
+{
+  "latency": {
+    "n_eligible": 400,
+    "n_detected": 352,
+    "detection_fraction": 0.88,
+    "median_lag_detected_days": 1.4,
+    "p90_lag_days": 13.09,
+    "pre_onset_flag_fraction": 0.338
+  },
+  "gap_matched_density": {
+    "uniform": 0.0,
+    "nightly": 0.0,
+    "n_per_arm": 300,
+    "visits": 1200
+  }
+}

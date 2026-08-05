@@ -73,6 +73,20 @@ cmd("bmlStressMacroF", three(s["natural_macro_f1"]))
 cmd("bmlSeedTrain", str(s["seed_base_train"]))
 cmd("bmlSeedStress", str(s["seed_base_stress"]))
 
+lc = cn["latency_censored"]
+cmd("bmlLatN", str(lc["n_eligible"]))
+cmd("bmlLatDetFrac", pct(lc["detection_fraction"]))
+cmd("bmlLatMedian", f"{lc['median_lag_days']:.1f}")
+cmd("bmlLatPninety", f"{lc['p90_lag_days']:.0f}")
+cmd("bmlLatPreonset", pct(lc["pre_onset_fraction"]))
+
+gm = cn["gap_matched"]
+cmd("bmlGapVisitsA", f"{gm['visits_per_day_a']:.0f}")
+cmd("bmlGapUniformA", two(gm["uniform_a"]))
+cmd("bmlGapNightlyA", two(gm["nightly_a"]))
+cmd("bmlGapVisitsB", f"{gm['visits_per_day_b']:.0f}")
+cmd("bmlGapUniformB", two(gm["uniform_b"]))
+
 mr = cn["mass_ratio_regimes"]
 for key, name in (("stellar", "Stellar"), ("giant", "Giant"),
                   ("neptune", "Neptune"), ("lowmass", "Lowmass")):

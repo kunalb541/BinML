@@ -295,13 +295,18 @@ while leaving full-season sensitivity (the missed-planet rate) intact.}
 
 The complement of avoiding premature flags is catching real anomalies quickly once they do
 appear, which is the quantity a live alert stream cares about most.
-Figure~\ref{fig:latency} measures this detection latency directly: for a sample of binaries we
-step the model through the revealed season and record the first day its anomaly probability
-crosses the operating threshold, relative to the true onset day $t_{\mathrm{anom}}$. The
-distribution peaks just after onset, with a median lag of $\bmlDetLag$~days---fast enough that a
-caustic crossing flagged by BinML is still in progress or freshly past when the alert fires. The
-small negative-lag tail is the same population of premature flags quantified above, here recast
-as timing false positives; it is a manageable minority rather than the bulk of the distribution.
+Figure~\ref{fig:latency} measures this detection latency: we step the model through the revealed
+season on a half-day grid and record the first day its anomaly probability crosses the operating
+threshold, relative to the onset day $t_{\mathrm{anom}}$. Two properties of this measurement matter.
+First, we retain \emph{every} eligible detectable binary ($N=\bmlLatN$) rather than only those the
+model eventually flags: $\bmlLatDetFrac\%$ are detected within the season and the remainder are
+right-censored, so the quoted latency is not inflated by discarding failures. Second, among detected
+events the median lag is $\bmlLatMedian$~days, with a long tail ($90$th percentile
+$\bmlLatPninety$~days) driven by weak anomalies that accumulate significance slowly. A caveat we
+state explicitly: $t_{\mathrm{anom}}$ itself is estimated on a coarse grid, so sub-day latencies
+should be read as ``within about a day of onset'' rather than as a precise interval. The
+negative-lag fraction ($\bmlLatPreonset\%$ of detections) is the premature-flag population
+quantified above, here recast as timing false positives.
 
 \begin{figure}[htbp]
 \centering
@@ -598,9 +603,14 @@ real KMTNet events---including several sampled at $60$--$80$ points per day, abo
 which \emph{uniform} subsampling of our simulations still works---the model misclassifies them as
 periodic variables. The cause is the sampling \emph{pattern}, not its mean rate: ground data is
 clustered into nightly visits separated by daytime gaps, and that near-diurnal periodicity is read
-as stellar variability. A controlled test makes the point cleanly---dense simulated events thinned
-uniformly to $60$ points per day retain anomaly recall near $0.7$, but the same events observed
-through a realistic eight-hour nightly window collapse to zero. Roman's uninterrupted,
+as stellar variability. A matched-density test isolates this from the trivial explanation that
+ground data simply has fewer points. Comparing uniform sampling against an eight-hour nightly
+observing window \emph{at identical total visit counts}---so that only the gap topology differs---%
+anomaly recall is $\bmlGapUniformA$ (uniform) versus $\bmlGapNightlyA$ (gapped) at
+$\bmlGapVisitsA$~visits per day, and $\bmlGapUniformB$ versus $\bmlGapNightlyA$ at
+$\bmlGapVisitsB$~per day. Below roughly $20$ visits per day both schedules fail, so sparsity alone
+dominates there; in the regime where uniform sampling still works, the gapped schedule does not.
+The daily gap, not the visit count, is what defeats the model. Roman's uninterrupted,
 space-based cadence has no such gaps, and no ground network can reproduce it. Genuine validation of
 the model in its own regime therefore awaits \Rom{}. Sparse single-band archival data is meanwhile
 the province of simpler feature- or single-band models---and, as a sanity check that the overall

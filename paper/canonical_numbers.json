@@ -84,6 +84,22 @@
     "seed_base_stress": 900000000
   },
 
+  "latency_censored": {
+    "_comment": "P0.7: censor-aware detection latency. ALL eligible detectable binaries kept (n=400); never-detected events are right-censored rather than dropped. Reveal grid 0.5 d (was 2 d). Source: validation/modal_latency_gaps.py.",
+    "n_eligible": 400,
+    "detection_fraction": 0.88,
+    "median_lag_days": 1.4,
+    "p90_lag_days": 13.1,
+    "pre_onset_fraction": 0.338
+  },
+
+  "gap_matched": {
+    "_comment": "P0.8: uniform vs nightly-gapped sampling at MATCHED visit counts, so gap topology is decoupled from density. Below ~20 visits/day both collapse (sparsity floor), so the discriminating comparison is at 25-32/day.",
+    "visits_per_day_a": 31.9, "uniform_a": 0.59, "nightly_a": 0.00,
+    "visits_per_day_b": 25.0, "uniform_b": 0.24, "nightly_b": 0.00,
+    "n_events": 17
+  },
+
   "mass_ratio_regimes": {
     "_comment": "P1: completeness at the FIXED operating threshold, split by lens mass ratio q, on the frozen test. Aggregate NonPSPL completeness is dominated by stellar binaries; planet recovery degrades with q.",
     "stellar_n": 35181, "stellar_comp": 0.887,
