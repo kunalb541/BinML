@@ -101,7 +101,19 @@ def to_tokens(bands: Dict[str, Tuple[np.ndarray, np.ndarray]],
     carry the source colour. If omitted it is estimated from F146.
     """
     if "F146" not in bands:
-        raise ValueError("F146 is required (it is the band the model always expects present)")
+        raise ValueError(
+            f"F146 is required (the model always expects it present); got bands {sorted(bands)}. "
+            f"Recognised bands are {sorted(BAND_BINS)}.")
+    unknown = [b for b in bands if b not in BAND_BINS]
+    if unknown:
+        raise ValueError(f"unrecognised band(s) {unknown}; expected a subset of {sorted(BAND_BINS)}")
+    for b, v in bands.items():
+        ta, ma = np.asarray(v[0], float).ravel(), np.asarray(v[1], float).ravel()
+        if ta.size != ma.size:
+            raise ValueError(f"{b}: time and magnitude must have equal length, "
+                             f"got {ta.size} and {ma.size}")
+        if ta.size == 0:
+            raise ValueError(f"{b}: empty light curve (no observations)")
     t146, m146 = bands["F146"]
     if not np.isfinite(np.asarray(t146, float)).any() or not np.isfinite(np.asarray(m146, float)).any():
         raise ValueError("F146 has no finite (time, magnitude) observations")
