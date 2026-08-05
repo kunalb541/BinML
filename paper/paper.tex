@@ -591,10 +591,22 @@ older Cycle-7-inspired \Rom{} design \citep{Khakpash2021}, not the current Galac
 Time-Domain Survey definition, which specifies a faster ($\sim$12-minute) high-cadence F146,
 more frequent colour visits, and six high-cadence plus four low-cadence seasons with the
 attendant seasonal gaps \citep{RomanGBTDS2025}. Our results are therefore a benchmark under a
-legacy \Rom{}-like schedule, not a forecast under the survey as it will actually run; re-simulating,
-re-training, and re-evaluating under the current multi-season design---including its seasonal gaps
-and low-cadence phases---is required before any operational claim, and is the most important single
-extension of this work.
+legacy \Rom{}-like schedule, not a forecast under the survey as it will actually run.
+
+We can, however, bound how much the \emph{sampling rate} alone matters. We repeated the entire
+pipeline---simulation, training from scratch, and evaluation---at the current $\sim$12-minute F146
+rate and at our legacy 15-minute rate, holding everything else fixed (matched shard count,
+$\bmlCadN$ events, $\bmlCadEpochs$ epochs, identical seed). The two arms are indistinguishable:
+anomaly average precision $\bmlCadFifteenAp$ (15\,min) versus $\bmlCadTwelveAp$ (12\,min), and
+completeness $\bmlCadFifteenCompleteness$ at purity $\bmlCadFifteenPurity$ versus
+$\bmlCadTwelveCompleteness$ at purity $\bmlCadTwelvePurity$, with per-class F1 differing by less
+than $0.02$ everywhere. The two headline differences even disagree in sign, which is the signature
+of run-to-run variation rather than a systematic effect. This is physically unsurprising: both rates
+sample an hours-to-day caustic densely, so a $25\%$ change in epoch count adds little information.
+The rate change is thus not the risk; what remains untested is the current design's
+\emph{structure}---six high-cadence plus four low-cadence seasons with seasonal gaps---which our
+single-season, fixed-window input cannot represent without an architectural change. That, rather
+than re-tuning the cadence, is the most important extension of this work.
 
 The single most important caveat on the headline numbers concerns the class mixture. The purity we
 quote is not a property of the classifier alone but of the classifier \emph{and} the assumed

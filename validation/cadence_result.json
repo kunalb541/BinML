@@ -1,0 +1,32 @@
+[
+  {
+    "cadence_min": 15,
+    "n_events": 89911,
+    "completeness_at_purity": 0.643,
+    "purity": 0.887,
+    "ap": 0.839,
+    "per_class_f1": {
+      "Flat": 0.957,
+      "PSPL": 0.9,
+      "NonPSPL": 0.596,
+      "PeriodicVar": 0.961,
+      "LongPeriodVar": 0.876,
+      "Eruptive": 0.744
+    }
+  },
+  {
+    "cadence_min": 12,
+    "n_events": 89874,
+    "completeness_at_purity": 0.622,
+    "purity": 0.916,
+    "ap": 0.847,
+    "per_class_f1": {
+      "Flat": 0.966,
+      "PSPL": 0.9,
+      "NonPSPL": 0.582,
+      "PeriodicVar": 0.968,
+      "LongPeriodVar": 0.88,
+      "Eruptive": 0.744
+    }
+  }
+]

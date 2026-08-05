@@ -84,6 +84,14 @@
     "seed_base_stress": 900000000
   },
 
+  "cadence_experiment": {
+    "_comment": "P0.5: matched-recipe comparison of the legacy 15-min F146 cadence vs the current GBTDS ~12-min rate. 12 shards (~90k events), 12 epochs, seed 20260720, trained from scratch per arm in isolated Modal containers. Source: validation/modal_cadence.py.",
+    "n_events": 89911,
+    "epochs": 12,
+    "c15_completeness": 0.643, "c15_purity": 0.887, "c15_ap": 0.839, "c15_nonpspl_f1": 0.596,
+    "c12_completeness": 0.622, "c12_purity": 0.916, "c12_ap": 0.847, "c12_nonpspl_f1": 0.582
+  },
+
   "baselines": {
     "_comment": "fieldable-baseline comparison on 9000 freshly simulated events (3600-event test), same rows for all methods; source validation/baselines_result.json. AP for NonPSPL-vs-rest.",
     "n_test": 3600,

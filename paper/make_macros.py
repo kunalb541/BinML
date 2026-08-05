@@ -73,6 +73,14 @@ cmd("bmlStressMacroF", three(s["natural_macro_f1"]))
 cmd("bmlSeedTrain", str(s["seed_base_train"]))
 cmd("bmlSeedStress", str(s["seed_base_stress"]))
 
+cx = cn["cadence_experiment"]
+cmd("bmlCadN", f"{cx['n_events']:,}")
+cmd("bmlCadEpochs", str(cx["epochs"]))
+for k, name in (("completeness", "Completeness"), ("purity", "Purity"),
+                ("ap", "Ap"), ("nonpspl_f1", "Nonpspl")):   # no digits: TeX names are letters only
+    cmd(f"bmlCadFifteen{name}", three(cx[f"c15_{k}"]))
+    cmd(f"bmlCadTwelve{name}", three(cx[f"c12_{k}"]))
+
 bl = cn["baselines"]
 cmd("bmlBaseBinml", three(bl["ap_binml"]))
 cmd("bmlBaseGbt", three(bl["ap_gbt"]))
