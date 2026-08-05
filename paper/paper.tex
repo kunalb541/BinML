@@ -299,21 +299,23 @@ Figure~\ref{fig:latency} measures this detection latency: we step the model thro
 season on a half-day grid and record the first day its anomaly probability crosses the operating
 threshold, relative to the onset day $t_{\mathrm{anom}}$. Two properties of this measurement matter.
 First, we retain \emph{every} eligible detectable binary ($N=\bmlLatN$) rather than only those the
-model eventually flags: $\bmlLatDetFrac\%$ are detected within the season and the remainder are
-right-censored, so the quoted latency is not inflated by discarding failures. Second, among detected
-events the median lag is $\bmlLatMedian$~days, with a long tail ($90$th percentile
-$\bmlLatPninety$~days) driven by weak anomalies that accumulate significance slowly. A caveat we
-state explicitly: $t_{\mathrm{anom}}$ itself is estimated on a coarse grid, so sub-day latencies
-should be read as ``within about a day of onset'' rather than as a precise interval. The
-negative-lag fraction ($\bmlLatPreonset\%$ of detections) is the premature-flag population
-quantified above, here recast as timing false positives.
+model eventually flags: $\bmlLatDetFrac\%$ are detected within the season and the remaining
+$\bmlLatCensored$ are right-censored, so the quoted latency is not inflated by discarding
+failures---the median below is conditional on detection, and should be read together with that
+detection fraction rather than as an unconditional expectation. Second, among detected events the
+median lag is $\bmlLatMedian$~days. A caveat we state explicitly: $t_{\mathrm{anom}}$ is itself
+estimated on a coarse grid, so this should be read as ``within a few days of onset'' rather than as
+a precise interval. The negative-lag fraction ($\bmlLatPreonset\%$ of detections) is the
+premature-flag population quantified above, here recast as timing false positives.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{outputs/figures/detection_latency.pdf}
-\caption{Detection latency: the number of days between the caustic becoming detectable
-($t_{\mathrm{anom}}$) and BinML first flagging the event as anomalous, over a sample of binaries.
-The median lag is $\bmlDetLag$~days (blue line). The grey tail at negative lag is the premature
+\caption{Censor-aware detection latency: days between the caustic becoming detectable
+($t_{\mathrm{anom}}$) and BinML first flagging the event, over \emph{all} $\bmlLatN$ eligible
+detectable binaries ($\bmlLatDetFrac\%$ detected within the season; $\bmlLatCensored$ never
+flagged and therefore right-censored, not discarded). The median among detections is
+$\bmlLatMedian$~days (blue line). The grey tail at negative lag is the premature
 (pre-onset) flags---timing false positives---which are a small minority.}
 \label{fig:latency}
 \end{figure}
@@ -749,8 +751,11 @@ $\bmlHrLongpPerBefore$ to $\bmlHrLongpPerAfter$, and \texttt{NonPSPL} recall for
 separations from $\bmlHrWidesepNpBefore$ to $\bmlHrWidesepNpAfter$---no change at all, despite
 training data drawn specifically from those regimes. Both have an obvious physical reading: a
 variable whose period is longer than the window is not observably periodic within it, and a wide
-caustic that is never crossed leaves no anomaly in the photometry. Where the information is absent
-from the data, training cannot supply it. Two other failures do respond, modestly: \texttt{PSPL}
+caustic that is never crossed leaves no anomaly in the photometry. We are careful about the
+strength of this claim: it rests on a single fine-tuning run without repeated seeds, and the
+wide-separation cell contains only $\bmlHrWidesepN$ detectable anomalies, so the evidence is that
+targeted training \emph{did not} help under this protocol---consistent with an information limit,
+but not a demonstration of one. Two other failures do respond, modestly: \texttt{PSPL}
 recall improves from $\bmlHrShortteBefore$ to $\bmlHrShortteAfter$ on sub-day timescales and from
 $\bmlHrFaintPsplBefore$ to $\bmlHrFaintPsplAfter$ for faint sources.
 
@@ -761,13 +766,15 @@ $\bmlHrFaintLpvRecBefore$ to $\bmlHrFaintLpvRecAfter$; anomaly precision on the 
 drifts down slightly ($\bmlHrNatNpPrecBefore\rightarrow\bmlHrNatNpPrecAfter$). Aggressive multi-regime
 fine-tuning is therefore not a free improvement, unlike the narrowly targeted planetary case.
 
-Taken together the two experiments support a sharper statement than either alone, and one we can
-now make with evidence rather than assertion: the model's shortfalls are of two kinds. Deficits in
-regimes that are merely under-represented in training---the mass-ratio deficit above all---are
-substantially recoverable. Deficits in regimes where the observable signal is absent within a single
-season are not, and no amount of targeted data changed them. Distinguishing the two is what tells a
-prospective user which limitations are worth engineering around and which are properties of the
-observation itself.
+Taken together the two experiments motivate a working distinction, offered as a hypothesis these
+results support rather than as a proven dichotomy: some shortfalls are deficits of training
+exposure and respond strongly to targeted data (the mass-ratio deficit, recovered at no measurable
+cost), while others resisted the same treatment entirely and coincide with regimes where the
+observable signal is plausibly absent within a single season. Establishing the latter as a genuine
+information limit would need repeated seeds, larger samples in the affected cells, and ideally an
+explicit estimate of the recoverable information; we have not done that here. What we can say is
+which limitations moved under targeted training and which did not, which is the practically useful
+guidance for anyone extending this model.
 
 The natural next step is validation on real events in the model's own regime. As shown in
 \S\ref{sec:limits}, this cannot be done from the ground---even KMTNet's dense but nightly-gapped

@@ -1,0 +1,8 @@
+{
+  "n_eligible": 200,
+  "n_detected": 177,
+  "n_censored": 23,
+  "detection_fraction": 0.885,
+  "median_lag_detected_days": 4.2,
+  "pre_onset_fraction_of_detections": 0.147
+}

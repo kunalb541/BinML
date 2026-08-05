@@ -87,8 +87,8 @@ lc = cn["latency_censored"]
 cmd("bmlLatN", str(lc["n_eligible"]))
 cmd("bmlLatDetFrac", pct(lc["detection_fraction"]))
 cmd("bmlLatMedian", f"{lc['median_lag_days']:.1f}")
-cmd("bmlLatPninety", f"{lc['p90_lag_days']:.0f}")
 cmd("bmlLatPreonset", pct(lc["pre_onset_fraction"]))
+cmd("bmlLatCensored", str(lc["n_censored"]))
 
 gm = cn["gap_matched"]
 cmd("bmlGapN", str(gm["n_events"]))
@@ -127,6 +127,7 @@ cmd("bmlHrFaintLpvPrecBefore", three(hr["faint_lpv_prec_before"]))
 cmd("bmlHrFaintLpvPrecAfter", three(hr["faint_lpv_prec_after"]))
 cmd("bmlHrFaintLpvRecBefore", three(hr["faint_lpv_recall_before"]))
 cmd("bmlHrFaintLpvRecAfter", three(hr["faint_lpv_recall_after"]))
+cmd("bmlHrWidesepN", str(hr["widesep_n"]))
 cmd("bmlHrNatNpPrecBefore", three(hr["natural_nonpspl_prec_before"]))
 cmd("bmlHrNatNpPrecAfter", three(hr["natural_nonpspl_prec_after"]))
 

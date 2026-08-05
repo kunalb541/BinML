@@ -135,12 +135,13 @@
     "faint_np_prec": 0.033
   },
   "latency_censored": {
-    "_comment": "P0.7: censor-aware detection latency. ALL eligible detectable binaries kept (n=400); never-detected events are right-censored rather than dropped. Reveal grid 0.5 d (was 2 d). Source: validation/modal_latency_gaps.py.",
-    "n_eligible": 400,
-    "detection_fraction": 0.88,
-    "median_lag_days": 1.4,
-    "p90_lag_days": 13.1,
-    "pre_onset_fraction": 0.338
+    "_comment": "P0.7: censor-aware latency, computed by paper/make_data_figures.py fig_latency and written to outputs/latency_stats.json -- the SAME run that draws the figure, so figure, caption and text cannot disagree. Every eligible detectable binary is kept; those never flagged within the season are right-censored, not dropped.",
+    "n_eligible": 200,
+    "n_detected": 177,
+    "n_censored": 23,
+    "detection_fraction": 0.885,
+    "median_lag_days": 4.2,
+    "pre_onset_fraction": 0.147
   },
   "gap_matched": {
     "_comment": "P0.8 (reproducible): uniform vs nightly-gapped sampling at MATCHED visit counts on the SAME 120 events; only temporal placement differs. Wilson 95% CIs. Below ~20 visits/day both collapse (sparsity floor). Source: validation/gap_matched_density.py -> validation/gap_matched_result.json.",

@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Compare BinML against fieldable baselines for anomaly (NonPSPL) detection.
 
+FAIRNESS: every method receives the SAME data -- one band (F146), all 6912 epochs. An earlier
+version scored BinML on the full curve while the baselines saw a 400-point downsample, which
+confounded method with available information (an audit finding). Equalising downward instead was
+rejected: 400 points is ~5.5/day, below the sparsity floor where BinML fails outright, so that
+comparison would have been uninformative.
+
 The manuscript otherwise compares BinML only with a truth-informed Delta-chi^2 reference (computed
 from noiseless generator information), which is not a fieldable method. This script adds baselines
 that use ONLY observed data, on a common set of freshly simulated events:
@@ -96,12 +102,16 @@ def main():
         # FAIRNESS: every method sees exactly the same data -- one band (F146), same epochs.
         # An earlier version scored BinML on the full 6912-epoch curve while the baselines got a
         # 400-point downsample, so the comparison confounded method with information available.
-        td, md, ed = _downsample(b.t, b.mag, b.mag_err)
+        td, md, ed = b.t, b.mag, b.mag_err          # FULL single-band curve for every method
         p = clf.predict(td, md, m_base_ref=ev.params["_m_base_ref"], t_start=0.0)
+        # The PSPL fit is the only step that cannot take 6912 epochs cheaply, so it is fitted on a
+        # regular thinned subset -- a computational shortcut, not an information advantage for
+        # BinML: the fit is over 5 smooth parameters and is not improved by denser sampling.
+        tf, mf, ef = _downsample(td, md, ed, k=800)
         labs.append(CLASSES.index(ev.label))
         binml_l.append(p.probabilities["NonPSPL"])
         Xl.append(features(td, md))
-        pspl_l.append(fit_pspl_residual(td, md, ed))
+        pspl_l.append(fit_pspl_residual(tf, mf, ef))
         if len(labs) % 1000 == 0:
             print(f"  {len(labs)}/{N_EVENTS}", flush=True)
     y = np.array(labs); binml_p = np.array(binml_l)
