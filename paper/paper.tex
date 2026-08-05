@@ -481,6 +481,29 @@ the fixed-purity operating point adopted for the headline number.}
 \label{fig:pr}
 \end{figure}
 
+The \texttt{NonPSPL} class is physically heterogeneous---it spans mass ratios from stellar binaries
+to low-mass planets---so a single aggregate completeness would misrepresent planet recovery.
+Table~\ref{tab:massratio} therefore splits it. The aggregate figure is dominated by stellar
+binaries, which make up the large majority of detectable anomalies and are recovered at
+$\bmlQStellarComp$; giant planets ($10^{-3}<q<10^{-2}$) match that at $\bmlQGiantComp$, but recovery
+falls to $\bmlQNeptuneComp$ in the Neptune-mass decade and to $\bmlQLowmassComp$ below
+$q=10^{-4}$. The headline completeness should therefore not be read as a planet-recovery rate: for
+the lowest-mass planets, which produce the shortest and weakest caustic perturbations, roughly two
+in five detectable anomalies are missed at this operating point.
+
+\begin{deluxetable}{lrc}
+\tablecaption{Completeness at the fixed operating threshold by lens mass ratio $q$, on the frozen
+test set.\label{tab:massratio}}
+\tablehead{\colhead{Regime} & \colhead{$N$} & \colhead{Completeness}}
+\startdata
+Stellar binary, $q>10^{-2}$              & \bmlQStellarN & \bmlQStellarComp \\
+Giant planet, $10^{-3}<q<10^{-2}$        & \bmlQGiantN   & \bmlQGiantComp \\
+Neptune-mass, $10^{-4}<q<10^{-3}$        & \bmlQNeptuneN & \bmlQNeptuneComp \\
+Low-mass planet, $q<10^{-4}$             & \bmlQLowmassN & \bmlQLowmassComp \\
+\enddata
+\tablecomments{Counts are detectable (observationally labelled) anomalies in each regime.}
+\end{deluxetable}
+
 The truth-informed reference is not fieldable, so we also compare BinML with baselines that use
 only observed data, on a common set of $\bmlBaseNtest$ freshly simulated events (Table~\ref{tab:baselines}):
 a fitted single-lens residual statistic---a \dchisq{}-style anomaly score from fitting a Paczynski

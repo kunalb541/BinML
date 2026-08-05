@@ -73,6 +73,12 @@ cmd("bmlStressMacroF", three(s["natural_macro_f1"]))
 cmd("bmlSeedTrain", str(s["seed_base_train"]))
 cmd("bmlSeedStress", str(s["seed_base_stress"]))
 
+mr = cn["mass_ratio_regimes"]
+for key, name in (("stellar", "Stellar"), ("giant", "Giant"),
+                  ("neptune", "Neptune"), ("lowmass", "Lowmass")):
+    cmd(f"bmlQ{name}Comp", three(mr[f"{key}_comp"]))
+    cmd(f"bmlQ{name}N", f"{mr[f'{key}_n']:,}")
+
 cx = cn["cadence_experiment"]
 cmd("bmlCadN", f"{cx['n_events']:,}")
 cmd("bmlCadEpochs", str(cx["epochs"]))

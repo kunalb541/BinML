@@ -84,6 +84,14 @@
     "seed_base_stress": 900000000
   },
 
+  "mass_ratio_regimes": {
+    "_comment": "P1: completeness at the FIXED operating threshold, split by lens mass ratio q, on the frozen test. Aggregate NonPSPL completeness is dominated by stellar binaries; planet recovery degrades with q.",
+    "stellar_n": 35181, "stellar_comp": 0.887,
+    "giant_n": 5147, "giant_comp": 0.888,
+    "neptune_n": 1798, "neptune_comp": 0.797,
+    "lowmass_n": 679, "lowmass_comp": 0.588
+  },
+
   "cadence_experiment": {
     "_comment": "P0.5: matched-recipe comparison of the legacy 15-min F146 cadence vs the current GBTDS ~12-min rate. 12 shards (~90k events), 12 epochs, seed 20260720, trained from scratch per arm in isolated Modal containers. Source: validation/modal_cadence.py.",
     "n_events": 89911,
