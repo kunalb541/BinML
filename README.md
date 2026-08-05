@@ -7,7 +7,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.9%2B-blue.svg" alt="Python 3.9+">
-  <img src="https://img.shields.io/badge/pytorch-1.13%2B-orange.svg" alt="PyTorch">
+  <img src="https://img.shields.io/badge/pytorch-2.0%2B-orange.svg" alt="PyTorch">
   <a href="https://github.com/kunalb541/BinML/actions"><img src="https://github.com/kunalb541/BinML/actions/workflows/tests.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT"></a>
 </p>
@@ -64,7 +64,7 @@ events) but inference-heavy at survey scale.
 
 Details: [`docs/architecture.md`](docs/architecture.md).
 
-## Results (independent 450,589-event test set)
+## Results (held-out final-test set: 360,472 events)
 
 Per-class F1 (population-weighted, selection-corrected):
 
@@ -72,12 +72,12 @@ Per-class F1 (population-weighted, selection-corrected):
 |---|---|---|---|---|---|
 | 0.97 | 0.96 | 0.82 | 0.97 | 0.91 | 0.88 |
 
-> The NonPSPL F1 (0.82) is held down by *precision*, and that precision is a labelling artefact,
-> not model error: **71% of its "false positives" are genuine binaries whose caustic anomaly
-> falls below the detectability floor** and were therefore labelled PSPL (see detectability
-> conditioning above). Counting those as correct — they *are* physically anomalous — the physical
-> precision is 0.99. NonPSPL **recall is 0.95**. This is why completeness@purity, not F1, is the
-> headline.
+> The NonPSPL F1 (0.82) is held down by *precision*. A diagnostic on those false positives:
+> **94.7% are events generated as binaries whose caustic falls below the detectability floor**,
+> and were therefore correctly labelled PSPL. They remain false positives for a follow-up trigger
+> — by our own definition the anomaly is not observable — but it indicates the model responds to
+> sub-threshold anomaly signal rather than emitting random alerts. NonPSPL **recall is 0.95**.
+> This is why completeness@purity, not F1, is the headline.
 
 - **Completeness at fixed purity: 0.879** (the headline a follow-up pipeline is specified
   against, not accuracy or F1). Average precision 0.952.

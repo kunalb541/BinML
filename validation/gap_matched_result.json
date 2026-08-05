@@ -1,0 +1,51 @@
+{
+  "n_events": 120,
+  "night_fraction": 0.3333333333333333,
+  "arms": [
+    {
+      "visits": 2300,
+      "visits_per_day": 31.9,
+      "n": 120,
+      "uniform": 0.775,
+      "uniform_ci": [
+        0.692,
+        0.841
+      ],
+      "nightly": 0.0,
+      "nightly_ci": [
+        0.0,
+        0.031
+      ]
+    },
+    {
+      "visits": 1800,
+      "visits_per_day": 25.0,
+      "n": 120,
+      "uniform": 0.308,
+      "uniform_ci": [
+        0.233,
+        0.396
+      ],
+      "nightly": 0.0,
+      "nightly_ci": [
+        0.0,
+        0.031
+      ]
+    },
+    {
+      "visits": 1400,
+      "visits_per_day": 19.4,
+      "n": 120,
+      "uniform": 0.0,
+      "uniform_ci": [
+        0.0,
+        0.031
+      ],
+      "nightly": 0.0,
+      "nightly_ci": [
+        0.0,
+        0.031
+      ]
+    }
+  ]
+}

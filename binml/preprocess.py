@@ -112,8 +112,13 @@ def to_tokens(bands: Dict[str, Tuple[np.ndarray, np.ndarray]],
         if ta.size != ma.size:
             raise ValueError(f"{b}: time and magnitude must have equal length, "
                              f"got {ta.size} and {ma.size}")
-        if ta.size == 0:
-            raise ValueError(f"{b}: empty light curve (no observations)")
+        # An empty COLOUR band is legitimate -- the model masks absent bands, and a partially
+        # revealed season (predict_evolution) can genuinely contain no colour epochs yet. Only
+        # F146, which the model always requires, may not be empty.
+        if ta.size == 0 and b == "F146":
+            raise ValueError("F146: empty light curve (no observations)")
+    bands = {b: v for b, v in bands.items()
+             if b == "F146" or np.asarray(v[0], float).size > 0}
     t146, m146 = bands["F146"]
     if not np.isfinite(np.asarray(t146, float)).any() or not np.isfinite(np.asarray(m146, float)).any():
         raise ValueError("F146 has no finite (time, magnitude) observations")

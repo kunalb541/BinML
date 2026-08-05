@@ -91,11 +91,17 @@ cmd("bmlLatPninety", f"{lc['p90_lag_days']:.0f}")
 cmd("bmlLatPreonset", pct(lc["pre_onset_fraction"]))
 
 gm = cn["gap_matched"]
+cmd("bmlGapN", str(gm["n_events"]))
 cmd("bmlGapVisitsA", f"{gm['visits_per_day_a']:.0f}")
-cmd("bmlGapUniformA", two(gm["uniform_a"]))
-cmd("bmlGapNightlyA", two(gm["nightly_a"]))
+cmd("bmlGapUniformA", three(gm["uniform_a"]))
+cmd("bmlGapUniformALo", three(gm["uniform_a_ci"][0]))
+cmd("bmlGapUniformAHi", three(gm["uniform_a_ci"][1]))
+cmd("bmlGapNightlyA", three(gm["nightly_a"]))
+cmd("bmlGapNightlyAHi", three(gm["nightly_a_ci"][1]))
 cmd("bmlGapVisitsB", f"{gm['visits_per_day_b']:.0f}")
-cmd("bmlGapUniformB", two(gm["uniform_b"]))
+cmd("bmlGapUniformB", three(gm["uniform_b"]))
+cmd("bmlGapVisitsC", f"{gm['visits_per_day_c']:.0f}")
+cmd("bmlGapUniformC", three(gm["uniform_c"]))
 
 mr = cn["mass_ratio_regimes"]
 for key, name in (("stellar", "Stellar"), ("giant", "Giant"),

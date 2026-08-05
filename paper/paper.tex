@@ -618,11 +618,15 @@ clustered into nightly visits separated by daytime gaps, and that near-diurnal p
 as stellar variability. A matched-density test isolates this from the trivial explanation that
 ground data simply has fewer points. Comparing uniform sampling against an eight-hour nightly
 observing window \emph{at identical total visit counts}---so that only the gap topology differs---%
-anomaly recall is $\bmlGapUniformA$ (uniform) versus $\bmlGapNightlyA$ (gapped) at
-$\bmlGapVisitsA$~visits per day, and $\bmlGapUniformB$ versus $\bmlGapNightlyA$ at
-$\bmlGapVisitsB$~per day. Below roughly $20$ visits per day both schedules fail, so sparsity alone
-dominates there; in the regime where uniform sampling still works, the gapped schedule does not.
-The daily gap, not the visit count, is what defeats the model. Roman's uninterrupted,
+anomaly recall over $\bmlGapN$ events is $\bmlGapUniformA$ (uniform; 95\% CI
+$[\bmlGapUniformALo,\bmlGapUniformAHi]$) versus $\bmlGapNightlyA$ (gapped; upper bound
+$\bmlGapNightlyAHi$) at $\bmlGapVisitsA$~visits per day, and $\bmlGapUniformB$ versus
+$\bmlGapNightlyA$ at $\bmlGapVisitsB$~per day; the intervals do not overlap. At
+$\bmlGapVisitsC$~visits per day both schedules fail ($\bmlGapUniformC$ uniform), so below that
+density sparsity alone dominates and the comparison is uninformative. In the regime where uniform
+sampling still works, the gapped schedule does not: the daily gap, not the visit count, is what
+defeats the model. We note this establishes gap \emph{sensitivity} in simulation; it is consistent
+with, but does not by itself prove, that gaps caused the KMTNet failures above. Roman's uninterrupted,
 space-based cadence has no such gaps, and no ground network can reproduce it. Genuine validation of
 the model in its own regime therefore awaits \Rom{}. Sparse single-band archival data is meanwhile
 the province of simpler feature- or single-band models---and, as a sanity check that the overall

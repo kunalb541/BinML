@@ -230,8 +230,14 @@ def efficiency_plane(params, pf, y, pred, tc, w, n_s=6, n_q=12) -> Optional[dict
        (i.e. that kept the NonPSPL label). Population-weighted, because the demoted rows are
        subsampled.
     B: end-to-end recovery   -- of GENERATED NonPSPL, the fraction predicted NonPSPL.
-    C: classifier efficiency -- B/A, conditional on detectability. This is the panel that
-       isolates "our model missed it" from "the survey physically could not see it".
+    C: classifier recall GIVEN detectability -- P(predicted NonPSPL | detectable NonPSPL).
+
+    NOTE ON C. An earlier version computed C = B/A, which is NOT a probability: B counts every
+    generated binary predicted NonPSPL (including demoted, undetectable ones) while A counts only
+    the detectable ones, so the bases differ and the ratio exceeded 1 in every populated cell
+    (values up to 31, silently clipped by the plotting code). C is now restricted to the
+    detectable subset in both numerator and denominator, so it is bounded in [0, 1]. A regression
+    test asserts this bound.
     """
     if params is None or pf is None or "q" not in pf:
         return None
@@ -245,7 +251,7 @@ def efficiency_plane(params, pf, y, pred, tc, w, n_s=6, n_q=12) -> Optional[dict
     ww = w[gen]
     qe = np.linspace(-6, 0, n_q + 1); se = np.linspace(np.log10(0.2), np.log10(5.0), n_s + 1)
     A = np.full((n_q, n_s), np.nan); B = np.full((n_q, n_s), np.nan)
-    C = np.full((n_q, n_s), np.nan); N = np.zeros((n_q, n_s))
+    C = np.full((n_q, n_s), np.nan); N = np.zeros((n_q, n_s)); Nd = np.zeros((n_q, n_s))
     qi = np.clip(np.digitize(lq, qe) - 1, 0, n_q - 1)
     si = np.clip(np.digitize(ls, se) - 1, 0, n_s - 1)
     for i in range(n_q):
@@ -257,11 +263,18 @@ def efficiency_plane(params, pf, y, pred, tc, w, n_s=6, n_q=12) -> Optional[dict
                 continue
             A[i, j] = float((det[m] * ww[m]).sum() / neff)
             B[i, j] = float((rec[m] * ww[m]).sum() / neff)
-            if A[i, j] > 0:
-                C[i, j] = B[i, j] / A[i, j]
+            # C: conditional recall on the DETECTABLE subset only -> a probability in [0,1]
+            md = m & (det > 0)
+            nd = ww[md].sum(); Nd[i, j] = nd
+            if nd >= 30:
+                C[i, j] = float((rec[md] * ww[md]).sum() / nd)
+    finite = C[np.isfinite(C)]
+    assert finite.size == 0 or (finite.min() >= -1e-9 and finite.max() <= 1 + 1e-9), \
+        "classifier recall must be a probability in [0,1]"
     return {"log_q_edges": qe.tolist(), "log_s_edges": se.tolist(),
             "survey_detectability": A.tolist(), "end_to_end_recovery": B.tolist(),
-            "classifier_efficiency": C.tolist(), "n_eff": N.tolist()}
+            "classifier_recall_given_detectable": C.tolist(),
+            "n_eff": N.tolist(), "n_eff_detectable": Nd.tolist()}
 
 
 def bootstrap_ci(fn, n: int, reps: int = 200, seed: int = 0, alpha: float = 0.05):

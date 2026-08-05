@@ -93,10 +93,11 @@ def main():
         if ev is None or "F146" not in ev.bands or len(ev.bands["F146"].t) < 100:
             continue
         b = ev.bands["F146"]
-        # BinML on the full curve
-        p = clf.predict(b.t, b.mag, m_base_ref=ev.params["_m_base_ref"], t_start=0.0)
-        # observed-data baselines on a downsampled curve (cheap, fieldable)
+        # FAIRNESS: every method sees exactly the same data -- one band (F146), same epochs.
+        # An earlier version scored BinML on the full 6912-epoch curve while the baselines got a
+        # 400-point downsample, so the comparison confounded method with information available.
         td, md, ed = _downsample(b.t, b.mag, b.mag_err)
+        p = clf.predict(td, md, m_base_ref=ev.params["_m_base_ref"], t_start=0.0)
         labs.append(CLASSES.index(ev.label))
         binml_l.append(p.probabilities["NonPSPL"])
         Xl.append(features(td, md))

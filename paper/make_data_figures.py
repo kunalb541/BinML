@@ -201,53 +201,65 @@ def fig_cascade():
     print("cascade_evolution.pdf")
 
 
-# ------------------------------------------------------ detection latency (live-detection speed)
-def fig_latency(n_target=80, n_steps=36):
-    """For many binaries, how many days after the caustic appears does BinML flag it?
-    Lag = (first day P(NonPSPL) crosses the operating threshold) - t_anom. Negative lag = a
-    premature (pre-onset) flag, i.e. a timing false positive. Deterministic seed sweep."""
+# ------------------------------------------------------ detection latency (censor-aware)
+def fig_latency(n_target=200, n_steps=72):
+    """Censor-aware detection latency: EVERY eligible detectable binary is kept.
+
+    The earlier version sampled until it had a fixed number of DETECTED binaries and skipped
+    late-onset events, which is survivor bias with hidden right-censoring (an audit finding).
+    Here every binary whose anomaly is detectable enters the sample; those never flagged within
+    the season are recorded as right-censored and reported as a non-detection fraction rather
+    than dropped. The reveal grid is 1 d (was 2 d).
+    """
     import json
     thr = json.load(open(os.path.join(HERE, "results", "metrics.json")))["headline"]["threshold"]
-    lags, pre = [], 0
-    seed = 2000
-    while len(lags) < n_target and seed < 2000 + 4000:
+    lags, n_censored, seed = [], 0, 2000
+    while len(lags) + n_censored < n_target and seed < 2000 + 8000:
         seed += 1
         ev = simulate_event("NonPSPL", np.random.default_rng(seed), CFG)
         if ev is None or ev.label != "NonPSPL":
             continue
         t_anom = ev.params.get("t_anom")
-        if t_anom is None or t_anom > CFG.window_days - 3:
+        if t_anom is None or not np.isfinite(t_anom):
             continue
         days, P = _prob_evolution(ev, n_steps=n_steps)
         pn = P[:, CLASS_NAMES.index("NonPSPL")]
         crossed = np.where(pn >= thr)[0]
         if not len(crossed):
+            n_censored += 1          # never detected within the season: censored, NOT discarded
             continue
-        t_flag = days[crossed[0]]
-        lag = t_flag - t_anom
-        lags.append(lag)
-        if lag < 0:
-            pre += 1
+        lags.append(float(days[crossed[0]] - t_anom))
     lags = np.array(lags)
-    fig, ax = plt.subplots(figsize=(4.4, 3.0))
+    n_total = len(lags) + n_censored
+    det_frac = len(lags) / max(n_total, 1)
+    med = float(np.median(lags[lags >= 0])) if (lags >= 0).any() else float("nan")
+    pre_frac = float((lags < 0).mean()) if lags.size else 0.0
+
+    fig, ax = plt.subplots(figsize=(4.6, 3.1))
     bins = np.linspace(-20, 40, 25)
     ax.hist(lags[lags >= 0], bins=bins, color=COL["NonPSPL"], alpha=0.85,
             label="detected after onset")
     ax.hist(lags[lags < 0], bins=bins, color="#888", alpha=0.85,
-            label="flagged before onset (timing FP)")
+            label=f"flagged before onset ({100*pre_frac:.0f}\% of detections)")
     ax.axvline(0, color="k", lw=1.0, ls="--")
-    med = float(np.median(lags[lags >= 0]))
-    ax.axvline(med, color=COL["PSPL"], lw=1.2)
-    ax.text(med + 1.2, ax.get_ylim()[1] * 0.55, f"median\n{med:.0f} d", color=COL["PSPL"],
-            fontsize=7, va="center")
+    if np.isfinite(med):
+        ax.axvline(med, color=COL["PSPL"], lw=1.2)
+        ax.text(med + 1.2, ax.get_ylim()[1] * 0.55, f"median\n{med:.1f} d",
+                color=COL["PSPL"], fontsize=7, va="center")
     ax.set_xlabel("days between caustic onset and BinML flag")
     ax.set_ylabel("number of binaries")
-    ax.legend(frameon=False, fontsize=7, loc="upper right")
-    ax.set_title(f"Detection latency ($n={len(lags)}$ binaries)", fontsize=9)
+    ax.legend(frameon=False, fontsize=6.5, loc="upper right")
+    ax.set_title(f"Detection latency: {len(lags)}/{n_total} detected "
+                 f"({100*det_frac:.0f}\%), {n_censored} censored", fontsize=8.5)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "detection_latency.pdf"))
     plt.close(fig)
-    print(f"detection_latency.pdf  (median lag {med:.1f} d, {pre}/{len(lags)} pre-onset)")
+    stats = {"n_eligible": n_total, "n_detected": int(len(lags)), "n_censored": int(n_censored),
+             "detection_fraction": round(det_frac, 3), "median_lag_detected_days": round(med, 2),
+             "pre_onset_fraction_of_detections": round(pre_frac, 3)}
+    with open(os.path.join(HERE, "outputs", "latency_stats.json"), "w") as f:
+        json.dump(stats, f, indent=2)
+    print(f"detection_latency.pdf  {stats}")
 
 
 # ---------------------------------------------- probability evolution for ALL six classes

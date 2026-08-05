@@ -50,7 +50,9 @@ strided conv stay length-aligned.
 ## 3. Transformer encoder over 156 tokens
 
 The three bands' tokens are concatenated into one sequence — **108 + 24 + 24 = 156 tokens** —
-each projected to `d_model = 96`, plus a learned positional embedding and a per-band embedding.
+each projected to `d_model = 96`, plus a learned positional embedding. (There is no separate
+per-band embedding: band identity is carried by token position, since the three bands occupy
+fixed, disjoint slots in the sequence.)
 The encoder is **4 layers, 4 heads**, using PyTorch fused scaled-dot-product attention (SDPA).
 
 **Band dropout is handled by masking, not by architecture.** Each band carries an explicit
@@ -60,7 +62,8 @@ attention.
 
 ## 4. Head
 
-Masked mean-pooling over present tokens → a linear **6-way** classifier. A hierarchical head
+Masked **attention** pooling over present tokens (a learned scalar score per token,
+softmax-weighted with padded positions masked to $-\infty$) → a linear **6-way** classifier. A hierarchical head
 (microlensing-vs-not, then PSPL-vs-NonPSPL) was implemented and tested but consistently scored
 slightly worse than the flat 6-way head, so the flat head ships.
 

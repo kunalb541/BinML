@@ -5,7 +5,7 @@ should be *read*. Getting a headline accuracy is easy; interpreting a 6-class,
 detectability-conditioned classifier honestly is the hard part, and most of this page is about
 that.
 
-Everything below is on a **single independent 450,589-event held-out test set** (shard indices
+Everything below is on the **held-out final-test split (360,472 events)** of a 450,589-event evaluation pool; the other 90,117 rows are reserved for fixing the operating threshold and are never used for reported metrics or figures (shard indices
 disjoint from training — see [`leakage_audit.md`](leakage_audit.md)), scored by
 [`evaluate.py`](../pipeline/evaluate.py).
 
@@ -48,7 +48,7 @@ Macro-F1 0.919. **Read NonPSPL carefully:** its recall is 0.95 — the model *fi
 The 0.72 precision (and hence the 0.82 F1) is a **labelling artefact**: 71% of its "false
 positives" are genuine binaries whose caustic anomaly is below the detectability floor and were
 therefore labelled PSPL by the detectability-conditioned labelling (§1). Counting those as
-correct gives a physical precision of 0.99. This is exactly why the headline is
+correct would give 0.99, but we do NOT report that as a second precision: under the observational task these are false positives. It is a diagnostic that the model responds to sub-threshold anomaly signal. This is exactly why the headline is
 completeness@purity, not F1 — the argmax F1 penalises the model for a labelling choice that makes
 the *reported* numbers honest.
 
@@ -71,7 +71,7 @@ Measured on truncated light curves, fraction flagged NonPSPL *before the anomaly
 | premature NonPSPL flag (day 11) | 42% | **9%** |
 | pre-onset P(NonPSPL) | 0.411 | **0.033** |
 
-A **12× reduction** in premature binary flagging — and it's surgical: the other five classes'
+A **factor-4.7 reduction (79% fewer)** in premature binary flagging (the ~12x factor applies to the mean pre-onset probability, 0.411 -> 0.033) — and it's surgical: the other five classes'
 temporal behaviour is unchanged (Flat stays Flat, Periodic commits in one cycle, Eruptive waits
 for the outburst).
 
@@ -94,7 +94,7 @@ the baseline the high-purity regime — neither dominates. The macro-F1 dip is p
 cut lands, **not** lost capability. The model ships because it adds the cascade at no full-season
 cost.
 
-## 5. Generalisation — the 12.9M-event stress test
+## 5. Generalisation — the ~19M-event stress test
 
 Fresh parameter draws the model never saw (disjoint RNG seed bases) reproduce the held-out
 numbers (natural-population macro-F1 0.927), confirming generalisation rather than memorisation.

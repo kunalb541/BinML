@@ -7,6 +7,18 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# The figure scripts import `pipeline` and `binml` from the repository root, which is the parent of
+# this directory. Without this a clean checkout fails with ModuleNotFoundError: pipeline.
+export PYTHONPATH="$(cd .. && pwd)${PYTHONPATH:+:$PYTHONPATH}"
+python3 - <<'PYCHECK' || { echo "ERROR: missing dependencies. Install the environment first:
+    conda env create -f ../environment.yml && conda activate binml
+or, for the artifact-only figures: pip install numpy matplotlib" >&2; exit 1; }
+import importlib, sys
+missing = [m for m in ("numpy", "matplotlib") if importlib.util.find_spec(m) is None]
+if missing:
+    print("missing:", missing, file=sys.stderr); sys.exit(1)
+PYCHECK
+
 echo "[1/4] figures from eval artifact"; python3 make_figures.py
 echo "[2/4] figures from simulated events (slower)"; python3 make_data_figures.py
 echo "[3/4] macros";   python3 make_macros.py

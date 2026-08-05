@@ -74,3 +74,49 @@ def test_efficiency_map_is_a_bounded_probability():
     assert det.sum() > 100
     recall = (pred[det] == NON).mean()
     assert 0.0 <= recall <= 1.0
+
+
+def test_evaluate_efficiency_function_is_bounded():
+    """The evaluator itself (not just the figure) must return a bounded conditional recall.
+
+    Regression for an audit finding: efficiency_plane previously returned B/A with mismatched
+    bases, exceeding 1 in every populated cell (up to 31), which the plot silently clipped.
+    """
+    from pipeline.evaluate import efficiency_plane
+    rng = np.random.default_rng(0)
+    n = 4000
+    pf = ["q", "s"]
+    params = np.column_stack([10 ** rng.uniform(-6, 0, n), 10 ** rng.uniform(-0.7, 0.7, n)])
+    tc = np.full(n, 2)                       # all generated NonPSPL
+    y = np.where(rng.random(n) < 0.4, 2, 1)  # 40% stay detectable, rest demoted to PSPL
+    pred = np.where(rng.random(n) < 0.5, 2, 1)
+    w = np.ones(n)
+    plane = efficiency_plane(params, pf, y, pred, tc, w)
+    C = np.array(plane["classifier_recall_given_detectable"], float)
+    fin = C[np.isfinite(C)]
+    assert fin.size > 0
+    assert fin.min() >= 0.0 and fin.max() <= 1.0
+    assert "classifier_efficiency" not in plane, "the invalid unbounded key must not return"
+
+
+@pytest.mark.skipif(not os.path.exists(os.path.join(RES, "metrics.json")),
+                    reason="evaluation artifact not present")
+def test_released_metrics_efficiency_is_bounded():
+    """The RELEASED artifact must not carry the invalid values either."""
+    ep = json.load(open(os.path.join(RES, "metrics.json")))["efficiency_plane"]
+    assert "classifier_efficiency" not in ep
+    C = np.array(ep["classifier_recall_given_detectable"], float)
+    fin = C[np.isfinite(C)]
+    assert fin.size > 0 and fin.min() >= 0.0 and fin.max() <= 1.0
+
+
+@pytest.mark.skipif(not os.path.exists(os.path.join(RES, "test_idx.npy")),
+                    reason="evaluation artifact not present")
+def test_reported_supports_match_the_final_test_split():
+    """Table supports must count final-test rows, not the whole pool (audit finding)."""
+    cn = json.load(open(os.path.join(os.path.dirname(RES), "canonical_numbers.json")))
+    lab = np.load(os.path.join(RES, "label.npy")).astype(int)
+    ti = np.load(os.path.join(RES, "test_idx.npy")).astype(int)
+    names = ["Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"]
+    for c, name in enumerate(names):
+        assert cn["per_class_support"][name] == int((lab[ti] == c).sum()), name
