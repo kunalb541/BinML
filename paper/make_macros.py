@@ -60,6 +60,11 @@ cmd("bmlPreonsetBefore", three(cas["preonset_p_before"]))
 cmd("bmlPreonsetAfter", three(cas["preonset_p_after"]))
 cmd("bmlMissedBefore", three(cas["missed_planet_before"]))
 cmd("bmlMissedAfter", three(cas["missed_planet_after"]))
+# derived factors -- computed here so the arithmetic cannot drift from the rates above
+_ff = cas["premature_flag_before"] / cas["premature_flag_after"]
+cmd("bmlFlagFactor", f"{_ff:.1f}")
+cmd("bmlFlagReduction", f"{100 * (1 - cas['premature_flag_after'] / cas['premature_flag_before']):.0f}")
+cmd("bmlPreonsetFactor", f"{cas['preonset_p_before'] / cas['preonset_p_after']:.0f}")
 
 s = cn["stress"]
 cmd("bmlStressN", f"{s['n_events_millions']:.1f}")

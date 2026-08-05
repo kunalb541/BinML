@@ -275,8 +275,11 @@ $t_{\mathrm{anom}}$; the subtle binary follows the same sequence with a weaker, 
 the single-lens control never acquires meaningful \texttt{NonPSPL} probability at all. The
 aggregate effect (Figure~\ref{fig:cascade_summary}) is large. The rate of \emph{premature} anomaly
 flags---calling a binary \texttt{NonPSPL} before its anomaly is observable---falls from
-$\bmlPrematureBefore\%$ to $\bmlPrematureAfter\%$, and the mean pre-onset \texttt{NonPSPL}
-probability drops from $\bmlPreonsetBefore$ to $\bmlPreonsetAfter$. This costs essentially nothing
+$\bmlPrematureBefore\%$ to $\bmlPrematureAfter\%$, a factor of $\bmlFlagFactor$ (a
+$\bmlFlagReduction\%$ reduction), while the mean pre-onset \texttt{NonPSPL} probability drops by a
+larger factor of $\bmlPreonsetFactor$, from $\bmlPreonsetBefore$ to $\bmlPreonsetAfter$. (The two
+factors differ because the probability falls well below the flagging threshold for most events even
+where it does not cross it.) This costs essentially nothing
 on the full-season task for which conventional classifiers are optimised: the missed-planet rate,
 a true \texttt{NonPSPL} called \texttt{PSPL} on the complete curve, is if anything slightly lower
 ($\bmlMissedBefore\rightarrow\bmlMissedAfter$).
