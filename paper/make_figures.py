@@ -313,7 +313,46 @@ def fig_prior_sensitivity():
     plt.close(fig)
 
 
+# -------------------------------------------------------------- Fig: calibration (reliability)
+def fig_calibration():
+    """Top-label reliability diagram + ECE and Brier on the frozen test (population-weighted).
+
+    The audit noted the model card's ECE was never stored in the released metrics; here it is
+    recomputed and shown. Confidence = max softmax probability; correctness = argmax matches label.
+    """
+    conf = P.max(1); correct = (pred == y).astype(float)
+    nb = 12; edges = np.linspace(0, 1, nb + 1)
+    bi = np.clip(np.digitize(conf, edges) - 1, 0, nb - 1)
+    xc, acc, wsum, ece = [], [], [], 0.0
+    W = w.sum()
+    for b in range(nb):
+        m = bi == b
+        if not m.any():
+            continue
+        ww = w[m]; a = (ww * correct[m]).sum() / ww.sum(); c = (ww * conf[m]).sum() / ww.sum()
+        xc.append(c); acc.append(a); wsum.append(ww.sum())
+        ece += ww.sum() / W * abs(a - c)
+    # Brier (one-vs-rest, weighted, over 6 classes)
+    onehot = np.zeros_like(P); onehot[np.arange(len(y)), y] = 1
+    brier = float((w[:, None] * (P - onehot) ** 2).sum() / W)
+    stats["ece_weighted"] = round(float(ece), 4)
+    stats["brier_weighted"] = round(brier, 4)
+
+    fig, ax = plt.subplots(figsize=(3.9, 3.6))
+    ax.plot([0, 1], [0, 1], ls=":", color="grey", lw=1)
+    sizes = 400 * np.array(wsum) / max(wsum)
+    ax.scatter(xc, acc, s=sizes, color="#1f4e79", alpha=0.7, edgecolor="white", lw=0.5, zorder=3)
+    ax.plot(xc, acc, color="#1f4e79", lw=1.2)
+    ax.set_xlabel("confidence (max softmax)"); ax.set_ylabel("accuracy")
+    ax.set_xlim(0, 1.02); ax.set_ylim(0, 1.02)
+    ax.text(0.05, 0.9, f"ECE = {ece:.3f}\nBrier = {brier:.3f}", fontsize=8,
+            transform=ax.transAxes, va="top")
+    ax.set_title("Top-label calibration (frozen test)", fontsize=9)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, "calibration.pdf")); plt.close(fig)
+
+
 if __name__ == "__main__":
+    fig_calibration();      print("calibration.pdf")
     fig_confusion();        print("confusion.pdf")
     fig_pr_nonpspl();       print("pr_nonpspl.pdf")
     fig_efficiency_plane(); print("efficiency_plane.pdf")

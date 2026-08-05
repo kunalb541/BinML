@@ -416,6 +416,22 @@ whose caustic is below the detectability floor, correctly labelled \texttt{PSPL}
 unobservable. The variable-star classes sit close to the diagonal, and the most dangerous physical
 confusion, a \texttt{LongPeriodVar} masquerading as microlensing, is rare.
 
+The predicted probabilities are also reasonably well calibrated, which matters if the operating
+threshold is to be interpreted probabilistically. On the frozen test the top-label expected
+calibration error is $\bmlECE$ and the (one-vs-rest) Brier score is $\bmlBrier$
+(Figure~\ref{fig:calibration}); the reliability curve tracks the diagonal, with a mild
+under-confidence at intermediate probabilities. We report these as diagnostics---no post-hoc
+temperature scaling is applied---and note they would need recomputation under any change to the
+class priors or the operating point.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.62\columnwidth]{outputs/figures/calibration.pdf}
+\caption{Top-label reliability on the frozen test (population-weighted); marker area is bin
+occupancy. Expected calibration error $\bmlECE$, Brier score $\bmlBrier$.}
+\label{fig:calibration}
+\end{figure}
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{outputs/figures/confusion.pdf}
