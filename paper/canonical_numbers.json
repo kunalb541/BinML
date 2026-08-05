@@ -163,6 +163,17 @@
     "lowmass_n": 679,
     "lowmass_comp": 0.588
   },
+  "massregime_finetune": {
+    "_comment": "Targeted fine-tune: warm-start from the shipped checkpoint, 6 epochs at lr 5e-5 on planetary-regime data (q in [1e-6,1e-3]); both models then scored on the SAME 45,176-event natural-mix set generated from an unseen seed base. Completeness at the fixed operating threshold. z from an unpaired normal approximation (conservative; per-event outcomes not retained for a paired test). Source: validation/modal_massregime_finetune.py.",
+    "eval_n": 45176,
+    "stellar_n": 4328, "stellar_before": 0.915, "stellar_after": 0.910, "stellar_z": -0.8,
+    "giant_n": 621, "giant_before": 0.866, "giant_after": 0.919, "giant_z": 3.0,
+    "neptune_n": 219, "neptune_before": 0.817, "neptune_after": 0.918, "neptune_z": 3.2,
+    "lowmass_n": 88, "lowmass_before": 0.670, "lowmass_after": 0.784, "lowmass_z": 1.7,
+    "f1_flat_delta": -0.006, "f1_pspl_delta": -0.002, "f1_nonpspl_delta": 0.001,
+    "f1_periodic_delta": 0.003, "f1_lpv_delta": 0.016, "f1_eruptive_delta": 0.012
+  },
+
   "cadence_experiment": {
     "_comment": "P0.5: matched-recipe comparison of the legacy 15-min F146 cadence vs the current GBTDS ~12-min rate. 12 shards (~90k events), 12 epochs, seed 20260720, trained from scratch per arm in isolated Modal containers. Source: validation/modal_cadence.py.",
     "n_events": 89911,

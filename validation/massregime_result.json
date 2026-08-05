@@ -1,0 +1,39 @@
+{
+  "shipped": {
+    "per_class_f1": {
+      "Flat": 0.971,
+      "PSPL": 0.961,
+      "NonPSPL": 0.81,
+      "PeriodicVar": 0.971,
+      "LongPeriodVar": 0.912,
+      "Eruptive": 0.878
+    },
+    "comp_stellar": 0.915,
+    "n_stellar": 4328,
+    "comp_giant": 0.866,
+    "n_giant": 621,
+    "comp_neptune": 0.817,
+    "n_neptune": 219,
+    "comp_lowmass": 0.67,
+    "n_lowmass": 88
+  },
+  "finetuned": {
+    "per_class_f1": {
+      "Flat": 0.965,
+      "PSPL": 0.959,
+      "NonPSPL": 0.811,
+      "PeriodicVar": 0.974,
+      "LongPeriodVar": 0.928,
+      "Eruptive": 0.89
+    },
+    "comp_stellar": 0.91,
+    "n_stellar": 4328,
+    "comp_giant": 0.919,
+    "n_giant": 621,
+    "comp_neptune": 0.918,
+    "n_neptune": 219,
+    "comp_lowmass": 0.784,
+    "n_lowmass": 88
+  },
+  "eval_n": 45176
+}

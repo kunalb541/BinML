@@ -705,6 +705,35 @@ anticipated, which is the precondition for autonomous follow-up. That BinML reco
 truth-informed anomaly ranking from raw photometry in a single forward pass, without per-event
 fitting, is what makes running it across the full survey stream computationally feasible.
 
+\subsection{Targeted fine-tuning recovers the low-mass-ratio deficit}\label{sec:finetune}
+
+The mass-ratio breakdown of \S\ref{sec:results} identifies where the model is weakest, and it is
+natural to ask whether that deficit is intrinsic or simply a matter of training exposure. We tested
+this directly: starting from the shipped checkpoint, we fine-tuned for six epochs at a reduced
+learning rate on data drawn from the planetary regime ($10^{-6}<q<10^{-3}$), then scored both the
+shipped and the fine-tuned model on the \emph{same} $\bmlFtEvalN$-event natural-mixture set
+generated from a seed base neither had seen.
+
+The deficit is largely recoverable. Completeness at the fixed operating threshold rises from
+$\bmlFtNeptuneBefore$ to $\bmlFtNeptuneAfter$ in the Neptune-mass decade ($N=\bmlFtNeptuneN$) and
+from $\bmlFtGiantBefore$ to $\bmlFtGiantAfter$ for giant planets ($N=\bmlFtGiantN$), both
+significant at $\gtrsim3\sigma$; for the lowest mass ratios it rises from $\bmlFtLowmassBefore$ to
+$\bmlFtLowmassAfter$, though with only $N=\bmlFtLowmassN$ such events in this evaluation set that
+particular figure is suggestive ($\sim$$1.7\sigma$) rather than established. Crucially, nothing
+degrades: stellar-binary completeness is unchanged within noise
+($\bmlFtStellarBefore\rightarrow\bmlFtStellarAfter$), and no per-class F1 falls by more than
+$\bmlFtWorstRegress$, with the contaminant classes improving slightly.
+
+We draw a deliberately limited conclusion. This does not show the model is now good at low-mass
+planets in absolute terms, and the fine-tuning set itself is thin---in the deep-planetary regime
+only about one simulated binary in seven produces a detectable anomaly at all, so targeted
+generation yields far fewer trainable examples than its raw event count suggests. What it does show
+is that the mass-ratio deficit reported above is substantially a matter of training exposure rather
+than an intrinsic limit of the architecture or the photometry, which is the more useful fact for
+anyone deploying or extending this model. It also supports the broader caution of
+\S\ref{sec:limits}: performance shortfalls in sparsely-populated regimes should not be assumed
+irreducible without an experiment of this kind.
+
 The natural next step is validation on real events in the model's own regime. As shown in
 \S\ref{sec:limits}, this cannot be done from the ground---even KMTNet's dense but nightly-gapped
 sampling defeats the model---so it genuinely awaits \Rom{} itself, whose continuous cadence is what

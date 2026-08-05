@@ -103,6 +103,15 @@ for key, name in (("stellar", "Stellar"), ("giant", "Giant"),
     cmd(f"bmlQ{name}Comp", three(mr[f"{key}_comp"]))
     cmd(f"bmlQ{name}N", f"{mr[f'{key}_n']:,}")
 
+ft = cn["massregime_finetune"]
+cmd("bmlFtEvalN", f"{ft['eval_n']:,}")
+for key, name in (("stellar", "Stellar"), ("giant", "Giant"),
+                  ("neptune", "Neptune"), ("lowmass", "Lowmass")):
+    cmd(f"bmlFt{name}Before", three(ft[f"{key}_before"]))
+    cmd(f"bmlFt{name}After", three(ft[f"{key}_after"]))
+    cmd(f"bmlFt{name}N", str(ft[f"{key}_n"]))
+cmd("bmlFtWorstRegress", three(abs(min(ft[k] for k in ft if k.startswith("f1_") and k.endswith("_delta")))))
+
 cx = cn["cadence_experiment"]
 cmd("bmlCadN", f"{cx['n_events']:,}")
 cmd("bmlCadEpochs", str(cx["epochs"]))
