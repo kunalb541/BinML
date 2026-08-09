@@ -78,10 +78,35 @@ class Band:
 # 286 s, which made them ~2 mag too deep and produced a spuriously optimistic colour
 # availability. Same exposure for all three.
 #
-# STILL ESTIMATED (flagged for verification): the F087/F213 zeropoints and backgrounds are
-# scaled from the published W149 values -- narrower/bluer and thermal-background-dominated
-# filters respectively, so both are shallower than F146. The *relative* ordering is robust;
-# the absolute depths are not published in the detail Penny+2019 gives for W149.
+# ---------------------------------------------------------------------------------------------
+# CALIBRATION STATUS (audited 2026-08; sources below). The values in ROMAN_BANDS are the ones the
+# RELEASED CHECKPOINT WAS TRAINED ON and are deliberately left unchanged: altering them would break
+# the correspondence between the released model and the released simulator, and silently invalidate
+# every published number. The audited values are recorded in ROMAN_BANDS_AUDITED for future
+# retraining, and the differences are disclosed in the paper's limitations.
+#
+#   quantity            trained-on   audited        source
+#   F146 zeropoint      27.615       27.584         Roman_zeropoints_20240301.ecsv (mean of 18 SCAs)
+#   F087 zeropoint      26.4         26.302         same table  (trained value ~0.10 mag optimistic)
+#   F213 zeropoint      26.0         25.863         same table  (trained value ~0.14 mag optimistic)
+#   exposure            46.8 s       66 s           ROTAC 2025 / RDox APT (46.8 s is Cycle-7)
+#   F146 cadence        15.0 min     12.1 min       ROTAC 2025 (see the paper's cadence experiment;
+#                                                   the rate change was measured to be immaterial)
+#   F087/F213 cadence   360 min      360 min        CORRECT: 6 h each, staggered to 3 h (RDox APT)
+#   F087 saturation     13.9         ~16.1 (est.)   LIKELY WRONG: Penny's 13.9 assumed a 286 s
+#                                                   exposure; at equal exposure F087 must saturate
+#                                                   FAINTER than F146, not brighter. No official
+#                                                   value is published for the 66 s design.
+#   background ratios   F213/F146    F213/F146 ~3   internal_thermal_backgrounds.ecsv: F087 0.003,
+#                       = 1.24       F087 ~8x below F146 1.03, F213 4.38 e-/pix/s
+#
+# Sources: https://github.com/RomanSpaceTelescope/roman-technical-information
+#          (data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv --
+#           synphot unit_response(), i.e. the AB mag giving 1 count/s, the same convention used
+#           here and by Penny+2019 Table 3); ROTAC Final Report 2025 (arXiv:2505.10574);
+#          https://roman-docs.stsci.edu/roman-community-defined-surveys/galactic-bulge-time-domain-survey
+# Caveat: the published zeropoints are infinite-aperture; a realistic 3x3-pixel aperture is
+# ~0.1-0.2 mag fainter in all bands, so the absolute scale carries that systematic either way.
 _EXPOSURE_S = 46.8
 
 ROMAN_BANDS: Dict[str, Band] = {
@@ -91,6 +116,19 @@ ROMAN_BANDS: Dict[str, Band] = {
                  exposure_s=_EXPOSURE_S, background_e2=1200.0, saturation_ab=13.9),
     "F213": Band("F213", 2.13, cadence_minutes=360.0, zeropoint=26.0,
                  exposure_s=_EXPOSURE_S, background_e2=4000.0, saturation_ab=14.5),
+}
+
+# Audited configuration for FUTURE retraining. Not used by the released model; adopting it requires
+# regenerating the training set and retraining, and re-checking the self-test S/N and depth
+# invariants, which shift with the exposure and zeropoint changes.
+_EXPOSURE_S_AUDITED = 66.0
+ROMAN_BANDS_AUDITED: Dict[str, Band] = {
+    "F146": Band("F146", 1.4378, cadence_minutes=12.1, zeropoint=27.584,
+                 exposure_s=_EXPOSURE_S_AUDITED, background_e2=3218.0, saturation_ab=14.8),
+    "F087": Band("F087", 0.8696, cadence_minutes=360.0, zeropoint=26.302,
+                 exposure_s=_EXPOSURE_S_AUDITED, background_e2=400.0, saturation_ab=16.1),
+    "F213": Band("F213", 2.1230, cadence_minutes=360.0, zeropoint=25.863,
+                 exposure_s=_EXPOSURE_S_AUDITED, background_e2=9700.0, saturation_ab=14.5),
 }
 
 # Published calibration anchor used by the self-test.

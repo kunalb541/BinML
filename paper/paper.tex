@@ -690,6 +690,21 @@ purity is $\bmlPurity$; at the lower prevalences of a real stream, purity is sub
 \label{fig:prior}
 \end{figure}
 
+A related caveat concerns the photometric calibration of the colour bands. Our simulated
+zeropoints were anchored to the published Cycle-7 values for the wide band and scaled for F087 and
+F213, and an audit against the current Roman zeropoint tables \citep{ROTAC2025} shows the wide-band
+value is accurate to $0.03$~mag while our F087 and F213 zeropoints are optimistic by roughly $0.10$
+and $0.14$~mag respectively. Two further colour-band assumptions are less defensible: our F087
+saturation limit was carried over from a much longer Cycle-7 exposure and is almost certainly
+wrong in the wrong direction (at equal exposure F087 should saturate at a \emph{fainter} magnitude
+than F146, not a brighter one), and our sky-background ratios do not reproduce the published
+thermal backgrounds, which make F213 substantially worse and F087 substantially better relative to
+F146 than we assume. These errors sit in the colour bands, which the model uses chiefly to reject
+variable-star contaminants, so the likely effect is a modest misestimate of contaminant rejection
+rather than of the anomaly channel; we have not attempted to quantify it, because doing so requires
+regenerating the training set and retraining. The corrected values are recorded alongside the
+originals in the released code so that any future retraining starts from the audited numbers.
+
 One assumption underlying every number in this paper deserves to be stated plainly, because it is
 the most consequential modelling choice we make. The boundaries between our classes---flat versus
 event, and single lens versus anomalous---are set not only by a goodness-of-fit threshold but also
