@@ -1,0 +1,19 @@
+{
+  "model": "shipped (cascade-trained)",
+  "threshold": 0.9042405486106873,
+  "n_events": 150,
+  "premature_flag_rate": 0.02,
+  "premature_flag_ci": [
+    0.007,
+    0.057
+  ],
+  "mean_pre_onset_p": 0.1224,
+  "median_pre_onset_p": 0.0077,
+  "flag_rate_argmax": 0.033,
+  "day11_protocol": {
+    "flag_rate": 0.013,
+    "mean_pre_onset_p": 0.0477,
+    "n": 150
+  },
+  "_note": "Independent reproduction of the CASCADE (shipped) arm. The manuscript previously quoted 9% premature-flag and 0.033 mean pre-onset probability from an untracked measurement; neither is reproduced here under any tested definition (operating threshold: 0.020; argmax: 0.033; fixed day-11 cut: 0.013). The shipped model measures BETTER than the previously quoted figure. The 'before' (no-cascade) arm requires a model trained without truncation augmentation and is a separate training run."
+}

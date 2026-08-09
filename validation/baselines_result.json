@@ -1,0 +1,9 @@
+{
+  "n_events": 9000,
+  "n_test": 3600,
+  "nonpspl_prevalence": 0.041,
+  "ap_binml": 0.843,
+  "ap_fitted_pspl_residual": 0.261,
+  "ap_gbt_features": 0.436,
+  "ap_logistic_features": 0.371
+}

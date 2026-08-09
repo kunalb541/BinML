@@ -238,13 +238,13 @@
     "c12_nonpspl_f1": 0.582
   },
   "baselines": {
-    "_comment": "fieldable-baseline comparison on 9000 freshly simulated events (3600-event test), same rows for all methods; source validation/baselines_result.json. AP for NonPSPL-vs-rest.",
+    "_comment": "Fieldable-baseline comparison on 9,000 freshly simulated events (3,600-event test). EVERY method receives the SAME data: one band (F146), all 6912 epochs. (An earlier version gave BinML the full curve and the baselines a 400-point downsample; equalising downward was rejected because 400 pts is below the sparsity floor where BinML fails outright.) Only the 5-parameter PSPL fit uses a thinned subset, a compute shortcut. Source: validation/baselines.py -> baselines_result.json.",
     "n_test": 3600,
     "prevalence": 0.041,
     "ap_binml": 0.843,
-    "ap_gbt": 0.35,
-    "ap_logistic": 0.27,
-    "ap_fitted_pspl": 0.191
+    "ap_gbt": 0.436,
+    "ap_logistic": 0.371,
+    "ap_fitted_pspl": 0.261
   },
   "inference": {
     "_comment": "measured on CPU, batch 1024, torch inference_mode; see make_data_figures notes",
