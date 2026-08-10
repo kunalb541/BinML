@@ -202,64 +202,43 @@ def fig_cascade():
 
 
 # ------------------------------------------------------ detection latency (censor-aware)
-def fig_latency(n_target=200, n_steps=72):
-    """Censor-aware detection latency: EVERY eligible detectable binary is kept.
+def fig_latency():
+    """Plot the SAME event-level artifact the cascade numbers come from.
 
-    The earlier version sampled until it had a fixed number of DETECTED binaries and skipped
-    late-onset events, which is survivor bias with hidden right-censoring (an audit finding).
-    Here every binary whose anomaly is detectable enters the sample; those never flagged within
-    the season are recorded as right-censored and reported as a non-detection fraction rather
-    than dropped. The reveal grid is 1 d (was 2 d).
+    Figures 4 and 5 previously came from two different sweeps with different reveal grids (1 d vs
+    0.5 d) and were described as one population, giving inconsistent premature-alert rates (15% vs
+    29% of detections). Both now read validation/cascade_events.json -- one experiment, one
+    definition, one grid -- so they cannot disagree.
     """
-    import json
-    thr = json.load(open(os.path.join(HERE, "results", "metrics.json")))["headline"]["threshold"]
-    lags, n_censored, seed = [], 0, 2000
-    while len(lags) + n_censored < n_target and seed < 2000 + 8000:
-        seed += 1
-        ev = simulate_event("NonPSPL", np.random.default_rng(seed), CFG)
-        if ev is None or ev.label != "NonPSPL":
-            continue
-        t_anom = ev.params.get("t_anom")
-        if t_anom is None or not np.isfinite(t_anom):
-            continue
-        days, P = _prob_evolution(ev, n_steps=n_steps)
-        pn = P[:, CLASS_NAMES.index("NonPSPL")]
-        crossed = np.where(pn >= thr)[0]
-        if not len(crossed):
-            n_censored += 1          # never detected within the season: censored, NOT discarded
-            continue
-        lags.append(float(days[crossed[0]] - t_anom))
-    lags = np.array(lags)
-    n_total = len(lags) + n_censored
-    det_frac = len(lags) / max(n_total, 1)
-    med = float(np.median(lags[lags >= 0])) if (lags >= 0).any() else float("nan")
-    pre_frac = float((lags < 0).mean()) if lags.size else 0.0
-
+    import json as _json
+    src = os.path.join(os.path.dirname(HERE), "validation", "cascade_events.json")
+    res = os.path.join(os.path.dirname(HERE), "validation", "cascade_reproduce_result.json")
+    if not (os.path.exists(src) and os.path.exists(res)):
+        raise SystemExit("FATAL: run validation/cascade_reproduce.py first "
+                         "(figures 4 and 5 are generated from its artifact)")
+    rows = _json.load(open(src)); summ = _json.load(open(res))
+    lags = np.array([r["lag_days"] for r in rows if r["detected"]], float)
     fig, ax = plt.subplots(figsize=(4.6, 3.1))
-    bins = np.linspace(-20, 40, 25)
+    bins = np.linspace(-25, 45, 29)
     ax.hist(lags[lags >= 0], bins=bins, color=COL["NonPSPL"], alpha=0.85,
-            label="detected after onset")
+            label="first alert after onset")
     ax.hist(lags[lags < 0], bins=bins, color="#888", alpha=0.85,
-            label=f"flagged before onset ({100*pre_frac:.0f}\% of detections)")
+            label=f"premature ({100*summ['premature_rate_of_detected']:.0f}\% of detections)")
     ax.axvline(0, color="k", lw=1.0, ls="--")
-    if np.isfinite(med):
-        ax.axvline(med, color=COL["PSPL"], lw=1.2)
-        ax.text(med + 1.2, ax.get_ylim()[1] * 0.55, f"median\n{med:.1f} d",
-                color=COL["PSPL"], fontsize=7, va="center")
-    ax.set_xlabel("days between caustic onset and BinML flag")
+    med = summ["median_lag_detected_days"]
+    ax.axvline(med, color=COL["PSPL"], lw=1.2)
+    ax.text(med + 1.2, ax.get_ylim()[1] * 0.55, f"median\n{med:.1f} d",
+            color=COL["PSPL"], fontsize=7, va="center")
+    ax.set_xlabel("days between caustic onset and first BinML alert")
     ax.set_ylabel("number of binaries")
     ax.legend(frameon=False, fontsize=6.5, loc="upper right")
-    ax.set_title(f"Detection latency: {len(lags)}/{n_total} detected "
-                 f"({100*det_frac:.0f}\%), {n_censored} censored", fontsize=8.5)
+    ax.set_title(f"Time to first alert: {summ['n_detected']}/{summ['n_eligible']} detected "
+                 f"({100*summ['detection_fraction']:.0f}\%), {summ['n_censored']} censored",
+                 fontsize=8.5)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "detection_latency.pdf"))
     plt.close(fig)
-    stats = {"n_eligible": n_total, "n_detected": int(len(lags)), "n_censored": int(n_censored),
-             "detection_fraction": round(det_frac, 3), "median_lag_detected_days": round(med, 2),
-             "pre_onset_fraction_of_detections": round(pre_frac, 3)}
-    with open(os.path.join(HERE, "outputs", "latency_stats.json"), "w") as f:
-        json.dump(stats, f, indent=2)
-    print(f"detection_latency.pdf  {stats}")
+    print(f"detection_latency.pdf  (from cascade_events.json; {summ['n_eligible']} eligible)")
 
 
 # ---------------------------------------------- probability evolution for ALL six classes

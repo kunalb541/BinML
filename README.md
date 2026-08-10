@@ -81,12 +81,15 @@ Per-class F1 (population-weighted, selection-corrected):
 
 - **Completeness at fixed purity: 0.879** (the headline a follow-up pipeline is specified
   against, not accuracy or F1). Average precision 0.952.
-- **The cascade works:** on held-out binaries the model raises a premature anomaly flag — before
-  the anomaly is observable at all — in only **2.0%** of pre-onset windows (95% CI 0.7–5.7%,
-  n=150; 12% by six-class argmax), with a median pre-onset P(NonPSPL) of 0.008. *Note:* an earlier
-  version quoted a 42%→9% before/after improvement; that comparison was untracked and could not be
-  reproduced, so it has been withdrawn. Establishing the causal effect needs a matched-recipe
-  ablation (see `validation/cascade_reproduce.py`).
+- **The cascade, measured honestly:** evaluated event by event (first threshold crossing as the
+  season is revealed), the model detects 89% of eligible binaries
+  within the season, with a median alert **1.8 days after** the
+  caustic becomes detectable. Its first alert is *premature* for
+  **26%** of eligible binaries (95% CI
+  20–32%). This is
+  grid-dependent — evaluating more often finds more early crossings — so treat it as a lower bound.
+  *Note:* an earlier 42%→9% before/after claim was untracked, could not be reproduced, and has been
+  withdrawn; see `validation/cascade_reproduce.py`.
 - **Generalises to unseen parameter draws:** a ~19-million-event stress set from a disjoint seed
   reproduces the held-out numbers on its natural-population subset; several out-of-range regimes
   degrade, and are documented rather than hidden.

@@ -35,9 +35,9 @@ BinML suited to a real survey rather than a fixed benchmark. First, each event i
 what can actually be seen in its photometry, not by the parameters used to simulate it, so the
 network is never trained to claim an anomaly that leaves no observable trace. Second, the model
 reports each class only once that class's evidence has arrived, so a binary is announced when its
-anomaly appears and not during the smooth rise that precedes it: on held-out binaries the model
-raises a premature alert---before the anomaly is observable at all---in only
-$\bmlCascFlagPct\%$ of cases. On a held-out test set of
+anomaly appears and not during the smooth rise that precedes it. Measured event by event, the
+model's first alert precedes the anomaly in $\bmlCascPrematurePct\%$ of eligible binaries, and
+follows it by a median of $\bmlCascMedianLag$~days when it does not. On a held-out test set of
 $\bmlNtest$ events and under the adopted synthetic class mixture, BinML recovers
 $\bmlCompletenessPct\%$ of the anomalous events while holding the flagged sample to a purity of
 $\bmlPurityTarget$, and it reproduces this on a $\bmlStressN$-million-event set drawn from
@@ -275,30 +275,42 @@ is revealed, BinML's probability mass moves from \texttt{Flat} to \texttt{PSPL} 
 magnification and only jumps to \texttt{NonPSPL} when the caustic crosses into view at
 $t_{\mathrm{anom}}$; the subtle binary follows the same sequence with a weaker, later anomaly; and
 the single-lens control never acquires meaningful \texttt{NonPSPL} probability at all. The
-aggregate effect is that premature anomaly flags become rare. Measuring directly on held-out
-binaries, with the window truncated at a random day \emph{before} the anomaly onset
-$t_{\mathrm{anom}}$, the shipped model exceeds the operating threshold in
-$\bmlCascFlagPct\%$ of cases (95\% CI $[\bmlCascFlagLo,\bmlCascFlagHi]$, $N=\bmlCascN$); by
-six-class argmax the rate is $\bmlCascArgmaxPct\%$. The median pre-onset anomaly probability is
-$\bmlCascMedianP$, far below the threshold.
+aggregate behaviour is measured event by event rather than on isolated snapshots, because a live
+stream re-evaluates every light curve as each new epoch arrives. For each of $\bmlCascN$ eligible
+detectable binaries we sweep the revealed season and record the \emph{first} day the anomaly
+probability crosses the operating threshold; an alert is premature if that first crossing precedes
+the onset $t_{\mathrm{anom}}$. The model detects $\bmlCascDetFrac\%$ of these binaries within the
+season (the rest are right-censored), with a median lag of $\bmlCascMedianLag$~days after onset.
+Premature first alerts occur for $\bmlCascPrematurePct\%$ of eligible binaries (95\% CI
+$[\bmlCascPrematureLo,\bmlCascPrematureHi]$), or $\bmlCascPrematureOfDet\%$ of those detected.
 
-We report these as absolute properties of the released model rather than as a before-and-after
-improvement. An earlier version of this work quoted a large reduction relative to a model trained
-without truncation augmentation; that comparison rested on an untracked measurement which we were
-unable to reproduce, and the ``before'' arm requires a separately trained model. A matched-recipe
-ablation---identical data and hyper-parameters, differing only in the truncation augmentation, with
-event-level outputs and interval estimates---is the correct way to establish the causal claim, and
-we flag it as necessary future work rather than assert it here. What the numbers above do establish
-is that the deployed model's premature-alert rate is low in absolute terms.
+Two caveats govern how that number should be read, and both cut against a flattering
+interpretation. First, it is \emph{grid-dependent}: the more often the stream is re-evaluated, the
+more opportunities exist for an early excursion to cross the threshold, and halving our reveal
+step from one day to half a day roughly doubles the measured premature rate. At the survey's true
+$\sim$15-minute cadence it would be higher still, so our figure is a lower bound on what a
+continuously-evaluated pipeline would see. Second, an earlier version of this work quoted a much
+smaller rate obtained from a single randomly-chosen pre-onset snapshot per event; that is a
+different quantity---the probability that an arbitrary pre-onset moment is over threshold---and it
+is not the alert rate. We report the event-level figure because it is the one an alert broker
+experiences.
+
+We therefore do not claim the cascade eliminates premature alerts. What the training scheme
+supplies is an ordering---probability mass moves \texttt{Flat}$\rightarrow$\texttt{PSPL}%
+$\rightarrow$\texttt{NonPSPL} as evidence accumulates (Figure~\ref{fig:cascade})---and a
+median alert that lands shortly after onset rather than during the smooth rise. Establishing that
+the truncation augmentation \emph{causes} this, rather than merely accompanying it, requires a
+matched-recipe ablation against a model trained without it; an earlier untracked comparison
+reporting a large reduction could not be reproduced and has been withdrawn.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.82\columnwidth]{outputs/figures/cascade_summary.pdf}
 \caption{Distribution of the anomaly probability $P(\texttt{NonPSPL})$ on pre-onset windows for
-$\bmlCascN$ held-out binaries, from the tracked per-event artifact. Only $\bmlCascFlagPct\%$
-exceed the operating threshold (dashed); the median is $\bmlCascMedianP$. Note the logarithmic
-count axis. This replaces an earlier before/after summary whose values could not be reproduced
-(\S\ref{sec:cascade}).}
+$\bmlCascN$ held-out binaries, from the same per-event artifact as Figure~\ref{fig:latency}.
+Values above the operating threshold (dashed) are the pre-onset excursions that can produce a
+premature alert. Note the logarithmic count axis. This replaces an earlier before/after summary
+whose values could not be reproduced (\S\ref{sec:cascade}).}
 \label{fig:cascade_summary}
 \end{figure}
 
@@ -826,8 +838,8 @@ curves, built around two ideas---detectability-conditioned labelling and a real-
 cascade---that make it a candidate for prospective survey use rather than only accurate on a static
 benchmark. On the adopted synthetic class mixture it reaches a completeness of $\bmlCompleteness$ at
 a purity of $\bmlPurity$ (average precision $\bmlAP$), reconstructs the truth-informed anomaly
-ranking from raw photometry, and raises premature binary alerts in only $\bmlCascFlagPct\%$ of
-pre-onset windows. These results establish a reproducible synthetic benchmark; validation
+ranking from raw photometry, and issues its first anomaly alert a median of
+$\bmlCascMedianLag$~days after the caustic becomes detectable. These results establish a reproducible synthetic benchmark; validation
 against survey event-rate priors and the current \Rom{} survey design remains future work. The
 model, its weights, and the full simulation-to-inference pipeline are released as open source.
 

@@ -1,26 +1,21 @@
 {
   "model": "shipped (cascade-trained)",
+  "protocol": "event-level first threshold crossing",
   "threshold": 0.9042405486106873,
-  "n_events": 150,
-  "premature_flag_rate": 0.02,
-  "premature_flag_ci": [
-    0.007,
-    0.057
+  "step_days": 0.5,
+  "n_eligible": 200,
+  "n_detected": 178,
+  "n_censored": 22,
+  "detection_fraction": 0.89,
+  "detection_ci": [
+    0.839,
+    0.926
   ],
-  "premature_flag_rate_argmax": 0.12,
-  "premature_flag_argmax_ci": [
-    0.077,
-    0.182
+  "premature_rate_of_eligible": 0.26,
+  "premature_ci_of_eligible": [
+    0.204,
+    0.325
   ],
-  "mean_pre_onset_p": 0.1224,
-  "median_pre_onset_p": 0.0077,
-  "day11_protocol": {
-    "n": 131,
-    "flag_rate": 0.015,
-    "flag_ci": [
-      0.004,
-      0.054
-    ],
-    "mean_pre_onset_p": 0.0447
-  }
+  "premature_rate_of_detected": 0.292,
+  "median_lag_detected_days": 1.8
 }
