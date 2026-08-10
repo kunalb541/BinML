@@ -120,3 +120,12 @@ def test_reported_supports_match_the_final_test_split():
     names = ["Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"]
     for c, name in enumerate(names):
         assert cn["per_class_support"][name] == int((lab[ti] == c).sum()), name
+
+
+def test_build_script_sets_pythonpath_for_clean_checkout():
+    """Regression: a clean `git archive` build failed with ModuleNotFoundError: pipeline because
+    build.sh ran from paper/ without the repo root on PYTHONPATH. Verified end-to-end on
+    2026-08-10: a bare archive now regenerates every figure and produces paper.pdf."""
+    build = open(os.path.join(os.path.dirname(RES), "build.sh")).read()
+    assert "PYTHONPATH" in build, "build.sh must export PYTHONPATH for the figure scripts"
+    assert "make_data_figures" in build
