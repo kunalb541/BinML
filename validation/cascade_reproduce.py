@@ -42,58 +42,59 @@ def wilson(k, n, z=1.96):
     return (max(0.0, c - h), min(1.0, c + h))
 
 
-def main(n_events=150):
+def main(n_events=150, step_days=0.5):
+    """Event-level time-to-first-crossing. For each eligible detectable binary we sweep the
+    revealed season and record the FIRST day P(NonPSPL) crosses the operating threshold. An alert
+    is PREMATURE if that first crossing precedes t_anom.
+
+    This is the operationally meaningful quantity: a live stream evaluates continuously, so what
+    matters is whether an event's first alert fires before its anomaly is observable -- not whether
+    a randomly chosen pre-onset snapshot happens to be over threshold. An earlier version of this
+    script measured the snapshot rate (2% of random pre-onset windows) and the manuscript wrongly
+    equated it with the premature-alert rate; the event-level rate is several times larger.
+    """
     clf = binml.Classifier(); cfg = SurveyConfig()
     thr = json.load(open(os.path.join(os.path.dirname(HERE), "paper", "results",
                                       "metrics.json")))["headline"]["threshold"]
     rows, s = [], 300000
-    while len(rows) < n_events and s < 300000 + 40 * n_events:
+    while len(rows) < n_events and s < 300000 + 60 * n_events:
         s += 1
         ev = simulate_event("NonPSPL", np.random.default_rng(s), cfg)
         if ev is None or ev.label != "NonPSPL":
             continue
         ta = ev.params.get("t_anom")
-        if ta is None or not np.isfinite(ta) or ta < 5.0:
-            continue                       # need room for a pre-onset window
-        b = ev.bands["F146"]; mb = ev.params["_m_base_ref"]
-        rng = np.random.default_rng(50_000 + len(rows))
-        cut = float(rng.uniform(3.0, ta))  # a window ending strictly before onset
-        m = b.t <= cut
-        if m.sum() < 10:
+        if ta is None or not np.isfinite(ta):
             continue
-        p = clf.predict(b.t[m], b.mag[m], m_base_ref=mb, t_start=0.0)
-        pn = float(p.probabilities["NonPSPL"])
-        rows.append({"seed": s, "t_anom": round(float(ta), 2), "cut_day": round(cut, 2),
-                     "p_nonpspl": round(pn, 4), "flagged_at_threshold": bool(pn >= thr),
-                     "flagged_by_argmax": bool(p.label == "NonPSPL")})
-        # SECOND protocol, computed in the same run so no field is ever hand-merged: the fixed
-        # day-11 cut described in docs/evaluation.md, restricted to events whose anomaly is later.
-        if ta > 11.0:
-            m11 = b.t <= 11.0
-            if m11.sum() >= 10:
-                p11 = clf.predict(b.t[m11], b.mag[m11], m_base_ref=mb, t_start=0.0)
-                rows[-1]["p_nonpspl_day11"] = round(float(p11.probabilities["NonPSPL"]), 4)
-                rows[-1]["flagged_day11"] = bool(p11.probabilities["NonPSPL"] >= thr)
+        b = ev.bands["F146"]; mb = ev.params["_m_base_ref"]
+        first_cross = None
+        for cut in np.arange(step_days, cfg.window_days + 1e-9, step_days):
+            m = b.t <= cut
+            if m.sum() < 10:
+                continue
+            p = clf.predict(b.t[m], b.mag[m], m_base_ref=mb, t_start=0.0)
+            if p.probabilities["NonPSPL"] >= thr:
+                first_cross = float(cut); break
+        rows.append({"seed": s, "t_anom": round(float(ta), 2),
+                     "first_crossing_day": first_cross,
+                     "detected": first_cross is not None,
+                     "premature": bool(first_cross is not None and first_cross < ta),
+                     "lag_days": (round(first_cross - float(ta), 2)
+                                  if first_cross is not None else None)})
     n = len(rows)
-    kt = sum(r["flagged_at_threshold"] for r in rows)
-    ka = sum(r["flagged_by_argmax"] for r in rows)
-    d11 = [r for r in rows if "p_nonpspl_day11" in r]
-    lo, hi = wilson(kt, n)
-    alo, ahi = wilson(ka, n)
-    out = {"model": "shipped (cascade-trained)", "threshold": thr, "n_events": n,
-           "premature_flag_rate": round(kt / max(n, 1), 3),
-           "premature_flag_ci": [round(lo, 3), round(hi, 3)],
-           "premature_flag_rate_argmax": round(ka / max(n, 1), 3),
-           "premature_flag_argmax_ci": [round(alo, 3), round(ahi, 3)],
-           "mean_pre_onset_p": round(float(np.mean([r["p_nonpspl"] for r in rows])), 4),
-           "median_pre_onset_p": round(float(np.median([r["p_nonpspl"] for r in rows])), 4)}
-    if d11:
-        k11 = sum(r["flagged_day11"] for r in d11)
-        l11, h11 = wilson(k11, len(d11))
-        out["day11_protocol"] = {"n": len(d11), "flag_rate": round(k11 / len(d11), 3),
-                                 "flag_ci": [round(l11, 3), round(h11, 3)],
-                                 "mean_pre_onset_p": round(float(np.mean(
-                                     [r["p_nonpspl_day11"] for r in d11])), 4)}
+    det = [r for r in rows if r["detected"]]
+    prem = [r for r in rows if r["premature"]]
+    lo, hi = wilson(len(prem), n)
+    dlo, dhi = wilson(len(det), n)
+    lags = np.array([r["lag_days"] for r in det], float)
+    out = {"model": "shipped (cascade-trained)", "protocol": "event-level first threshold crossing",
+           "threshold": thr, "step_days": step_days,
+           "n_eligible": n, "n_detected": len(det), "n_censored": n - len(det),
+           "detection_fraction": round(len(det) / max(n, 1), 3),
+           "detection_ci": [round(dlo, 3), round(dhi, 3)],
+           "premature_rate_of_eligible": round(len(prem) / max(n, 1), 3),
+           "premature_ci_of_eligible": [round(lo, 3), round(hi, 3)],
+           "premature_rate_of_detected": round(len(prem) / max(len(det), 1), 3),
+           "median_lag_detected_days": round(float(np.median(lags)), 2) if lags.size else None}
     json.dump(rows, open(os.path.join(HERE, "cascade_events.json"), "w"), indent=1)
     json.dump(out, open(os.path.join(HERE, "cascade_reproduce_result.json"), "w"), indent=2)
     print(json.dumps(out, indent=2))

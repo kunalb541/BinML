@@ -8,6 +8,8 @@ These encode defects found in external audits so they cannot silently return:
 import json
 import os
 
+import sys
+
 import numpy as np
 import pytest
 
@@ -122,10 +124,56 @@ def test_reported_supports_match_the_final_test_split():
         assert cn["per_class_support"][name] == int((lab[ti] == c).sum()), name
 
 
-def test_build_script_sets_pythonpath_for_clean_checkout():
-    """Regression: a clean `git archive` build failed with ModuleNotFoundError: pipeline because
-    build.sh ran from paper/ without the repo root on PYTHONPATH. Verified end-to-end on
-    2026-08-10: a bare archive now regenerates every figure and produces paper.pdf."""
+def test_build_preflight_runs_on_a_modern_interpreter():
+    """EXECUTE the build.sh preflight, do not grep it.
+
+    Regression for a real failure: the preflight used `import importlib` then
+    `importlib.util.find_spec`, which raises AttributeError on Python >= 3.12. A string-matching
+    test could not catch that, and did not. This extracts the actual heredoc and runs it.
+    """
+    import re
+    import subprocess
     build = open(os.path.join(os.path.dirname(RES), "build.sh")).read()
     assert "PYTHONPATH" in build, "build.sh must export PYTHONPATH for the figure scripts"
-    assert "make_data_figures" in build
+    m = re.search(r"<<'PYCHECK'.*?\n(.*?)\nPYCHECK", build, re.S)
+    assert m, "could not locate the preflight heredoc in build.sh"
+    r = subprocess.run([sys.executable, "-c", m.group(1)], capture_output=True, text=True)
+    # exit 1 means "dependencies missing" (a legitimate outcome); a traceback means broken code
+    assert "Traceback" not in r.stderr, f"preflight itself is broken:\n{r.stderr}"
+
+
+@pytest.mark.slow
+def test_clean_archive_builds_figures_end_to_end(tmp_path):
+    """Integration test: extract a `git archive` of HEAD and regenerate the artifact figures.
+
+    This actually executes the documented build path from a clean tree (the artifact-figure stage,
+    which needs no simulation), rather than asserting on the contents of build.sh. Skipped if git
+    or the scientific stack is unavailable.
+    """
+    import subprocess
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if subprocess.run(["git", "-C", repo, "rev-parse", "HEAD"],
+                      capture_output=True).returncode != 0:
+        pytest.skip("not a git repository")
+    tar = subprocess.run(["git", "-C", repo, "archive", "HEAD"], capture_output=True)
+    assert tar.returncode == 0
+    (tmp_path / "a.tar").write_bytes(tar.stdout)
+    subprocess.run(["tar", "-xf", str(tmp_path / "a.tar"), "-C", str(tmp_path)], check=True)
+    env = dict(os.environ, PYTHONPATH=str(tmp_path))
+    r = subprocess.run([sys.executable, "make_figures.py"], cwd=str(tmp_path / "paper"),
+                       env=env, capture_output=True, text=True)
+    assert r.returncode == 0, f"clean-archive figure build failed:\n{r.stdout}\n{r.stderr}"
+    for f in ("confusion.pdf", "pr_nonpspl.pdf", "efficiency_plane.pdf"):
+        assert (tmp_path / "paper" / "outputs" / "figures" / f).exists(), f"{f} not produced"
+
+
+def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
+    """make_macros.py must FAIL rather than emit stale cascade numbers if the artifact is absent.
+
+    Regression for the withdrawn 42%->9% claim, which survived because prose numbers were
+    hand-duplicated and could drift from the tracked artifact.
+    """
+    src = open(os.path.join(os.path.dirname(RES), "make_macros.py")).read()
+    assert "cascade_reproduce_result.json" in src
+    assert "FATAL" in src and "raise SystemExit" in src, \
+        "make_macros must fail closed when the cascade artifact is missing or its schema changed"

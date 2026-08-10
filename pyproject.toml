@@ -36,7 +36,7 @@ dependencies = [
 [project.optional-dependencies]
 plot = ["matplotlib>=3.5"]
 data = ["h5py>=3.0", "scipy>=1.7"]
-all = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7"]
+all = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "scikit-learn>=1.0", "VBBinaryLensing"]
 dev = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "pytest>=7.0", "build", "twine"]
 
 [project.scripts]
@@ -53,3 +53,6 @@ packages = ["binml", "binml.legacy", "pipeline"]
 
 [tool.setuptools.package-data]
 binml = ["weights/*.pt"]
+
+[tool.pytest.ini_options]
+markers = ["slow: integration tests that build from a clean archive"]

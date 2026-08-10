@@ -7,7 +7,7 @@
 - **Detectability-conditioned labelling** — events labelled by what is observable, not by
   generator intent.
 - **Real-time cascade** — truncation labelling by observability with a per-binary anomaly-onset
-  day (`t_anom`); premature NonPSPL flagging cut from 42% -> 9%.
+  day (`t_anom`); premature NonPSPL flagging cut from measured event-level premature-alert rate (see validation/cascade_reproduce.py; the legacy 42%->9% figure was untracked and is withdrawn).
 - **Distributed pipeline** — AWS spot generation/binning, in-region inference (`run_bineval`,
   `eval_shard`), stratified fine-tune mix (`mix_finetune`), stress-test aggregation (`agg_stress`).
 - Headline (independent 450,589-event test set): completeness@purity 0.879, AP 0.952; validated

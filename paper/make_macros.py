@@ -53,14 +53,26 @@ cmd("bmlNonpsplKept", f"{lab['nonpspl_kept_pct']:.1f}")
 cmd("bmlNonpsplToPspl", f"{lab['nonpspl_to_pspl_pct']:.1f}")
 cmd("bmlLpvToFlat", f"{lab['lpv_to_flat_pct']:.1f}")
 
-cas = cn["cascade"]
-cmd("bmlCascN", str(cas["n_events"]))
-cmd("bmlCascFlagPct", f'{100*cas["flag_rate_threshold"]:.1f}')
-cmd("bmlCascFlagLo", three(cas["flag_ci"][0]))
-cmd("bmlCascFlagHi", three(cas["flag_ci"][1]))
-cmd("bmlCascArgmaxPct", f'{100*cas["flag_rate_argmax"]:.0f}')
-cmd("bmlCascMedianP", f'{cas["median_pre_onset_p"]:.4f}')
-cmd("bmlCascDayElevenPct", f'{100*cas["day11_flag_rate"]:.1f}')
+# CASCADE: read straight from the tracked artifact, never from a hand-copied block. If the
+# artifact is missing or its schema changed, FAIL rather than emit stale numbers -- prose/artifact
+# drift is exactly how the withdrawn 42%->9% claim survived in the manuscript.
+_casc_path = os.path.join(os.path.dirname(HERE), "validation", "cascade_reproduce_result.json")
+if not os.path.exists(_casc_path):
+    raise SystemExit(f"FATAL: {_casc_path} missing; run validation/cascade_reproduce.py")
+cas = json.load(open(_casc_path))
+for _k in ("n_eligible", "detection_fraction", "premature_rate_of_eligible",
+           "premature_ci_of_eligible", "premature_rate_of_detected", "median_lag_detected_days"):
+    if _k not in cas:
+        raise SystemExit(f"FATAL: cascade artifact lacks '{_k}'; regenerate it "
+                         f"(schema changed -- do not hand-edit the JSON)")
+cmd("bmlCascN", str(cas["n_eligible"]))
+cmd("bmlCascDetFrac", pct(cas["detection_fraction"]))
+cmd("bmlCascPrematurePct", pct(cas["premature_rate_of_eligible"]))
+cmd("bmlCascPrematureLo", three(cas["premature_ci_of_eligible"][0]))
+cmd("bmlCascPrematureHi", three(cas["premature_ci_of_eligible"][1]))
+cmd("bmlCascPrematureOfDet", pct(cas["premature_rate_of_detected"]))
+cmd("bmlCascMedianLag", f'{cas["median_lag_detected_days"]:.1f}')
+cmd("bmlCascCensored", str(cas["n_censored"]))
 
 s = cn["stress"]
 cmd("bmlStressN", f"{s['n_events_millions']:.1f}")
