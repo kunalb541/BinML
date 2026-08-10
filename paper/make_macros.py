@@ -54,17 +54,13 @@ cmd("bmlNonpsplToPspl", f"{lab['nonpspl_to_pspl_pct']:.1f}")
 cmd("bmlLpvToFlat", f"{lab['lpv_to_flat_pct']:.1f}")
 
 cas = cn["cascade"]
-cmd("bmlPrematureBefore", pct(cas["premature_flag_before"]))
-cmd("bmlPrematureAfter", pct(cas["premature_flag_after"]))
-cmd("bmlPreonsetBefore", three(cas["preonset_p_before"]))
-cmd("bmlPreonsetAfter", three(cas["preonset_p_after"]))
-cmd("bmlMissedBefore", three(cas["missed_planet_before"]))
-cmd("bmlMissedAfter", three(cas["missed_planet_after"]))
-# derived factors -- computed here so the arithmetic cannot drift from the rates above
-_ff = cas["premature_flag_before"] / cas["premature_flag_after"]
-cmd("bmlFlagFactor", f"{_ff:.1f}")
-cmd("bmlFlagReduction", f"{100 * (1 - cas['premature_flag_after'] / cas['premature_flag_before']):.0f}")
-cmd("bmlPreonsetFactor", f"{cas['preonset_p_before'] / cas['preonset_p_after']:.0f}")
+cmd("bmlCascN", str(cas["n_events"]))
+cmd("bmlCascFlagPct", f'{100*cas["flag_rate_threshold"]:.1f}')
+cmd("bmlCascFlagLo", three(cas["flag_ci"][0]))
+cmd("bmlCascFlagHi", three(cas["flag_ci"][1]))
+cmd("bmlCascArgmaxPct", f'{100*cas["flag_rate_argmax"]:.0f}')
+cmd("bmlCascMedianP", f'{cas["median_pre_onset_p"]:.4f}')
+cmd("bmlCascDayElevenPct", f'{100*cas["day11_flag_rate"]:.1f}')
 
 s = cn["stress"]
 cmd("bmlStressN", f"{s['n_events_millions']:.1f}")

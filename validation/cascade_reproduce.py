@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Reproduce the cascade numbers with a tracked, event-level artifact.
 
+Every reported field is computed BY THIS SCRIPT -- an earlier version of the committed JSON had
+the day-11 and argmax figures merged in by hand, so rerunning would have silently dropped them.
+
 Audit finding: the manuscript's cascade figures (premature-flag rate, pre-onset probability) were
 summary values with no committed script or per-event output that regenerates them.
 
@@ -61,14 +64,36 @@ def main(n_events=150):
         p = clf.predict(b.t[m], b.mag[m], m_base_ref=mb, t_start=0.0)
         pn = float(p.probabilities["NonPSPL"])
         rows.append({"seed": s, "t_anom": round(float(ta), 2), "cut_day": round(cut, 2),
-                     "p_nonpspl": round(pn, 4), "flagged": bool(pn >= thr)})
-    k = sum(r["flagged"] for r in rows); n = len(rows)
-    lo, hi = wilson(k, n)
+                     "p_nonpspl": round(pn, 4), "flagged_at_threshold": bool(pn >= thr),
+                     "flagged_by_argmax": bool(p.label == "NonPSPL")})
+        # SECOND protocol, computed in the same run so no field is ever hand-merged: the fixed
+        # day-11 cut described in docs/evaluation.md, restricted to events whose anomaly is later.
+        if ta > 11.0:
+            m11 = b.t <= 11.0
+            if m11.sum() >= 10:
+                p11 = clf.predict(b.t[m11], b.mag[m11], m_base_ref=mb, t_start=0.0)
+                rows[-1]["p_nonpspl_day11"] = round(float(p11.probabilities["NonPSPL"]), 4)
+                rows[-1]["flagged_day11"] = bool(p11.probabilities["NonPSPL"] >= thr)
+    n = len(rows)
+    kt = sum(r["flagged_at_threshold"] for r in rows)
+    ka = sum(r["flagged_by_argmax"] for r in rows)
+    d11 = [r for r in rows if "p_nonpspl_day11" in r]
+    lo, hi = wilson(kt, n)
+    alo, ahi = wilson(ka, n)
     out = {"model": "shipped (cascade-trained)", "threshold": thr, "n_events": n,
-           "premature_flag_rate": round(k / max(n, 1), 3),
+           "premature_flag_rate": round(kt / max(n, 1), 3),
            "premature_flag_ci": [round(lo, 3), round(hi, 3)],
+           "premature_flag_rate_argmax": round(ka / max(n, 1), 3),
+           "premature_flag_argmax_ci": [round(alo, 3), round(ahi, 3)],
            "mean_pre_onset_p": round(float(np.mean([r["p_nonpspl"] for r in rows])), 4),
            "median_pre_onset_p": round(float(np.median([r["p_nonpspl"] for r in rows])), 4)}
+    if d11:
+        k11 = sum(r["flagged_day11"] for r in d11)
+        l11, h11 = wilson(k11, len(d11))
+        out["day11_protocol"] = {"n": len(d11), "flag_rate": round(k11 / len(d11), 3),
+                                 "flag_ci": [round(l11, 3), round(h11, 3)],
+                                 "mean_pre_onset_p": round(float(np.mean(
+                                     [r["p_nonpspl_day11"] for r in d11])), 4)}
     json.dump(rows, open(os.path.join(HERE, "cascade_events.json"), "w"), indent=1)
     json.dump(out, open(os.path.join(HERE, "cascade_reproduce_result.json"), "w"), indent=2)
     print(json.dumps(out, indent=2))

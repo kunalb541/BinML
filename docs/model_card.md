@@ -29,7 +29,7 @@ completeness at fixed purity (headline), keep_prob-aware precision/purity, detec
 recall. **Completeness@purity 0.879, AP 0.952**; per-class F1 [Flat 0.97, PSPL 0.96, NonPSPL 0.82,
 Per 0.97, LPV 0.91, Erup 0.88] (macro 0.919; NonPSPL F1 is precision-limited by the
 detectability-floor demotion — recall is 0.95, physical precision 0.99, see evaluation.md).
-Real-time cascade: premature NonPSPL flagging 42%→9%. Generalises
+Real-time cascade: premature NonPSPL flagging measured at 2.0% (95% CI 0.7-5.7%, n=150) on the shipped model; the legacy 42%->9% before/after figure was untracked and is withdrawn. Generalises
 on a 12.9M-event unseen-parameter stress test (macro-F1 0.927). Full detail: [evaluation.md](evaluation.md).
 
 ## Limitations / known failure modes

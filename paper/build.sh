@@ -13,7 +13,7 @@ export PYTHONPATH="$(cd .. && pwd)${PYTHONPATH:+:$PYTHONPATH}"
 python3 - <<'PYCHECK' || { echo "ERROR: missing dependencies. Install the environment first:
     conda env create -f ../environment.yml && conda activate binml
 or, for the artifact-only figures: pip install numpy matplotlib" >&2; exit 1; }
-import importlib, sys
+import importlib.util, sys      # importlib.util is NOT auto-imported on Python >= 3.12
 missing = [m for m in ("numpy", "matplotlib") if importlib.util.find_spec(m) is None]
 if missing:
     print("missing:", missing, file=sys.stderr); sys.exit(1)

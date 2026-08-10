@@ -215,26 +215,36 @@ def fig_param_dependence():
     plt.close(fig)
 
 
-# ------------------------------------------------------------- Fig: cascade summary (schematic)
+# --------------------------------------------- Fig: pre-onset anomaly probability (tracked data)
 def fig_cascade_summary():
-    cn = json.load(open(os.path.join(HERE, "canonical_numbers.json")))["cascade"]
-    fig, ax = plt.subplots(figsize=(4.4, 3.2))
-    groups = ["premature\nflag rate", "pre-onset\nP(NonPSPL)", "missed\nplanet rate"]
-    before = [cn["premature_flag_before"], cn["preonset_p_before"], cn["missed_planet_before"]]
-    after  = [cn["premature_flag_after"],  cn["preonset_p_after"],  cn["missed_planet_after"]]
-    x = np.arange(3); ww = 0.36
-    ax.bar(x - ww/2, before, ww, label="baseline model", color="#b0562a")
-    ax.bar(x + ww/2, after,  ww, label="cascade model",  color="#1f4e79")
-    for xi, b, a in zip(x, before, after):
-        ax.text(xi - ww/2, b + 0.008, f"{b:.2f}", ha="center", fontsize=7)
-        ax.text(xi + ww/2, a + 0.008, f"{a:.2f}", ha="center", fontsize=7)
-    ax.set_xticks(x); ax.set_xticklabels(groups)
-    ax.set_ylabel("rate / probability")
-    ax.set_ylim(0, 0.5)
-    ax.legend(frameon=False, loc="upper right")
-    ax.set_title("Detectability-conditioned cascade: before vs after")
+    """Distribution of P(NonPSPL) on pre-onset windows, from the tracked cascade artifact.
+
+    This replaces an earlier before/after bar chart built from untracked summary values that could
+    not be reproduced (see validation/cascade_reproduce.py). It plots the actual per-event
+    measurements the artifact contains, so the figure cannot drift from the data.
+    """
+    src = os.path.join(os.path.dirname(HERE), "validation", "cascade_events.json")
+    if not os.path.exists(src):
+        print("cascade_summary.pdf SKIPPED (validation/cascade_events.json absent)")
+        return
+    rows = json.load(open(src))
+    pv = np.array([r["p_nonpspl"] for r in rows])
+    thr = metrics["headline"]["threshold"]
+    fig, ax = plt.subplots(figsize=(4.4, 3.0))
+    ax.hist(pv, bins=np.linspace(0, 1, 26), color="#1f4e79", alpha=0.85)
+    ax.axvline(thr, color="#b0562a", ls="--", lw=1.3,
+               label=f"operating threshold {thr:.2f}")
+    frac = float((pv >= thr).mean())
+    ax.set_yscale("log")
+    ax.set_xlabel("P(NonPSPL) on a pre-onset window")
+    ax.set_ylabel("number of binaries (log)")
+    ax.set_title(f"Pre-onset anomaly probability ($N={len(pv)}$): "
+                 f"{100*frac:.1f}\% exceed threshold", fontsize=8.5)
+    ax.legend(frameon=False, fontsize=7)
+    fig.tight_layout()
     fig.savefig(os.path.join(OUT, "cascade_summary.pdf"))
     plt.close(fig)
+    stats["cascade_preonset_flag_frac"] = round(frac, 3)
 
 
 # ---------------------------------------------------------------------- Fig: model schematic

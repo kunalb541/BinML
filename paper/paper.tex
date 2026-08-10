@@ -35,8 +35,9 @@ BinML suited to a real survey rather than a fixed benchmark. First, each event i
 what can actually be seen in its photometry, not by the parameters used to simulate it, so the
 network is never trained to claim an anomaly that leaves no observable trace. Second, the model
 reports each class only once that class's evidence has arrived, so a binary is announced when its
-anomaly appears and not during the smooth rise that precedes it; this cuts premature planet
-alerts from $\bmlPrematureBefore\%$ to $\bmlPrematureAfter\%$. On a held-out test set of
+anomaly appears and not during the smooth rise that precedes it: on held-out binaries the model
+raises a premature alert---before the anomaly is observable at all---in only
+$\bmlCascFlagPct\%$ of cases. On a held-out test set of
 $\bmlNtest$ events and under the adopted synthetic class mixture, BinML recovers
 $\bmlCompletenessPct\%$ of the anomalous events while holding the flagged sample to a purity of
 $\bmlPurityTarget$, and it reproduces this on a $\bmlStressN$-million-event set drawn from
@@ -274,23 +275,30 @@ is revealed, BinML's probability mass moves from \texttt{Flat} to \texttt{PSPL} 
 magnification and only jumps to \texttt{NonPSPL} when the caustic crosses into view at
 $t_{\mathrm{anom}}$; the subtle binary follows the same sequence with a weaker, later anomaly; and
 the single-lens control never acquires meaningful \texttt{NonPSPL} probability at all. The
-aggregate effect (Figure~\ref{fig:cascade_summary}) is large. The rate of \emph{premature} anomaly
-flags---calling a binary \texttt{NonPSPL} before its anomaly is observable---falls from
-$\bmlPrematureBefore\%$ to $\bmlPrematureAfter\%$, a factor of $\bmlFlagFactor$ (a
-$\bmlFlagReduction\%$ reduction), while the mean pre-onset \texttt{NonPSPL} probability drops by a
-larger factor of $\bmlPreonsetFactor$, from $\bmlPreonsetBefore$ to $\bmlPreonsetAfter$. (The two
-factors differ because the probability falls well below the flagging threshold for most events even
-where it does not cross it.) This costs essentially nothing
-on the full-season task for which conventional classifiers are optimised: the missed-planet rate,
-a true \texttt{NonPSPL} called \texttt{PSPL} on the complete curve, is if anything slightly lower
-($\bmlMissedBefore\rightarrow\bmlMissedAfter$).
+aggregate effect is that premature anomaly flags become rare. Measuring directly on held-out
+binaries, with the window truncated at a random day \emph{before} the anomaly onset
+$t_{\mathrm{anom}}$, the shipped model exceeds the operating threshold in
+$\bmlCascFlagPct\%$ of cases (95\% CI $[\bmlCascFlagLo,\bmlCascFlagHi]$, $N=\bmlCascN$); by
+six-class argmax the rate is $\bmlCascArgmaxPct\%$. The median pre-onset anomaly probability is
+$\bmlCascMedianP$, far below the threshold.
+
+We report these as absolute properties of the released model rather than as a before-and-after
+improvement. An earlier version of this work quoted a large reduction relative to a model trained
+without truncation augmentation; that comparison rested on an untracked measurement which we were
+unable to reproduce, and the ``before'' arm requires a separately trained model. A matched-recipe
+ablation---identical data and hyper-parameters, differing only in the truncation augmentation, with
+event-level outputs and interval estimates---is the correct way to establish the causal claim, and
+we flag it as necessary future work rather than assert it here. What the numbers above do establish
+is that the deployed model's premature-alert rate is low in absolute terms.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.82\columnwidth]{outputs/figures/cascade_summary.pdf}
-\caption{Aggregate effect of the cascade over the test population. Keying the label on a per-event
-anomaly-onset time cuts premature binary flags and pre-onset anomaly probability by large factors
-while leaving full-season sensitivity (the missed-planet rate) intact.}
+\caption{Distribution of the anomaly probability $P(\texttt{NonPSPL})$ on pre-onset windows for
+$\bmlCascN$ held-out binaries, from the tracked per-event artifact. Only $\bmlCascFlagPct\%$
+exceed the operating threshold (dashed); the median is $\bmlCascMedianP$. Note the logarithmic
+count axis. This replaces an earlier before/after summary whose values could not be reproduced
+(\S\ref{sec:cascade}).}
 \label{fig:cascade_summary}
 \end{figure}
 
@@ -699,10 +707,11 @@ saturation limit was carried over from a much longer Cycle-7 exposure and is alm
 wrong in the wrong direction (at equal exposure F087 should saturate at a \emph{fainter} magnitude
 than F146, not a brighter one), and our sky-background ratios do not reproduce the published
 thermal backgrounds, which make F213 substantially worse and F087 substantially better relative to
-F146 than we assume. These errors sit in the colour bands, which the model uses chiefly to reject
-variable-star contaminants, so the likely effect is a modest misestimate of contaminant rejection
-rather than of the anomaly channel; we have not attempted to quantify it, because doing so requires
-regenerating the training set and retraining. The corrected values are recorded alongside the
+F146 than we assume. These errors sit in the colour bands, which the model uses chiefly to reject variable-star
+contaminants. We deliberately do not characterise the resulting bias as small: we have not
+quantified it, and doing so requires regenerating the training set and retraining, or at minimum a
+colour/noise ablation. The affected quantity is most plausibly contaminant rejection rather than
+the anomaly channel, but that expectation is untested. The corrected values are recorded alongside the
 originals in the released code so that any future retraining starts from the audited numbers.
 
 One assumption underlying every number in this paper deserves to be stated plainly, because it is
@@ -728,8 +737,8 @@ Two properties make it suited to that role rather than merely accurate on a stat
 completeness-at-fixed-purity framing lets a survey team set the operating point directly against
 their follow-up budget, trading completeness for purity along a curve they control rather than
 accepting whatever an argmax delivers. And the real-time cascade means the flag can be trusted as a
-\emph{trigger}: a \texttt{NonPSPL} call certifies that the anomaly has been seen, not merely
-anticipated, which is the precondition for autonomous follow-up. That BinML reconstructs the
+\emph{trigger}: a \texttt{NonPSPL} call is raised, in the large majority of cases, only after the anomaly is
+observable rather than in anticipation of it, which is the precondition for autonomous follow-up. That BinML reconstructs the
 truth-informed anomaly ranking from raw photometry in a single forward pass, without per-event
 fitting, is what makes running it across the full survey stream computationally feasible.
 
@@ -815,8 +824,8 @@ curves, built around two ideas---detectability-conditioned labelling and a real-
 cascade---that make it a candidate for prospective survey use rather than only accurate on a static
 benchmark. On the adopted synthetic class mixture it reaches a completeness of $\bmlCompleteness$ at
 a purity of $\bmlPurity$ (average precision $\bmlAP$), reconstructs the truth-informed anomaly
-ranking from raw photometry, and cuts premature binary alerts from $\bmlPrematureBefore\%$ to
-$\bmlPrematureAfter\%$. These results establish a reproducible synthetic benchmark; validation
+ranking from raw photometry, and raises premature binary alerts in only $\bmlCascFlagPct\%$ of
+pre-onset windows. These results establish a reproducible synthetic benchmark; validation
 against survey event-rate priors and the current \Rom{} survey design remains future work. The
 model, its weights, and the full simulation-to-inference pipeline are released as open source.
 

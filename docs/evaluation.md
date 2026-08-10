@@ -68,10 +68,10 @@ Measured on truncated light curves, fraction flagged NonPSPL *before the anomaly
 
 | | baseline (no cascade) | BinML 1.0 (cascade) |
 |---|---|---|
-| premature NonPSPL flag (day 11) | 42% | **9%** |
-| pre-onset P(NonPSPL) | 0.411 | **0.033** |
+| premature NonPSPL flag (day 11) | (untracked, withdrawn) | **1.5%** (n=131, CI 0.4-5.4%) |
+| median pre-onset P(NonPSPL) | (untracked, withdrawn) | **0.008** |
 
-A **factor-4.7 reduction (79% fewer)** in premature binary flagging (the ~12x factor applies to the mean pre-onset probability, 0.411 -> 0.033) — and it's surgical: the other five classes'
+The 'before' arm was never tracked and could not be reproduced, so no reduction factor is quoted; see validation/cascade_reproduce.py. The measured behaviour is surgical: the other five classes'
 temporal behaviour is unchanged (Flat stays Flat, Periodic commits in one cycle, Eruptive waits
 for the outburst).
 
