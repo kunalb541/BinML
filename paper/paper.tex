@@ -764,6 +764,20 @@ observable rather than in anticipation of it, which is the precondition for auto
 truth-informed anomaly ranking from raw photometry in a single forward pass, without per-event
 fitting, is what makes running it across the full survey stream computationally feasible.
 
+It is important to be concrete about which follow-up modes this latency actually serves, because a
+median first alert $\bmlCascMedianLag$~days after onset arrives \emph{after} a short caustic
+crossing has finished. A planetary perturbation lasting hours to a day is therefore over by the
+time the alert fires: BinML cannot be used to trigger observations \emph{of that feature}. What a
+few-day latency does support is the substantial fraction of anomalies that are not brief---extended
+or repeating caustic structure, second crossings of a caustic the source has entered, and
+long-timescale binaries whose perturbations persist for many days---together with everything that
+depends on recognising the \emph{event} rather than the feature: scheduling denser photometry for
+the remainder of a still-ongoing event, initiating colour or parallax campaigns, and prioritising
+which light curves receive expensive binary-lens modelling. For the brief planetary anomalies that
+motivate the survey, the honest statement is that BinML is a rapid \emph{post-hoc} identifier;
+triggering on the anomaly itself would require evaluating at the survey's native cadence, with a
+correspondingly higher premature-alert rate (\S\ref{sec:cascade})---a trade we have not optimised.
+
 \subsection{Targeted fine-tuning recovers the low-mass-ratio deficit}\label{sec:finetune}
 
 The mass-ratio breakdown of \S\ref{sec:results} identifies where the model is weakest, and it is

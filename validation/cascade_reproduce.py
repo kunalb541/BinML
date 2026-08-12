@@ -62,6 +62,11 @@ def main(n_events=150, step_days=0.5):
         ev = simulate_event("NonPSPL", np.random.default_rng(s), cfg)
         if ev is None or ev.label != "NonPSPL":
             continue
+        # ELIGIBILITY (stated explicitly per referee request): an event enters the sample iff
+        # (a) it was generated as a binary lens, (b) detectability-conditioned labelling kept the
+        # NonPSPL label -- i.e. its anomaly is observable at all -- and (c) it has a finite
+        # anomaly-onset time. No event is excluded on the basis of the model's output, so the
+        # sample is not selected on the outcome being measured.
         ta = ev.params.get("t_anom")
         if ta is None or not np.isfinite(ta):
             continue
