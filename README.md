@@ -81,15 +81,16 @@ Per-class F1 (population-weighted, selection-corrected):
 
 - **Completeness at fixed purity: 0.879** (the headline a follow-up pipeline is specified
   against, not accuracy or F1). Average precision 0.952.
-- **The cascade, measured honestly:** evaluated event by event (first threshold crossing as the
-  season is revealed), the model detects 89% of eligible binaries
-  within the season, with a median alert **1.8 days after** the
-  caustic becomes detectable. Its first alert is *premature* for
-  **26%** of eligible binaries (95% CI
-  20–32%). This is
-  grid-dependent — evaluating more often finds more early crossings — so treat it as a lower bound.
-  *Note:* an earlier 42%→9% before/after claim was untracked, could not be reproduced, and has been
-  withdrawn; see `validation/cascade_reproduce.py`.
+- **The cascade, measured honestly (n=1000):** evaluated event by event (first
+  threshold crossing as the season is revealed), the model detects
+  89% of eligible binaries within the season, with a median alert
+  **1.3 days after** the caustic becomes detectable. Its first
+  alert is *premature* for **31.3%** of eligible binaries
+  (95% CI 28.5–34.2%),
+  35.2% of those detected. This is grid-dependent — evaluating
+  more often finds more early crossings — so treat it as a **lower bound**. *Note:* an earlier
+  42%→9% before/after claim was untracked, could not be reproduced, and has been withdrawn; see
+  `validation/cascade_reproduce.py`.
 - **Generalises to unseen parameter draws:** a ~19-million-event stress set from a disjoint seed
   reproduces the held-out numbers on its natural-population subset; several out-of-range regimes
   degrade, and are documented rather than hidden.

@@ -1598,5 +1598,6405 @@
   "detected": false,
   "premature": false,
   "lag_days": null
+ },
+ {
+  "seed": 302398,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.3
+ },
+ {
+  "seed": 302412,
+  "t_anom": 50.4,
+  "first_crossing_day": 53.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.1
+ },
+ {
+  "seed": 302418,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 302429,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 302462,
+  "t_anom": 21.6,
+  "first_crossing_day": 23.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.4
+ },
+ {
+  "seed": 302465,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.4
+ },
+ {
+  "seed": 302506,
+  "t_anom": 14.4,
+  "first_crossing_day": 56.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 41.6
+ },
+ {
+  "seed": 302537,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.4
+ },
+ {
+  "seed": 302554,
+  "t_anom": 36.0,
+  "first_crossing_day": 38.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.0
+ },
+ {
+  "seed": 302559,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.2
+ },
+ {
+  "seed": 302565,
+  "t_anom": 7.2,
+  "first_crossing_day": 55.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 47.8
+ },
+ {
+  "seed": 302566,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 302621,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 302644,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 302666,
+  "t_anom": 21.6,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.4
+ },
+ {
+  "seed": 302672,
+  "t_anom": 28.8,
+  "first_crossing_day": 24.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.3
+ },
+ {
+  "seed": 302674,
+  "t_anom": 64.8,
+  "first_crossing_day": 68.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.7
+ },
+ {
+  "seed": 302695,
+  "t_anom": 36.0,
+  "first_crossing_day": 34.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.5
+ },
+ {
+  "seed": 302700,
+  "t_anom": 7.2,
+  "first_crossing_day": 43.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 36.3
+ },
+ {
+  "seed": 302701,
+  "t_anom": 14.4,
+  "first_crossing_day": 18.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.6
+ },
+ {
+  "seed": 302716,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.8
+ },
+ {
+  "seed": 302720,
+  "t_anom": 14.4,
+  "first_crossing_day": 21.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.1
+ },
+ {
+  "seed": 302732,
+  "t_anom": 21.6,
+  "first_crossing_day": 55.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 33.4
+ },
+ {
+  "seed": 302739,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 302743,
+  "t_anom": 21.6,
+  "first_crossing_day": 24.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.4
+ },
+ {
+  "seed": 302755,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 302763,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 302766,
+  "t_anom": 43.2,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.7
+ },
+ {
+  "seed": 302769,
+  "t_anom": 14.4,
+  "first_crossing_day": 17.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.6
+ },
+ {
+  "seed": 302773,
+  "t_anom": 14.4,
+  "first_crossing_day": 25.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.6
+ },
+ {
+  "seed": 302784,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.8
+ },
+ {
+  "seed": 302823,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 302843,
+  "t_anom": 57.6,
+  "first_crossing_day": 52.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.6
+ },
+ {
+  "seed": 302844,
+  "t_anom": 7.2,
+  "first_crossing_day": 19.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 12.3
+ },
+ {
+  "seed": 302852,
+  "t_anom": 72.0,
+  "first_crossing_day": 66.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.0
+ },
+ {
+  "seed": 302855,
+  "t_anom": 36.0,
+  "first_crossing_day": 40.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.5
+ },
+ {
+  "seed": 302882,
+  "t_anom": 36.0,
+  "first_crossing_day": 46.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.5
+ },
+ {
+  "seed": 302899,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 302919,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.5
+ },
+ {
+  "seed": 302928,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 302939,
+  "t_anom": 14.4,
+  "first_crossing_day": 15.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.1
+ },
+ {
+  "seed": 302965,
+  "t_anom": 64.8,
+  "first_crossing_day": 65.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 302970,
+  "t_anom": 14.4,
+  "first_crossing_day": 18.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.6
+ },
+ {
+  "seed": 303000,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303009,
+  "t_anom": 43.2,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.8
+ },
+ {
+  "seed": 303012,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 303030,
+  "t_anom": 21.6,
+  "first_crossing_day": 41.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 19.4
+ },
+ {
+  "seed": 303037,
+  "t_anom": 28.8,
+  "first_crossing_day": 32.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 303041,
+  "t_anom": 64.8,
+  "first_crossing_day": 66.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.2
+ },
+ {
+  "seed": 303046,
+  "t_anom": 14.4,
+  "first_crossing_day": 27.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 13.1
+ },
+ {
+  "seed": 303049,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 303082,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 303085,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303087,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 303118,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.5
+ },
+ {
+  "seed": 303138,
+  "t_anom": 28.8,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 303141,
+  "t_anom": 43.2,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.8
+ },
+ {
+  "seed": 303156,
+  "t_anom": 21.6,
+  "first_crossing_day": 15.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.6
+ },
+ {
+  "seed": 303170,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 303173,
+  "t_anom": 57.6,
+  "first_crossing_day": 62.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.4
+ },
+ {
+  "seed": 303185,
+  "t_anom": 21.6,
+  "first_crossing_day": 18.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.6
+ },
+ {
+  "seed": 303188,
+  "t_anom": 14.4,
+  "first_crossing_day": 16.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.1
+ },
+ {
+  "seed": 303190,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 303194,
+  "t_anom": 50.4,
+  "first_crossing_day": 57.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.1
+ },
+ {
+  "seed": 303195,
+  "t_anom": 36.0,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.5
+ },
+ {
+  "seed": 303199,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.5
+ },
+ {
+  "seed": 303202,
+  "t_anom": 50.4,
+  "first_crossing_day": 56.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.6
+ },
+ {
+  "seed": 303203,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303225,
+  "t_anom": 64.8,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 303230,
+  "t_anom": 36.0,
+  "first_crossing_day": 51.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 15.5
+ },
+ {
+  "seed": 303241,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 303257,
+  "t_anom": 14.4,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.4
+ },
+ {
+  "seed": 303259,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303261,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 303273,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.0
+ },
+ {
+  "seed": 303295,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.2
+ },
+ {
+  "seed": 303310,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 303317,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.5
+ },
+ {
+  "seed": 303321,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 303328,
+  "t_anom": 21.6,
+  "first_crossing_day": 25.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.4
+ },
+ {
+  "seed": 303329,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 303332,
+  "t_anom": 21.6,
+  "first_crossing_day": 10.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -11.6
+ },
+ {
+  "seed": 303335,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 303337,
+  "t_anom": 21.6,
+  "first_crossing_day": 25.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.9
+ },
+ {
+  "seed": 303338,
+  "t_anom": 43.2,
+  "first_crossing_day": 51.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.3
+ },
+ {
+  "seed": 303340,
+  "t_anom": 28.8,
+  "first_crossing_day": 33.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.7
+ },
+ {
+  "seed": 303353,
+  "t_anom": 36.0,
+  "first_crossing_day": 39.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.5
+ },
+ {
+  "seed": 303354,
+  "t_anom": 7.2,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 15.3
+ },
+ {
+  "seed": 303361,
+  "t_anom": 64.8,
+  "first_crossing_day": 69.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.2
+ },
+ {
+  "seed": 303374,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.1
+ },
+ {
+  "seed": 303388,
+  "t_anom": 14.4,
+  "first_crossing_day": 30.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 15.6
+ },
+ {
+  "seed": 303403,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 303405,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.3
+ },
+ {
+  "seed": 303409,
+  "t_anom": 36.0,
+  "first_crossing_day": 62.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 26.5
+ },
+ {
+  "seed": 303416,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303435,
+  "t_anom": 57.6,
+  "first_crossing_day": 59.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.9
+ },
+ {
+  "seed": 303459,
+  "t_anom": 50.4,
+  "first_crossing_day": 50.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.1
+ },
+ {
+  "seed": 303477,
+  "t_anom": 50.4,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 12.6
+ },
+ {
+  "seed": 303488,
+  "t_anom": 14.4,
+  "first_crossing_day": 23.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.1
+ },
+ {
+  "seed": 303526,
+  "t_anom": 21.6,
+  "first_crossing_day": 19.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.6
+ },
+ {
+  "seed": 303527,
+  "t_anom": 28.8,
+  "first_crossing_day": 26.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.8
+ },
+ {
+  "seed": 303553,
+  "t_anom": 36.0,
+  "first_crossing_day": 49.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 13.5
+ },
+ {
+  "seed": 303558,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 303562,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 303564,
+  "t_anom": 14.4,
+  "first_crossing_day": 65.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 50.6
+ },
+ {
+  "seed": 303575,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 303586,
+  "t_anom": 28.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303590,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 303605,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.1
+ },
+ {
+  "seed": 303609,
+  "t_anom": 28.8,
+  "first_crossing_day": 24.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.3
+ },
+ {
+  "seed": 303637,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.3
+ },
+ {
+  "seed": 303654,
+  "t_anom": 21.6,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 45.4
+ },
+ {
+  "seed": 303656,
+  "t_anom": 72.0,
+  "first_crossing_day": 65.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.5
+ },
+ {
+  "seed": 303658,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303669,
+  "t_anom": 28.8,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 303672,
+  "t_anom": 36.0,
+  "first_crossing_day": 40.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.0
+ },
+ {
+  "seed": 303692,
+  "t_anom": 7.2,
+  "first_crossing_day": 25.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 18.3
+ },
+ {
+  "seed": 303697,
+  "t_anom": 7.2,
+  "first_crossing_day": 23.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 15.8
+ },
+ {
+  "seed": 303699,
+  "t_anom": 36.0,
+  "first_crossing_day": 38.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.5
+ },
+ {
+  "seed": 303733,
+  "t_anom": 14.4,
+  "first_crossing_day": 15.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.1
+ },
+ {
+  "seed": 303737,
+  "t_anom": 64.8,
+  "first_crossing_day": 56.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -8.3
+ },
+ {
+  "seed": 303738,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 303748,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.4
+ },
+ {
+  "seed": 303764,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303786,
+  "t_anom": 57.6,
+  "first_crossing_day": 61.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.9
+ },
+ {
+  "seed": 303787,
+  "t_anom": 28.8,
+  "first_crossing_day": 62.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 33.7
+ },
+ {
+  "seed": 303801,
+  "t_anom": 50.4,
+  "first_crossing_day": 59.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.6
+ },
+ {
+  "seed": 303814,
+  "t_anom": 7.2,
+  "first_crossing_day": 36.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 28.8
+ },
+ {
+  "seed": 303836,
+  "t_anom": 43.2,
+  "first_crossing_day": 40.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.2
+ },
+ {
+  "seed": 303840,
+  "t_anom": 64.8,
+  "first_crossing_day": 61.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.8
+ },
+ {
+  "seed": 303866,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303881,
+  "t_anom": 28.8,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 38.2
+ },
+ {
+  "seed": 303896,
+  "t_anom": 64.8,
+  "first_crossing_day": 28.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -36.8
+ },
+ {
+  "seed": 303906,
+  "t_anom": 28.8,
+  "first_crossing_day": 35.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.2
+ },
+ {
+  "seed": 303917,
+  "t_anom": 14.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 303941,
+  "t_anom": 57.6,
+  "first_crossing_day": 57.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 303965,
+  "t_anom": 7.2,
+  "first_crossing_day": 6.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.2
+ },
+ {
+  "seed": 303986,
+  "t_anom": 21.6,
+  "first_crossing_day": 18.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.6
+ },
+ {
+  "seed": 303995,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.0
+ },
+ {
+  "seed": 303999,
+  "t_anom": 14.4,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.1
+ },
+ {
+  "seed": 304005,
+  "t_anom": 28.8,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 29.7
+ },
+ {
+  "seed": 304021,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 304031,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 304033,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 304051,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.2
+ },
+ {
+  "seed": 304071,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.0
+ },
+ {
+  "seed": 304081,
+  "t_anom": 72.0,
+  "first_crossing_day": 64.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -7.5
+ },
+ {
+  "seed": 304093,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 304114,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 304141,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 304155,
+  "t_anom": 36.0,
+  "first_crossing_day": 35.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 304162,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.0
+ },
+ {
+  "seed": 304171,
+  "t_anom": 28.8,
+  "first_crossing_day": 29.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 304175,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 304181,
+  "t_anom": 57.6,
+  "first_crossing_day": 41.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -16.6
+ },
+ {
+  "seed": 304183,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 304195,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 304202,
+  "t_anom": 36.0,
+  "first_crossing_day": 34.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.5
+ },
+ {
+  "seed": 304224,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.8
+ },
+ {
+  "seed": 304232,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.5
+ },
+ {
+  "seed": 304236,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.0
+ },
+ {
+  "seed": 304252,
+  "t_anom": 36.0,
+  "first_crossing_day": 49.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 13.0
+ },
+ {
+  "seed": 304259,
+  "t_anom": 21.6,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 22.9
+ },
+ {
+  "seed": 304289,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.7
+ },
+ {
+  "seed": 304308,
+  "t_anom": 28.8,
+  "first_crossing_day": 28.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.8
+ },
+ {
+  "seed": 304314,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.3
+ },
+ {
+  "seed": 304318,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 304337,
+  "t_anom": 28.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 304373,
+  "t_anom": 7.2,
+  "first_crossing_day": 14.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.8
+ },
+ {
+  "seed": 304385,
+  "t_anom": 28.8,
+  "first_crossing_day": 29.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 304408,
+  "t_anom": 57.6,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -12.6
+ },
+ {
+  "seed": 304424,
+  "t_anom": 28.8,
+  "first_crossing_day": 23.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.8
+ },
+ {
+  "seed": 304429,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 304439,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 304487,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.4
+ },
+ {
+  "seed": 304504,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.3
+ },
+ {
+  "seed": 304513,
+  "t_anom": 21.6,
+  "first_crossing_day": 24.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.4
+ },
+ {
+  "seed": 304514,
+  "t_anom": 64.8,
+  "first_crossing_day": 62.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.3
+ },
+ {
+  "seed": 304545,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 304550,
+  "t_anom": 64.8,
+  "first_crossing_day": 65.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.7
+ },
+ {
+  "seed": 304560,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 304589,
+  "t_anom": 64.8,
+  "first_crossing_day": 69.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.2
+ },
+ {
+  "seed": 304590,
+  "t_anom": 43.2,
+  "first_crossing_day": 55.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.8
+ },
+ {
+  "seed": 304598,
+  "t_anom": 14.4,
+  "first_crossing_day": 34.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 20.1
+ },
+ {
+  "seed": 304599,
+  "t_anom": 50.4,
+  "first_crossing_day": 55.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.1
+ },
+ {
+  "seed": 304622,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.1
+ },
+ {
+  "seed": 304650,
+  "t_anom": 64.8,
+  "first_crossing_day": 31.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -33.3
+ },
+ {
+  "seed": 304652,
+  "t_anom": 36.0,
+  "first_crossing_day": 41.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.0
+ },
+ {
+  "seed": 304659,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 304679,
+  "t_anom": 14.4,
+  "first_crossing_day": 9.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.9
+ },
+ {
+  "seed": 304680,
+  "t_anom": 57.6,
+  "first_crossing_day": 65.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.4
+ },
+ {
+  "seed": 304683,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 304695,
+  "t_anom": 14.4,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 12.6
+ },
+ {
+  "seed": 304699,
+  "t_anom": 64.8,
+  "first_crossing_day": 65.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 304705,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 304706,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.0
+ },
+ {
+  "seed": 304727,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.3
+ },
+ {
+  "seed": 304730,
+  "t_anom": 7.2,
+  "first_crossing_day": 49.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 42.3
+ },
+ {
+  "seed": 304772,
+  "t_anom": 36.0,
+  "first_crossing_day": 44.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.0
+ },
+ {
+  "seed": 304784,
+  "t_anom": 7.2,
+  "first_crossing_day": 28.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 21.3
+ },
+ {
+  "seed": 304792,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.5
+ },
+ {
+  "seed": 304831,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.0
+ },
+ {
+  "seed": 304843,
+  "t_anom": 36.0,
+  "first_crossing_day": 34.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.0
+ },
+ {
+  "seed": 304851,
+  "t_anom": 7.2,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 15.3
+ },
+ {
+  "seed": 304861,
+  "t_anom": 14.4,
+  "first_crossing_day": 15.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 304866,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.8
+ },
+ {
+  "seed": 304870,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.1
+ },
+ {
+  "seed": 304878,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 304888,
+  "t_anom": 50.4,
+  "first_crossing_day": 57.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.1
+ },
+ {
+  "seed": 304896,
+  "t_anom": 36.0,
+  "first_crossing_day": 35.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 304912,
+  "t_anom": 21.6,
+  "first_crossing_day": 18.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.1
+ },
+ {
+  "seed": 304934,
+  "t_anom": 14.4,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.1
+ },
+ {
+  "seed": 304967,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 304979,
+  "t_anom": 43.2,
+  "first_crossing_day": 40.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.2
+ },
+ {
+  "seed": 304991,
+  "t_anom": 14.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 305006,
+  "t_anom": 21.6,
+  "first_crossing_day": 28.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.9
+ },
+ {
+  "seed": 305011,
+  "t_anom": 21.6,
+  "first_crossing_day": 35.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 13.4
+ },
+ {
+  "seed": 305015,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.9
+ },
+ {
+  "seed": 305031,
+  "t_anom": 64.8,
+  "first_crossing_day": 70.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.2
+ },
+ {
+  "seed": 305032,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 305049,
+  "t_anom": 36.0,
+  "first_crossing_day": 35.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 305053,
+  "t_anom": 64.8,
+  "first_crossing_day": 70.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.2
+ },
+ {
+  "seed": 305060,
+  "t_anom": 36.0,
+  "first_crossing_day": 41.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.0
+ },
+ {
+  "seed": 305062,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.3
+ },
+ {
+  "seed": 305066,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 305079,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.9
+ },
+ {
+  "seed": 305083,
+  "t_anom": 28.8,
+  "first_crossing_day": 25.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.8
+ },
+ {
+  "seed": 305104,
+  "t_anom": 28.8,
+  "first_crossing_day": 34.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.2
+ },
+ {
+  "seed": 305110,
+  "t_anom": 43.2,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.7
+ },
+ {
+  "seed": 305114,
+  "t_anom": 57.6,
+  "first_crossing_day": 65.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.9
+ },
+ {
+  "seed": 305134,
+  "t_anom": 7.2,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 56.8
+ },
+ {
+  "seed": 305143,
+  "t_anom": 64.8,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 305157,
+  "t_anom": 64.8,
+  "first_crossing_day": 59.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.3
+ },
+ {
+  "seed": 305158,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 305165,
+  "t_anom": 21.6,
+  "first_crossing_day": 18.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.6
+ },
+ {
+  "seed": 305174,
+  "t_anom": 21.6,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.4
+ },
+ {
+  "seed": 305182,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 305203,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 305259,
+  "t_anom": 7.2,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.8
+ },
+ {
+  "seed": 305281,
+  "t_anom": 36.0,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.5
+ },
+ {
+  "seed": 305282,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.5
+ },
+ {
+  "seed": 305285,
+  "t_anom": 7.2,
+  "first_crossing_day": 24.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 16.8
+ },
+ {
+  "seed": 305287,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.0
+ },
+ {
+  "seed": 305290,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 305296,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.2
+ },
+ {
+  "seed": 305301,
+  "t_anom": 36.0,
+  "first_crossing_day": 35.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 305316,
+  "t_anom": 43.2,
+  "first_crossing_day": 40.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.7
+ },
+ {
+  "seed": 305328,
+  "t_anom": 7.2,
+  "first_crossing_day": 14.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.8
+ },
+ {
+  "seed": 305345,
+  "t_anom": 7.2,
+  "first_crossing_day": 16.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.3
+ },
+ {
+  "seed": 305359,
+  "t_anom": 50.4,
+  "first_crossing_day": 50.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.4
+ },
+ {
+  "seed": 305382,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.4
+ },
+ {
+  "seed": 305406,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.0
+ },
+ {
+  "seed": 305408,
+  "t_anom": 28.8,
+  "first_crossing_day": 38.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.2
+ },
+ {
+  "seed": 305428,
+  "t_anom": 43.2,
+  "first_crossing_day": 51.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.3
+ },
+ {
+  "seed": 305434,
+  "t_anom": 64.8,
+  "first_crossing_day": 61.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.8
+ },
+ {
+  "seed": 305446,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 305450,
+  "t_anom": 36.0,
+  "first_crossing_day": 38.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.0
+ },
+ {
+  "seed": 305453,
+  "t_anom": 64.8,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.7
+ },
+ {
+  "seed": 305454,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 305459,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 305477,
+  "t_anom": 36.0,
+  "first_crossing_day": 45.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.5
+ },
+ {
+  "seed": 305497,
+  "t_anom": 64.8,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 305525,
+  "t_anom": 7.2,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 15.3
+ },
+ {
+  "seed": 305534,
+  "t_anom": 7.2,
+  "first_crossing_day": 12.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.3
+ },
+ {
+  "seed": 305536,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.0
+ },
+ {
+  "seed": 305575,
+  "t_anom": 50.4,
+  "first_crossing_day": 56.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.6
+ },
+ {
+  "seed": 305595,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 305601,
+  "t_anom": 14.4,
+  "first_crossing_day": 15.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 305607,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.4
+ },
+ {
+  "seed": 305610,
+  "t_anom": 21.6,
+  "first_crossing_day": 19.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.6
+ },
+ {
+  "seed": 305629,
+  "t_anom": 14.4,
+  "first_crossing_day": 10.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.9
+ },
+ {
+  "seed": 305635,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 305643,
+  "t_anom": 50.4,
+  "first_crossing_day": 48.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.9
+ },
+ {
+  "seed": 305644,
+  "t_anom": 21.6,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.4
+ },
+ {
+  "seed": 305650,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.5
+ },
+ {
+  "seed": 305686,
+  "t_anom": 21.6,
+  "first_crossing_day": 45.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 23.9
+ },
+ {
+  "seed": 305696,
+  "t_anom": 7.2,
+  "first_crossing_day": 19.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 12.3
+ },
+ {
+  "seed": 305700,
+  "t_anom": 28.8,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 34.2
+ },
+ {
+  "seed": 305720,
+  "t_anom": 36.0,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.0
+ },
+ {
+  "seed": 305745,
+  "t_anom": 57.6,
+  "first_crossing_day": 59.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.4
+ },
+ {
+  "seed": 305760,
+  "t_anom": 64.8,
+  "first_crossing_day": 65.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.7
+ },
+ {
+  "seed": 305774,
+  "t_anom": 50.4,
+  "first_crossing_day": 52.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.1
+ },
+ {
+  "seed": 305775,
+  "t_anom": 7.2,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 305778,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 305787,
+  "t_anom": 50.4,
+  "first_crossing_day": 52.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.1
+ },
+ {
+  "seed": 305800,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.2
+ },
+ {
+  "seed": 305808,
+  "t_anom": 14.4,
+  "first_crossing_day": 10.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.4
+ },
+ {
+  "seed": 305820,
+  "t_anom": 50.4,
+  "first_crossing_day": 54.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.6
+ },
+ {
+  "seed": 305841,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 305847,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 305863,
+  "t_anom": 36.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 35.0
+ },
+ {
+  "seed": 305870,
+  "t_anom": 7.2,
+  "first_crossing_day": 17.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.8
+ },
+ {
+  "seed": 305894,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 305905,
+  "t_anom": 28.8,
+  "first_crossing_day": 32.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.7
+ },
+ {
+  "seed": 305914,
+  "t_anom": 36.0,
+  "first_crossing_day": 43.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.5
+ },
+ {
+  "seed": 305946,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.9
+ },
+ {
+  "seed": 305951,
+  "t_anom": 36.0,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.5
+ },
+ {
+  "seed": 305988,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.4
+ },
+ {
+  "seed": 305989,
+  "t_anom": 21.6,
+  "first_crossing_day": 28.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.9
+ },
+ {
+  "seed": 305998,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 306002,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.5
+ },
+ {
+  "seed": 306004,
+  "t_anom": 57.6,
+  "first_crossing_day": 55.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.1
+ },
+ {
+  "seed": 306020,
+  "t_anom": 43.2,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.8
+ },
+ {
+  "seed": 306023,
+  "t_anom": 43.2,
+  "first_crossing_day": 50.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.3
+ },
+ {
+  "seed": 306027,
+  "t_anom": 14.4,
+  "first_crossing_day": 19.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.6
+ },
+ {
+  "seed": 306040,
+  "t_anom": 50.4,
+  "first_crossing_day": 54.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.1
+ },
+ {
+  "seed": 306061,
+  "t_anom": 57.6,
+  "first_crossing_day": 65.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.9
+ },
+ {
+  "seed": 306067,
+  "t_anom": 36.0,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.0
+ },
+ {
+  "seed": 306070,
+  "t_anom": 50.4,
+  "first_crossing_day": 52.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.6
+ },
+ {
+  "seed": 306074,
+  "t_anom": 7.2,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 13.8
+ },
+ {
+  "seed": 306092,
+  "t_anom": 28.8,
+  "first_crossing_day": 25.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.3
+ },
+ {
+  "seed": 306097,
+  "t_anom": 57.6,
+  "first_crossing_day": 59.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.4
+ },
+ {
+  "seed": 306162,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 306175,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.9
+ },
+ {
+  "seed": 306182,
+  "t_anom": 43.2,
+  "first_crossing_day": 46.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.8
+ },
+ {
+  "seed": 306208,
+  "t_anom": 36.0,
+  "first_crossing_day": 40.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.5
+ },
+ {
+  "seed": 306215,
+  "t_anom": 14.4,
+  "first_crossing_day": 23.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.6
+ },
+ {
+  "seed": 306239,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 306259,
+  "t_anom": 64.8,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.7
+ },
+ {
+  "seed": 306284,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 306298,
+  "t_anom": 14.4,
+  "first_crossing_day": 10.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.4
+ },
+ {
+  "seed": 306329,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.0
+ },
+ {
+  "seed": 306336,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 306341,
+  "t_anom": 50.4,
+  "first_crossing_day": 47.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.9
+ },
+ {
+  "seed": 306349,
+  "t_anom": 57.6,
+  "first_crossing_day": 53.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.6
+ },
+ {
+  "seed": 306357,
+  "t_anom": 43.2,
+  "first_crossing_day": 52.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.8
+ },
+ {
+  "seed": 306383,
+  "t_anom": 36.0,
+  "first_crossing_day": 39.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.5
+ },
+ {
+  "seed": 306387,
+  "t_anom": 64.8,
+  "first_crossing_day": 61.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.3
+ },
+ {
+  "seed": 306398,
+  "t_anom": 21.6,
+  "first_crossing_day": 70.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 48.9
+ },
+ {
+  "seed": 306399,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 306430,
+  "t_anom": 28.8,
+  "first_crossing_day": 29.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 306463,
+  "t_anom": 43.2,
+  "first_crossing_day": 53.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.3
+ },
+ {
+  "seed": 306476,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 306496,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 306499,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 306515,
+  "t_anom": 36.0,
+  "first_crossing_day": 41.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.0
+ },
+ {
+  "seed": 306516,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 306529,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 306564,
+  "t_anom": 72.0,
+  "first_crossing_day": 66.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.5
+ },
+ {
+  "seed": 306587,
+  "t_anom": 21.6,
+  "first_crossing_day": 20.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.1
+ },
+ {
+  "seed": 306601,
+  "t_anom": 7.2,
+  "first_crossing_day": 43.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 35.8
+ },
+ {
+  "seed": 306612,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 306618,
+  "t_anom": 28.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 306641,
+  "t_anom": 14.4,
+  "first_crossing_day": 10.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.4
+ },
+ {
+  "seed": 306657,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 306660,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.0
+ },
+ {
+  "seed": 306667,
+  "t_anom": 36.0,
+  "first_crossing_day": 39.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.5
+ },
+ {
+  "seed": 306678,
+  "t_anom": 14.4,
+  "first_crossing_day": 13.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 306688,
+  "t_anom": 28.8,
+  "first_crossing_day": 40.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.7
+ },
+ {
+  "seed": 306717,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 306739,
+  "t_anom": 43.2,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.8
+ },
+ {
+  "seed": 306743,
+  "t_anom": 57.6,
+  "first_crossing_day": 55.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.6
+ },
+ {
+  "seed": 306751,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.5
+ },
+ {
+  "seed": 306776,
+  "t_anom": 21.6,
+  "first_crossing_day": 32.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.9
+ },
+ {
+  "seed": 306783,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.9
+ },
+ {
+  "seed": 306822,
+  "t_anom": 57.6,
+  "first_crossing_day": 62.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.9
+ },
+ {
+  "seed": 306823,
+  "t_anom": 28.8,
+  "first_crossing_day": 35.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.2
+ },
+ {
+  "seed": 306838,
+  "t_anom": 21.6,
+  "first_crossing_day": 32.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.4
+ },
+ {
+  "seed": 306872,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.9
+ },
+ {
+  "seed": 306877,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 306886,
+  "t_anom": 28.8,
+  "first_crossing_day": 48.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 19.7
+ },
+ {
+  "seed": 306909,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 306927,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 306930,
+  "t_anom": 28.8,
+  "first_crossing_day": 37.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.7
+ },
+ {
+  "seed": 306931,
+  "t_anom": 7.2,
+  "first_crossing_day": 19.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 12.3
+ },
+ {
+  "seed": 306932,
+  "t_anom": 14.4,
+  "first_crossing_day": 40.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 26.1
+ },
+ {
+  "seed": 306934,
+  "t_anom": 28.8,
+  "first_crossing_day": 22.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.8
+ },
+ {
+  "seed": 306959,
+  "t_anom": 14.4,
+  "first_crossing_day": 17.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.1
+ },
+ {
+  "seed": 306961,
+  "t_anom": 36.0,
+  "first_crossing_day": 35.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 306998,
+  "t_anom": 36.0,
+  "first_crossing_day": 41.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.5
+ },
+ {
+  "seed": 307016,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.9
+ },
+ {
+  "seed": 307031,
+  "t_anom": 7.2,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 19.8
+ },
+ {
+  "seed": 307034,
+  "t_anom": 57.6,
+  "first_crossing_day": 59.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.9
+ },
+ {
+  "seed": 307059,
+  "t_anom": 14.4,
+  "first_crossing_day": 17.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.1
+ },
+ {
+  "seed": 307075,
+  "t_anom": 36.0,
+  "first_crossing_day": 36.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 307105,
+  "t_anom": 28.8,
+  "first_crossing_day": 29.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 307107,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.4
+ },
+ {
+  "seed": 307112,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 307115,
+  "t_anom": 43.2,
+  "first_crossing_day": 48.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.8
+ },
+ {
+  "seed": 307141,
+  "t_anom": 21.6,
+  "first_crossing_day": 24.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.9
+ },
+ {
+  "seed": 307155,
+  "t_anom": 64.8,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 307156,
+  "t_anom": 7.2,
+  "first_crossing_day": 5.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.7
+ },
+ {
+  "seed": 307192,
+  "t_anom": 72.0,
+  "first_crossing_day": 65.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.5
+ },
+ {
+  "seed": 307202,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.9
+ },
+ {
+  "seed": 307219,
+  "t_anom": 21.6,
+  "first_crossing_day": 17.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.6
+ },
+ {
+  "seed": 307221,
+  "t_anom": 50.4,
+  "first_crossing_day": 56.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.6
+ },
+ {
+  "seed": 307230,
+  "t_anom": 28.8,
+  "first_crossing_day": 25.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.8
+ },
+ {
+  "seed": 307231,
+  "t_anom": 14.4,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 16.6
+ },
+ {
+  "seed": 307236,
+  "t_anom": 14.4,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 22.6
+ },
+ {
+  "seed": 307260,
+  "t_anom": 14.4,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.4
+ },
+ {
+  "seed": 307273,
+  "t_anom": 57.6,
+  "first_crossing_day": 56.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.6
+ },
+ {
+  "seed": 307295,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 307320,
+  "t_anom": 7.2,
+  "first_crossing_day": 20.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 13.3
+ },
+ {
+  "seed": 307327,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307331,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307343,
+  "t_anom": 7.2,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.8
+ },
+ {
+  "seed": 307347,
+  "t_anom": 50.4,
+  "first_crossing_day": 54.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.6
+ },
+ {
+  "seed": 307348,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 307354,
+  "t_anom": 7.2,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 307375,
+  "t_anom": 21.6,
+  "first_crossing_day": 30.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.9
+ },
+ {
+  "seed": 307394,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.0
+ },
+ {
+  "seed": 307405,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.9
+ },
+ {
+  "seed": 307428,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.8
+ },
+ {
+  "seed": 307433,
+  "t_anom": 21.6,
+  "first_crossing_day": 27.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.9
+ },
+ {
+  "seed": 307450,
+  "t_anom": 28.8,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 35.2
+ },
+ {
+  "seed": 307479,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.1
+ },
+ {
+  "seed": 307498,
+  "t_anom": 28.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307512,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.1
+ },
+ {
+  "seed": 307516,
+  "t_anom": 7.2,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 64.8
+ },
+ {
+  "seed": 307520,
+  "t_anom": 14.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307537,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 307541,
+  "t_anom": 50.4,
+  "first_crossing_day": 55.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.6
+ },
+ {
+  "seed": 307542,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.1
+ },
+ {
+  "seed": 307567,
+  "t_anom": 57.6,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.9
+ },
+ {
+  "seed": 307577,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307595,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307601,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.3
+ },
+ {
+  "seed": 307602,
+  "t_anom": 36.0,
+  "first_crossing_day": 42.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.0
+ },
+ {
+  "seed": 307612,
+  "t_anom": 28.8,
+  "first_crossing_day": 55.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 26.7
+ },
+ {
+  "seed": 307617,
+  "t_anom": 64.8,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.2
+ },
+ {
+  "seed": 307618,
+  "t_anom": 21.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307635,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 307638,
+  "t_anom": 50.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307646,
+  "t_anom": 57.6,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.9
+ },
+ {
+  "seed": 307651,
+  "t_anom": 28.8,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 307652,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.0
+ },
+ {
+  "seed": 307657,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.1
+ },
+ {
+  "seed": 307660,
+  "t_anom": 14.4,
+  "first_crossing_day": 40.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 26.1
+ },
+ {
+  "seed": 307670,
+  "t_anom": 7.2,
+  "first_crossing_day": 13.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.3
+ },
+ {
+  "seed": 307705,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 307712,
+  "t_anom": 72.0,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.0
+ },
+ {
+  "seed": 307718,
+  "t_anom": 57.6,
+  "first_crossing_day": 56.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.1
+ },
+ {
+  "seed": 307730,
+  "t_anom": 28.8,
+  "first_crossing_day": 28.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.3
+ },
+ {
+  "seed": 307747,
+  "t_anom": 43.2,
+  "first_crossing_day": 50.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.3
+ },
+ {
+  "seed": 307764,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307765,
+  "t_anom": 50.4,
+  "first_crossing_day": 57.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.1
+ },
+ {
+  "seed": 307808,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.9
+ },
+ {
+  "seed": 307811,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 307812,
+  "t_anom": 28.8,
+  "first_crossing_day": 33.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.2
+ },
+ {
+  "seed": 307817,
+  "t_anom": 28.8,
+  "first_crossing_day": 33.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.2
+ },
+ {
+  "seed": 307897,
+  "t_anom": 14.4,
+  "first_crossing_day": 16.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.6
+ },
+ {
+  "seed": 307900,
+  "t_anom": 64.8,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.2
+ },
+ {
+  "seed": 307916,
+  "t_anom": 43.2,
+  "first_crossing_day": 41.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.7
+ },
+ {
+  "seed": 307917,
+  "t_anom": 64.8,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.7
+ },
+ {
+  "seed": 307932,
+  "t_anom": 14.4,
+  "first_crossing_day": 13.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 307951,
+  "t_anom": 14.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307953,
+  "t_anom": 14.4,
+  "first_crossing_day": 17.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.1
+ },
+ {
+  "seed": 307954,
+  "t_anom": 64.8,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.2
+ },
+ {
+  "seed": 307970,
+  "t_anom": 7.2,
+  "first_crossing_day": 17.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.8
+ },
+ {
+  "seed": 307984,
+  "t_anom": 64.8,
+  "first_crossing_day": 66.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.2
+ },
+ {
+  "seed": 307989,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 307990,
+  "t_anom": 14.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308002,
+  "t_anom": 43.2,
+  "first_crossing_day": 50.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.8
+ },
+ {
+  "seed": 308003,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 308010,
+  "t_anom": 43.2,
+  "first_crossing_day": 46.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 308032,
+  "t_anom": 43.2,
+  "first_crossing_day": 55.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.8
+ },
+ {
+  "seed": 308041,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.2
+ },
+ {
+  "seed": 308059,
+  "t_anom": 21.6,
+  "first_crossing_day": 18.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.6
+ },
+ {
+  "seed": 308070,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308076,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 308082,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308095,
+  "t_anom": 21.6,
+  "first_crossing_day": 19.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.6
+ },
+ {
+  "seed": 308111,
+  "t_anom": 36.0,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -9.0
+ },
+ {
+  "seed": 308116,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 308120,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 308121,
+  "t_anom": 28.8,
+  "first_crossing_day": 26.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.3
+ },
+ {
+  "seed": 308123,
+  "t_anom": 50.4,
+  "first_crossing_day": 53.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.1
+ },
+ {
+  "seed": 308134,
+  "t_anom": 14.4,
+  "first_crossing_day": 20.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.6
+ },
+ {
+  "seed": 308138,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 308219,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 308265,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308286,
+  "t_anom": 21.6,
+  "first_crossing_day": 24.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.9
+ },
+ {
+  "seed": 308348,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.4
+ },
+ {
+  "seed": 308364,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 308383,
+  "t_anom": 64.8,
+  "first_crossing_day": 67.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.7
+ },
+ {
+  "seed": 308406,
+  "t_anom": 43.2,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.7
+ },
+ {
+  "seed": 308430,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308446,
+  "t_anom": 36.0,
+  "first_crossing_day": 41.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.5
+ },
+ {
+  "seed": 308476,
+  "t_anom": 57.6,
+  "first_crossing_day": 55.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.1
+ },
+ {
+  "seed": 308488,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 308495,
+  "t_anom": 14.4,
+  "first_crossing_day": 16.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.1
+ },
+ {
+  "seed": 308521,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.8
+ },
+ {
+  "seed": 308527,
+  "t_anom": 28.8,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 308542,
+  "t_anom": 7.2,
+  "first_crossing_day": 37.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 30.3
+ },
+ {
+  "seed": 308543,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 308547,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 308550,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.8
+ },
+ {
+  "seed": 308551,
+  "t_anom": 64.8,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.3
+ },
+ {
+  "seed": 308552,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308564,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 308567,
+  "t_anom": 50.4,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.1
+ },
+ {
+  "seed": 308581,
+  "t_anom": 28.8,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 38.2
+ },
+ {
+  "seed": 308595,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 308604,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 308605,
+  "t_anom": 64.8,
+  "first_crossing_day": 62.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.3
+ },
+ {
+  "seed": 308612,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 308619,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.8
+ },
+ {
+  "seed": 308640,
+  "t_anom": 28.8,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 42.2
+ },
+ {
+  "seed": 308665,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308680,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 308687,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.1
+ },
+ {
+  "seed": 308693,
+  "t_anom": 36.0,
+  "first_crossing_day": 39.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.0
+ },
+ {
+  "seed": 308694,
+  "t_anom": 64.8,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 308698,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.0
+ },
+ {
+  "seed": 308707,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 308715,
+  "t_anom": 21.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308739,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 308750,
+  "t_anom": 21.6,
+  "first_crossing_day": 20.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.6
+ },
+ {
+  "seed": 308757,
+  "t_anom": 14.4,
+  "first_crossing_day": 14.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.4
+ },
+ {
+  "seed": 308769,
+  "t_anom": 21.6,
+  "first_crossing_day": 19.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.1
+ },
+ {
+  "seed": 308775,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.8
+ },
+ {
+  "seed": 308786,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 308812,
+  "t_anom": 57.6,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.4
+ },
+ {
+  "seed": 308831,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.0
+ },
+ {
+  "seed": 308836,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.0
+ },
+ {
+  "seed": 308847,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308856,
+  "t_anom": 64.8,
+  "first_crossing_day": 61.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.8
+ },
+ {
+  "seed": 308861,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.9
+ },
+ {
+  "seed": 308872,
+  "t_anom": 72.0,
+  "first_crossing_day": 66.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.0
+ },
+ {
+  "seed": 308887,
+  "t_anom": 28.8,
+  "first_crossing_day": 26.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.3
+ },
+ {
+  "seed": 308897,
+  "t_anom": 43.2,
+  "first_crossing_day": 41.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.7
+ },
+ {
+  "seed": 308917,
+  "t_anom": 57.6,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.4
+ },
+ {
+  "seed": 308919,
+  "t_anom": 50.4,
+  "first_crossing_day": 53.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.6
+ },
+ {
+  "seed": 308932,
+  "t_anom": 21.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308935,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.0
+ },
+ {
+  "seed": 308939,
+  "t_anom": 64.8,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.3
+ },
+ {
+  "seed": 308951,
+  "t_anom": 57.6,
+  "first_crossing_day": 59.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.4
+ },
+ {
+  "seed": 308958,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 308965,
+  "t_anom": 36.0,
+  "first_crossing_day": 34.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.0
+ },
+ {
+  "seed": 308980,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 308986,
+  "t_anom": 57.6,
+  "first_crossing_day": 60.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.4
+ },
+ {
+  "seed": 309020,
+  "t_anom": 64.8,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.3
+ },
+ {
+  "seed": 309029,
+  "t_anom": 43.2,
+  "first_crossing_day": 48.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.8
+ },
+ {
+  "seed": 309037,
+  "t_anom": 7.2,
+  "first_crossing_day": 9.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.3
+ },
+ {
+  "seed": 309047,
+  "t_anom": 43.2,
+  "first_crossing_day": 59.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 16.3
+ },
+ {
+  "seed": 309048,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 309063,
+  "t_anom": 21.6,
+  "first_crossing_day": 23.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.4
+ },
+ {
+  "seed": 309066,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309091,
+  "t_anom": 14.4,
+  "first_crossing_day": 7.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.9
+ },
+ {
+  "seed": 309125,
+  "t_anom": 43.2,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.8
+ },
+ {
+  "seed": 309126,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309133,
+  "t_anom": 7.2,
+  "first_crossing_day": 7.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.2
+ },
+ {
+  "seed": 309140,
+  "t_anom": 28.8,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.2
+ },
+ {
+  "seed": 309155,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.8
+ },
+ {
+  "seed": 309156,
+  "t_anom": 50.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309165,
+  "t_anom": 36.0,
+  "first_crossing_day": 38.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.0
+ },
+ {
+  "seed": 309181,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309201,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 309211,
+  "t_anom": 14.4,
+  "first_crossing_day": 13.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 309215,
+  "t_anom": 50.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309216,
+  "t_anom": 36.0,
+  "first_crossing_day": 39.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.5
+ },
+ {
+  "seed": 309238,
+  "t_anom": 14.4,
+  "first_crossing_day": 15.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 309251,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 309284,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 309289,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 309290,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 309294,
+  "t_anom": 7.2,
+  "first_crossing_day": 11.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.3
+ },
+ {
+  "seed": 309302,
+  "t_anom": 50.4,
+  "first_crossing_day": 60.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.6
+ },
+ {
+  "seed": 309310,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 309324,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 309329,
+  "t_anom": 14.4,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.6
+ },
+ {
+  "seed": 309340,
+  "t_anom": 57.6,
+  "first_crossing_day": 56.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.1
+ },
+ {
+  "seed": 309348,
+  "t_anom": 36.0,
+  "first_crossing_day": 39.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.0
+ },
+ {
+  "seed": 309351,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309354,
+  "t_anom": 50.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309377,
+  "t_anom": 64.8,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.7
+ },
+ {
+  "seed": 309380,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.0
+ },
+ {
+  "seed": 309396,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309417,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309433,
+  "t_anom": 14.4,
+  "first_crossing_day": 51.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 36.6
+ },
+ {
+  "seed": 309451,
+  "t_anom": 28.8,
+  "first_crossing_day": 29.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.7
+ },
+ {
+  "seed": 309460,
+  "t_anom": 36.0,
+  "first_crossing_day": 36.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.5
+ },
+ {
+  "seed": 309479,
+  "t_anom": 14.4,
+  "first_crossing_day": 17.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.6
+ },
+ {
+  "seed": 309481,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 309482,
+  "t_anom": 28.8,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 309497,
+  "t_anom": 64.8,
+  "first_crossing_day": 67.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.7
+ },
+ {
+  "seed": 309552,
+  "t_anom": 28.8,
+  "first_crossing_day": 27.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 309556,
+  "t_anom": 14.4,
+  "first_crossing_day": 20.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.1
+ },
+ {
+  "seed": 309558,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309565,
+  "t_anom": 28.8,
+  "first_crossing_day": 28.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.3
+ },
+ {
+  "seed": 309566,
+  "t_anom": 36.0,
+  "first_crossing_day": 40.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.5
+ },
+ {
+  "seed": 309602,
+  "t_anom": 64.8,
+  "first_crossing_day": 65.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.7
+ },
+ {
+  "seed": 309608,
+  "t_anom": 50.4,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 309623,
+  "t_anom": 64.8,
+  "first_crossing_day": 66.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.2
+ },
+ {
+  "seed": 309626,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309627,
+  "t_anom": 57.6,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.4
+ },
+ {
+  "seed": 309646,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 309665,
+  "t_anom": 28.8,
+  "first_crossing_day": 23.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.3
+ },
+ {
+  "seed": 309684,
+  "t_anom": 7.2,
+  "first_crossing_day": 11.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.3
+ },
+ {
+  "seed": 309698,
+  "t_anom": 21.6,
+  "first_crossing_day": 55.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 33.9
+ },
+ {
+  "seed": 309702,
+  "t_anom": 64.8,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 309703,
+  "t_anom": 64.8,
+  "first_crossing_day": 67.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.7
+ },
+ {
+  "seed": 309708,
+  "t_anom": 36.0,
+  "first_crossing_day": 50.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 14.5
+ },
+ {
+  "seed": 309718,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309743,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 309750,
+  "t_anom": 28.8,
+  "first_crossing_day": 39.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.7
+ },
+ {
+  "seed": 309777,
+  "t_anom": 64.8,
+  "first_crossing_day": 66.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.7
+ },
+ {
+  "seed": 309785,
+  "t_anom": 21.6,
+  "first_crossing_day": 18.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.6
+ },
+ {
+  "seed": 309798,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 309813,
+  "t_anom": 50.4,
+  "first_crossing_day": 53.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.6
+ },
+ {
+  "seed": 309820,
+  "t_anom": 7.2,
+  "first_crossing_day": 18.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.3
+ },
+ {
+  "seed": 309847,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 309868,
+  "t_anom": 36.0,
+  "first_crossing_day": 36.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.5
+ },
+ {
+  "seed": 309903,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 309940,
+  "t_anom": 7.2,
+  "first_crossing_day": 16.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.3
+ },
+ {
+  "seed": 309943,
+  "t_anom": 14.4,
+  "first_crossing_day": 42.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 27.6
+ },
+ {
+  "seed": 309950,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 309962,
+  "t_anom": 43.2,
+  "first_crossing_day": 53.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.8
+ },
+ {
+  "seed": 309972,
+  "t_anom": 21.6,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.4
+ },
+ {
+  "seed": 309978,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309981,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 309985,
+  "t_anom": 36.0,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.5
+ },
+ {
+  "seed": 309988,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.1
+ },
+ {
+  "seed": 309990,
+  "t_anom": 7.2,
+  "first_crossing_day": 36.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 29.3
+ },
+ {
+  "seed": 309996,
+  "t_anom": 14.4,
+  "first_crossing_day": 15.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 309999,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310013,
+  "t_anom": 36.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310053,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310058,
+  "t_anom": 57.6,
+  "first_crossing_day": 57.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.1
+ },
+ {
+  "seed": 310064,
+  "t_anom": 57.6,
+  "first_crossing_day": 53.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.1
+ },
+ {
+  "seed": 310065,
+  "t_anom": 64.8,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.3
+ },
+ {
+  "seed": 310093,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 310115,
+  "t_anom": 43.2,
+  "first_crossing_day": 47.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.3
+ },
+ {
+  "seed": 310123,
+  "t_anom": 57.6,
+  "first_crossing_day": 62.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.4
+ },
+ {
+  "seed": 310125,
+  "t_anom": 21.6,
+  "first_crossing_day": 24.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.9
+ },
+ {
+  "seed": 310131,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 310144,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 310184,
+  "t_anom": 57.6,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.9
+ },
+ {
+  "seed": 310188,
+  "t_anom": 14.4,
+  "first_crossing_day": 16.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.6
+ },
+ {
+  "seed": 310207,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 310225,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.7
+ },
+ {
+  "seed": 310233,
+  "t_anom": 43.2,
+  "first_crossing_day": 39.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.7
+ },
+ {
+  "seed": 310238,
+  "t_anom": 57.6,
+  "first_crossing_day": 60.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.4
+ },
+ {
+  "seed": 310244,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.4
+ },
+ {
+  "seed": 310246,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 310255,
+  "t_anom": 57.6,
+  "first_crossing_day": 62.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.4
+ },
+ {
+  "seed": 310261,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.7
+ },
+ {
+  "seed": 310277,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.7
+ },
+ {
+  "seed": 310286,
+  "t_anom": 36.0,
+  "first_crossing_day": 35.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 310290,
+  "t_anom": 43.2,
+  "first_crossing_day": 46.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 310300,
+  "t_anom": 50.4,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310320,
+  "t_anom": 14.4,
+  "first_crossing_day": 15.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 310327,
+  "t_anom": 72.0,
+  "first_crossing_day": 70.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.5
+ },
+ {
+  "seed": 310331,
+  "t_anom": 14.4,
+  "first_crossing_day": 21.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.1
+ },
+ {
+  "seed": 310344,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310350,
+  "t_anom": 64.8,
+  "first_crossing_day": 63.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.3
+ },
+ {
+  "seed": 310354,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.9
+ },
+ {
+  "seed": 310367,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 310374,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 310391,
+  "t_anom": 21.6,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -10.6
+ },
+ {
+  "seed": 310393,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 310422,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 310457,
+  "t_anom": 43.2,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.7
+ },
+ {
+  "seed": 310463,
+  "t_anom": 57.6,
+  "first_crossing_day": 52.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.6
+ },
+ {
+  "seed": 310481,
+  "t_anom": 14.4,
+  "first_crossing_day": 57.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 42.6
+ },
+ {
+  "seed": 310487,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.9
+ },
+ {
+  "seed": 310507,
+  "t_anom": 57.6,
+  "first_crossing_day": 60.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.9
+ },
+ {
+  "seed": 310510,
+  "t_anom": 36.0,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.0
+ },
+ {
+  "seed": 310516,
+  "t_anom": 43.2,
+  "first_crossing_day": 41.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.2
+ },
+ {
+  "seed": 310526,
+  "t_anom": 57.6,
+  "first_crossing_day": 53.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.6
+ },
+ {
+  "seed": 310534,
+  "t_anom": 43.2,
+  "first_crossing_day": 41.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.2
+ },
+ {
+  "seed": 310539,
+  "t_anom": 36.0,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.5
+ },
+ {
+  "seed": 310540,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310562,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310578,
+  "t_anom": 14.4,
+  "first_crossing_day": 13.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 310596,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 310602,
+  "t_anom": 50.4,
+  "first_crossing_day": 59.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.1
+ },
+ {
+  "seed": 310612,
+  "t_anom": 36.0,
+  "first_crossing_day": 42.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.5
+ },
+ {
+  "seed": 310650,
+  "t_anom": 50.4,
+  "first_crossing_day": 55.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.1
+ },
+ {
+  "seed": 310675,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 310719,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.5
+ },
+ {
+  "seed": 310733,
+  "t_anom": 28.8,
+  "first_crossing_day": 29.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 310746,
+  "t_anom": 7.2,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 310747,
+  "t_anom": 57.6,
+  "first_crossing_day": 64.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.4
+ },
+ {
+  "seed": 310772,
+  "t_anom": 43.2,
+  "first_crossing_day": 53.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 10.3
+ },
+ {
+  "seed": 310786,
+  "t_anom": 64.8,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.3
+ },
+ {
+  "seed": 310833,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310837,
+  "t_anom": 36.0,
+  "first_crossing_day": 41.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.5
+ },
+ {
+  "seed": 310854,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.0
+ },
+ {
+  "seed": 310861,
+  "t_anom": 50.4,
+  "first_crossing_day": 53.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.1
+ },
+ {
+  "seed": 310900,
+  "t_anom": 50.4,
+  "first_crossing_day": 52.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.1
+ },
+ {
+  "seed": 310906,
+  "t_anom": 64.8,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310907,
+  "t_anom": 28.8,
+  "first_crossing_day": 35.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 6.2
+ },
+ {
+  "seed": 310935,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 310939,
+  "t_anom": 50.4,
+  "first_crossing_day": 47.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.9
+ },
+ {
+  "seed": 310949,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310955,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310963,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 310964,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 310980,
+  "t_anom": 21.6,
+  "first_crossing_day": 23.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.4
+ },
+ {
+  "seed": 310986,
+  "t_anom": 57.6,
+  "first_crossing_day": 59.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.9
+ },
+ {
+  "seed": 310992,
+  "t_anom": 21.6,
+  "first_crossing_day": 19.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.1
+ },
+ {
+  "seed": 310996,
+  "t_anom": 21.6,
+  "first_crossing_day": 19.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.1
+ },
+ {
+  "seed": 311011,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 311016,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 311047,
+  "t_anom": 21.6,
+  "first_crossing_day": 19.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.1
+ },
+ {
+  "seed": 311080,
+  "t_anom": 64.8,
+  "first_crossing_day": 64.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.3
+ },
+ {
+  "seed": 311089,
+  "t_anom": 50.4,
+  "first_crossing_day": 52.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.6
+ },
+ {
+  "seed": 311095,
+  "t_anom": 43.2,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 311099,
+  "t_anom": 72.0,
+  "first_crossing_day": 65.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -7.0
+ },
+ {
+  "seed": 311100,
+  "t_anom": 43.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311105,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311119,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.9
+ },
+ {
+  "seed": 311124,
+  "t_anom": 7.2,
+  "first_crossing_day": 29.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 21.8
+ },
+ {
+  "seed": 311125,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.6
+ },
+ {
+  "seed": 311130,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 311137,
+  "t_anom": 21.6,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.4
+ },
+ {
+  "seed": 311140,
+  "t_anom": 50.4,
+  "first_crossing_day": 51.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.1
+ },
+ {
+  "seed": 311162,
+  "t_anom": 36.0,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -13.5
+ },
+ {
+  "seed": 311166,
+  "t_anom": 7.2,
+  "first_crossing_day": 14.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.3
+ },
+ {
+  "seed": 311179,
+  "t_anom": 64.8,
+  "first_crossing_day": 61.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.8
+ },
+ {
+  "seed": 311183,
+  "t_anom": 64.8,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 311186,
+  "t_anom": 43.2,
+  "first_crossing_day": 39.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -4.2
+ },
+ {
+  "seed": 311214,
+  "t_anom": 28.8,
+  "first_crossing_day": 41.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 12.7
+ },
+ {
+  "seed": 311221,
+  "t_anom": 21.6,
+  "first_crossing_day": 22.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 311226,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 311262,
+  "t_anom": 14.4,
+  "first_crossing_day": 16.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.6
+ },
+ {
+  "seed": 311277,
+  "t_anom": 50.4,
+  "first_crossing_day": 50.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.4
+ },
+ {
+  "seed": 311279,
+  "t_anom": 43.2,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.2
+ },
+ {
+  "seed": 311287,
+  "t_anom": 28.8,
+  "first_crossing_day": 36.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.7
+ },
+ {
+  "seed": 311289,
+  "t_anom": 28.8,
+  "first_crossing_day": 30.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.2
+ },
+ {
+  "seed": 311296,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.0
+ },
+ {
+  "seed": 311308,
+  "t_anom": 21.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311326,
+  "t_anom": 14.4,
+  "first_crossing_day": 17.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.6
+ },
+ {
+  "seed": 311328,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.4
+ },
+ {
+  "seed": 311330,
+  "t_anom": 64.8,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 311333,
+  "t_anom": 36.0,
+  "first_crossing_day": 50.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 14.0
+ },
+ {
+  "seed": 311338,
+  "t_anom": 64.8,
+  "first_crossing_day": 68.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 311339,
+  "t_anom": 28.8,
+  "first_crossing_day": 36.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.7
+ },
+ {
+  "seed": 311358,
+  "t_anom": 72.0,
+  "first_crossing_day": 66.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.5
+ },
+ {
+  "seed": 311361,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311389,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.1
+ },
+ {
+  "seed": 311393,
+  "t_anom": 50.4,
+  "first_crossing_day": 49.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 311413,
+  "t_anom": 7.2,
+  "first_crossing_day": 59.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 52.3
+ },
+ {
+  "seed": 311415,
+  "t_anom": 36.0,
+  "first_crossing_day": 39.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.5
+ },
+ {
+  "seed": 311426,
+  "t_anom": 21.6,
+  "first_crossing_day": 26.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 4.9
+ },
+ {
+  "seed": 311450,
+  "t_anom": 21.6,
+  "first_crossing_day": 27.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.9
+ },
+ {
+  "seed": 311460,
+  "t_anom": 50.4,
+  "first_crossing_day": 54.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.6
+ },
+ {
+  "seed": 311497,
+  "t_anom": 14.4,
+  "first_crossing_day": 26.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.6
+ },
+ {
+  "seed": 311540,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 311570,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311579,
+  "t_anom": 28.8,
+  "first_crossing_day": 32.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 311588,
+  "t_anom": 36.0,
+  "first_crossing_day": 38.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.5
+ },
+ {
+  "seed": 311593,
+  "t_anom": 7.2,
+  "first_crossing_day": 7.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.3
+ },
+ {
+  "seed": 311604,
+  "t_anom": 36.0,
+  "first_crossing_day": 47.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 11.0
+ },
+ {
+  "seed": 311614,
+  "t_anom": 72.0,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.0
+ },
+ {
+  "seed": 311623,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 311626,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311634,
+  "t_anom": 57.6,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311640,
+  "t_anom": 21.6,
+  "first_crossing_day": 21.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.1
+ },
+ {
+  "seed": 311655,
+  "t_anom": 50.4,
+  "first_crossing_day": 67.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 16.6
+ },
+ {
+  "seed": 311659,
+  "t_anom": 50.4,
+  "first_crossing_day": 46.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.9
+ },
+ {
+  "seed": 311680,
+  "t_anom": 28.8,
+  "first_crossing_day": 44.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 15.7
+ },
+ {
+  "seed": 311694,
+  "t_anom": 57.6,
+  "first_crossing_day": 57.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.6
+ },
+ {
+  "seed": 311697,
+  "t_anom": 14.4,
+  "first_crossing_day": 13.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.4
+ },
+ {
+  "seed": 311713,
+  "t_anom": 50.4,
+  "first_crossing_day": 50.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.1
+ },
+ {
+  "seed": 311717,
+  "t_anom": 57.6,
+  "first_crossing_day": 63.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.4
+ },
+ {
+  "seed": 311738,
+  "t_anom": 7.2,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 311748,
+  "t_anom": 21.6,
+  "first_crossing_day": 30.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 8.9
+ },
+ {
+  "seed": 311750,
+  "t_anom": 64.8,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -6.3
+ },
+ {
+  "seed": 311769,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 311776,
+  "t_anom": 7.2,
+  "first_crossing_day": 17.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 9.8
+ },
+ {
+  "seed": 311794,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.4
+ },
+ {
+  "seed": 311799,
+  "t_anom": 43.2,
+  "first_crossing_day": 57.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 13.8
+ },
+ {
+  "seed": 311815,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 311820,
+  "t_anom": 28.8,
+  "first_crossing_day": 31.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.2
+ },
+ {
+  "seed": 311857,
+  "t_anom": 57.6,
+  "first_crossing_day": 58.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.9
+ },
+ {
+  "seed": 311867,
+  "t_anom": 64.8,
+  "first_crossing_day": 62.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.8
+ },
+ {
+  "seed": 311868,
+  "t_anom": 7.2,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 311890,
+  "t_anom": 50.4,
+  "first_crossing_day": 67.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 17.1
+ },
+ {
+  "seed": 311892,
+  "t_anom": 36.0,
+  "first_crossing_day": 37.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.0
+ },
+ {
+  "seed": 311926,
+  "t_anom": 72.0,
+  "first_crossing_day": 69.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.5
+ },
+ {
+  "seed": 311942,
+  "t_anom": 50.4,
+  "first_crossing_day": 53.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.6
+ },
+ {
+  "seed": 311945,
+  "t_anom": 28.8,
+  "first_crossing_day": 29.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.2
+ },
+ {
+  "seed": 311952,
+  "t_anom": 7.2,
+  "first_crossing_day": 5.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -1.7
+ },
+ {
+  "seed": 311954,
+  "t_anom": 28.8,
+  "first_crossing_day": 34.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 5.2
+ },
+ {
+  "seed": 311970,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.4
+ },
+ {
+  "seed": 311999,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.2
+ },
+ {
+  "seed": 312000,
+  "t_anom": 14.4,
+  "first_crossing_day": 12.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -2.4
+ },
+ {
+  "seed": 312010,
+  "t_anom": 7.2,
+  "first_crossing_day": 7.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 0.3
+ },
+ {
+  "seed": 312013,
+  "t_anom": 14.4,
+  "first_crossing_day": 13.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.9
+ },
+ {
+  "seed": 312023,
+  "t_anom": 72.0,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.5
+ },
+ {
+  "seed": 312049,
+  "t_anom": 72.0,
+  "first_crossing_day": null,
+  "detected": false,
+  "premature": false,
+  "lag_days": null
+ },
+ {
+  "seed": 312057,
+  "t_anom": 28.8,
+  "first_crossing_day": 32.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.2
+ },
+ {
+  "seed": 312059,
+  "t_anom": 43.2,
+  "first_crossing_day": 51.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.8
+ },
+ {
+  "seed": 312078,
+  "t_anom": 43.2,
+  "first_crossing_day": 72.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 28.8
+ },
+ {
+  "seed": 312088,
+  "t_anom": 14.4,
+  "first_crossing_day": 55.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 41.1
+ },
+ {
+  "seed": 312091,
+  "t_anom": 36.0,
+  "first_crossing_day": 43.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 7.0
+ },
+ {
+  "seed": 312103,
+  "t_anom": 7.2,
+  "first_crossing_day": 8.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.3
+ },
+ {
+  "seed": 312118,
+  "t_anom": 7.2,
+  "first_crossing_day": 10.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 3.3
+ },
+ {
+  "seed": 312122,
+  "t_anom": 14.4,
+  "first_crossing_day": 11.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.4
+ },
+ {
+  "seed": 312146,
+  "t_anom": 43.2,
+  "first_crossing_day": 71.5,
+  "detected": true,
+  "premature": false,
+  "lag_days": 28.3
+ },
+ {
+  "seed": 312154,
+  "t_anom": 43.2,
+  "first_crossing_day": 46.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 2.8
+ },
+ {
+  "seed": 312182,
+  "t_anom": 57.6,
+  "first_crossing_day": 59.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.4
+ },
+ {
+  "seed": 312192,
+  "t_anom": 43.2,
+  "first_crossing_day": 43.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -0.2
+ },
+ {
+  "seed": 312223,
+  "t_anom": 14.4,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -5.4
+ },
+ {
+  "seed": 312227,
+  "t_anom": 72.0,
+  "first_crossing_day": 68.5,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.5
+ },
+ {
+  "seed": 312229,
+  "t_anom": 7.2,
+  "first_crossing_day": 9.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 312239,
+  "t_anom": 43.2,
+  "first_crossing_day": 45.0,
+  "detected": true,
+  "premature": false,
+  "lag_days": 1.8
+ },
+ {
+  "seed": 312300,
+  "t_anom": 57.6,
+  "first_crossing_day": 54.0,
+  "detected": true,
+  "premature": true,
+  "lag_days": -3.6
  }
 ]

@@ -3,19 +3,19 @@
   "protocol": "event-level first threshold crossing",
   "threshold": 0.9042405486106873,
   "step_days": 0.5,
-  "n_eligible": 200,
-  "n_detected": 178,
-  "n_censored": 22,
+  "n_eligible": 1000,
+  "n_detected": 890,
+  "n_censored": 110,
   "detection_fraction": 0.89,
   "detection_ci": [
-    0.839,
-    0.926
+    0.869,
+    0.908
   ],
-  "premature_rate_of_eligible": 0.26,
+  "premature_rate_of_eligible": 0.313,
   "premature_ci_of_eligible": [
-    0.204,
-    0.325
+    0.285,
+    0.342
   ],
-  "premature_rate_of_detected": 0.292,
-  "median_lag_detected_days": 1.8
+  "premature_rate_of_detected": 0.352,
+  "median_lag_detected_days": 1.3
 }
