@@ -91,12 +91,10 @@ cmd("bmlStressShortte", three(sr["shortte_pspl_recall"]))
 cmd("bmlStressFaintPspl", three(sr["faint_pspl_recall"]))
 cmd("bmlStressFaintPrec", three(sr["faint_np_prec"]))
 
-lc = cn["latency_censored"]
-cmd("bmlLatN", str(lc["n_eligible"]))
-cmd("bmlLatDetFrac", pct(lc["detection_fraction"]))
-cmd("bmlLatMedian", f"{lc['median_lag_days']:.1f}")
-cmd("bmlLatPreonset", pct(lc["pre_onset_fraction"]))
-cmd("bmlLatCensored", str(lc["n_censored"]))
+po = cn["prevalence_operating"]
+cmd("bmlPrevCompSynth", three(po["comp_at_synthetic"]))
+cmd("bmlPrevCompOne", three(po["comp_at_one_pct"]))
+cmd("bmlPrevCompTenth", three(po["comp_at_tenth_pct"]))
 
 gm = cn["gap_matched"]
 cmd("bmlGapN", str(gm["n_events"]))

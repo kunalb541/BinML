@@ -111,9 +111,9 @@ def fig_pr_nonpspl():
 
     fig, ax = plt.subplots(figsize=(4.2, 3.6))
     ax.plot(rec_c, prec_c, lw=1.4, color="#b0562a", ls="--",
-            label=f"oracle $\\Delta\\chi^2$ ceiling  (AP = {ap_c:.3f})")
+            label=f"truth-informed $\\Delta\\chi^2$ reference  (AP = {ap_c:.3f})")
     ax.plot(rec_n, prec_n, lw=1.8, color="#1f4e79",
-            label=f"BinML, blind  (AP = {ap_n:.3f})")
+            label=f"BinML (AP = {ap_n:.3f})")
     # operating point
     thr = metrics["headline"]["threshold"]
     op = P[:, NONP] >= thr

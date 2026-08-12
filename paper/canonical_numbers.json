@@ -126,15 +126,6 @@
     "faint_pspl_recall": 0.491,
     "faint_np_prec": 0.033
   },
-  "latency_censored": {
-    "_comment": "P0.7: censor-aware latency, computed by paper/make_data_figures.py fig_latency and written to outputs/latency_stats.json -- the SAME run that draws the figure, so figure, caption and text cannot disagree. Every eligible detectable binary is kept; those never flagged within the season are right-censored, not dropped.",
-    "n_eligible": 200,
-    "n_detected": 177,
-    "n_censored": 23,
-    "detection_fraction": 0.885,
-    "median_lag_days": 4.2,
-    "pre_onset_fraction": 0.147
-  },
   "gap_matched": {
     "_comment": "P0.8 (reproducible): uniform vs nightly-gapped sampling at MATCHED visit counts on the SAME 120 events; only temporal placement differs. Wilson 95% CIs. Below ~20 visits/day both collapse (sparsity floor). Source: validation/gap_matched_density.py -> validation/gap_matched_result.json.",
     "n_events": 120,
@@ -280,5 +271,15 @@
     "cadence_colour_hr": 6,
     "window_days": 72
   },
-  "_cascade_note": "Cascade numbers are NOT stored here. make_macros.py reads them directly from validation/cascade_reproduce_result.json and fails if it is missing or its schema changed, so the manuscript cannot drift from the artifact."
+  "_cascade_note": "Cascade numbers are NOT stored here. make_macros.py reads them directly from validation/cascade_reproduce_result.json and fails if it is missing or its schema changed, so the manuscript cannot drift from the artifact.",
+  "_latency_note": "Latency numbers are NOT stored here either. Like the cascade block they come from validation/cascade_reproduce_result.json via make_macros.py, so \u00a74, the abstract and Figures 4-5 all read ONE artifact. A duplicated copy here is what produced two contradictory sets of latency statistics in an earlier draft.",
+  "prevalence_operating": {
+    "_comment": "Referee issue 4: completeness ACHIEVABLE at 0.90 purity when the threshold is re-optimised for an assumed anomaly prevalence (frozen test artifact). The headline 0.879@0.908 exists only at the synthetic mixture's 5.6% prevalence.",
+    "comp_at_synthetic": 0.885,
+    "comp_at_one_pct": 0.756,
+    "comp_at_tenth_pct": 0.604,
+    "thr_synthetic": 0.8944,
+    "thr_one_pct": 0.9786,
+    "thr_tenth_pct": 0.9936
+  }
 }

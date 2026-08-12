@@ -319,24 +319,24 @@ appear, which is the quantity a live alert stream cares about most.
 Figure~\ref{fig:latency} measures this detection latency: we step the model through the revealed
 season on a half-day grid and record the first day its anomaly probability crosses the operating
 threshold, relative to the onset day $t_{\mathrm{anom}}$. Two properties of this measurement matter.
-First, we retain \emph{every} eligible detectable binary ($N=\bmlLatN$) rather than only those the
-model eventually flags: $\bmlLatDetFrac\%$ are detected within the season and the remaining
-$\bmlLatCensored$ are right-censored, so the quoted latency is not inflated by discarding
+First, we retain \emph{every} eligible detectable binary ($N=\bmlCascN$) rather than only those the
+model eventually flags: $\bmlCascDetFrac\%$ are detected within the season and the remaining
+$\bmlCascCensored$ are right-censored, so the quoted latency is not inflated by discarding
 failures---the median below is conditional on detection, and should be read together with that
 detection fraction rather than as an unconditional expectation. Second, among detected events the
-median lag is $\bmlLatMedian$~days. A caveat we state explicitly: $t_{\mathrm{anom}}$ is itself
+median lag is $\bmlCascMedianLag$~days. A caveat we state explicitly: $t_{\mathrm{anom}}$ is itself
 estimated on a coarse grid, so this should be read as ``within a few days of onset'' rather than as
-a precise interval. The negative-lag fraction ($\bmlLatPreonset\%$ of detections) is the
-premature-flag population quantified above, here recast as timing false positives.
+a precise interval. The negative-lag fraction ($\bmlCascPrematureOfDet\%$ of detections) is the
+premature-alert population quantified above; these are the same events, from the same sweep.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{outputs/figures/detection_latency.pdf}
 \caption{Censor-aware detection latency: days between the caustic becoming detectable
-($t_{\mathrm{anom}}$) and BinML first flagging the event, over \emph{all} $\bmlLatN$ eligible
-detectable binaries ($\bmlLatDetFrac\%$ detected within the season; $\bmlLatCensored$ never
+($t_{\mathrm{anom}}$) and BinML first flagging the event, over \emph{all} $\bmlCascN$ eligible
+detectable binaries ($\bmlCascDetFrac\%$ detected within the season; $\bmlCascCensored$ never
 flagged and therefore right-censored, not discarded). The median among detections is
-$\bmlLatMedian$~days (blue line). The grey tail at negative lag is the premature
+$\bmlCascMedianLag$~days (blue line). The grey tail at negative lag is the premature
 (pre-onset) flags---timing false positives---which are a small minority.}
 \label{fig:latency}
 \end{figure}
@@ -702,6 +702,14 @@ event-rate priors for the specific input population, which we do not attempt her
 why we frame completeness at fixed purity, rather than a single accuracy, as the reportable
 quantity---and why the completeness, not the purity, is the number that transfers.
 
+It is fair to ask what a survey team could actually achieve at $0.90$ purity if they re-tuned the
+threshold for their own prevalence, rather than what our fixed threshold delivers. Re-optimising on
+the frozen artifact: at the synthetic mixture's prevalence the answer is $\bmlPrevCompSynth$,
+essentially our headline; at a $1\%$ anomaly prevalence it falls to $\bmlPrevCompOne$; and at
+$0.1\%$ to $\bmlPrevCompTenth$. The degradation is intrinsic---holding purity fixed as the
+contaminant pool grows requires a stricter threshold, which costs completeness---and any deployment
+should plan against the figure matching its own input prevalence, not against $\bmlCompleteness$.
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\columnwidth]{outputs/figures/prior_sensitivity.pdf}
@@ -890,6 +898,13 @@ throughput of about $\bmlSimEps$ events per second across the fleet, the full se
 roughly $\bmlSimHours$~hours. Because the instances are free-tier-eligible Spot capacity, the
 compute cost of a full generation is at the level of cents; the only non-trivial cost is storage of
 the compact binned shards, a few dollars per month.
+
+\paragraph{Training recipe.} The production model was trained with AdamW (learning rate
+$3\times10^{-4}$, weight decay $0.01$), batch size $\bmlTrainBatch$, cross-entropy loss with the
+selection weights of \S\ref{sec:eval} and an additional factor $2$ on the anomaly class, and the
+truncation augmentation applied to half of all training examples. Seeds are fixed
+($\bmlSeedTrain$) and the data loader is seeded per worker. Fine-tuning runs use a reduced learning
+rate of $5\times10^{-5}$.
 
 \paragraph{Training (local, with a cloud comparison).} The network is small enough that it was
 trained end to end on a personal computer, on the \bmlTrainDevice, at a batch size of
