@@ -215,36 +215,44 @@ def fig_param_dependence():
     plt.close(fig)
 
 
-# --------------------------------------------- Fig: pre-onset anomaly probability (tracked data)
+# ------------------------------------------- Fig: censor-aware cumulative alert curve
 def fig_cascade_summary():
-    """Distribution of P(NonPSPL) on pre-onset windows, from the tracked cascade artifact.
+    """Fraction of eligible binaries alerted by time t relative to anomaly onset.
 
-    This replaces an earlier before/after bar chart built from untracked summary values that could
-    not be reproduced (see validation/cascade_reproduce.py). It plots the actual per-event
-    measurements the artifact contains, so the figure cannot drift from the data.
+    A survival-style view of the same per-event artifact Figure 5 histograms, which makes the two
+    operationally distinct quantities visible at once: the curve's value at t<0 is the premature
+    alert fraction, and its plateau is the within-season detection fraction (the shortfall to 1 is
+    the right-censored events). Reads validation/cascade_events.json, so it cannot disagree with
+    Figure 5 or with the reported numbers.
     """
     src = os.path.join(os.path.dirname(HERE), "validation", "cascade_events.json")
-    if not os.path.exists(src):
-        print("cascade_summary.pdf SKIPPED (validation/cascade_events.json absent)")
-        return
-    rows = json.load(open(src))
-    pv = np.array([r["p_nonpspl"] for r in rows])
-    thr = metrics["headline"]["threshold"]
-    fig, ax = plt.subplots(figsize=(4.4, 3.0))
-    ax.hist(pv, bins=np.linspace(0, 1, 26), color="#1f4e79", alpha=0.85)
-    ax.axvline(thr, color="#b0562a", ls="--", lw=1.3,
-               label=f"operating threshold {thr:.2f}")
-    frac = float((pv >= thr).mean())
-    ax.set_yscale("log")
-    ax.set_xlabel("P(NonPSPL) on a pre-onset window")
-    ax.set_ylabel("number of binaries (log)")
-    ax.set_title(f"Pre-onset anomaly probability ($N={len(pv)}$): "
-                 f"{100*frac:.1f}\% exceed threshold", fontsize=8.5)
-    ax.legend(frameon=False, fontsize=7)
+    res = os.path.join(os.path.dirname(HERE), "validation", "cascade_reproduce_result.json")
+    if not (os.path.exists(src) and os.path.exists(res)):
+        raise SystemExit("FATAL: run validation/cascade_reproduce.py first (Figures 4-5 need it)")
+    rows = json.load(open(src)); summ = json.load(open(res))
+    n = len(rows)
+    lags = np.array([r["lag_days"] for r in rows if r["detected"]], float)
+    grid = np.linspace(-25, 45, 400)
+    cum = np.array([(lags <= t).sum() / n for t in grid])      # denominator = ALL eligible
+    prem = summ["premature_rate_of_eligible"]; det = summ["detection_fraction"]
+
+    fig, ax = plt.subplots(figsize=(4.6, 3.1))
+    ax.plot(grid, cum, color="#1f4e79", lw=1.8)
+    ax.axvline(0, color="k", ls="--", lw=1.0)
+    ax.axhline(det, color="#b0562a", ls=":", lw=1.2,
+               label=f"within-season detection {100*det:.0f}\%")
+    ax.axhline(prem, color="#888", ls="-.", lw=1.2,
+               label=f"premature (alerted before onset) {100*prem:.0f}\%")
+    ax.fill_between(grid, 0, cum, where=(grid < 0), color="#888", alpha=0.25)
+    ax.set_xlabel("days relative to anomaly onset $t_{\\rm anom}$")
+    ax.set_ylabel("fraction of eligible binaries alerted")
+    ax.set_ylim(0, 1.0); ax.set_xlim(-25, 45)
+    ax.legend(frameon=False, fontsize=7, loc="upper left")
+    ax.set_title(f"Cumulative first-alert time ($N={n}$ eligible)", fontsize=8.5)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "cascade_summary.pdf"))
     plt.close(fig)
-    stats["cascade_preonset_flag_frac"] = round(frac, 3)
+    stats["cascade_premature_fraction"] = round(float(prem), 3)
 
 
 # ---------------------------------------------------------------------- Fig: model schematic
