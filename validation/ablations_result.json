@@ -1,0 +1,4300 @@
+{
+  "n_eval_static": 45088,
+  "epochs": 10,
+  "seed": 20260720,
+  "threshold": 0.9042405486106873,
+  "labels_observational": {
+    "static": {
+      "per_class_f1": {
+        "Flat": 0.928,
+        "PSPL": 0.878,
+        "NonPSPL": 0.57,
+        "PeriodicVar": 0.967,
+        "LongPeriodVar": 0.891,
+        "Eruptive": 0.733
+      },
+      "anomaly_completeness_at_thr": 0.691,
+      "anomaly_purity_at_thr": 0.818,
+      "macro_f1": 0.828
+    }
+  },
+  "labels_generator": {
+    "static": {
+      "per_class_f1": {
+        "Flat": 0.476,
+        "PSPL": 0.0,
+        "NonPSPL": 0.137,
+        "PeriodicVar": 0.923,
+        "LongPeriodVar": 0.556,
+        "Eruptive": 0.79
+      },
+      "anomaly_completeness_at_thr": 0.0,
+      "anomaly_purity_at_thr": 0.0,
+      "macro_f1": 0.48
+    }
+  },
+  "cascade_on": {
+    "static": {
+      "per_class_f1": {
+        "Flat": 0.928,
+        "PSPL": 0.878,
+        "NonPSPL": 0.57,
+        "PeriodicVar": 0.967,
+        "LongPeriodVar": 0.891,
+        "Eruptive": 0.733
+      },
+      "anomaly_completeness_at_thr": 0.691,
+      "anomaly_purity_at_thr": 0.818,
+      "macro_f1": 0.828
+    },
+    "realtime": {
+      "n_eligible": 300,
+      "events": [
+        {
+          "t_anom": 50.4,
+          "first_thr": 52.0,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 64.5,
+          "first_argmax": 62.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 69.5,
+          "first_argmax": 36.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 18.5,
+          "first_argmax": 12.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 19.0,
+          "first_argmax": 11.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": null,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 69.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 65.0,
+          "first_argmax": 52.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 29.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 65.5,
+          "first_argmax": 64.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 24.0,
+          "first_argmax": 20.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 53.0,
+          "first_argmax": 46.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 71.0,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": null,
+          "first_argmax": 72.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 17.5,
+          "first_argmax": 7.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 68.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 28.5,
+          "first_argmax": 15.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 46.5,
+          "first_argmax": 44.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 49.5,
+          "first_argmax": 48.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 54.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 30.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 18.0,
+          "first_argmax": 9.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 16.5,
+          "first_argmax": 9.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 71.0,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 71.5,
+          "first_argmax": 70.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 48.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 33.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 58.0,
+          "first_argmax": 49.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 67.5,
+          "first_argmax": 24.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 41.5,
+          "first_argmax": 22.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 37.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 67.0,
+          "first_argmax": 46.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 30.5,
+          "first_argmax": 13.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 62.5,
+          "first_argmax": 62.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 51.0,
+          "first_argmax": 28.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 70.5,
+          "first_argmax": 25.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 16.5,
+          "first_argmax": 12.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 48.0,
+          "first_argmax": 15.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": 62.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 63.0,
+          "first_argmax": 38.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 26.5,
+          "first_argmax": 11.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 71.5,
+          "first_argmax": 39.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 22.0,
+          "first_argmax": 15.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 71.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 40.0,
+          "first_argmax": 37.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 68.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 63.5,
+          "first_argmax": 61.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 43.0,
+          "first_argmax": 26.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 51.5,
+          "first_argmax": 39.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": null,
+          "first_argmax": 70.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 65.0,
+          "first_argmax": 52.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 66.5,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 21.0,
+          "first_argmax": 13.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 22.0,
+          "first_argmax": 21.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 71.0,
+          "first_argmax": 37.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 62.5,
+          "first_argmax": 62.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 39.5,
+          "first_argmax": 15.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 71.0,
+          "first_argmax": 64.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": 17.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 50.5,
+          "first_argmax": 22.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 55.0,
+          "first_argmax": 39.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 69.5,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 69.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 67.5,
+          "first_argmax": 47.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 69.5,
+          "first_argmax": 25.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 70.5,
+          "first_argmax": 69.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 16.0,
+          "first_argmax": 14.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 47.0,
+          "first_argmax": 36.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 49.0,
+          "first_argmax": 47.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 54.5,
+          "first_argmax": 44.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 28.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 29.5,
+          "first_argmax": 28.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 66.0,
+          "first_argmax": 65.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 35.5,
+          "first_argmax": 33.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 58.5,
+          "first_argmax": 58.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 71.0,
+          "first_argmax": 70.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": 11.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 71.0,
+          "first_argmax": 67.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 43.5,
+          "first_argmax": 20.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 36.0,
+          "first_argmax": 35.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 71.0,
+          "first_argmax": 69.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 49.5,
+          "first_argmax": 45.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 70.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 35.0,
+          "first_argmax": 21.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 42.5,
+          "first_argmax": 42.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 70.0,
+          "first_argmax": 66.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": 22.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 23.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 69.5,
+          "first_argmax": 34.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 69.0,
+          "first_argmax": 22.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 70.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 71.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 51.0,
+          "first_argmax": 32.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 32.5,
+          "first_argmax": 26.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": 31.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 38.5,
+          "first_argmax": 27.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 59.5,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 25.0,
+          "first_argmax": 19.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 69.5,
+          "first_argmax": 33.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 31.5,
+          "first_argmax": 31.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 70.5,
+          "first_argmax": 51.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 31.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 69.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": 10.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 69.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 33.5,
+          "first_argmax": 26.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 55.0,
+          "first_argmax": 23.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 61.5,
+          "first_argmax": 39.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 20.5,
+          "first_argmax": 11.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 19.0,
+          "first_argmax": 11.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 64.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 41.0,
+          "first_argmax": 26.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 44.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 65.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 20.0,
+          "first_argmax": 19.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 71.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 67.0,
+          "first_argmax": 36.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 67.5,
+          "first_argmax": 16.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 68.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 67.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 71.0,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 50.0,
+          "first_argmax": 48.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 53.5,
+          "first_argmax": 12.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 36.5,
+          "first_argmax": 35.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 15.0,
+          "first_argmax": 7.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 71.0,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 69.0,
+          "first_argmax": 40.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 56.0,
+          "first_argmax": 55.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 46.0,
+          "first_argmax": 33.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 70.5,
+          "first_argmax": 70.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 65.0,
+          "first_argmax": 42.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": null,
+          "first_argmax": 70.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 39.0,
+          "first_argmax": 21.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 67.5,
+          "first_argmax": 24.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": 69.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 52.5,
+          "first_argmax": 47.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 52.0,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 44.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 71.5,
+          "first_argmax": 46.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 70.0,
+          "first_argmax": 70.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 16.0,
+          "first_argmax": 15.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 56.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 68.5,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 49.0,
+          "first_argmax": 46.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 43.0,
+          "first_argmax": 42.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 68.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 67.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 67.5,
+          "first_argmax": 42.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 61.5,
+          "first_argmax": 32.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 41.5,
+          "first_argmax": 41.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 25.5,
+          "first_argmax": 9.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 57.5,
+          "first_argmax": 54.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 68.5,
+          "first_argmax": 38.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": 52.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 21.0,
+          "first_argmax": 17.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 66.0,
+          "first_argmax": 49.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 22.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 34.5,
+          "first_argmax": 33.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 70.0,
+          "first_argmax": 65.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 57.0,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 31.0,
+          "first_argmax": 15.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 28.5,
+          "first_argmax": 12.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 71.5,
+          "first_argmax": 70.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": 65.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 68.5,
+          "first_argmax": 65.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": null,
+          "first_argmax": 64.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 43.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 71.5,
+          "first_argmax": 45.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 43.0,
+          "first_argmax": 28.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": 50.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 67.0,
+          "first_argmax": 37.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 70.5,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 44.5,
+          "first_argmax": 28.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 22.0,
+          "first_argmax": 16.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 25.0,
+          "first_argmax": 8.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 40.5,
+          "first_argmax": 37.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 17.5,
+          "first_argmax": 15.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 30.0,
+          "first_argmax": 29.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 47.5,
+          "first_argmax": 28.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 48.0,
+          "first_argmax": 46.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 27.0,
+          "first_argmax": 10.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 61.5,
+          "first_argmax": 60.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 17.5,
+          "first_argmax": 13.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 68.0,
+          "first_argmax": 22.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 45.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 25.0,
+          "first_argmax": 16.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 43.0,
+          "first_argmax": 25.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 57.5,
+          "first_argmax": 57.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 69.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 19.5,
+          "first_argmax": 19.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 32.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 45.5,
+          "first_argmax": 36.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 67.5,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 52.0,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 21.0,
+          "first_argmax": 9.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 41.5,
+          "first_argmax": 40.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 37.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 48.5,
+          "first_argmax": 35.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 48.5,
+          "first_argmax": 31.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 61.5,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 14.5,
+          "first_argmax": 8.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 46.5,
+          "first_argmax": 13.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 31.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 71.0,
+          "first_argmax": 21.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 41.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 70.5,
+          "first_argmax": 42.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": null,
+          "first_argmax": 62.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 55.5,
+          "first_argmax": 54.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 71.0,
+          "first_argmax": 44.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 27.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 68.5,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 31.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 71.0,
+          "first_argmax": 19.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 69.0,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 65.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 21.0,
+          "first_argmax": 15.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 41.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 62.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 62.5,
+          "first_argmax": 22.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 66.5,
+          "first_argmax": 17.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 25.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": 65.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 13.5,
+          "first_argmax": 7.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 45.0,
+          "first_argmax": 42.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 53.5,
+          "first_argmax": 51.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 71.0,
+          "first_argmax": 31.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 58.5,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 62.5,
+          "first_argmax": 62.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 27.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 40.5,
+          "first_argmax": 29.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": null,
+          "first_argmax": 29.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 22.0,
+          "first_argmax": 11.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 27.0,
+          "first_argmax": 21.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": null,
+          "first_argmax": 35.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 25.0,
+          "first_argmax": 15.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 63.5,
+          "first_argmax": 31.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 71.0,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 31.5,
+          "first_argmax": 28.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 70.5,
+          "first_argmax": 10.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 18.0,
+          "first_argmax": 12.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 52.5,
+          "first_argmax": 51.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": null,
+          "first_argmax": 41.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 30.0,
+          "first_argmax": 26.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 67.0,
+          "first_argmax": 66.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 29.5,
+          "first_argmax": 19.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 35.0,
+          "first_argmax": 29.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 57.5,
+          "first_argmax": 57.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 51.5,
+          "first_argmax": 28.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 15.5,
+          "first_argmax": 12.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 18.5,
+          "first_argmax": 17.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": null,
+          "first_argmax": null,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 35.5,
+          "first_argmax": 11.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": null,
+          "first_argmax": 54.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 57.5,
+          "first_argmax": 55.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 68.5,
+          "first_argmax": 62.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 21.5,
+          "first_argmax": 7.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        }
+      ],
+      "premature_rate_thr": 0.123,
+      "premature_ci_thr": [
+        0.091,
+        0.165
+      ],
+      "detection_fraction_thr": 0.643,
+      "premature_rate_argmax": 0.37,
+      "premature_ci_argmax": [
+        0.317,
+        0.426
+      ],
+      "detection_fraction_argmax": 0.893
+    }
+  },
+  "cascade_off": {
+    "static": {
+      "per_class_f1": {
+        "Flat": 0.963,
+        "PSPL": 0.926,
+        "NonPSPL": 0.706,
+        "PeriodicVar": 0.972,
+        "LongPeriodVar": 0.872,
+        "Eruptive": 0.755
+      },
+      "anomaly_completeness_at_thr": 0.84,
+      "anomaly_purity_at_thr": 0.841,
+      "macro_f1": 0.866
+    },
+    "realtime": {
+      "n_eligible": 300,
+      "events": [
+        {
+          "t_anom": 50.4,
+          "first_thr": 59.0,
+          "first_argmax": 51.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 62.5,
+          "first_argmax": 61.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 70.5,
+          "first_argmax": 69.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 58.5,
+          "first_argmax": 45.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": null,
+          "first_argmax": 70.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 64.5,
+          "first_argmax": 61.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 67.0,
+          "first_argmax": 65.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 54.5,
+          "first_argmax": 54.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 50.0,
+          "first_argmax": 44.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 61.5,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 52.0,
+          "first_argmax": 45.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 57.5,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 58.5,
+          "first_argmax": 57.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 60.5,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 67.0,
+          "first_argmax": 65.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 59.5,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 62.0,
+          "first_argmax": 60.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 68.0,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 53.5,
+          "first_argmax": 41.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 63.5,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 55.5,
+          "first_argmax": 45.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 70.0,
+          "first_argmax": 69.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 62.5,
+          "first_argmax": 62.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 65.0,
+          "first_argmax": 61.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 69.5,
+          "first_argmax": 68.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 59.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 70.5,
+          "first_argmax": 68.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 58.5,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 58.5,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 63.5,
+          "first_argmax": 59.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 53.0,
+          "first_argmax": 47.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 67.0,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 59.0,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 54.0,
+          "first_argmax": 49.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 60.5,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 68.0,
+          "first_argmax": 67.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 61.0,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 69.0,
+          "first_argmax": 67.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 69.0,
+          "first_argmax": 69.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 59.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 54.5,
+          "first_argmax": 45.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 52.5,
+          "first_argmax": 47.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 61.5,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 63.0,
+          "first_argmax": 60.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 67.5,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 59.5,
+          "first_argmax": 57.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 60.0,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 62.0,
+          "first_argmax": 57.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 61.5,
+          "first_argmax": 57.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 49.5,
+          "first_argmax": 46.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 51.0,
+          "first_argmax": 48.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 59.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 68.0,
+          "first_argmax": 66.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 65.0,
+          "first_argmax": 63.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 63.0,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 53.0,
+          "first_argmax": 48.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 59.5,
+          "first_argmax": 56.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 56.0,
+          "first_argmax": 54.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 66.0,
+          "first_argmax": 65.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 61.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 64.5,
+          "first_argmax": 62.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 66.5,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 53.0,
+          "first_argmax": 50.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 64.0,
+          "first_argmax": 61.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 54.5,
+          "first_argmax": 45.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 63.5,
+          "first_argmax": 61.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 61.5,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 56.0,
+          "first_argmax": 45.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 68.0,
+          "first_argmax": 65.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 55.0,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 70.5,
+          "first_argmax": 70.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 63.0,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 53.5,
+          "first_argmax": 51.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 60.5,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 53.5,
+          "first_argmax": 49.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 69.0,
+          "first_argmax": 68.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 62.5,
+          "first_argmax": 57.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 57.5,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 67.5,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 69.5,
+          "first_argmax": 69.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 57.5,
+          "first_argmax": 52.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 58.5,
+          "first_argmax": 42.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 59.5,
+          "first_argmax": 58.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 57.0,
+          "first_argmax": 52.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 64.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 57.5,
+          "first_argmax": 56.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 68.0,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 67.0,
+          "first_argmax": 65.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 55.0,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 51.0,
+          "first_argmax": 45.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 54.0,
+          "first_argmax": 49.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 64.0,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 62.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 67.0,
+          "first_argmax": 64.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 69.0,
+          "first_argmax": 68.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 49.5,
+          "first_argmax": 46.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 63.0,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 65.0,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 66.5,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 63.5,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": null,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 51.5,
+          "first_argmax": 45.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 59.0,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 51.5,
+          "first_argmax": 50.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 63.0,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 67.0,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 59.5,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 59.0,
+          "first_argmax": 52.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 53.5,
+          "first_argmax": 47.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 56.5,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 64.0,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 63.0,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 71.0,
+          "first_argmax": 70.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 67.0,
+          "first_argmax": 65.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 61.0,
+          "first_argmax": 57.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 55.0,
+          "first_argmax": 49.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 53.0,
+          "first_argmax": 43.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 57.5,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 66.5,
+          "first_argmax": 64.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 49.0,
+          "first_argmax": 45.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 60.0,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 61.5,
+          "first_argmax": 55.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 57.0,
+          "first_argmax": 46.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 64.0,
+          "first_argmax": 61.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 66.0,
+          "first_argmax": 64.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 65.0,
+          "first_argmax": 63.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 67.0,
+          "first_argmax": 64.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 53.5,
+          "first_argmax": 51.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 59.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 62.5,
+          "first_argmax": 62.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 61.5,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 60.0,
+          "first_argmax": 52.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 53.0,
+          "first_argmax": 49.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 61.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 53.0,
+          "first_argmax": 47.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 67.0,
+          "first_argmax": 65.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 60.5,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 60.0,
+          "first_argmax": 58.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 57.5,
+          "first_argmax": 48.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 63.0,
+          "first_argmax": 57.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 59.0,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 53.0,
+          "first_argmax": 47.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 61.0,
+          "first_argmax": 57.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 54.0,
+          "first_argmax": 52.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 65.5,
+          "first_argmax": 63.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 61.5,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 70.0,
+          "first_argmax": 69.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 59.5,
+          "first_argmax": 54.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 66.0,
+          "first_argmax": 63.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 57.0,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 57.0,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 68.0,
+          "first_argmax": 67.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 51.0,
+          "first_argmax": 45.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 57.0,
+          "first_argmax": 52.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 59.0,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 62.5,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 62.0,
+          "first_argmax": 60.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 49.0,
+          "first_argmax": 45.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 63.0,
+          "first_argmax": 60.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 57.5,
+          "first_argmax": 56.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 68.0,
+          "first_argmax": 67.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 61.5,
+          "first_argmax": 56.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 65.5,
+          "first_argmax": 64.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 64.0,
+          "first_argmax": 60.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 56.0,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 51.0,
+          "first_argmax": 45.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 65.0,
+          "first_argmax": 62.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 57.0,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 69.5,
+          "first_argmax": 69.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 60.5,
+          "first_argmax": 60.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 65.0,
+          "first_argmax": 62.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 53.0,
+          "first_argmax": 45.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 65.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 61.5,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 60.5,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 62.5,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 63.5,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 59.5,
+          "first_argmax": 56.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 71.0,
+          "first_argmax": 70.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 67.0,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 61.0,
+          "first_argmax": 52.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 61.0,
+          "first_argmax": 58.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 63.5,
+          "first_argmax": 58.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 61.5,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 66.0,
+          "first_argmax": 64.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 69.0,
+          "first_argmax": 68.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 60.0,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 53.5,
+          "first_argmax": 45.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 64.5,
+          "first_argmax": 62.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 65.0,
+          "first_argmax": 63.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 67.0,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 61.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 58.5,
+          "first_argmax": 48.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 65.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 60.5,
+          "first_argmax": 53.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 60.5,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 63.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 68.5,
+          "first_argmax": 67.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 65.0,
+          "first_argmax": 63.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 57.5,
+          "first_argmax": 51.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 53.5,
+          "first_argmax": 51.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 59.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 72.0,
+          "first_argmax": 70.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 67.0,
+          "first_argmax": 66.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 59.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 53.0,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 69.0,
+          "first_argmax": 67.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 52.0,
+          "first_argmax": 48.0,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 57.5,
+          "first_argmax": 53.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 55.0,
+          "first_argmax": 49.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 58.5,
+          "first_argmax": 54.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 56.5,
+          "first_argmax": 45.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 61.5,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 52.5,
+          "first_argmax": 46.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 49.5,
+          "first_argmax": 48.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 66.5,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 60.5,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 57.0,
+          "first_argmax": 51.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 64.5,
+          "first_argmax": 61.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 54.0,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 59.5,
+          "first_argmax": 57.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 65.0,
+          "first_argmax": 63.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 55.0,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 61.0,
+          "first_argmax": 53.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 56.5,
+          "first_argmax": 56.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 59.0,
+          "first_argmax": 48.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 54.0,
+          "first_argmax": 48.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 63.0,
+          "first_argmax": 56.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 65.5,
+          "first_argmax": 64.5,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 53.0,
+          "first_argmax": 47.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 58.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 51.0,
+          "first_argmax": 45.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 59.0,
+          "first_argmax": 55.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 61.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 56.0,
+          "first_argmax": 52.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 53.0,
+          "first_argmax": 47.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 64.0,
+          "first_argmax": 60.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 63.0,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 63.5,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 57.0,
+          "first_argmax": 53.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 64.5,
+          "first_argmax": 61.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 50.4,
+          "first_thr": 58.0,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 36.0,
+          "first_thr": 59.5,
+          "first_argmax": 55.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 28.8,
+          "first_thr": 61.0,
+          "first_argmax": 59.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 53.0,
+          "first_argmax": 47.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 51.5,
+          "first_argmax": 47.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 55.0,
+          "first_argmax": 50.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 58.0,
+          "first_argmax": 54.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 63.5,
+          "first_argmax": 59.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 59.0,
+          "first_argmax": 52.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 14.4,
+          "first_thr": 55.0,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 21.6,
+          "first_thr": 53.0,
+          "first_argmax": 47.5,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 72.0,
+          "first_thr": 53.5,
+          "first_argmax": 52.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 65.5,
+          "first_argmax": 63.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 43.2,
+          "first_thr": 61.0,
+          "first_argmax": 57.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        },
+        {
+          "t_anom": 57.6,
+          "first_thr": 51.0,
+          "first_argmax": 45.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 64.8,
+          "first_thr": 53.5,
+          "first_argmax": 49.5,
+          "premature_thr": true,
+          "premature_argmax": true
+        },
+        {
+          "t_anom": 7.2,
+          "first_thr": 53.5,
+          "first_argmax": 49.0,
+          "premature_thr": false,
+          "premature_argmax": false
+        }
+      ],
+      "premature_rate_thr": 0.193,
+      "premature_ci_thr": [
+        0.153,
+        0.242
+      ],
+      "detection_fraction_thr": 0.993,
+      "premature_rate_argmax": 0.273,
+      "premature_ci_argmax": [
+        0.226,
+        0.326
+      ],
+      "detection_fraction_argmax": 1.0
+    }
+  }
+}

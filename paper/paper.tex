@@ -778,6 +778,44 @@ motivate the survey, the honest statement is that BinML is a rapid \emph{post-ho
 triggering on the anomaly itself would require evaluating at the survey's native cadence, with a
 correspondingly higher premature-alert rate (\S\ref{sec:cascade})---a trade we have not optimised.
 
+\subsection{Ablating the two mechanisms}\label{sec:ablations}
+
+Both of this paper's methodological claims are testable by removing the mechanism and retraining.
+We do so with four arms trained from scratch on identical shards with identical hyper-parameters
+and seed, differing only in the stated variable, and evaluated on a common held-out set from an
+unseen seed base. These are small-scale runs (16 shards, 10 epochs) rather than production
+trainings, so absolute values sit below the headline numbers; the comparison between arms is the
+result.
+
+\paragraph{Detectability-conditioned labelling: supported.} Training on generator-intent labels
+instead of observational ones, and scoring both arms against the observational label---the
+operational task, and the only common yardstick---costs a great deal. Macro-F1 falls from
+$\bmlAbLabelObsMacrofOne$ to $\bmlAbLabelGenMacrofOne$, with the damage concentrated exactly where
+the relabelling acts: \texttt{PSPL} F1 collapses from $\bmlAbLabelObsPsplFOne$ to
+$\bmlAbLabelGenPsplFOne$ and \texttt{NonPSPL} from $\bmlAbLabelObsNonpsplFOne$ to
+$\bmlAbLabelGenNonpsplFOne$. Asked to assert anomalies that leave no observable trace on $39.5\%$
+of its examples, the network learns a decision rule that does not transfer to what is actually
+visible. This is the ablation the title's first claim needed, and it supports it.
+
+\paragraph{The truncation augmentation: not established.} The second ablation does \emph{not}
+cleanly support its claim, and we report it as such. Removing the truncation augmentation changes
+the premature-alert rate in opposite directions depending on the decision rule: at the frozen
+operating threshold the augmented model is better ($\bmlAbCascOnPremThr$ versus
+$\bmlAbCascOffPremThr$), but under six-class argmax it is worse ($\bmlAbCascOnPremArgmax$ versus
+$\bmlAbCascOffPremArgmax$), on $N=\bmlAbCascN$ binaries. It is also expensive: within-season
+detection at the same threshold falls from $\bmlAbCascOffDet$ to $\bmlAbCascOnDet$, and static
+macro-F1 from $\bmlAbCascOffMacrofOne$ to $\bmlAbCascOnMacrofOne$.
+
+The consistent reading is not that truncation training teaches a better temporal ordering, but that
+it makes the model \emph{more conservative about the anomaly class in general}: it says
+\texttt{NonPSPL} less often, which lowers premature alerts and genuine detections together. A
+threshold shift would produce much the same pattern. We therefore withdraw the causal claim that the
+augmentation is what produces the real-time behaviour; the ordering reported in
+\S\ref{sec:cascade} is a property of the released model, not a demonstrated consequence of this
+training choice. Establishing it would require matching the arms at equal detection rate---sweeping
+the threshold for each and comparing premature rates at fixed recall---which we have not done. We
+flag this as the clearest outstanding weakness in the paper's second contribution.
+
 \subsection{Targeted fine-tuning recovers the low-mass-ratio deficit}\label{sec:finetune}
 
 The mass-ratio breakdown of \S\ref{sec:results} identifies where the model is weakest, and it is

@@ -137,6 +137,16 @@ cmd("bmlHrWidesepN", str(hr["widesep_n"]))
 cmd("bmlHrNatNpPrecBefore", three(hr["natural_nonpspl_prec_before"]))
 cmd("bmlHrNatNpPrecAfter", three(hr["natural_nonpspl_prec_after"]))
 
+ab = cn["ablations"]
+for k in ("label_obs_macrof1","label_gen_macrof1","label_obs_pspl_f1","label_gen_pspl_f1",
+          "label_obs_nonpspl_f1","label_gen_nonpspl_f1","casc_on_prem_thr","casc_off_prem_thr",
+          "casc_on_prem_argmax","casc_off_prem_argmax","casc_on_det","casc_off_det",
+          "casc_on_macrof1","casc_off_macrof1"):
+    # TeX macro names must be letters only -- map digits to words
+    _nm = "".join(w.capitalize() for w in k.split("_")).replace("1", "One")
+    cmd("bmlAb" + _nm, three(ab[k]))
+cmd("bmlAbCascN", str(ab["casc_n"]))
+
 cx = cn["cadence_experiment"]
 cmd("bmlCadN", f"{cx['n_events']:,}")
 cmd("bmlCadEpochs", str(cx["epochs"]))

@@ -195,16 +195,25 @@ def run_ablations(epochs: int = 10) -> dict:
         return out
 
     res = {"n_eval_static": int(n), "epochs": epochs, "seed": SEED, "threshold": thr}
+    # NOTE: results are written to the VOLUME, not just returned. A detached run (required, since a
+    # backgrounded local client disconnects and Modal then stops the app) has no live client to
+    # receive the return value.
     for tag, path in ckpts.items():
         res[tag] = {"static": static_metrics(probs(load(path)))}
     # real-time only matters for the cascade ablation
     for tag in ("cascade_on", "cascade_off"):
         res[tag]["realtime"] = realtime(ckpts[tag])
+    with open(f"{VOL}/ablations_full.json", "w") as f:
+        json.dump(res, f, indent=2)
+    vol.commit()
     return res
 
 
 @app.local_entrypoint()
 def main(n_train: int = 16, n_eval: int = 6):
+    """Run DETACHED: `modal run --detach validation/modal_ablations.py`. Results land in the
+    volume at /data/ablations_full.json; retrieve with
+    `modal volume get binml-ablation-data ablations_full.json`."""
     import json
     args = [(i, SEED, "train") for i in range(n_train)] + \
            [(i, 990000, "eval") for i in range(n_eval)]

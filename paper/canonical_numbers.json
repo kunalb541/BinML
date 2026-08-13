@@ -281,5 +281,23 @@
     "thr_synthetic": 0.8944,
     "thr_one_pct": 0.9786,
     "thr_tenth_pct": 0.9936
+  },
+  "ablations": {
+    "_comment": "Referee Major issue 2. Four arms trained from scratch on identical shards/recipe/seed (16 shards, 10 epochs); only the stated variable differs. Both label arms scored against the OBSERVATIONAL label. Source: validation/modal_ablations.py -> validation/ablations_result.json.",
+    "label_obs_macrof1": 0.828,
+    "label_gen_macrof1": 0.48,
+    "label_obs_pspl_f1": 0.878,
+    "label_gen_pspl_f1": 0.0,
+    "label_obs_nonpspl_f1": 0.57,
+    "label_gen_nonpspl_f1": 0.137,
+    "casc_on_prem_thr": 0.123,
+    "casc_off_prem_thr": 0.193,
+    "casc_on_prem_argmax": 0.37,
+    "casc_off_prem_argmax": 0.273,
+    "casc_on_det": 0.643,
+    "casc_off_det": 0.993,
+    "casc_on_macrof1": 0.828,
+    "casc_off_macrof1": 0.866,
+    "casc_n": 300
   }
 }
