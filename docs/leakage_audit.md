@@ -1,16 +1,16 @@
 # Data-leakage audit
 
-## v5 (current pipeline) — how train/test disjointness is guaranteed
+## v5 (current pipeline) — reported train/test separation
 
 The v5 data (`pipeline/`) makes leakage structurally hard:
 
-- **Disjoint by shard index.** Each shard is its own RNG stream: `seed = seed_base + shard*7919`.
-  Training used shards **0–89**, the independent test set shards **90–149** — different streams,
-  zero event overlap. (The `cache` and `cache2` S3 prefixes are the *same* events at a given
+- **Disjoint by shard index in the reported protocol.** Each shard uses
+  `seed = seed_base + shard*7919`. Training used shards **0–89** and the evaluation pool used
+  shards **90–149**. (The `cache` and `cache2` S3 prefixes are the *same* events at a given
   index — a re-bin, not a second population — so independence is by **index**, never by prefix.)
-- **Unseen-parameter stress test.** The 12.9M-event generalisation set uses seed bases **≥900M**,
-  ≥1M apart per regime, versus training's base `20260720` (max seed ~23.4M). Different PCG64
-  streams → parameter tuples the model never saw. `--seed-base` exposes this.
+- **Separate stress streams.** The 10.4M targeted out-of-distribution arms use seed bases
+  **≥900M**, at least 1M apart per regime, versus training's base `20260720`; the 4.5M same-prior
+  arm is also generated separately. `--seed-base` exposes this protocol.
 - **The network never sees the labels' inputs.** The model forward (`model.py`) consumes only
   the `feat`/`frac` tokens + per-band presence. The `params` table (including `q, s, dchi2_*`,
   and `t_anom`) is used for **labelling and post-hoc analysis only**, never fed to the network.
@@ -20,12 +20,18 @@ The v5 data (`pipeline/`) makes leakage structurally hard:
 Evaluation is detectability-conditioned throughout (see [`evaluation.md`](evaluation.md)); the
 `keep_prob` reweighting is applied to precision/purity only, never recall.
 
+These are structural properties of the reported pipeline, not complete execution provenance. The
+release does not include the full training set or a provenance-complete manifest for the original
+checkpoint, so the historical shard assignment cannot be independently reconstructed from the
+checkpoint alone.
+
 ---
 
 # Legacy 3-class audit — 2026-07-08
 
-*(The audit below concerns the original CNN-GRU package `binml/` — `model.py`, `train.py`,
-`evaluate.py`. Retained for the record; superseded by the v5 section above.)*
+*(Frozen historical audit. It concerns the original CNN-GRU research tree at commit `6a6ccb7`;
+the surviving inference code is now under `binml/legacy/`. Retained for the record and not an audit
+of the current 6-class model.)*
 
 Adversarial audit of the model (`model.py`) and training/eval pipeline (`train.py`,
 `evaluate.py`) for data leakage. Six dimensions, each finding independently verified
@@ -46,7 +52,7 @@ Adversarial audit of the model (`model.py`) and training/eval pipeline (`train.p
   `m_base` and physical params (`q, s, rho, anomaly_dchi2, ...`) are loaded in
   `evaluate.py` for post-hoc analysis only, never fed to the network. The cadence mask
   (`flux==0` pattern) and `delta_t` gap structure are class-independent by construction
-  (`simulate.py`).
+  (`simulate.py`, a legacy script not present in this repository; see `docs/legacy_3class.md`).
 - **Batch-level**: the only cross-sample op is `BatchNorm1d`, correctly frozen by
   `model.eval()` at every inference site → not exploitable at eval.
 - **Eval stats**: `evaluate.py` reuses the frozen checkpoint stats and never recomputes

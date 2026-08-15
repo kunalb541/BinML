@@ -125,6 +125,8 @@ def to_tokens(bands: Dict[str, Tuple[np.ndarray, np.ndarray]],
     if t_start is None:
         t_start = min(float(np.nanmin(np.asarray(t))) for t, _ in bands.values()
                       if np.isfinite(np.asarray(t, float)).any())
+    elif not np.isfinite(t_start):
+        raise ValueError(f"t_start must be finite, got {t_start!r}")
     if m_base_ref is None:
         m_base_ref = estimate_baseline(m146)
         warnings.warn(
@@ -132,6 +134,8 @@ def to_tokens(bands: Dict[str, Tuple[np.ndarray, np.ndarray]],
             "unreliable except for short, well-sampled events and can misclassify (e.g. "
             "microlensing -> LongPeriodVar). Pass the catalogue F146 baseline magnitude.",
             stacklevel=2)
+    elif not np.isfinite(m_base_ref):
+        raise ValueError(f"m_base_ref must be finite, got {m_base_ref!r}")
     feat, frac, npts = {}, {}, {}
     for b in BAND_BINS:
         if b in bands:

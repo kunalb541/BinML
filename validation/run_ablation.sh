@@ -7,7 +7,10 @@ cd "$(dirname "$0")/.."
 WORK="${1:-/tmp/binml_ablation}"
 NSHARDS="${2:-80}"
 SEED=20260720
-BUCKET=s3://microlensing-sim-506250255800-eu-central-1/v5/cache2
+# The shard bucket is private to the authors' AWS account, so it is supplied by environment
+# rather than hard-coded: an S3 URI of this form embeds the account ID, which does not belong in
+# a public repository. Point BINML_SHARD_BUCKET at any bucket holding the binned cache shards.
+BUCKET="${BINML_SHARD_BUCKET:?set BINML_SHARD_BUCKET to the s3:// prefix holding shard_*.h5}"
 mkdir -p "$WORK"/{cache,mm}
 
 echo "[1/5] pull $NSHARDS cache shards from S3"

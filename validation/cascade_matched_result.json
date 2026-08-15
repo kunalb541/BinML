@@ -1,0 +1,2486 @@
+{
+  "_doc": "Compare the cascade ablation arms at matched within-season detection counts.",
+  "n_eligible": 400,
+  "config": {
+    "n_events": 400,
+    "step_days": 0.5,
+    "seed_base": 770000,
+    "arms": [
+      "cascade_on",
+      "cascade_off"
+    ],
+    "protocol": "matched-detection-v1"
+  },
+  "reduction_provenance": {
+    "input_trace_sha256": "c6a56772c8bd02dd03ca92bd23117010c0c98b327e7ab3d1614e2d599a03b6b1",
+    "reducer_sha256": "2e405c907097f1bd3c692e80c0c0dae97d740b4fee48ccd95ebb8551f3e9f444"
+  },
+  "trace_provenance": {},
+  "upstream_provenance_limitation": "The stored scan contains its protocol configuration and event seeds but no source-tree or checkpoint hashes. The reduction is tied to the exact trace bytes, but the trace cannot be independently tied to immutable training/run state.",
+  "analysis_status": "exploratory finite-sample risk-coverage comparison",
+  "inference_note": "Thresholds and paired outcomes use the same events. Conditional McNemar values describe this finite sample and are not confirmatory population-level p-values. Select thresholds on a disjoint calibration set before inferential use.",
+  "score_definition": "maximum P(NonPSPL) over the 72-day trace",
+  "score_dtype": "float32",
+  "matching_rule": "nearest detection count attainable by every arm; ties in distance prefer the lower alert count; threshold is the full-precision kth-largest observed score and the comparison is >= threshold",
+  "n_predeclared_targets": 6,
+  "matched": {
+    "detection_0.50": {
+      "cascade_on": {
+        "threshold": 0.9666765332221985,
+        "threshold_hex": "0x1.eef03a0000000p-1",
+        "requested_detection_count": 200,
+        "achieved_detection_count": 200,
+        "detection_fraction": 0.5,
+        "detection_ci": [
+          0.4512336165999552,
+          0.5487663834000448
+        ],
+        "premature_rate_of_eligible": 0.0,
+        "premature_ci_of_eligible": [
+          0.0,
+          0.01
+        ],
+        "premature_rate_of_detected": 0.0,
+        "n_premature": 0
+      },
+      "cascade_off": {
+        "threshold": 0.9987909197807312,
+        "threshold_hex": "0x1.ff61860000000p-1",
+        "requested_detection_count": 200,
+        "achieved_detection_count": 200,
+        "detection_fraction": 0.5,
+        "detection_ci": [
+          0.4512336165999552,
+          0.5487663834000448
+        ],
+        "premature_rate_of_eligible": 0.025,
+        "premature_ci_of_eligible": [
+          0.014,
+          0.045
+        ],
+        "premature_rate_of_detected": 0.05,
+        "n_premature": 10
+      },
+      "delta_premature_on_minus_off": -0.025,
+      "mcnemar": {
+        "n_discordant": 10,
+        "n_a_only": 0,
+        "n_b_only": 10,
+        "p_two_sided_conditional": 0.001953125,
+        "p_bonferroni_conditional": 0.01171875,
+        "n_comparisons": 6
+      }
+    },
+    "detection_0.60": {
+      "cascade_on": {
+        "threshold": 0.926391065120697,
+        "threshold_hex": "0x1.da4fee0000000p-1",
+        "requested_detection_count": 240,
+        "achieved_detection_count": 240,
+        "detection_fraction": 0.6,
+        "detection_ci": [
+          0.5512581652462732,
+          0.6468393066337906
+        ],
+        "premature_rate_of_eligible": 0.0,
+        "premature_ci_of_eligible": [
+          0.0,
+          0.01
+        ],
+        "premature_rate_of_detected": 0.0,
+        "n_premature": 0
+      },
+      "cascade_off": {
+        "threshold": 0.9985230565071106,
+        "threshold_hex": "0x1.ff3e6a0000000p-1",
+        "requested_detection_count": 240,
+        "achieved_detection_count": 240,
+        "detection_fraction": 0.6,
+        "detection_ci": [
+          0.5512581652462732,
+          0.6468393066337906
+        ],
+        "premature_rate_of_eligible": 0.04,
+        "premature_ci_of_eligible": [
+          0.025,
+          0.064
+        ],
+        "premature_rate_of_detected": 0.06666666666666667,
+        "n_premature": 16
+      },
+      "delta_premature_on_minus_off": -0.04,
+      "mcnemar": {
+        "n_discordant": 16,
+        "n_a_only": 0,
+        "n_b_only": 16,
+        "p_two_sided_conditional": 3.0517578125e-05,
+        "p_bonferroni_conditional": 0.00018310546875,
+        "n_comparisons": 6
+      }
+    },
+    "detection_0.70": {
+      "cascade_on": {
+        "threshold": 0.8444702625274658,
+        "threshold_hex": "0x1.b05e680000000p-1",
+        "requested_detection_count": 280,
+        "achieved_detection_count": 280,
+        "detection_fraction": 0.7,
+        "detection_ci": [
+          0.6533618692890616,
+          0.7428330744710662
+        ],
+        "premature_rate_of_eligible": 0.0175,
+        "premature_ci_of_eligible": [
+          0.009,
+          0.036
+        ],
+        "premature_rate_of_detected": 0.025,
+        "n_premature": 7
+      },
+      "cascade_off": {
+        "threshold": 0.9982239603996277,
+        "threshold_hex": "0x1.ff17360000000p-1",
+        "requested_detection_count": 280,
+        "achieved_detection_count": 280,
+        "detection_fraction": 0.7,
+        "detection_ci": [
+          0.6533618692890616,
+          0.7428330744710662
+        ],
+        "premature_rate_of_eligible": 0.045,
+        "premature_ci_of_eligible": [
+          0.029,
+          0.07
+        ],
+        "premature_rate_of_detected": 0.06428571428571428,
+        "n_premature": 18
+      },
+      "delta_premature_on_minus_off": -0.027499999999999997,
+      "mcnemar": {
+        "n_discordant": 21,
+        "n_a_only": 5,
+        "n_b_only": 16,
+        "p_two_sided_conditional": 0.02660369873046875,
+        "p_bonferroni_conditional": 0.1596221923828125,
+        "n_comparisons": 6
+      }
+    },
+    "detection_0.80": {
+      "cascade_on": {
+        "threshold": 0.7309116721153259,
+        "threshold_hex": "0x1.763a0e0000000p-1",
+        "requested_detection_count": 320,
+        "achieved_detection_count": 320,
+        "detection_fraction": 0.8,
+        "detection_ci": [
+          0.7580288635115286,
+          0.836263552128663
+        ],
+        "premature_rate_of_eligible": 0.0275,
+        "premature_ci_of_eligible": [
+          0.015,
+          0.049
+        ],
+        "premature_rate_of_detected": 0.034375,
+        "n_premature": 11
+      },
+      "cascade_off": {
+        "threshold": 0.9971680045127869,
+        "threshold_hex": "0x1.fe8cce0000000p-1",
+        "requested_detection_count": 320,
+        "achieved_detection_count": 320,
+        "detection_fraction": 0.8,
+        "detection_ci": [
+          0.7580288635115286,
+          0.836263552128663
+        ],
+        "premature_rate_of_eligible": 0.0625,
+        "premature_ci_of_eligible": [
+          0.043,
+          0.091
+        ],
+        "premature_rate_of_detected": 0.078125,
+        "n_premature": 25
+      },
+      "delta_premature_on_minus_off": -0.035,
+      "mcnemar": {
+        "n_discordant": 30,
+        "n_a_only": 8,
+        "n_b_only": 22,
+        "p_two_sided_conditional": 0.016124801710247993,
+        "p_bonferroni_conditional": 0.09674881026148796,
+        "n_comparisons": 6
+      }
+    },
+    "detection_0.90": {
+      "cascade_on": {
+        "threshold": 0.5182733535766602,
+        "threshold_hex": "0x1.095b200000000p-1",
+        "requested_detection_count": 360,
+        "achieved_detection_count": 360,
+        "detection_fraction": 0.9,
+        "detection_ci": [
+          0.8666887392099005,
+          0.925701148310355
+        ],
+        "premature_rate_of_eligible": 0.05,
+        "premature_ci_of_eligible": [
+          0.033,
+          0.076
+        ],
+        "premature_rate_of_detected": 0.05555555555555555,
+        "n_premature": 20
+      },
+      "cascade_off": {
+        "threshold": 0.9949789643287659,
+        "threshold_hex": "0x1.fd6de20000000p-1",
+        "requested_detection_count": 360,
+        "achieved_detection_count": 360,
+        "detection_fraction": 0.9,
+        "detection_ci": [
+          0.8666887392099005,
+          0.925701148310355
+        ],
+        "premature_rate_of_eligible": 0.075,
+        "premature_ci_of_eligible": [
+          0.053,
+          0.105
+        ],
+        "premature_rate_of_detected": 0.08333333333333333,
+        "n_premature": 30
+      },
+      "delta_premature_on_minus_off": -0.024999999999999994,
+      "mcnemar": {
+        "n_discordant": 44,
+        "n_a_only": 17,
+        "n_b_only": 27,
+        "p_two_sided_conditional": 0.17417114727072658,
+        "p_bonferroni_conditional": 1.0,
+        "n_comparisons": 6
+      }
+    },
+    "detection_0.95": {
+      "cascade_on": {
+        "threshold": 0.27696850895881653,
+        "threshold_hex": "0x1.1b9da20000000p-2",
+        "requested_detection_count": 380,
+        "achieved_detection_count": 380,
+        "detection_fraction": 0.95,
+        "detection_ci": [
+          0.9240357990869275,
+          0.9674028243733599
+        ],
+        "premature_rate_of_eligible": 0.12,
+        "premature_ci_of_eligible": [
+          0.092,
+          0.156
+        ],
+        "premature_rate_of_detected": 0.12631578947368421,
+        "n_premature": 48
+      },
+      "cascade_off": {
+        "threshold": 0.9908899664878845,
+        "threshold_hex": "0x1.fb55ee0000000p-1",
+        "requested_detection_count": 380,
+        "achieved_detection_count": 380,
+        "detection_fraction": 0.95,
+        "detection_ci": [
+          0.9240357990869275,
+          0.9674028243733599
+        ],
+        "premature_rate_of_eligible": 0.095,
+        "premature_ci_of_eligible": [
+          0.07,
+          0.128
+        ],
+        "premature_rate_of_detected": 0.1,
+        "n_premature": 38
+      },
+      "delta_premature_on_minus_off": 0.024999999999999994,
+      "mcnemar": {
+        "n_discordant": 70,
+        "n_a_only": 40,
+        "n_b_only": 30,
+        "p_two_sided_conditional": 0.2819789217936561,
+        "p_bonferroni_conditional": 1.0,
+        "n_comparisons": 6
+      }
+    }
+  },
+  "curves": {
+    "cascade_on": [
+      {
+        "threshold": 0.01,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.84
+      },
+      {
+        "threshold": 0.015,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.76
+      },
+      {
+        "threshold": 0.02,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.71
+      },
+      {
+        "threshold": 0.025,
+        "detection_fraction": 0.995,
+        "premature_rate": 0.6475
+      },
+      {
+        "threshold": 0.03,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.6325
+      },
+      {
+        "threshold": 0.035,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.6
+      },
+      {
+        "threshold": 0.04,
+        "detection_fraction": 0.99,
+        "premature_rate": 0.55
+      },
+      {
+        "threshold": 0.045,
+        "detection_fraction": 0.985,
+        "premature_rate": 0.51
+      },
+      {
+        "threshold": 0.05,
+        "detection_fraction": 0.985,
+        "premature_rate": 0.465
+      },
+      {
+        "threshold": 0.055,
+        "detection_fraction": 0.985,
+        "premature_rate": 0.4525
+      },
+      {
+        "threshold": 0.06,
+        "detection_fraction": 0.98,
+        "premature_rate": 0.42
+      },
+      {
+        "threshold": 0.065,
+        "detection_fraction": 0.9775,
+        "premature_rate": 0.3975
+      },
+      {
+        "threshold": 0.07,
+        "detection_fraction": 0.975,
+        "premature_rate": 0.3725
+      },
+      {
+        "threshold": 0.075,
+        "detection_fraction": 0.975,
+        "premature_rate": 0.355
+      },
+      {
+        "threshold": 0.08,
+        "detection_fraction": 0.975,
+        "premature_rate": 0.335
+      },
+      {
+        "threshold": 0.085,
+        "detection_fraction": 0.975,
+        "premature_rate": 0.3275
+      },
+      {
+        "threshold": 0.09,
+        "detection_fraction": 0.97,
+        "premature_rate": 0.31
+      },
+      {
+        "threshold": 0.095,
+        "detection_fraction": 0.97,
+        "premature_rate": 0.28
+      },
+      {
+        "threshold": 0.1,
+        "detection_fraction": 0.97,
+        "premature_rate": 0.27
+      },
+      {
+        "threshold": 0.105,
+        "detection_fraction": 0.97,
+        "premature_rate": 0.2525
+      },
+      {
+        "threshold": 0.11,
+        "detection_fraction": 0.97,
+        "premature_rate": 0.24
+      },
+      {
+        "threshold": 0.115,
+        "detection_fraction": 0.97,
+        "premature_rate": 0.2325
+      },
+      {
+        "threshold": 0.12,
+        "detection_fraction": 0.97,
+        "premature_rate": 0.22
+      },
+      {
+        "threshold": 0.125,
+        "detection_fraction": 0.9675,
+        "premature_rate": 0.205
+      },
+      {
+        "threshold": 0.13,
+        "detection_fraction": 0.9675,
+        "premature_rate": 0.2
+      },
+      {
+        "threshold": 0.135,
+        "detection_fraction": 0.9675,
+        "premature_rate": 0.2
+      },
+      {
+        "threshold": 0.14,
+        "detection_fraction": 0.9675,
+        "premature_rate": 0.1875
+      },
+      {
+        "threshold": 0.145,
+        "detection_fraction": 0.9675,
+        "premature_rate": 0.185
+      },
+      {
+        "threshold": 0.15,
+        "detection_fraction": 0.9675,
+        "premature_rate": 0.1825
+      },
+      {
+        "threshold": 0.155,
+        "detection_fraction": 0.965,
+        "premature_rate": 0.1825
+      },
+      {
+        "threshold": 0.16,
+        "detection_fraction": 0.965,
+        "premature_rate": 0.18
+      },
+      {
+        "threshold": 0.165,
+        "detection_fraction": 0.965,
+        "premature_rate": 0.1725
+      },
+      {
+        "threshold": 0.17,
+        "detection_fraction": 0.965,
+        "premature_rate": 0.17
+      },
+      {
+        "threshold": 0.175,
+        "detection_fraction": 0.9625,
+        "premature_rate": 0.165
+      },
+      {
+        "threshold": 0.18,
+        "detection_fraction": 0.96,
+        "premature_rate": 0.16
+      },
+      {
+        "threshold": 0.185,
+        "detection_fraction": 0.96,
+        "premature_rate": 0.155
+      },
+      {
+        "threshold": 0.19,
+        "detection_fraction": 0.96,
+        "premature_rate": 0.15
+      },
+      {
+        "threshold": 0.195,
+        "detection_fraction": 0.96,
+        "premature_rate": 0.1475
+      },
+      {
+        "threshold": 0.2,
+        "detection_fraction": 0.9575,
+        "premature_rate": 0.145
+      },
+      {
+        "threshold": 0.205,
+        "detection_fraction": 0.9575,
+        "premature_rate": 0.145
+      },
+      {
+        "threshold": 0.21,
+        "detection_fraction": 0.9575,
+        "premature_rate": 0.145
+      },
+      {
+        "threshold": 0.215,
+        "detection_fraction": 0.9575,
+        "premature_rate": 0.1425
+      },
+      {
+        "threshold": 0.22,
+        "detection_fraction": 0.9575,
+        "premature_rate": 0.1425
+      },
+      {
+        "threshold": 0.225,
+        "detection_fraction": 0.955,
+        "premature_rate": 0.14
+      },
+      {
+        "threshold": 0.23,
+        "detection_fraction": 0.955,
+        "premature_rate": 0.14
+      },
+      {
+        "threshold": 0.235,
+        "detection_fraction": 0.9525,
+        "premature_rate": 0.14
+      },
+      {
+        "threshold": 0.24,
+        "detection_fraction": 0.9525,
+        "premature_rate": 0.135
+      },
+      {
+        "threshold": 0.245,
+        "detection_fraction": 0.9525,
+        "premature_rate": 0.1325
+      },
+      {
+        "threshold": 0.25,
+        "detection_fraction": 0.9525,
+        "premature_rate": 0.1325
+      },
+      {
+        "threshold": 0.255,
+        "detection_fraction": 0.9525,
+        "premature_rate": 0.1325
+      },
+      {
+        "threshold": 0.26,
+        "detection_fraction": 0.95,
+        "premature_rate": 0.13
+      },
+      {
+        "threshold": 0.265,
+        "detection_fraction": 0.95,
+        "premature_rate": 0.13
+      },
+      {
+        "threshold": 0.27,
+        "detection_fraction": 0.95,
+        "premature_rate": 0.125
+      },
+      {
+        "threshold": 0.275,
+        "detection_fraction": 0.95,
+        "premature_rate": 0.12
+      },
+      {
+        "threshold": 0.28,
+        "detection_fraction": 0.9475,
+        "premature_rate": 0.1175
+      },
+      {
+        "threshold": 0.285,
+        "detection_fraction": 0.9425,
+        "premature_rate": 0.115
+      },
+      {
+        "threshold": 0.29,
+        "detection_fraction": 0.94,
+        "premature_rate": 0.11
+      },
+      {
+        "threshold": 0.295,
+        "detection_fraction": 0.94,
+        "premature_rate": 0.105
+      },
+      {
+        "threshold": 0.3,
+        "detection_fraction": 0.94,
+        "premature_rate": 0.105
+      },
+      {
+        "threshold": 0.305,
+        "detection_fraction": 0.94,
+        "premature_rate": 0.105
+      },
+      {
+        "threshold": 0.31,
+        "detection_fraction": 0.94,
+        "premature_rate": 0.105
+      },
+      {
+        "threshold": 0.315,
+        "detection_fraction": 0.94,
+        "premature_rate": 0.0975
+      },
+      {
+        "threshold": 0.32,
+        "detection_fraction": 0.94,
+        "premature_rate": 0.095
+      },
+      {
+        "threshold": 0.325,
+        "detection_fraction": 0.9375,
+        "premature_rate": 0.095
+      },
+      {
+        "threshold": 0.33,
+        "detection_fraction": 0.935,
+        "premature_rate": 0.095
+      },
+      {
+        "threshold": 0.335,
+        "detection_fraction": 0.935,
+        "premature_rate": 0.095
+      },
+      {
+        "threshold": 0.34,
+        "detection_fraction": 0.935,
+        "premature_rate": 0.0925
+      },
+      {
+        "threshold": 0.345,
+        "detection_fraction": 0.935,
+        "premature_rate": 0.0925
+      },
+      {
+        "threshold": 0.35,
+        "detection_fraction": 0.9325,
+        "premature_rate": 0.0875
+      },
+      {
+        "threshold": 0.355,
+        "detection_fraction": 0.9325,
+        "premature_rate": 0.0875
+      },
+      {
+        "threshold": 0.36,
+        "detection_fraction": 0.93,
+        "premature_rate": 0.085
+      },
+      {
+        "threshold": 0.365,
+        "detection_fraction": 0.93,
+        "premature_rate": 0.0825
+      },
+      {
+        "threshold": 0.37,
+        "detection_fraction": 0.9275,
+        "premature_rate": 0.08
+      },
+      {
+        "threshold": 0.375,
+        "detection_fraction": 0.9275,
+        "premature_rate": 0.08
+      },
+      {
+        "threshold": 0.38,
+        "detection_fraction": 0.9275,
+        "premature_rate": 0.0775
+      },
+      {
+        "threshold": 0.385,
+        "detection_fraction": 0.9275,
+        "premature_rate": 0.0775
+      },
+      {
+        "threshold": 0.39,
+        "detection_fraction": 0.9275,
+        "premature_rate": 0.075
+      },
+      {
+        "threshold": 0.395,
+        "detection_fraction": 0.9275,
+        "premature_rate": 0.0725
+      },
+      {
+        "threshold": 0.4,
+        "detection_fraction": 0.9275,
+        "premature_rate": 0.07
+      },
+      {
+        "threshold": 0.405,
+        "detection_fraction": 0.925,
+        "premature_rate": 0.0675
+      },
+      {
+        "threshold": 0.41,
+        "detection_fraction": 0.925,
+        "premature_rate": 0.0675
+      },
+      {
+        "threshold": 0.415,
+        "detection_fraction": 0.925,
+        "premature_rate": 0.0675
+      },
+      {
+        "threshold": 0.42,
+        "detection_fraction": 0.9225,
+        "premature_rate": 0.0675
+      },
+      {
+        "threshold": 0.425,
+        "detection_fraction": 0.915,
+        "premature_rate": 0.0675
+      },
+      {
+        "threshold": 0.43,
+        "detection_fraction": 0.9125,
+        "premature_rate": 0.0675
+      },
+      {
+        "threshold": 0.435,
+        "detection_fraction": 0.9125,
+        "premature_rate": 0.065
+      },
+      {
+        "threshold": 0.44,
+        "detection_fraction": 0.91,
+        "premature_rate": 0.065
+      },
+      {
+        "threshold": 0.445,
+        "detection_fraction": 0.91,
+        "premature_rate": 0.065
+      },
+      {
+        "threshold": 0.45,
+        "detection_fraction": 0.91,
+        "premature_rate": 0.065
+      },
+      {
+        "threshold": 0.455,
+        "detection_fraction": 0.91,
+        "premature_rate": 0.0575
+      },
+      {
+        "threshold": 0.46,
+        "detection_fraction": 0.91,
+        "premature_rate": 0.0575
+      },
+      {
+        "threshold": 0.465,
+        "detection_fraction": 0.9075,
+        "premature_rate": 0.0575
+      },
+      {
+        "threshold": 0.47,
+        "detection_fraction": 0.9075,
+        "premature_rate": 0.055
+      },
+      {
+        "threshold": 0.475,
+        "detection_fraction": 0.9075,
+        "premature_rate": 0.055
+      },
+      {
+        "threshold": 0.48,
+        "detection_fraction": 0.905,
+        "premature_rate": 0.055
+      },
+      {
+        "threshold": 0.485,
+        "detection_fraction": 0.905,
+        "premature_rate": 0.055
+      },
+      {
+        "threshold": 0.49,
+        "detection_fraction": 0.9025,
+        "premature_rate": 0.055
+      },
+      {
+        "threshold": 0.495,
+        "detection_fraction": 0.9025,
+        "premature_rate": 0.055
+      },
+      {
+        "threshold": 0.5,
+        "detection_fraction": 0.9025,
+        "premature_rate": 0.055
+      },
+      {
+        "threshold": 0.505,
+        "detection_fraction": 0.9025,
+        "premature_rate": 0.0525
+      },
+      {
+        "threshold": 0.51,
+        "detection_fraction": 0.9,
+        "premature_rate": 0.0525
+      },
+      {
+        "threshold": 0.515,
+        "detection_fraction": 0.9,
+        "premature_rate": 0.05
+      },
+      {
+        "threshold": 0.52,
+        "detection_fraction": 0.8975,
+        "premature_rate": 0.05
+      },
+      {
+        "threshold": 0.525,
+        "detection_fraction": 0.8975,
+        "premature_rate": 0.05
+      },
+      {
+        "threshold": 0.53,
+        "detection_fraction": 0.8975,
+        "premature_rate": 0.05
+      },
+      {
+        "threshold": 0.535,
+        "detection_fraction": 0.895,
+        "premature_rate": 0.05
+      },
+      {
+        "threshold": 0.54,
+        "detection_fraction": 0.8925,
+        "premature_rate": 0.0475
+      },
+      {
+        "threshold": 0.545,
+        "detection_fraction": 0.8925,
+        "premature_rate": 0.045
+      },
+      {
+        "threshold": 0.55,
+        "detection_fraction": 0.89,
+        "premature_rate": 0.045
+      },
+      {
+        "threshold": 0.555,
+        "detection_fraction": 0.8875,
+        "premature_rate": 0.045
+      },
+      {
+        "threshold": 0.56,
+        "detection_fraction": 0.885,
+        "premature_rate": 0.045
+      },
+      {
+        "threshold": 0.565,
+        "detection_fraction": 0.885,
+        "premature_rate": 0.0425
+      },
+      {
+        "threshold": 0.57,
+        "detection_fraction": 0.8825,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.575,
+        "detection_fraction": 0.8825,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.58,
+        "detection_fraction": 0.8825,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.585,
+        "detection_fraction": 0.88,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.59,
+        "detection_fraction": 0.88,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.595,
+        "detection_fraction": 0.8775,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.6,
+        "detection_fraction": 0.8775,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.605,
+        "detection_fraction": 0.875,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.61,
+        "detection_fraction": 0.87,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.615,
+        "detection_fraction": 0.87,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.62,
+        "detection_fraction": 0.865,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.625,
+        "detection_fraction": 0.8625,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.63,
+        "detection_fraction": 0.86,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.635,
+        "detection_fraction": 0.86,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.64,
+        "detection_fraction": 0.855,
+        "premature_rate": 0.0375
+      },
+      {
+        "threshold": 0.645,
+        "detection_fraction": 0.8525,
+        "premature_rate": 0.0375
+      },
+      {
+        "threshold": 0.65,
+        "detection_fraction": 0.8525,
+        "premature_rate": 0.0375
+      },
+      {
+        "threshold": 0.655,
+        "detection_fraction": 0.8525,
+        "premature_rate": 0.0375
+      },
+      {
+        "threshold": 0.66,
+        "detection_fraction": 0.845,
+        "premature_rate": 0.0375
+      },
+      {
+        "threshold": 0.665,
+        "detection_fraction": 0.84,
+        "premature_rate": 0.0375
+      },
+      {
+        "threshold": 0.67,
+        "detection_fraction": 0.8375,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.675,
+        "detection_fraction": 0.8325,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.68,
+        "detection_fraction": 0.825,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.685,
+        "detection_fraction": 0.82,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.69,
+        "detection_fraction": 0.82,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.695,
+        "detection_fraction": 0.8175,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.7,
+        "detection_fraction": 0.8175,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.705,
+        "detection_fraction": 0.8175,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.71,
+        "detection_fraction": 0.8175,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.715,
+        "detection_fraction": 0.815,
+        "premature_rate": 0.035
+      },
+      {
+        "threshold": 0.72,
+        "detection_fraction": 0.8125,
+        "premature_rate": 0.0325
+      },
+      {
+        "threshold": 0.725,
+        "detection_fraction": 0.8025,
+        "premature_rate": 0.0325
+      },
+      {
+        "threshold": 0.73,
+        "detection_fraction": 0.8,
+        "premature_rate": 0.03
+      },
+      {
+        "threshold": 0.735,
+        "detection_fraction": 0.79,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.74,
+        "detection_fraction": 0.7875,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.745,
+        "detection_fraction": 0.775,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.75,
+        "detection_fraction": 0.77,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.755,
+        "detection_fraction": 0.7675,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.76,
+        "detection_fraction": 0.7675,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.765,
+        "detection_fraction": 0.7575,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.77,
+        "detection_fraction": 0.755,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.775,
+        "detection_fraction": 0.7475,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.78,
+        "detection_fraction": 0.7475,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.785,
+        "detection_fraction": 0.7425,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.79,
+        "detection_fraction": 0.7375,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.795,
+        "detection_fraction": 0.73,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.8,
+        "detection_fraction": 0.7275,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.805,
+        "detection_fraction": 0.725,
+        "premature_rate": 0.0275
+      },
+      {
+        "threshold": 0.81,
+        "detection_fraction": 0.7225,
+        "premature_rate": 0.025
+      },
+      {
+        "threshold": 0.815,
+        "detection_fraction": 0.72,
+        "premature_rate": 0.0225
+      },
+      {
+        "threshold": 0.82,
+        "detection_fraction": 0.7175,
+        "premature_rate": 0.0225
+      },
+      {
+        "threshold": 0.825,
+        "detection_fraction": 0.7175,
+        "premature_rate": 0.0225
+      },
+      {
+        "threshold": 0.83,
+        "detection_fraction": 0.7125,
+        "premature_rate": 0.02
+      },
+      {
+        "threshold": 0.835,
+        "detection_fraction": 0.7075,
+        "premature_rate": 0.02
+      },
+      {
+        "threshold": 0.84,
+        "detection_fraction": 0.7075,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.845,
+        "detection_fraction": 0.6975,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.85,
+        "detection_fraction": 0.6925,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.855,
+        "detection_fraction": 0.6875,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.86,
+        "detection_fraction": 0.68,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.865,
+        "detection_fraction": 0.67,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.87,
+        "detection_fraction": 0.665,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.875,
+        "detection_fraction": 0.665,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.88,
+        "detection_fraction": 0.6625,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.885,
+        "detection_fraction": 0.66,
+        "premature_rate": 0.0175
+      },
+      {
+        "threshold": 0.89,
+        "detection_fraction": 0.6525,
+        "premature_rate": 0.0125
+      },
+      {
+        "threshold": 0.895,
+        "detection_fraction": 0.6475,
+        "premature_rate": 0.0125
+      },
+      {
+        "threshold": 0.9,
+        "detection_fraction": 0.6375,
+        "premature_rate": 0.01
+      },
+      {
+        "threshold": 0.9042,
+        "detection_fraction": 0.635,
+        "premature_rate": 0.01
+      },
+      {
+        "threshold": 0.905,
+        "detection_fraction": 0.635,
+        "premature_rate": 0.01
+      },
+      {
+        "threshold": 0.91,
+        "detection_fraction": 0.63,
+        "premature_rate": 0.005
+      },
+      {
+        "threshold": 0.915,
+        "detection_fraction": 0.62,
+        "premature_rate": 0.0025
+      },
+      {
+        "threshold": 0.92,
+        "detection_fraction": 0.61,
+        "premature_rate": 0.0025
+      },
+      {
+        "threshold": 0.925,
+        "detection_fraction": 0.6025,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.93,
+        "detection_fraction": 0.595,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.935,
+        "detection_fraction": 0.5825,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.94,
+        "detection_fraction": 0.5675,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.945,
+        "detection_fraction": 0.5575,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.95,
+        "detection_fraction": 0.55,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.955,
+        "detection_fraction": 0.5375,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.96,
+        "detection_fraction": 0.5225,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.965,
+        "detection_fraction": 0.505,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.97,
+        "detection_fraction": 0.4875,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.975,
+        "detection_fraction": 0.4575,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.98,
+        "detection_fraction": 0.4375,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.985,
+        "detection_fraction": 0.4075,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.99,
+        "detection_fraction": 0.3475,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9922,
+        "detection_fraction": 0.3175,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9938,
+        "detection_fraction": 0.2325,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9952,
+        "detection_fraction": 0.1775,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9962,
+        "detection_fraction": 0.0625,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.997,
+        "detection_fraction": 0.005,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9977,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9982,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9986,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9989,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9991,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9993,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9995,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9996,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9997,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9997,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9998,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9998,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9999,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9999,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      }
+    ],
+    "cascade_off": [
+      {
+        "threshold": 0.01,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.535
+      },
+      {
+        "threshold": 0.015,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.4475
+      },
+      {
+        "threshold": 0.02,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.415
+      },
+      {
+        "threshold": 0.025,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.38
+      },
+      {
+        "threshold": 0.03,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3675
+      },
+      {
+        "threshold": 0.035,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3625
+      },
+      {
+        "threshold": 0.04,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.355
+      },
+      {
+        "threshold": 0.045,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.34
+      },
+      {
+        "threshold": 0.05,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3325
+      },
+      {
+        "threshold": 0.055,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.325
+      },
+      {
+        "threshold": 0.06,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.32
+      },
+      {
+        "threshold": 0.065,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3175
+      },
+      {
+        "threshold": 0.07,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3175
+      },
+      {
+        "threshold": 0.075,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3125
+      },
+      {
+        "threshold": 0.08,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.31
+      },
+      {
+        "threshold": 0.085,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3075
+      },
+      {
+        "threshold": 0.09,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.305
+      },
+      {
+        "threshold": 0.095,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3025
+      },
+      {
+        "threshold": 0.1,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3025
+      },
+      {
+        "threshold": 0.105,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.3025
+      },
+      {
+        "threshold": 0.11,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.295
+      },
+      {
+        "threshold": 0.115,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.295
+      },
+      {
+        "threshold": 0.12,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.29
+      },
+      {
+        "threshold": 0.125,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.29
+      },
+      {
+        "threshold": 0.13,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2875
+      },
+      {
+        "threshold": 0.135,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.285
+      },
+      {
+        "threshold": 0.14,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.285
+      },
+      {
+        "threshold": 0.145,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.285
+      },
+      {
+        "threshold": 0.15,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.285
+      },
+      {
+        "threshold": 0.155,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2825
+      },
+      {
+        "threshold": 0.16,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.28
+      },
+      {
+        "threshold": 0.165,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.28
+      },
+      {
+        "threshold": 0.17,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.28
+      },
+      {
+        "threshold": 0.175,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2775
+      },
+      {
+        "threshold": 0.18,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2775
+      },
+      {
+        "threshold": 0.185,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.275
+      },
+      {
+        "threshold": 0.19,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.275
+      },
+      {
+        "threshold": 0.195,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.275
+      },
+      {
+        "threshold": 0.2,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2725
+      },
+      {
+        "threshold": 0.205,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2725
+      },
+      {
+        "threshold": 0.21,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2725
+      },
+      {
+        "threshold": 0.215,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2725
+      },
+      {
+        "threshold": 0.22,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2725
+      },
+      {
+        "threshold": 0.225,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.27
+      },
+      {
+        "threshold": 0.23,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2675
+      },
+      {
+        "threshold": 0.235,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.265
+      },
+      {
+        "threshold": 0.24,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.265
+      },
+      {
+        "threshold": 0.245,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.265
+      },
+      {
+        "threshold": 0.25,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2625
+      },
+      {
+        "threshold": 0.255,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2625
+      },
+      {
+        "threshold": 0.26,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.26
+      },
+      {
+        "threshold": 0.265,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2575
+      },
+      {
+        "threshold": 0.27,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2575
+      },
+      {
+        "threshold": 0.275,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2575
+      },
+      {
+        "threshold": 0.28,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2525
+      },
+      {
+        "threshold": 0.285,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2525
+      },
+      {
+        "threshold": 0.29,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2525
+      },
+      {
+        "threshold": 0.295,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2525
+      },
+      {
+        "threshold": 0.3,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2525
+      },
+      {
+        "threshold": 0.305,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2525
+      },
+      {
+        "threshold": 0.31,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2475
+      },
+      {
+        "threshold": 0.315,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2475
+      },
+      {
+        "threshold": 0.32,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2475
+      },
+      {
+        "threshold": 0.325,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2475
+      },
+      {
+        "threshold": 0.33,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2475
+      },
+      {
+        "threshold": 0.335,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.245
+      },
+      {
+        "threshold": 0.34,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.245
+      },
+      {
+        "threshold": 0.345,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.245
+      },
+      {
+        "threshold": 0.35,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2425
+      },
+      {
+        "threshold": 0.355,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.24
+      },
+      {
+        "threshold": 0.36,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.24
+      },
+      {
+        "threshold": 0.365,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.24
+      },
+      {
+        "threshold": 0.37,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.24
+      },
+      {
+        "threshold": 0.375,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2375
+      },
+      {
+        "threshold": 0.38,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.235
+      },
+      {
+        "threshold": 0.385,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.235
+      },
+      {
+        "threshold": 0.39,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.235
+      },
+      {
+        "threshold": 0.395,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.235
+      },
+      {
+        "threshold": 0.4,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.235
+      },
+      {
+        "threshold": 0.405,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.23
+      },
+      {
+        "threshold": 0.41,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2275
+      },
+      {
+        "threshold": 0.415,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2275
+      },
+      {
+        "threshold": 0.42,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2275
+      },
+      {
+        "threshold": 0.425,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2275
+      },
+      {
+        "threshold": 0.43,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.435,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.44,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.445,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.45,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.455,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.46,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.465,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.47,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.475,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.48,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.485,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.225
+      },
+      {
+        "threshold": 0.49,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2225
+      },
+      {
+        "threshold": 0.495,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.22
+      },
+      {
+        "threshold": 0.5,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.22
+      },
+      {
+        "threshold": 0.505,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.22
+      },
+      {
+        "threshold": 0.51,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.22
+      },
+      {
+        "threshold": 0.515,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.22
+      },
+      {
+        "threshold": 0.52,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2175
+      },
+      {
+        "threshold": 0.525,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2175
+      },
+      {
+        "threshold": 0.53,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.215
+      },
+      {
+        "threshold": 0.535,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.54,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.545,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.55,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.555,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.56,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.565,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.57,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.575,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.58,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.585,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.59,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.595,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.6,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.605,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.61,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.615,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.62,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2125
+      },
+      {
+        "threshold": 0.625,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.21
+      },
+      {
+        "threshold": 0.63,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.205
+      },
+      {
+        "threshold": 0.635,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.64,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.645,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.65,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.655,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.66,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.665,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.67,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.675,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.68,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.685,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.69,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.695,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.7,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.705,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2025
+      },
+      {
+        "threshold": 0.71,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2
+      },
+      {
+        "threshold": 0.715,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.2
+      },
+      {
+        "threshold": 0.72,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1975
+      },
+      {
+        "threshold": 0.725,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1975
+      },
+      {
+        "threshold": 0.73,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1975
+      },
+      {
+        "threshold": 0.735,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1975
+      },
+      {
+        "threshold": 0.74,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.195
+      },
+      {
+        "threshold": 0.745,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.195
+      },
+      {
+        "threshold": 0.75,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.195
+      },
+      {
+        "threshold": 0.755,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.195
+      },
+      {
+        "threshold": 0.76,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.195
+      },
+      {
+        "threshold": 0.765,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.195
+      },
+      {
+        "threshold": 0.77,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1925
+      },
+      {
+        "threshold": 0.775,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1925
+      },
+      {
+        "threshold": 0.78,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1925
+      },
+      {
+        "threshold": 0.785,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1925
+      },
+      {
+        "threshold": 0.79,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.19
+      },
+      {
+        "threshold": 0.795,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1875
+      },
+      {
+        "threshold": 0.8,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1875
+      },
+      {
+        "threshold": 0.805,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1875
+      },
+      {
+        "threshold": 0.81,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.1875
+      },
+      {
+        "threshold": 0.815,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.185
+      },
+      {
+        "threshold": 0.82,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.185
+      },
+      {
+        "threshold": 0.825,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.185
+      },
+      {
+        "threshold": 0.83,
+        "detection_fraction": 1.0,
+        "premature_rate": 0.18
+      },
+      {
+        "threshold": 0.835,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.18
+      },
+      {
+        "threshold": 0.84,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.18
+      },
+      {
+        "threshold": 0.845,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.1775
+      },
+      {
+        "threshold": 0.85,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.1775
+      },
+      {
+        "threshold": 0.855,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.175
+      },
+      {
+        "threshold": 0.86,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.175
+      },
+      {
+        "threshold": 0.865,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.175
+      },
+      {
+        "threshold": 0.87,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.1725
+      },
+      {
+        "threshold": 0.875,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.1725
+      },
+      {
+        "threshold": 0.88,
+        "detection_fraction": 0.9975,
+        "premature_rate": 0.1725
+      },
+      {
+        "threshold": 0.885,
+        "detection_fraction": 0.995,
+        "premature_rate": 0.17
+      },
+      {
+        "threshold": 0.89,
+        "detection_fraction": 0.995,
+        "premature_rate": 0.17
+      },
+      {
+        "threshold": 0.895,
+        "detection_fraction": 0.995,
+        "premature_rate": 0.17
+      },
+      {
+        "threshold": 0.9,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.17
+      },
+      {
+        "threshold": 0.9042,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.17
+      },
+      {
+        "threshold": 0.905,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.17
+      },
+      {
+        "threshold": 0.91,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.1675
+      },
+      {
+        "threshold": 0.915,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.1675
+      },
+      {
+        "threshold": 0.92,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.1675
+      },
+      {
+        "threshold": 0.925,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.165
+      },
+      {
+        "threshold": 0.93,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.1625
+      },
+      {
+        "threshold": 0.935,
+        "detection_fraction": 0.9925,
+        "premature_rate": 0.155
+      },
+      {
+        "threshold": 0.94,
+        "detection_fraction": 0.99,
+        "premature_rate": 0.1525
+      },
+      {
+        "threshold": 0.945,
+        "detection_fraction": 0.99,
+        "premature_rate": 0.15
+      },
+      {
+        "threshold": 0.95,
+        "detection_fraction": 0.99,
+        "premature_rate": 0.15
+      },
+      {
+        "threshold": 0.955,
+        "detection_fraction": 0.9875,
+        "premature_rate": 0.1475
+      },
+      {
+        "threshold": 0.96,
+        "detection_fraction": 0.985,
+        "premature_rate": 0.1425
+      },
+      {
+        "threshold": 0.965,
+        "detection_fraction": 0.9825,
+        "premature_rate": 0.1375
+      },
+      {
+        "threshold": 0.97,
+        "detection_fraction": 0.98,
+        "premature_rate": 0.135
+      },
+      {
+        "threshold": 0.975,
+        "detection_fraction": 0.98,
+        "premature_rate": 0.125
+      },
+      {
+        "threshold": 0.98,
+        "detection_fraction": 0.9775,
+        "premature_rate": 0.125
+      },
+      {
+        "threshold": 0.985,
+        "detection_fraction": 0.9725,
+        "premature_rate": 0.105
+      },
+      {
+        "threshold": 0.99,
+        "detection_fraction": 0.955,
+        "premature_rate": 0.0975
+      },
+      {
+        "threshold": 0.9922,
+        "detection_fraction": 0.9325,
+        "premature_rate": 0.0925
+      },
+      {
+        "threshold": 0.9938,
+        "detection_fraction": 0.9175,
+        "premature_rate": 0.085
+      },
+      {
+        "threshold": 0.9952,
+        "detection_fraction": 0.89,
+        "premature_rate": 0.0725
+      },
+      {
+        "threshold": 0.9962,
+        "detection_fraction": 0.8625,
+        "premature_rate": 0.065
+      },
+      {
+        "threshold": 0.997,
+        "detection_fraction": 0.815,
+        "premature_rate": 0.0625
+      },
+      {
+        "threshold": 0.9977,
+        "detection_fraction": 0.7625,
+        "premature_rate": 0.06
+      },
+      {
+        "threshold": 0.9982,
+        "detection_fraction": 0.705,
+        "premature_rate": 0.045
+      },
+      {
+        "threshold": 0.9986,
+        "detection_fraction": 0.5925,
+        "premature_rate": 0.04
+      },
+      {
+        "threshold": 0.9989,
+        "detection_fraction": 0.445,
+        "premature_rate": 0.015
+      },
+      {
+        "threshold": 0.9991,
+        "detection_fraction": 0.1125,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9993,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9995,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9996,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9997,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9997,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9998,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9998,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9999,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      },
+      {
+        "threshold": 0.9999,
+        "detection_fraction": 0.0,
+        "premature_rate": 0.0
+      }
+    ]
+  }
+}

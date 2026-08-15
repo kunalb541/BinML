@@ -5,8 +5,12 @@ BinML classifies Roman multi-band light curves into six classes — **Flat, PSPL
 stem feeding a small transformer encoder**, implemented in
 [`pipeline/model.py`](../pipeline/model.py). It has **505,479 parameters**.
 
-> The earlier 3-class model (`binml/model.py`) was a causal CNN-GRU; BinML 1.0 replaced it with a
-> multi-band conv-stem + transformer (BinML 1.0) to handle three bands of very different cadence and to
+`NonPSPL` in this released model covers static 2L1S binary lenses with finite-source
+magnification. Binary-source events, parallax, and lens orbital motion are absent from training and
+evaluation. The input grids follow the legacy one-season schedule documented in the model card.
+
+> The earlier 3-class model (`binml/legacy/model.py`) was a causal CNN-GRU; BinML 1.0 replaced it with a
+> multi-band conv-stem + transformer to handle three bands of very different cadence and to
 > classify variable-star contaminants alongside microlensing.
 
 ---
@@ -69,15 +73,15 @@ slightly worse than the flat 6-way head, so the flat head ships.
 
 ## 5. Why this shape
 
-- **Small (505k params) on purpose.** The task is not data-starved (millions of simulated
-  events) but is *inference-heavy* at survey scale. A compact model that reads morphology beats
-  a large one that memorises.
+- **Small (505k params) on purpose.** The training set contains millions of simulated events and
+  survey-scale repeated inference rewards a compact model. No matched large-model ablation was run,
+  so this is a design motivation rather than evidence that a larger model would memorise.
 - **The conv stem does the compute saving** — attention runs over 156 tokens, not 7488 raw
   epochs, while min/max pooling loses none of the caustic information that separates NonPSPL from
   PSPL.
-- **Multi-band by construction** — colour is a discriminator (microlensing is achromatic;
-  variables are not), and the per-band presence masking makes "works from F146 alone under heavy
-  extinction" a property of the model, not an accident.
+- **Multi-band by construction** — colour can discriminate achromatic microlensing from the
+  simulated chromatic contaminants, and presence masking lets the API accept F146-only input. That
+  architectural support is not a claim of performance equivalence to three-band input.
 
 See [`docs/pipeline.md`](pipeline.md) for how the model is trained and evaluated, and
 [`docs/data_format.md`](data_format.md) for the exact token/channel layout it consumes.

@@ -1,17 +1,55 @@
 # Changelog
 
+## Unreleased — audit round 3 (streaming analysis corrected)
+- **Cascade numbers rebuilt from one stored scan.** `validation/cascade_trace.py` records
+  P(NonPSPL) at every 0.5 d cut for the frozen 1,000-event sample, under F146-only and
+  all-three-band revealing, plus the anomaly-detectability mask on the same grid;
+  `cascade_reduce.py` derives every reported statistic from it. Alert policy and onset definition
+  are now knobs in the reduction rather than reasons to re-scan a different sample.
+- **Two premature-alert numbers withdrawn.** The previously reported 31.3% scored alerts against
+  an onset quantised to a 7.2 d grid (median inflation 3.7 d), and the 1.3 d "median lag after
+  onset" was taken over all alerts including the premature ones. Corrected: 1.6% premature
+  (1.0-2.6%) under a first-detectable onset, 4.5% under a strict persistent-detectable onset, with
+  a median lag of +5.0 d. The old figure is retained in the artifact for comparison.
+- **Labelling ablation de-confounded.** `pipeline/train.py` gained `--weight-labels`, because
+  `compute_weights` derives class weights from whichever labels it is handed: the original arms
+  differed in objective as well as in target. `validation/modal_labelling_ablation.py` pins the
+  weights, scores every arm against both ontologies, and reports a paired bootstrap interval.
+- **Equal-detection-rate cascade comparison run.** The experiment the paper named as its own
+  clearest outstanding weakness. `validation/modal_cascade_matched.py` stores full probability
+  traces for both ablation arms on a shared sample; `cascade_matched_reduce.py` sweeps each arm's
+  threshold to a common within-season detection rate and compares premature rates there with a
+  paired McNemar calculation. The augmented arm is premature less often at every matched detection
+  rate from 0.50 to 0.90, but the thresholds and outcomes use the same 400 events and the arms use
+  one training seed each. The conditional values are therefore descriptive rather than valid
+  confirmatory p-values; the sign also reverses at 0.95. A causal benefit remains unestablished.
+- **Prevalence thresholds moved off the final test set.** `validation/prevalence_thresholds.py`
+  selects each threshold on the reserved validation rows and reports on the frozen test rows.
+- **Provenance.** Future Modal runs key caches and checkpoints by a hash of the simulator/model source
+  plus the full config, with a completion marker so an interrupted run cannot be silently reused
+  as a finished one, and write a manifest recording git commit, pinned dependency versions, and
+  per-artifact hashes. The published labelling-ablation artifact predates a verified execution of
+  that mechanism; its source hash was repaired after the run.
+- **Build.** `make_macros.py` reads the cascade, prevalence and ablation artifacts directly and
+  fail-closed; a new CI job builds the paper end to end from `git archive HEAD`. Packaging moved
+  to an SPDX license expression and explicit package-data configuration.
+
 ## 1.0.0 — 6-class multi-band model
 - **New model: `pipeline/`.** 6 classes (Flat, PSPL, NonPSPL, PeriodicVar,
   LongPeriodVar, Eruptive) from 3 bands (F146/F087/F213). Conv-stem + transformer,
   505,479 params, replacing the 3-class CNN-GRU.
 - **Detectability-conditioned labelling** — events labelled by what is observable, not by
   generator intent.
-- **Real-time cascade** — truncation labelling by observability with a per-binary anomaly-onset
-  day (`t_anom`); premature NonPSPL flagging cut from measured event-level premature-alert rate (see validation/cascade_reproduce.py; the legacy 42%->9% figure was untracked and is withdrawn).
+- **Partial-season cascade** — truncation labelling uses a truth-informed, noise-free per-binary anomaly-onset
+  day (`t_anom`). Alert timing is measured event-level on a frozen 1,000-binary sample; see
+  `validation/cascade_trace.py` and `validation/cascade_reduce.py`. The legacy 42%->9% premature
+  flagging figure was untracked, could not be reproduced, and is withdrawn.
 - **Distributed pipeline** — AWS spot generation/binning, in-region inference (`run_bineval`,
   `eval_shard`), stratified fine-tune mix (`mix_finetune`), stress-test aggregation (`agg_stress`).
-- Headline (independent 450,589-event test set): completeness@purity 0.879, AP 0.952; validated
-  against a 12.9M-event unseen-parameter stress test.
+- Headline (a 90,117-event threshold-calibration split plus a disjoint 360,472-event final-test
+  split): completeness@purity 0.879, AP 0.952. The 14.9M-event stress suite comprises a 4.5M
+  same-prior reproduction and 10.4M targeted out-of-distribution diagnostics; it is not a single
+  population-validation set.
 - Docs: new `docs/pipeline.md`; `architecture.md`, `evaluation.md`, `data_format.md`,
   `training.md`, and `README.md` updated to v5.
 

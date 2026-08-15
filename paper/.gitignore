@@ -3,6 +3,7 @@ paper.pdf
 paper_macros.tex
 outputs/figures/*.pdf
 outputs/figures_stats.json
+outputs/cascade_policy_table.tex
 build.log
 *.aux
 *.log

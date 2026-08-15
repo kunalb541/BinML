@@ -1,6 +1,6 @@
 %% BinML methods paper -- AASTeX 7.0.1
 %% Build with ./build.sh (regenerates macros + figures, then pdflatex/bibtex).
-\documentclass[twocolumn,linenumbers]{aastex701}
+\documentclass[twocolumn,linenumbers,floatfix]{aastex701}
 
 \input{paper_macros}   % \bml* numbers, auto-generated from canonical_numbers.json
 
@@ -8,43 +8,43 @@
 \newcommand{\dchisq}{\ensuremath{\Delta\chi^2}}
 \newcommand{\Rom}{\textit{Roman}}
 
-\shorttitle{BinML: a real-time classifier for Roman microlensing}
+\shorttitle{BinML: partial-light-curve anomaly triage}
 \shortauthors{Bhatia}
 
 \begin{document}
 
-\title{BinML: A Real-Time, Detectability-Conditioned Deep-Learning Classifier \\
-for the \textit{Roman} Galactic Bulge Time-Domain Survey}
+\title{BinML: Detectability-Conditioned Anomaly Triage for Synthetic \\
+\textit{Roman}-like Partial Light Curves}
 
-\author{Kunal Bhatia}
+\author[0009-0007-4447-6325]{Kunal Bhatia}
 \affiliation{Independent Researcher}
-\email{muffin29011@gmail.com}
+\email{kunal29bhatia@gmail.com}
 
 \begin{abstract}
-The Nancy Grace \Rom{} Space Telescope will monitor hundreds of millions of stars in the
-Galactic bulge at $\sim$15-minute cadence, and among them it will catch the brief brightenings
-of gravitational microlensing---including the rare events in which a planet betrays itself
-through a short, sharp anomaly riding on an otherwise smooth light curve. Finding those events in
-a data stream far too large to inspect by hand, and flagging each one the moment its evidence
-appears rather than after the season has ended, is as much a problem of survey logistics as of
-astrophysics. We present \textbf{BinML}, a compact ($\bmlNparams$-parameter) neural network that
-sorts \Rom{} light curves into six classes: sources with no detectable event, ordinary
-single-lens microlensing, the anomalous binary and planetary lenses that carry the planet signal,
-and three kinds of variable star that would otherwise contaminate the sample. Two ideas make
-BinML suited to a real survey rather than a fixed benchmark. First, each event is labelled by
-what can actually be seen in its photometry, not by the parameters used to simulate it, so the
-network is never trained to claim an anomaly that leaves no observable trace. Second, the model
-reports each class only once that class's evidence has arrived, so a binary is announced when its
-anomaly appears and not during the smooth rise that precedes it. Measured event by event, the
-model's first alert precedes the anomaly in $\bmlCascPrematurePct\%$ of eligible binaries, and
-follows it by a median of $\bmlCascMedianLag$~days when it does not. On a held-out test set of
-$\bmlNtest$ events and under the adopted synthetic class mixture, BinML recovers
-$\bmlCompletenessPct\%$ of the anomalous events while holding the flagged sample to a purity of
-$\bmlPurityTarget$, and it reproduces this on a $\bmlStressN$-million-event set drawn from
-parameters it never saw. These results use a legacy Cycle-7-inspired \Rom{}-like cadence and are a
-reproducible synthetic benchmark rather than a forecast of survey yields, which would require
-event-rate priors and the current survey design. The model and its full simulation-to-inference
-pipeline are released as open source.
+The Nancy Grace \Rom{} Space Telescope will produce more microlensing light curves than can be
+inspected manually. We present \textbf{BinML}, a compact ($\bmlNparams$-parameter) neural network
+for triaging synthetic \Rom{}-like light curves into six classes: no detectable event, single-lens
+microlensing, detectable binary-lens anomalies (\texttt{NonPSPL}), and three broad variable-star
+classes. Labels are conditioned on explicit synthetic detectability thresholds and on the portion
+of the season revealed to the model. BinML recovers $\bmlCompletenessPct\%$ of detectable
+\texttt{NonPSPL} events at a purity of $\bmlPurityTarget$ on complete 72-day light curves in a
+held-out $\bmlNtest$-event test set whose detectable-anomaly prevalence is
+$\bmlPriorPiZero\%$. Both numbers are conditional on that mixture: at a $1\%$ prevalence the
+same threshold yields purity $\bmlPurityOnePct$, and holding purity at $\bmlPrevPurTarget$
+instead costs completeness, which falls to $\bmlPrevCompOne$. A disjoint
+$\bmlStressNatN$-million-event set drawn from the same priors reproduces this complete-season
+macro-F1, whereas targeted out-of-distribution tests expose several failures. We evaluate
+$\bmlCascN$ eligible simulated binary lenses in half-day increments. BinML alerts on
+$\bmlCascDetFrac\%$ within the season; $\bmlCascPrematurePct\%$ alert
+before a truth-informed, noise-free first-detectable onset (95\% CI
+$[\bmlCascPrematureLo,\bmlCascPrematureHi]\%$), and non-premature alerts have a median delay of
+$\bmlCascMedianLagNonPrem$~days. That scan covers eligible binaries only, so it measures timing
+rather than streaming purity or alert burden; the latency supports post-hoc modelling priority
+rather than real-time triggering of hours-long perturbations. Out-of-distribution tests bound the operating envelope: on faint sources anomaly precision falls
+to $\bmlStressFaintPrec$, which would dominate any follow-up budget. Validation is synthetic
+throughout, on a legacy-like schedule with an adopted $0.02$~mag detectability floor, so these
+are benchmark values rather than \Rom{} yield forecasts. Code, weights, and reproducibility artifacts are
+released openly.
 \end{abstract}
 
 \keywords{Gravitational microlensing (672) --- Exoplanet detection methods (489) ---
@@ -52,83 +52,95 @@ Neural networks (1933) --- Time domain astronomy (2109) --- Convolutional neural
 
 \section{Introduction}\label{sec:intro}
 
-Gravitational microlensing occupies a niche no other planet-detection method reaches. Because it
-responds to a lens's mass rather than its light, it is sensitive to cold, low-mass planets far
-from their host stars and to unbound planetary-mass objects drifting through the Galaxy---the very
-population that transit and radial-velocity surveys, biased toward hot and close-in planets,
-recover least well \citep{Mao1991,GouldLoeb1992,Suzuki2016}. The Nancy Grace \Rom{} Space Telescope will exploit
+Gravitational microlensing complements other planet-detection methods because it responds to a
+lens's mass rather than its light. It is sensitive to cold, low-mass planets far from their host
+stars and to unbound planetary-mass objects drifting through the Galaxy---populations that transit
+and radial-velocity surveys, biased toward hot and close-in planets, recover less readily
+\citep{Mao1991,GouldLoeb1992,Suzuki2016}. The Nancy Grace \Rom{} Space Telescope will exploit
 this sensitivity systematically. Its Galactic Bulge Time-Domain Survey (GBTDS) will monitor the
-crowded bulge fields at high cadence in the near-infrared, and is predicted to detect of order a
-thousand bound planets and to pin down the free-floating planet mass function
-\citep{Spergel2015,Penny2019,Johnson2020,Sumi2023,Gaudi2012}; the same data will also yield
+crowded bulge fields at high cadence in the near-infrared. It is predicted to detect of order a
+thousand bound planets and to constrain the free-floating planet mass function
+\citep{Spergel2015,Penny2019,Johnson2020,Sumi2023,Gaudi2012}, and the same data will yield
 transiting planets \citep{Wilson2023}. In its design
-\citep{Penny2019}, the wide F146 filter samples the light curve every
-$\sim\bmlCadence$~minutes; two auxiliary bands, F087 and F213, add colour information on a
-$\sim$6-hour cycle.
+\citep{ROTAC2025,STScI2025GBTDS}, the wide F146 filter samples the light curve every
+$\sim12$~minutes; two auxiliary bands, F087 and F213, add colour information on staggered
+$\sim$6-hour cycles.
 
-That sensitivity is inseparable from two operational problems. The first is sheer volume: the
-survey will yield hundreds of millions of light curves, within which genuine microlensing events
-are a small minority and anomalous---binary or planetary---events rarer still. No team can
-inspect them by hand, and the definitive step for any candidate, fitting a full binary-lens
-model, is far too expensive to run on the whole stream. The second problem is timing. The
-signal that betrays a planet is short: a caustic crossing lasting hours to a day, riding on top
-of a smooth magnification that itself unfolds over weeks. A classifier meant to \emph{trigger}
-follow-up must therefore be honest about time---it must not announce a binary during the smooth
-rise, before the caustic that would justify the alert has actually been observed. A model that
-guesses early is actively harmful: it spends a finite follow-up budget on planets that have
-not yet revealed themselves, and may never. The need for real-time response is not new to
-microlensing: rapid-response anomaly-detection and alert systems have driven planet follow-up for
-close to two decades \citep{Udalski2003,Dominik2007,Dominik2008,Tsapras2009}. Those systems, however, sit
-\emph{downstream} of detection, reacting to deviations once an event is already known; the
-scale and cadence of \Rom{} instead demand that the real-time decision be made inside the
-classifier that scans the raw stream.
+That sensitivity brings an operational problem of scale. Genuine microlensing events are a small
+minority of the survey light curves, detectable binary-lens anomalies are rarer still, and fitting
+a full binary-lens model to every source is impractical. A cheap classifier can therefore rank
+which partial light curves deserve inspection or detailed modelling. Timing matters to that task:
+before a caustic perturbation appears, a binary lens can resemble an ordinary single lens. A model
+evaluated only on complete seasons can assign an anomalous label before the evidence that defines
+it has entered the observed window. Existing rapid-response systems already show the value of
+low-latency anomaly detection in microlensing \citep{Udalski2003,Dominik2007,Dominik2008,Tsapras2009}.
+Here we ask a narrower question: as an eligible synthetic binary is progressively revealed, when
+does the classifier first cross an anomaly threshold relative to a truth-informed onset?
 
-Machine learning has been applied to microlensing classification before, and the trajectory is
-instructive. Feature-engineered classifiers such as \textsc{MicroLIA} \citep{Godines2019} and
-neural networks trained on lower-cadence ground-based data \citep{Mroz2020} established that the
-problem is learnable on OGLE- and ZTF-like photometry. Work aimed specifically at high-cadence,
-\Rom{}-like microlensing sampling \citep{Khakpash2021}, together with deep-learning classifiers
-built to flag transients in real time more broadly \citep{Muthukrishna2019}, are the closest
-antecedents of the present work. Architecturally we build on the now-standard use of
-transformers for astronomical time series \citep{Astromer2023,Vaswani2017}. What distinguishes
-BinML, however, is not the network but the way the problem is posed: we treat detectability and
-observation time as first-class parts of the label definition rather than as afterthoughts of
-evaluation.
+Machine learning has already been used at the scale relevant to microlensing surveys.
+\citet{Wyrzykowski2015} searched 150 million OGLE-III sources and classified 3,718 candidates, while
+\citet{Husseiniova2021} applied a machine-learning search to roughly 700 million VVV light curves;
+both were completed-data searches. The random-forest microlensing classifier of \citet{Godines2019} and neural networks on
+ground-based photometry \citep{Mroz2020} address related classification tasks. KMTNet's completed-event finder \citep{Kim2018EventFinder} and the subsequent
+\textsc{AnomalyFinder} analyses \citep{Zang2022}, which search residuals from fitted single-lens
+models, demonstrate systematic event and anomaly discovery in real survey data. For simulated high-cadence \Rom{} light curves,
+\citet{Khakpash2021} developed morphology and model-fit features intended for rapid classification.
+In the alert-broker setting, Fink's LIA module
+performs real-time microlensing classification but does not include a binary-anomaly class
+\citep{Moller2021}. For \Rom{}, \citet{Zhang2021} demonstrated real-time posterior inference for a
+known binary-lens event; that is downstream parameter inference, not discovery in the full stellar
+stream. Most closely, \citet{CrispimRomao2025} evaluated an isolation-forest alarm on drip-fed
+synthetic LSST light curves containing microlensing, binary lenses, and variables. Their online
+stage separates signal from constant sources and their physical classification is offline; our
+contribution is a supervised six-class \Rom{}-like model with time-dependent labels. Related
+time-domain work also studies early classification of explosive transients
+\citep{Muthukrishna2019}. Architecturally we use standard time-series transformer components
+\citep{Astromer2023,Vaswani2017}, and our evaluation shares the prior-shift concern highlighted by
+PLAsTiCC \citep{Hlozek2020}.
 
-This paper makes three contributions, developed in the sections that follow. First, we introduce
-\emph{detectability-conditioned labelling} (\S\ref{sec:sims}): events are labelled by the
-evidence a perfect observer could recover, which removes the label noise that would otherwise
-punish the model for failing to see what is physically unobservable. Second, we build a
-\emph{real-time cascade} (\S\ref{sec:cascade}) by making each label a function of how much of the
-season has been revealed, so the network learns to report classes in the order their evidence
-arrives. Third, we evaluate the model honestly at survey scale
-(\S\ref{sec:eval}--\ref{sec:limits}): completeness at a fixed purity as the headline metric, a
-selection-aware reweighting that corrects for the training distribution, and a
-$\bmlStressN$-million-event stress test on parameters the model never saw.
+Across this work we find no trained classifier that combines all of the elements BinML needs:
+multi-band \Rom{}-cadence input, a binary and planetary anomaly class evaluated alongside the
+variable-star populations that contaminate it, operation on partial rather than completed light
+curves, and released weights. The searches above are single-band, completed-data, or
+binary-blind; the \Rom{}-specific work stops at feature definition or at downstream inference
+for an already-identified event. To our knowledge BinML is the first released model to occupy
+that combination, which is what the rest of this paper evaluates.
+
+This paper makes three contributions. First, we introduce \emph{detectability-conditioned
+labelling} (\S\ref{sec:sims}): events are labelled by whether they cross adopted synthetic
+thresholds, aligning the training target with that synthetic policy.
+Second, we build a \emph{partial-light-curve cascade} (\S\ref{sec:cascade}) by making each label a
+function of how much of the season has been revealed. Third, we evaluate the model at synthetic
+survey scale (\S\ref{sec:eval}--\ref{sec:limits}):
+completeness at a fixed purity as the headline metric, a selection-aware reweighting that corrects
+for the training distribution, and a $\bmlStressN$-million-event stress collection spanning an
+independent same-prior sample and targeted out-of-range regimes.
 
 \section{Simulated survey and labelling}\label{sec:sims}
 
 \begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.98\textwidth]{outputs/figures/lightcurve_gallery.pdf}
-\caption{Representative simulated \Rom{} light curves, one per class, in all three photometric
-bands (F146 in grey, the bluer F087 in blue, the redder F213 in red), as the survey would
-record them, with BinML's prediction annotated in each panel. \texttt{Flat} sources are
+\caption{Illustrative simulated \Rom{}-like light curves, one per class (F146 in grey, the
+bluer F087 in blue, the redder F213 in red), under the simulator assumptions. Only bands with
+surviving epochs are plotted; all six examples here retain all three, but heavy dust leaves F087
+undetected for $\bmlNoFilterBlue\%$ of detectable-anomaly events. \texttt{Flat} sources are
 noise-dominated; \texttt{PSPL} shows the smooth single-lens magnification; \texttt{NonPSPL}
-carries the sharp caustic features that mark a binary or planetary lens---note that they appear
-in all three bands together, as microlensing is achromatic; the three
+carries the sharp caustic features that mark a binary or planetary lens. The simulated lens
+magnification is intrinsically achromatic, although blending makes the observed amplitudes
+band-dependent. The three
 variable-star classes span short-period pulsators and eclipsing binaries (\texttt{PeriodicVar},
 shown phase-folded), slow red-giant variability (\texttt{LongPeriodVar}), and outbursts
 (\texttt{Eruptive}). The visual separability of the caustic signature from ordinary single-lens
-curvature is precisely what the model must preserve. Throughout this paper, illustrative events are
-selected as high-confidence, correctly-classified representatives of each class rather than at
-random; aggregate performance across all events is reported in \S\ref{sec:results}.}
+curvature is the information the model must preserve. The examples are deliberately selected for
+visual legibility and correct model classification rather than sampled at random; they are not
+performance evidence. Aggregate results are reported in \S\ref{sec:results}.}
 \label{fig:gallery}
 \end{figure*}
 
 \subsection{Six classes across three bands}
-We simulate \Rom{} GBTDS light curves in the six classes of Figure~\ref{fig:gallery}, chosen to
-span the populations a real triage pipeline must separate. \texttt{Flat} sources show no
+We simulate \Rom{} GBTDS light curves in the six selected classes of Figure~\ref{fig:gallery}.
+\texttt{Flat} sources show no
 detectable event. \texttt{PSPL} events are single-lens, point-source point-lens microlensing
 \citep{Paczynski1986}. \texttt{NonPSPL} events---the anomalous, science-critical class---are
 binary and planetary lenses, computed with the contour-integration code \textsc{VBBinaryLensing}
@@ -138,44 +150,109 @@ populations that dominate the real bulge and are the classifier's most dangerous
 \texttt{PeriodicVar} (RR~Lyrae, eclipsing binaries, $\delta$~Scuti), \texttt{LongPeriodVar}
 (Miras, semiregulars, and OSARGs---small-amplitude red-giant pulsators---whose slow rise most
 readily mimics a long-timescale microlensing event), and \texttt{Eruptive} (dwarf novae and Be
-outbursts). Event-timescale, mass-ratio, and separation priors follow the measured bulge
-distributions \citep{Mroz2019,Suzuki2016}; the variable-star templates follow the OGLE bulge
-catalogues \citep{Soszynski2013,Soszynski2014}. Every event is realised on a legacy
-Cycle-7-inspired \Rom{}-like cadence---$\sim$15-minute F146 sampling with 6-hour colour visits over
-a single 72-day season---in all three bands and degraded by photometric noise, blending, and
-interstellar extinction. This cadence is not the current GBTDS design (\S\ref{sec:limits}); we use
-it because the model and its training predate the updated survey definition.
+outbursts). We adopt an authored truncated log-normal event-timescale distribution whose mean is
+anchored to an empirical inner-bulge estimate \citep{Mroz2019}. Binary mass ratio and projected
+separation are instead drawn log-uniformly over broad analytic supports; they are not a fitted
+population model \citep{Suzuki2016,Zhang2021}. Variable-star periods and amplitudes are motivated
+by OGLE bulge catalogues, but the generated curves are phenomenological analytic waveform families
+rather than sampled empirical templates \citep{Soszynski2013,Soszynski2014}. Every event is realised
+on a hybrid \Rom{}-like schedule: legacy-like $\sim$15-minute wide-band sampling and a single
+72-day season, combined with 6-hour visits in each of the current F087 and F213 auxiliary filters.
+The curves are degraded by photometric noise, blending, and interstellar extinction. The released
+model was trained on this legacy schedule (\S\ref{sec:limits}).
 
-\subsection{Labelling by what is observable}\label{sec:detcond}
-The methodological core of BinML is a single principle: \emph{an event's label is set by what a
-perfect observer could recover from the photometry, not by the parameters we injected}. The
-principle operates at both boundaries the classifier cares about. A microlensing event whose
-peak falls outside the 72-day season, or whose amplitude is buried beneath the noise, is labelled
-\texttt{Flat}, because its in-window signal falls below the adopted simulation-based detectability
-threshold; training the network to call it \texttt{PSPL} would only teach it to guess. Likewise, a
-binary whose caustic perturbation lies everywhere below the noise floor is, observationally, a
-single lens, and is labelled \texttt{PSPL}. In practice we measure how far each binary's true,
-noiseless light curve departs from the best single-lens description of it; if that departure is
-too small to rise above the noise, the event is not given the anomalous label, whatever generated
-it. This does two useful things at once. It cleans up the boundaries between classes, where most
-labelling mistakes would otherwise happen, and it keeps our later purity figures meaningful: an
-anomaly the model appears to ``miss'' under this scheme is one that carried no detectable evidence
-to begin with. We return to what this means for the numbers in \S\ref{sec:results}.
+The source population is likewise parametric rather than a Galactic population synthesis. The
+observed F146 baseline is uniform from 20 to 25~mag and $A_{K_s}$ is uniform from 0.2 to 1.2,
+sampled independently. Baseline colour offsets come from a grey intrinsic source spectrum plus the
+adopted extinction law; intrinsic stellar colour and its correlations with luminosity, variability,
+and line of sight are not modelled. These choices give a classifier benchmark broad coverage.
 
-The scale of this relabelling is not a detail but the point. Across the test set,
-$\bmlRelabelled\%$ of events receive an observational label that differs from the class they were
-generated as---that is, more than a third of all events would carry a demonstrably misleading
-label under the naive scheme of labelling by generator intent. The effect is concentrated exactly
-where it should be: of the events generated as binary or planetary lenses, only $\bmlNonpsplKept\%$
-show a detectable anomaly and keep the anomalous label, while $\bmlNonpsplToPspl\%$ have a caustic
-perturbation buried below the noise and are, correctly, indistinguishable from single lenses;
-similarly, $\bmlLpvToFlat\%$ of the long-period variables vary too weakly within a single season
-to be detected and are labelled flat. Training a network against generator intent would therefore
-ask it to assert, on more than a third of its examples, evidence that is physically absent---the
-definition of label noise. Conditioning the labels on detectability removes it at the source. A
-full ablation that retrains the network on generator-intent labels and measures the resulting
-degradation is the natural next experiment, and we flag it as such; here we establish the size of
-the mislabelling the scheme corrects.
+Table~\ref{tab:simulation} collects the assumptions most likely to affect transfer.
+
+\begin{table*}[tbp]
+\centering
+\caption{Core simulation and labelling assumptions for the released model.\label{tab:simulation}}
+\small
+\hrule
+\vspace{4pt}
+\begin{minipage}[t]{0.47\textwidth}
+\textbf{$t_E$.} Truncated log-normal, median 16.3 d,
+$\sigma_{\log_{10}}=0.35$, 1--300 d; authored width, with the mean anchored to
+\citet{Mroz2019}.\par\smallskip
+\textbf{$u_0$.} $\mathcal{U}(0,2)$; broad analytic support following
+\citet{Zhang2021}.\par\smallskip
+\textbf{$q$; $s$.} Log-$\mathcal{U}(10^{-6},1)$; log-$\mathcal{U}(0.2,5)$;
+benchmark supports, not occurrence rates.\par\smallskip
+\textbf{$\rho$; $\alpha$.} Log-$\mathcal{U}(10^{-4},10^{-2})$;
+$\mathcal{U}(0,2\pi)$; binary-lens geometry support.\par\smallskip
+\textbf{$f_s$.} Log-$\mathcal{U}(0.1,1)$; reference-band source-flux
+fraction.\par\smallskip
+\textbf{$t_0$.} $\mathcal{U}[-p,72+p]$ d, where
+$p=\min(0.5t_E,36\,{\rm d})$; permits partial and out-of-season peaks.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\textwidth}
+\textbf{F146 baseline.} $\mathcal{U}(20,25)$ AB mag; observed reference-band
+baseline.\par\smallskip
+\textbf{$A_{K_s}$; intrinsic SED.} $\mathcal{U}(0.2,1.2)$ mag; grey in AB;
+colours arise only from extinction and blending.\par\smallskip
+\textbf{Cadence and window.} F146 every 15 min; F087 and F213 every 6 h; one
+72 d season; legacy design.\par\smallskip
+\textbf{Noise.} Flux-space source-plus-background noise and a 0.001 mag floor,
+sampled independently at each epoch.\par\smallskip
+\textbf{Label policy.} $\Delta\chi^2_{\rm event}\geq500$,
+$\Delta\chi^2_{\rm anom}\geq160$, and amplitude $\geq0.02$ mag; noise-free
+statistics and an unvalidated amplitude floor.
+\end{minipage}
+\vspace{4pt}
+\hrule
+\vspace{3pt}
+
+\parbox{0.94\textwidth}{\footnotesize \textit{Note.} Log-$\mathcal{U}$ denotes a distribution
+uniform in the logarithm. Variable-star mixtures use the phenomenological waveform families
+described in the text and released generator; class quotas are deliberately selected for training
+and are not a survey event-rate model.}
+\end{table*}
+
+The \texttt{NonPSPL} generator contains static binary lenses (2L1S) with finite-source
+magnification, but not binary-source (1L2S) events, annual parallax, or lens orbital motion. The
+1L2S omission is the most consequential of the three: a binary source produces a bump on an
+otherwise single-lens curve that can mimic a binary-lens anomaly, and it is a long-recognised
+degeneracy with planetary-mass 2L1S perturbations \citep{Gaudi1998}. It is therefore the dominant
+astrophysical false positive that our purity estimate does not contain, and adding it would
+lower the reported \texttt{NonPSPL} purity by an amount we have not measured. Annual parallax
+and lens orbital motion distort the light-curve shape but do not manufacture a caustic-like
+feature, so we expect them to matter less over a single 72-day season. The contaminant set
+likewise omits many real irregular and correlated systematics.
+
+\subsection{Labelling by an adopted synthetic detectability policy}\label{sec:detcond}
+BinML's policy-conditioned synthetic labels are set by explicit thresholds applied to simulated,
+noise-free curves, rather than by generator class alone; we use ``detectability-conditioned'' as
+shorthand for this policy. A microlensing event whose in-window amplitude falls below the adopted
+floor is labelled \texttt{Flat}. Likewise, a binary whose caustic perturbation falls below the
+anomaly thresholds is labelled \texttt{PSPL}. For binaries we measure the departure of the
+noiseless curve from a refitted single-lens model and withhold the anomalous label when that
+departure is too small under the policy.
+
+The class definitions---and therefore every metric in this paper---depend on these thresholds. An
+event must reach $\Delta\chi^{2}_{\mathrm{event}} \ge 500$ against a flat baseline to be a
+detected event at all; a binary must reach $\Delta\chi^{2}_{\mathrm{anom}} \ge 160$ against its
+best-fitting single-lens model to keep the anomalous label; and both statistics must exceed a peak
+amplitude of $0.02$~mag. Both $\Delta\chi^{2}$ values are computed on noise-free curves, so neither
+is a likelihood-ratio statistic: under the null each is identically zero, and each grows in
+proportion to the epoch count. At \Rom{}'s sampling that makes both $\chi^{2}$ cuts close to
+vestigial and leaves the $0.02$~mag amplitude floor as the operative criterion. That floor is an
+adopted simulation policy rather than a measured instrumental limit. Section~\ref{sec:ablations}
+measures what the labelling scheme buys against the alternative of labelling by generator intent.
+
+The scale of the relabelling is the point. Across the test set, $\bmlRelabelled\%$ of events
+receive a policy-conditioned label that differs from the class they were generated as. The effect is
+concentrated where it should be. Of the events generated as binary or planetary lenses, only
+$\bmlNonpsplKept\%$ show a detectable anomaly and keep the anomalous label; $\bmlNonpsplToPspl\%$
+have a caustic perturbation below those thresholds and are labelled as single lenses. Similarly,
+$\bmlLpvToFlat\%$ of the long-period variables vary too weakly within a single season to be
+detected and are labelled flat. Training against generator
+intent asks the network to assign an anomalous or variable label on about a third of its examples
+even though the corresponding signal falls below the adopted policy threshold.
 
 \section{Model}\label{sec:model}
 
@@ -196,11 +273,11 @@ of building block used in image recognition. The second is a transformer, a now-
 architecture that lets every part of the light curve ``attend to'' every other part, so the model
 can weigh, for example, a brief brightening against the overall trend around it. Together they
 come to just $\bmlNparams$ trainable numbers, which by the standards of modern deep learning is
-tiny. That small size is a deliberate choice rather than a limitation. We are not short of
-training data---we simulate of order ten million events---so the pressure is not to build a
-larger model but to build one cheap enough to run on the entire survey, night after night. A
-compact network that classifies a light curve in a single pass is far more useful here than a
-heavy one that could only be applied to a pre-selected handful of candidates.
+tiny. The small size is deliberate. We are not short of training data---we simulate of order ten
+million events---so the pressure is not to build a larger model but to build one cheap enough to
+run on the entire survey, night after night. A compact network that classifies a light curve in a
+single pass is far more useful here than a heavy one applied only to a pre-selected handful of
+candidates.
 
 The model reads the light curve in a form that keeps the survey's own timing. Each of the three
 filters is divided into a fixed set of time bins across the 72-day observing season: the workhorse
@@ -209,164 +286,176 @@ $\bmlCadence$~minutes), and the two colour filters into 96 bins each. For every 
 given five simple numbers: the average brightness in that bin, the brightest and faintest points
 in it, the fraction of the bin that was actually observed, and a flag saying whether it was
 observed at all. All brightnesses are measured relative to a single quiet-state (baseline)
-level, subtracted from all three filters together, which preserves the source's true colour so
-the network can use it.
+level defined in F146 and subtracted from all three filters. This removes absolute source
+brightness while retaining the simulated inter-band offsets, including the effects of extinction
+and blending, but not an independently measured intrinsic source colour.
 
-Keeping the brightest and faintest point in each bin, rather than only the average, is the one
-design choice we treat as non-negotiable, and it is worth explaining why. The anomaly that reveals
-a planet can be a sharp spike of nearly three magnitudes that lasts only a few hours. If the model
-simply averaged each bin, that spike would be diluted to about a third of a magnitude---no larger
-than the gentle curve of an ordinary single lens---and the very distinction the model exists to
-make, planet-bearing binary versus plain single lens, would be washed out before the network ever
-saw it. We therefore carry the per-bin maximum and minimum through the whole network untouched, so
-a caustic spike always survives to be seen. When a colour filter is missing for an event---the
-bluer F087 filter is lost in about 38\% of cases behind heavy dust---the model is simply told to
+The training and frozen evaluations use the simulator-provided F146 baseline. A deployed pipeline
+would estimate that level from a partial, possibly magnified light curve; the released inference
+interface includes an estimator, whose error we have not evaluated against the generator value.
+
+Keeping the brightest and faintest point in each bin, rather than only the average, retains narrow
+caustic structure during time binning. In the largest measured case, mean pooling
+would reduce a nearly three-magnitude excursion to about a third of a magnitude. We therefore
+propagate exact extrema through each strided reduction stage before a learned projection combines
+the channels; the extrema are not supplied unchanged to the final classifier. When a colour filter
+is missing for an event---the
+bluer F087 filter yields no usable epoch for $\bmlNoFilterBlue\%$ of detectable-anomaly
+events behind heavy dust---the model is simply told to
 ignore it rather than being fed a guess. A final pooling step combines the processed bins into a
 single summary, from which a standard classifier reads off the six class probabilities. The model
 uses only the binned brightnesses; it does not use the individual error bars.
 
-This compactness is what makes survey-scale, real-time use practical. Classification is a single
-forward pass with no per-event fitting, and on a single $\bmlInferCores$-core CPU---no GPU
-required---BinML classifies roughly $\bmlInferEps$ light curves per second, or $\bmlInferMs$~ms
-per event. At that rate one node classifies of order a hundred million light curves per day, so a
-handful of nodes cover a full season of hundreds of millions of curves in a day or two---and in a
-real deployment it is reading and binning the light curves, not the forward pass, that would set
-the throughput. The workload parallelises trivially across nodes. Re-classifying the entire
-archive each night as new epochs arrive, which is what the cascade of \S\ref{sec:cascade}
-requires, is therefore inexpensive rather than prohibitive.
+This compactness makes repeated survey-scale scoring practical. Classification is a single forward
+pass with no per-event fitting. On a $\bmlInferCores$-core \bmlInferCpu{} CPU with
+$\bmlInferThreads$ threads, the model scores $\bmlInferEps$ pre-tokenised light curves per second
+($\bmlInferMs$~ms per event) in batches of 1024. \code{validation/inference\_benchmark.py}
+regenerates this together with the processor, thread count and timing protocol; an earlier
+revision quoted a figure roughly three times larger whose hardware and script were not retained
+and which we could not reproduce, so it is withdrawn.
 
-\section{The real-time cascade}\label{sec:cascade}
+\section{Partial-light-curve evaluation}\label{sec:cascade}
 
 \begin{figure*}[tbp]
 \centering
 \includegraphics[width=0.98\textwidth]{outputs/figures/cascade_evolution.pdf}
-\caption{The real-time cascade, shown on three simulated events as the season is progressively
-revealed (left to right in each panel). \emph{Top:} the light curve in all three bands (F146
-grey, F087 blue, F213 red), with the dashed line marking the anomaly-onset day
+\caption{The partial-light-curve cascade, shown on three simulated events as the season is progressively
+revealed (left to right in each panel). \emph{Top:} the light curve in the bands with surviving epochs
+(F146 grey, F087 blue, F213 red; F087 is undetected for the clean binary). The dashed vertical line in both rows marks the anomaly-onset day
 $t_{\mathrm{anom}}$ for the binaries. \emph{Bottom:} BinML's class
 probability as a function of how much of the season it has seen. For the clean binary (left),
 probability flows \texttt{Flat}$\rightarrow$\texttt{PSPL}$\rightarrow$\texttt{NonPSPL}, with the
-jump to \texttt{NonPSPL} occurring near the coarsely estimated detectability onset---not
+jump to \texttt{NonPSPL} occurring near the truth-informed simulated onset---not
 during the smooth rise before it. The subtle binary (centre) shows the same ordering with a late,
-weak anomaly. Crucially, the single-lens control (right) never acquires appreciable
-\texttt{NonPSPL} probability: the model does not invent an anomaly that is not there.}
+weak anomaly, and the single-lens control (right) acquires no appreciable \texttt{NonPSPL}
+probability. \emph{These three events were selected to illustrate the intended behaviour and are
+not evidence for it}; the aggregate evaluation in \S\ref{sec:cascade} measures only the first
+\texttt{NonPSPL} threshold crossing on eligible binaries, not the full three-state sequence.}
 \label{fig:cascade}
 \end{figure*}
 
-A survey classifier is never handed a finished light curve; it watches the season fill in night
-by night. This is the setting in which a naive model fails in the most damaging way. A binary
-lens is indistinguishable from a single lens throughout its smooth rise, and becomes identifiable
-only once its caustic is on screen. A network trained on complete curves learns to
-\emph{anticipate} the anomaly from the smooth portion---inflating early \texttt{NonPSPL}
-probability and, in a deployed pipeline, firing follow-up triggers on planets that have not yet
-revealed themselves.
+A streaming classifier receives a partial rather than a finished light curve. Before an anomalous
+feature appears, a binary lens may be photometrically consistent with a single lens, so assigning
+the complete-season class to every prefix would teach the network a target unsupported by the
+revealed window.
 
-We remove this failure mode by making the label itself a function of observation time. For each
-binary we compute the day $t_{\mathrm{anom}}$ at which its anomaly first becomes detectable, using
-the same \dchisq{} threshold that defines the \texttt{PSPL}/\texttt{NonPSPL} boundary in
-\S\ref{sec:detcond}. During training the network sees light curves truncated at random days: a
+We instead make the label a function of observation time. For each binary we compute the day
+$t_{\mathrm{anom}}$ at which its anomaly first crosses the adopted thresholds. This reference is
+truth-informed: it is derived from the simulated, noise-free light curve and a single-lens fit
+seeded with injected parameters, rather than from an observable broker statistic. During training
+the network sees light curves truncated at random days: a
 binary truncated \emph{before} $t_{\mathrm{anom}}$ carries the \texttt{PSPL} label (with the
 detectability floor re-evaluated on the truncated data), and earns \texttt{NonPSPL} only once the
-anomaly lies inside the revealed window. The model thereby internalises the cascade
+anomaly lies inside the revealed window. The resulting training target follows the cascade
 \texttt{Flat}$\rightarrow$\texttt{PSPL}$\rightarrow$\texttt{NonPSPL}.
+
+The prefix labels for other classes are also generator-informed. Single-lens amplitude is
+evaluated from injected parameters, an eruptive source changes class at its injected start time,
+and periodic or long-period variability uses an analytic amplitude--period proxy. That proxy does
+not evaluate the realised waveform, phase, noisy measurements, or irregular sampling.
 
 Figure~\ref{fig:cascade} shows the cascade at the level of individual events. As the clean binary
 is revealed, BinML's probability mass moves from \texttt{Flat} to \texttt{PSPL} during the smooth
 magnification and only jumps to \texttt{NonPSPL} when the caustic crosses into view at
 $t_{\mathrm{anom}}$; the subtle binary follows the same sequence with a weaker, later anomaly; and
-the single-lens control never acquires meaningful \texttt{NonPSPL} probability at all. The
-aggregate behaviour is measured event by event rather than on isolated snapshots, because a live
+the single-lens control never acquires meaningful \texttt{NonPSPL} probability.
+
+\paragraph{Definitions.} We fix four terms and keep the same denominators throughout. An
+\emph{eligible event} is a simulated binary whose anomaly survives detectability-conditioned
+labelling and has a finite onset time; eligibility never depends on the model's output. A
+\emph{threshold crossing} is a revealed window at which $P(\texttt{NonPSPL})$ reaches the operating
+threshold. The \emph{alert} is the first such crossing; an event with no crossing before the season
+ends is \emph{right-censored}. An alert is \emph{premature} if it precedes the onset, and the
+\emph{lag} is the alert time minus the onset time, negative for premature alerts.
+
+\paragraph{Protocol.} We measure event by event rather than on isolated snapshots, because a live
 stream re-evaluates every light curve as each new epoch arrives. For each of $\bmlCascN$ eligible
-detectable binaries we sweep the revealed season and record the \emph{first} day the anomaly
-probability crosses the operating threshold; an alert is premature if that first crossing precedes
-the onset $t_{\mathrm{anom}}$. The model detects $\bmlCascDetFrac\%$ of these binaries within the
-season (the rest are right-censored), with a median lag of $\bmlCascMedianLag$~days after onset.
-Premature first alerts occur for $\bmlCascPrematurePct\%$ of eligible binaries (95\% CI
-$[\bmlCascPrematureLo,\bmlCascPrematureHi]$), or $\bmlCascPrematureOfDet\%$ of those detected.
+binaries we reveal the season in half-day steps and record the alert. The primary scan reveals
+\emph{only the F146 band}; revealing all three bands is reported separately below. All
+sensitivities are the same $\bmlCascN$ events reduced under different rules, from one stored scan.
+The scan holds prefix traces only for eligible binaries---none for demoted binaries, single lenses,
+flat sources, or variables---and its operating threshold was selected on complete-season validation
+light curves. It therefore measures detection and timing conditional on binary eligibility, not the
+sequential false-alert rate, purity, or alert burden.
 
-Two caveats govern how that number should be read, and both cut against a flattering
-interpretation. First, it is \emph{grid-dependent}: the more often the stream is re-evaluated, the
-more opportunities exist for an early excursion to cross the threshold, and halving our reveal
-step from one day to half a day roughly doubles the measured premature rate. At the survey's true
-$\sim$15-minute cadence it would be higher still, so our figure is a lower bound on what a
-continuously-evaluated pipeline would see. Second, an earlier version of this work quoted a much
-smaller rate obtained from a single randomly-chosen pre-onset snapshot per event; that is a
-different quantity---the probability that an arbitrary pre-onset moment is over threshold---and it
-is not the alert rate. We report the event-level figure because it is the one an alert broker
-experiences.
+\paragraph{When does the anomaly begin?} The generator records the truth-informed onset on a coarse
+$7.2$-day grid, which rounds it \emph{upward}: an alert arriving within that window is scored
+premature even though the anomaly was already detectable. The median inflation is
+$\bmlCascOnsetShift$~days. Worse, the anomaly statistic is not monotone in revealed time---as more
+of the season arrives, the best-fitting single-lens model can absorb an early deviation and push
+the residual back below threshold, which happens for $\bmlCascNonMonotone$ of our $\bmlCascN$
+events. ``The onset'' is therefore genuinely ambiguous, and we bracket it rather than choose:
+\emph{first-detectable} is the first half-day cut at which the anomaly is detectable at all, and
+\emph{persistently-detectable} is the cut after which it stays detectable to the end of the season.
+The first is permissive, the second strict; we report both.
 
-We therefore do not claim the cascade eliminates premature alerts. What the training scheme
-supplies is an ordering---probability mass moves \texttt{Flat}$\rightarrow$\texttt{PSPL}%
-$\rightarrow$\texttt{NonPSPL} as evidence accumulates (Figure~\ref{fig:cascade})---and a
-median alert that lands shortly after onset rather than during the smooth rise. Establishing that
-the truncation augmentation \emph{causes} this, rather than merely accompanying it, requires a
-matched-recipe ablation against a model trained without it; an earlier untracked comparison
-reporting a large reduction could not be reproduced and has been withdrawn.
+\paragraph{Results.} BinML alerts on $\bmlCascDetFrac\%$ of eligible binaries within the season;
+the remaining $\bmlCascCensored$ are right-censored. The alert precedes the anomaly onset for
+$\bmlCascPrematurePct\%$ of eligible events (95\% CI
+$[\bmlCascPrematureLo,\bmlCascPrematureHi]\%$) under the first-detectable onset, rising to
+$\bmlCascPrematurePersistPct\%$ ($[\bmlCascPrematurePersistLo,\bmlCascPrematurePersistHi]\%$) under
+the strict persistent definition. Among alerts that were not premature the median lag is
+$\bmlCascMedianLagNonPrem$~days (first-detectable) or $\bmlCascMedianLagPersist$~days (persistent).
+Because premature alerts are a small fraction, the median over \emph{all} $\bmlCascNdet$ alerts is
+also $\bmlCascMedianLagAll$~days.
 
-\begin{figure}[htbp]
+\paragraph{How the alert rule changes the answer.} Because the whole scan is stored, we can vary
+the decision rule on the same events. Coarsening the evaluation grid from half-daily to daily
+leaves the premature rate at $\bmlCascGridOnePct\%$ but costs detection
+($\bmlCascGridOneDet\%$); at two-day steps it falls to $\bmlCascGridTwoPct\%$, again with fewer
+detections. Requiring two consecutive crossings before alerting---one plausible debouncing
+rule---gives $\bmlCascPersistTwoPct\%$ premature at $\bmlCascPersistTwoDet\%$ detection.
+Revealing all three bands rather than F146 alone reduces the premature fraction to
+$\bmlCascMultibandPct\%$ and raises detection to $\bmlCascMultibandDet\%$, but worsens the median
+non-premature delay from $\bmlCascMedianLagNonPrem$ to $\bmlCascMultibandMedianLag$~days. Alerting
+whenever \texttt{NonPSPL} is simply the most probable class, ignoring the threshold, raises
+detection to near-complete but takes the premature rate to $\bmlCascArgmaxPct\%$. The measured
+timing is therefore strongly policy-dependent.
+
+Table~\ref{tab:policy} collects these on the same $\bmlCascN$ events.
+
+\begin{deluxetable*}{lcccc}
+\tablecaption{Premature-alert rate and within-season detection under different onset definitions
+and alert policies, all measured on the same $\bmlCascN$ eligible binaries from one stored scan.
+Intervals are Wilson $95\%$ on the eligible denominator; ``median lag'' is over alerts that were
+not premature. The spread in the first block is the ambiguity in \emph{when the anomaly begins};
+the spread in the rest is the choice of \emph{alert policy}. Generated from
+\code{validation/cascade\_reproduce\_result.json}.\label{tab:policy}}
+\tablehead{\colhead{variation} & \colhead{premature (\% eligible)} & \colhead{95\% CI (\%)} &
+           \colhead{alerted (\%)} & \colhead{median lag (d)}}
+\startdata
+\input{outputs/cascade_policy_table.tex}
+\enddata
+\tablenotetext{a}{The primary protocol reported in the text: F146 only, half-day evaluation grid,
+single threshold crossing, onset taken as the first half-day cut at which the anomaly is
+detectable. Every other row changes exactly one of those choices.}
+\end{deluxetable*}
+
+The intended training-label ordering is
+\texttt{Flat}$\rightarrow$\texttt{PSPL}$\rightarrow$\texttt{NonPSPL} as evidence accumulates.
+Whether the truncation augmentation \emph{causes} this rather than merely accompanying it is tested
+directly in \S\ref{sec:ablations}.
+
+\begin{figure}[tbp]
 \centering
-\includegraphics[width=0.82\columnwidth]{outputs/figures/cascade_summary.pdf}
-\caption{Distribution of the anomaly probability $P(\texttt{NonPSPL})$ on pre-onset windows for
-$\bmlCascN$ held-out binaries, from the same per-event artifact as Figure~\ref{fig:latency}.
-Values above the operating threshold (dashed) are the pre-onset excursions that can produce a
-premature alert. Note the logarithmic count axis. This replaces an earlier before/after summary
-whose values could not be reproduced (\S\ref{sec:cascade}).}
+\includegraphics[width=0.9\columnwidth]{outputs/figures/cascade_summary.pdf}
+\caption{Cumulative first-alert time for the $\bmlCascN$ eligible binaries, F146 only, on a
+half-day grid. The curve's height at $t<0$ (shaded) is the premature-alert fraction; its plateau is
+the within-season detection fraction, and the shortfall to $1$ is the right-censored events. The
+solid curve scores alerts against the onset recomputed on the half-day grid; the dashed curve uses
+the generator's coarse $7.2$-day onset, which shifts the curve left and inflates the premature
+fraction. The horizontal axis spans the full range of observed lags, so no detection falls outside
+the plot. Drawn by \code{paper/make\_figures.py} from the stored scan (\code{validation/cascade\_trace.npz}); the reference lines come from \code{validation/cascade\_reduce.py}'s reduction of the same scan.}
 \label{fig:cascade_summary}
 \end{figure}
 
-The complement of avoiding premature flags is catching real anomalies quickly once they do
-appear, which is the quantity a live alert stream cares about most.
-Figure~\ref{fig:latency} measures this detection latency: we step the model through the revealed
-season on a half-day grid and record the first day its anomaly probability crosses the operating
-threshold, relative to the onset day $t_{\mathrm{anom}}$. Two properties of this measurement matter.
-First, we retain \emph{every} eligible detectable binary ($N=\bmlCascN$) rather than only those the
-model eventually flags: $\bmlCascDetFrac\%$ are detected within the season and the remaining
-$\bmlCascCensored$ are right-censored, so the quoted latency is not inflated by discarding
-failures---the median below is conditional on detection, and should be read together with that
-detection fraction rather than as an unconditional expectation. Second, among detected events the
-median lag is $\bmlCascMedianLag$~days. A caveat we state explicitly: $t_{\mathrm{anom}}$ is itself
-estimated on a coarse grid, so this should be read as ``within a few days of onset'' rather than as
-a precise interval. The negative-lag fraction ($\bmlCascPrematureOfDet\%$ of detections) is the
-premature-alert population quantified above; these are the same events, from the same sweep.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.95\columnwidth]{outputs/figures/detection_latency.pdf}
-\caption{Censor-aware detection latency: days between the caustic becoming detectable
-($t_{\mathrm{anom}}$) and BinML first flagging the event, over \emph{all} $\bmlCascN$ eligible
-detectable binaries ($\bmlCascDetFrac\%$ detected within the season; $\bmlCascCensored$ never
-flagged and therefore right-censored, not discarded). The median among detections is
-$\bmlCascMedianLag$~days (blue line). The grey tail at negative lag is the premature
-(pre-onset) flags---timing false positives---which are a small minority.}
-\label{fig:latency}
-\end{figure}
-
-This same ``report each class only when its evidence arrives'' behaviour is not special to
-binaries; it holds for every class the model knows. Figure~\ref{fig:proball} shows, for one
-representative event of each class, how the six class probabilities evolve as the season is
-revealed. A short-period variable is recognised almost immediately, because its repeating
-brightness pattern is visible from the first few days. A single-lens event stays unremarked until
-its magnification begins, then rises cleanly to the single-lens class. An outburst is quiet until
-it erupts, at which point the model switches decisively to the eruptive class. In every panel the
-probability of the correct class rises just as its characteristic signal becomes visible and not
-before---which is what lets the model's output be used as a real-time trigger under the evaluated
-conditions.
-
-\begin{figure*}[tbp]
-\centering
-\includegraphics[width=0.98\textwidth]{outputs/figures/prob_evolution_all.pdf}
-\caption{Class probability as the season is progressively revealed, for one representative event
-of each of the six classes (the true class drawn in bold). Each class is identified as soon as its
-defining feature appears---immediately for the repeating variables, at the onset of magnification
-for single lenses, at the caustic for binaries, and at the outburst for eruptive events---and not
-before.}
-\label{fig:proball}
-\end{figure*}
+Every eligible binary, including the $\bmlCascCensored$ right-censored events, contributes to the
+detection fraction in Figure~\ref{fig:cascade_summary}; the latency statistic is conditional on an
+alert.
 
 \section{Evaluation methodology}\label{sec:eval}
 
-Before presenting the results we explain three choices that make our numbers a fair reflection of
-how the model would behave on the real survey, rather than flattering scores on a convenient test.
+Three choices define what the synthetic benchmark measures.
 
 The first is how we summarise performance. A single accuracy figure is misleading here, because
 the anomalous events are so rare that a model could score well simply by never flagging one. What
@@ -378,41 +467,47 @@ score there (macro-F1 being its unweighted average over the six classes). These 
 other---flag more events and you catch more real ones but also let in more false ones---so we fix
 the purity to a chosen value, $\bmlPurityTarget$, and report the completeness reached at that
 setting as our headline number. This is exactly the form in which a survey team would state a
-requirement: ``keep the flagged sample at least ninety per cent pure, and tell me how many planets
-I still find.''
+requirement: ``keep the flagged anomaly sample at least ninety per cent pure, and report how many
+detectable anomalies remain.'' This is not the same as planet completeness because
+\texttt{NonPSPL} also contains stellar binaries.
 
 The second is a partial correction for how the training set was built. To train efficiently we
 subsample the abundant demoted-binary by-products, and each test event carries a weight that
 reverses \emph{that} subsampling, applied to purity (which depends on the mix of false positives)
-but not to completeness (a per-class property). This is important to state precisely: the weighting
-undoes one internal sampling step, but it does \emph{not} reweight the deliberately chosen
-generator class quotas to a survey event-rate prior. The class mixture here is therefore an adopted
-synthetic mixture, not an inferred \Rom{} population, and the purity and completeness we quote are
-conditional on it; \S\ref{sec:limits} discusses the prior-sensitivity this implies.
+but not to completeness (a per-class property). The weighting undoes one internal sampling step; it
+does \emph{not} reweight the deliberately chosen generator class quotas to a survey event-rate
+prior.
 
 The third is a reference to judge the anomaly ranking against. For each event we can compute, from
 the noiseless light curve and the true parameters, its injected anomaly \dchisq{}---in effect how
 detectable the anomaly would be to an observer who already knew the answer. This is a
-\emph{truth-informed reference}, not an oracle upper bound: it uses information the survey never has
-and is not fieldable, and a learned model exploiting other morphology could in principle rank
-better than it on real, noisy data. Comparing BinML against it measures how much of the injected
+\emph{truth-informed reference}, not an oracle upper bound: it uses information the survey never
+has, and a learned model exploiting other morphology could in principle rank better on real, noisy
+data. Comparing BinML against it measures how much of the injected
 anomaly ordering the model reconstructs from the raw measurements alone.
 
 \section{Results}\label{sec:results}
 
-We evaluate on a held-out pool of $\bmlNpool$ events, split once into a $\bmlNval$-event
+We evaluate complete 72-day curves from a held-out pool of $\bmlNpool$ events, split once into a $\bmlNval$-event
 validation set---on which the operating threshold is fixed---and a disjoint $\bmlNtest$-event
-final-test set on which every metric, table, and figure below is computed; no figure or headline
-number sees a threshold-selection row. On that final test set BinML reaches a completeness of
-$\bmlCompleteness$ (95\% CI $[\bmlCompletenessLo,\bmlCompletenessHi]$) at the fixed anomaly purity
-of $\bmlPurity$, with an anomaly average precision of $\bmlAP$. These are metrics of the model on
-the adopted synthetic class mixture, not a forecast of \Rom{}-population yields, for which survey
-event-rate priors would be needed (\S\ref{sec:limits}). Per-class performance is collected in
-Table~\ref{tab:perclass}, and the full confusion structure in Figure~\ref{fig:confusion}.
+final-test set on which the static artifact-derived results below are computed; separate stress,
+baseline, and ablation studies identify their own samples. No final-test figure or headline number
+sees a threshold-selection row. On that final test set BinML reaches a completeness of
+$\bmlCompleteness$ (event-bootstrap 95\% CI $[\bmlCompletenessLo,\bmlCompletenessHi]$, 200
+resamples) at the fixed anomaly purity
+of $\bmlPurity$. Its anomaly average precision---a single-number summary of the whole
+purity--completeness curve, running from 0 to a perfect 1---is $\bmlAP$. Per-class performance
+is collected in Table~\ref{tab:perclass},
+and the full confusion structure in Figure~\ref{fig:confusion}. The interval covers final-test
+event sampling only, not training-seed or threshold-calibration uncertainty.
 
 \begin{deluxetable}{lcccc}
-\tablecaption{Per-class performance on the independent $\bmlNtest$-event test set
-(population-weighted). Support is the number of test events carrying each label.\label{tab:perclass}}
+\tablecaption{Per-class performance on the independent $\bmlNtest$-event test set. Each event is
+assigned to the single class with the largest predicted probability (argmax), not thresholded, so
+these are multi-class figures rather than the anomaly-detection operating point reported elsewhere.
+Precision, recall, and F1 are weighted by $1/\mathrm{keep\_prob}$ to undo the generation-time
+subsampling. Support is the unweighted number of stored test events carrying each label.
+\label{tab:perclass}}
 \tablehead{\colhead{Class} & \colhead{Support} & \colhead{Recall} & \colhead{Precision} & \colhead{F1}}
 \startdata
 Flat          & \bmlSupFlat          & \bmlFlatR          & \bmlFlatP          & \bmlFlatF \\
@@ -424,11 +519,11 @@ Eruptive      & \bmlSupEruptive      & \bmlEruptiveR      & \bmlEruptiveP      &
 \hline
 \multicolumn{4}{l}{Macro-F1} & \bmlMacroF \\
 \enddata
-\tablecomments{Under the observational task the \texttt{NonPSPL} precision is $\bmlNonPSPLP$. A
+\tablecomments{Under the policy-conditioned synthetic task the \texttt{NonPSPL} precision is $\bmlNonPSPLP$. A
 diagnostic on its false positives: $\bmlNonpsplDemoted\%$ of them are events \emph{generated} as
 binaries whose anomaly falls below the detectability floor and were therefore labelled \texttt{PSPL}
-(\S\ref{sec:detcond}). They remain false positives for a follow-up trigger---the anomaly is, by our
-own definition, not observable---but the fact that the model flags them suggests it responds to
+(\S\ref{sec:detcond}). They remain false positives under the adopted policy, but the fact that the
+model flags them suggests it responds to
 sub-threshold anomaly signal (or to correlated source properties) rather than emitting random false
 alerts. We do not treat these as a second, higher precision; the detectability floor is a modelling
 convention, not a theorem about what is inferable, and whether this sensitivity is real requires
@@ -436,71 +531,63 @@ independent detection statistics and blinded review (\S\ref{sec:limits}).}
 \end{deluxetable}
 
 The confusion matrix in Figure~\ref{fig:confusion} makes the shape of the errors plain. The
-largest off-diagonal term is \texttt{NonPSPL}$\rightarrow$\texttt{PSPL} at $4.9\%$ of the true
+largest off-diagonal term is \texttt{NonPSPL}$\rightarrow$\texttt{PSPL} at $\bmlConfNpToPspl\%$ of the true
 anomaly row: these are genuine recovery misses, weak but detectable anomalies the model fails to
 flag, and they concentrate at the lowest evidence strengths (Figure~\ref{fig:params}). The
 complementary direction, \texttt{PSPL}$\rightarrow$%
-\texttt{NonPSPL}, is smaller ($3.5\%$) but is what depresses \texttt{NonPSPL} precision, and it is
-$95\%$ made of the demoted binaries of Table~\ref{tab:perclass}: events generated as binary lenses
-whose caustic is below the detectability floor, correctly labelled \texttt{PSPL} yet flagged
-\texttt{NonPSPL} by the model, which sees an anomaly the labelling has---correctly---declared
-unobservable. The variable-star classes sit close to the diagonal, and the most dangerous physical
+\texttt{NonPSPL}, is smaller ($\bmlConfPsplToNp\%$) but is what depresses \texttt{NonPSPL} precision; demoted
+binaries---generated as binary lenses, labelled \texttt{PSPL} because their anomaly falls below
+the detectability floor, yet flagged \texttt{NonPSPL} by the model---make up
+$\bmlNonpsplDemoted\%$ of these errors. The variable-star classes sit close to the diagonal, and the most dangerous physical
 confusion, a \texttt{LongPeriodVar} masquerading as microlensing, is rare.
 
-The predicted probabilities are also reasonably well calibrated, which matters if the operating
-threshold is to be interpreted probabilistically. On the frozen test the top-label expected
-calibration error is $\bmlECE$ and the (one-vs-rest) Brier score is $\bmlBrier$
-(Figure~\ref{fig:calibration}); the reliability curve tracks the diagonal, with a mild
-under-confidence at intermediate probabilities. We report these as diagnostics---no post-hoc
-temperature scaling is applied---and note they would need recomputation under any change to the
-class priors or the operating point.
+Because anomaly triage uses $P(\texttt{NonPSPL})$ directly, calibration is evaluated for that
+one-vs-rest probability rather than for whichever class has the largest score. On the frozen test
+the population-weighted expected calibration error is $\bmlECE$ and the Brier score is
+$\bmlBrier$ (Figure~\ref{fig:calibration}); no post-hoc temperature scaling is applied.
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=0.62\columnwidth]{outputs/figures/calibration.pdf}
-\caption{Top-label reliability on the frozen test (population-weighted); marker area is bin
-occupancy. Expected calibration error $\bmlECE$, Brier score $\bmlBrier$.}
+\includegraphics[width=0.88\textwidth]{outputs/figures/calibration.pdf}
+\caption{One-vs-rest reliability of $P(\texttt{NonPSPL})$ on the frozen test
+(population-weighted); marker area is bin occupancy. Expected calibration error $\bmlECE$, Brier
+score $\bmlBrier$. The right panel enlarges the high-probability region around the fixed operating
+threshold; the global scores remain dominated by the many easy, low-probability negatives.}
 \label{fig:calibration}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[htbp]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{outputs/figures/confusion.pdf}
 \caption{Row-normalised, selection-corrected confusion matrix. The largest off-diagonal,
-\texttt{NonPSPL}$\rightarrow$\texttt{PSPL} ($4.9\%$), is genuine recovery loss on weak anomalies;
-the smaller \texttt{PSPL}$\rightarrow$\texttt{NonPSPL} term ($3.5\%$), dominated by
-detectability-floor-demoted binaries, is what depresses \texttt{NonPSPL} precision
-(Table~\ref{tab:perclass}).}
+\texttt{NonPSPL}$\rightarrow$\texttt{PSPL} ($\bmlConfNpToPspl\%$), is genuine recovery loss on weak anomalies;
+the smaller \texttt{PSPL}$\rightarrow$\texttt{NonPSPL} term ($\bmlConfPsplToNp\%$) is what
+depresses \texttt{NonPSPL} precision (Table~\ref{tab:perclass}).}
 \label{fig:confusion}
 \end{figure}
 
-For a triage layer the two kinds of anomaly error carry very different costs, and it is worth
-separating them. A false negative---a detectable binary called a single lens---costs a planet, and
-on full-season curves these occur at a rate of $\bmlMissedRate$, concentrated just above the
+For a triage layer the two kinds of anomaly error carry very different costs. A false
+negative---a detectable binary called a single lens---loses an anomaly candidate, and on
+full-season curves these occur at a rate of $\bmlMissedRate$, concentrated just above the
 detectability floor where the anomaly signal is weakest (Figure~\ref{fig:params}). A false positive---a
-non-anomalous source flagged as a binary---costs follow-up time, and these are rarer still;
-reassuringly, they are overwhelmingly ordinary single-lens events near the anomaly-detection
-boundary rather than variable stars, with the \texttt{LongPeriodVar}-as-microlensing confusion
-(an observational false positive under the adopted labelling) occurring at only $\bmlLPVtoPSPL$. Because the operating threshold is a
-free parameter (\S\ref{sec:eval}), the balance between the two error types can be set to whatever
-a given follow-up programme can afford, moving smoothly along the purity--completeness curve of
-Figure~\ref{fig:pr} rather than being stuck with one fixed decision.
+non-anomalous source flagged as a binary---costs follow-up time, and these are rarer still. The
+most dangerous physical case, a \texttt{LongPeriodVar} read as microlensing, occurs at only
+$\bmlLPVtoPSPL$. The operating
+threshold is a free parameter (\S\ref{sec:eval}), so a follow-up programme can set the balance
+between the two error types anywhere along the purity--completeness curve of
+Figure~\ref{fig:pr}.
 
 Finding the anomalous events is the model's primary task, and Figure~\ref{fig:pr} measures
-this against the truth-informed reference of \S\ref{sec:eval}. A convenient way to score the whole
-purity--completeness curve with one number is its average precision, which runs from~0 to a perfect~1;
-BinML scores $\bmlAPnet$, against the reference's $\bmlAPoracle$. The gap is small---though it
-should be read with a caveat: the reference ranks by the same anomaly \dchisq{} that, on the noiseless
-curve, defines the \texttt{NonPSPL} label itself, so this is not an independent information bound
-but a measure of how faithfully BinML reconstructs the label-defining quantity. What it establishes
-is nonetheless the operative point: the network recovers that ordering without access to the
-generator truth, from the raw noisy brightness measurements in a single pass, without ever computing
-the \dchisq{} or fitting a binary-lens model to a candidate. Its success also rises steadily with how strong the
-anomaly is, from $\bmlSliceSuzuki$ for the borderline planetary signals near the mass-ratio limit
-where planets become common to $\bmlSliceStrongAnom$ for the strongest anomalies, just as one would expect if
-the model is limited by the information in the data rather than by any shortcoming of its own.
+this against the truth-informed reference of \S\ref{sec:eval}. BinML's average precision is $\bmlAPnet$, against the reference's $\bmlAPoracle$. The gap is small. The reference
+ranks by the same anomaly \dchisq{} that, on the noiseless curve, defines the \texttt{NonPSPL}
+label itself, so the comparison measures how faithfully BinML reconstructs the label-defining
+quantity. The network recovers that ordering without access to generator truth, from noisy
+brightness measurements in a single pass and without computing the \dchisq{} or fitting a
+binary-lens model. Recovery rises from
+$\bmlSliceSuzuki$ near the planet-like mass-ratio break to $\bmlSliceStrongAnom$ for the strongest
+anomalies.
 
-\begin{figure}[htbp]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=0.85\columnwidth]{outputs/figures/pr_nonpspl.pdf}
 \caption{Anomaly (\texttt{NonPSPL}) precision--recall. BinML (solid) tracks the truth-informed
@@ -509,49 +596,46 @@ the fixed-purity operating point adopted for the headline number.}
 \label{fig:pr}
 \end{figure}
 
-The \texttt{NonPSPL} class is physically heterogeneous---it spans mass ratios from stellar binaries
-to low-mass planets---so a single aggregate completeness would misrepresent planet recovery.
-Table~\ref{tab:massratio} therefore splits it. The aggregate figure is dominated by stellar
-binaries, which make up the large majority of detectable anomalies and are recovered at
-$\bmlQStellarComp$; giant planets ($10^{-3}<q<10^{-2}$) match that at $\bmlQGiantComp$, but recovery
-falls to $\bmlQNeptuneComp$ in the Neptune-mass decade and to $\bmlQLowmassComp$ below
-$q=10^{-4}$. The headline completeness should therefore not be read as a planet-recovery rate: for
-the lowest-mass planets, which produce the shortest and weakest caustic perturbations, roughly two
-in five detectable anomalies are missed at this operating point.
+The \texttt{NonPSPL} class is physically heterogeneous and spans six decades in lens mass ratio
+$q$, so a single aggregate completeness obscures the low-$q$ behaviour. Table~\ref{tab:massratio}
+therefore splits the sample by mass-ratio regime. The aggregate figure is dominated by
+stellar-binary-like ratios above $10^{-2}$, recovered at $\bmlQStellarComp$. Recovery is
+$\bmlQGiantComp$ for $10^{-3}<q<10^{-2}$, $\bmlQNeptuneComp$ for
+$10^{-4}<q<10^{-3}$, and $\bmlQLowmassComp$ below $10^{-4}$. These bins are ratios, not companion
+masses: translating $q$ into a physical mass requires a host-mass distribution outside this
+experiment.
 
 \begin{deluxetable}{lrc}
 \tablecaption{Completeness at the fixed operating threshold by lens mass ratio $q$, on the frozen
 test set.\label{tab:massratio}}
 \tablehead{\colhead{Regime} & \colhead{$N$} & \colhead{Completeness}}
 \startdata
-Stellar binary, $q>10^{-2}$              & \bmlQStellarN & \bmlQStellarComp \\
-Giant planet, $10^{-3}<q<10^{-2}$        & \bmlQGiantN   & \bmlQGiantComp \\
-Neptune-mass, $10^{-4}<q<10^{-3}$        & \bmlQNeptuneN & \bmlQNeptuneComp \\
-Low-mass planet, $q<10^{-4}$             & \bmlQLowmassN & \bmlQLowmassComp \\
+Stellar-binary-like, $q>10^{-2}$         & \bmlQStellarN & \bmlQStellarComp \\
+High planet-like ratio, $10^{-3}<q<10^{-2}$ & \bmlQGiantN   & \bmlQGiantComp \\
+Intermediate ratio, $10^{-4}<q<10^{-3}$  & \bmlQNeptuneN & \bmlQNeptuneComp \\
+Low ratio, $q<10^{-4}$                    & \bmlQLowmassN & \bmlQLowmassComp \\
 \enddata
-\tablecomments{Counts are detectable (observationally labelled) anomalies in each regime.}
+\tablecomments{Counts are anomalies retained by the adopted synthetic detectability policy in each regime.}
 \end{deluxetable}
 
-The truth-informed reference is not fieldable, so we also compare BinML with baselines that use
-only observed data, on a common set of $\bmlBaseNtest$ freshly simulated events
+The truth-informed reference is not fieldable, so we add three noisy-photometry baselines on a
+common set of $\bmlBaseNtest$ freshly simulated evaluation events
 (Table~\ref{tab:baselines}): a fitted single-lens residual statistic---a \dchisq{}-style anomaly
 score from fitting a Paczynski model to the noisy F146 curve---and gradient-boosted-tree and
 logistic classifiers \citep{scikit-learn} trained on hand-built morphological features
-(amplitude, moments, autocorrelation, peak counts). Every method sees the same events and the same single band. One asymmetry remains and we state it
-rather than gloss it: the network and the feature models consume all 6912 epochs, whereas the
-five-parameter Paczynski fit is performed on a thinned 800-epoch subset for tractability. We expect
-this to matter little for a smooth five-parameter fit, but we have not demonstrated that, so the
-fitted-residual number should be read as a lower bound on that baseline. BinML's anomaly average precision of $\bmlBaseBinml$
-exceeds the best feature model ($\bmlBaseGbt$) by close to a factor of two and the fitted-residual
-detector ($\bmlBasePspl$) by more than three. We attribute the margin to learning the caustic
-morphology directly rather than summarising it in hand-chosen statistics, though we note the
-feature set is our own construction and a more carefully engineered one would narrow the gap. (The absolute AP here is below the $\bmlAP$ of the main test set because this
-comparison set is deliberately anomaly-enriched and spans harder cases; the ordering across methods
-is what the comparison establishes.)
+(amplitude, moments, autocorrelation, peak counts). Every method sees the same events and the same
+single band. The network and feature models consume all 6912 epochs, whereas the
+five-parameter Paczynski fit uses a thinned 800-epoch subset for tractability, so its score is a
+computationally thinned estimate. The training budgets are also unmatched: BinML was trained on
+roughly $\bmlSimEvents$ million simulated events, whereas the feature classifiers use only the
+training split of this 9,000-event comparison set. BinML scores $\bmlBaseBinml$, compared with
+$\bmlBaseGbt$ for gradient-boosted trees, $\bmlBaseLogistic$ for logistic regression, and
+$\bmlBasePspl$ for the fitted-residual statistic. Simple baselines do not solve this evaluation
+set.
 
 \begin{deluxetable}{lc}
-\tablecaption{Anomaly-detection average precision for BinML versus fieldable, observed-data
-baselines, on a common $\bmlBaseNtest$-event test set.\label{tab:baselines}}
+\tablecaption{Anomaly-detection average precision for BinML and noisy-photometry baselines on a
+common $\bmlBaseNtest$-event test set. Training budgets are not matched.\label{tab:baselines}}
 \tablehead{\colhead{Method} & \colhead{Average precision}}
 \startdata
 BinML (this work)                       & \bmlBaseBinml \\
@@ -562,18 +646,19 @@ Fitted single-lens residual ($\dchisq$) & \bmlBasePspl \\
 \tablecomments{All methods see the same events and the same single band (F146); the feature
 classifiers are trained on a disjoint split of the same set. The network and feature models use all
 6912 epochs; the Paczynski fit uses a thinned 800-epoch subset for tractability, so its value is a
-lower bound rather than a strictly matched comparison. Generated by \code{validation/baselines.py}.}
+computationally thinned estimate. BinML was pretrained on a much larger simulation set, so this is
+not a controlled method comparison. Generated by \code{validation/baselines.py}.}
 \end{deluxetable}
 
-Where that sensitivity lives across parameter space is resolved in Figure~\ref{fig:plane}, which
-separates two effects in the $(\log s,\log q)$ separation--mass-ratio plane, in the spirit of
-the detection-efficiency maps computed for ground-based surveys \citep{Tsapras2016}: whether the survey can
-detect the anomaly at all (left), and---conditional on it being detectable---how often BinML
-recovers it (centre). The conditional recall is a probability in $[0,1]$: it is high, with a median
-of $0.97$ over populated cells, across most of the plane where a detectable anomaly exists, and
-falls (to $\sim$0.5) only in the deep-planetary, low-support corners at $\log q \lesssim -4$. The
+Figure~\ref{fig:plane} resolves where that sensitivity lives in the $(\log s,\log q)$
+separation--mass-ratio plane, in the spirit of the detection-efficiency maps computed for
+ground-based surveys \citep{Tsapras2016}. It separates two effects: whether the survey can detect
+the anomaly at all (left), and---conditional on it being detectable---how often BinML recovers it
+(centre). Conditional recall is high across most of the plane where a
+detectable anomaly exists, with a median of $\bmlEffMedian$ over populated cells; it falls to
+$\sim$0.5 only in the low-$q$, low-support corners at $\log q \lesssim -4$. The
 strong gradient in the left panel---detectability collapsing toward small mass ratios---is therefore
-a property of the survey and the photometry, not of the classifier. Even deep planetary events with
+a property of the simulated survey and photometry, not of the classifier. Even low-$q$ events with
 $q<10^{-3}$ are recovered at $\bmlSliceDeepPlanet$ where they are detectable.
 
 \begin{figure*}[tbp]
@@ -583,330 +668,325 @@ $q<10^{-3}$ are recovered at $\bmlSliceDeepPlanet$ where they are detectable.
 \emph{Left:} survey detectability---of generated binaries, the weighted fraction whose anomaly
 clears the detectability floor. \emph{Centre:} the classifier's conditional recall, $P(\mathrm{
 predicted~NonPSPL}\mid\mathrm{detectable~NonPSPL})$, a bounded probability in $[0,1]$. \emph{Right:}
-the effective event count per cell, so low-support regions are visible. Cells with fewer than 30
-effective (or 30 detectable, centre) events are left blank; the dotted line marks $q=10^{-2}$.}
+$\log_{10}$ of the effective detectable-event count per cell, the support relevant to
+conditional recall. Cells with fewer than 30 effective events (left) or 30 effective detectable
+events (centre) are left blank; the right panel shows every non-empty cell so low-support
+regions stay visible. The dotted line marks $q=10^{-2}$.}
 \label{fig:plane}
 \end{figure*}
 
-The same picture holds along the individual parameter axes (Figure~\ref{fig:params}). Recovery
-degrades gracefully toward faint baselines and weak anomalies---the two directions along which the
-photometric information itself thins out---and remains high, $\bmlSliceFaint$, even for faint sources
-with $m_{\mathrm{base}}>22.5$, dropping only in the noise-dominated tail.
+Along the individual parameter axes (Figure~\ref{fig:params}), recall is lower toward faint
+baselines and weak injected anomalies, while remaining $\bmlSliceFaint$ for sources with
+$m_{\mathrm{base}}>22.5$.
 
-\begin{figure}[htbp]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=0.98\columnwidth]{outputs/figures/param_dependence.pdf}
-\caption{\texttt{NonPSPL} recall versus source baseline magnitude (left) and anomaly \dchisq{}
-evidence strength (right). The degradation tracks the loss of photometric information, not a model
-pathology.}
+\caption{\texttt{NonPSPL} recall versus source baseline magnitude (left) and injected anomaly
+\dchisq{} evidence strength (right). The dotted vertical line at $m_{\rm base}=22.5$ marks the
+faint-source boundary used in the text. The plot is descriptive; it does not isolate the cause of
+the lower recall at faint baselines or weak injected evidence.}
 \label{fig:params}
 \end{figure}
 
 \section{Generalisation and limits}\label{sec:limits}
 
-A model can reproduce held-out numbers by memorising individual training examples rather than
-learning the underlying mapping, so we test generalisation directly---both to unseen parameter
-draws from the same priors and, through the out-of-range regimes below, to parts of parameter space
-the training distribution barely populates. We generated a $\bmlStressN$-million-event stress set from a disjoint
-pseudo-random stream---seed base $\bmlSeedStress$ against $\bmlSeedTrain$ for the
-train/validation/test data---which guarantees parameter tuples the model provably never encountered;
-it comprises a $\bmlStressNatN$-million-event natural-population subset and a suite of
-deliberately out-of-range regimes. On the natural-population subset BinML reproduces its held-out
-performance, with a macro-F1 of $\bmlStressMacroF$.
+Held-out numbers can in principle reflect memorised training examples, so we test generalisation
+directly: both to unseen parameter draws from the same priors and, through the out-of-range regimes
+below, to parts of parameter space the training distribution barely populates. The
+$\bmlStressN$-million-event stress set is drawn from a disjoint pseudo-random stream---seed base
+$\bmlSeedStress$ against $\bmlSeedTrain$ for the train/validation/test data---so its parameter
+draws are independent of the training draws;
+it comprises a $\bmlStressNatN$-million-event natural-population subset and a suite of deliberately
+out-of-range regimes. On the natural-population subset BinML reproduces its held-out performance,
+with a macro-F1 of $\bmlStressMacroF$.
 
-The out-of-range regimes, by contrast, expose real failures, and we report them rather than
-characterising them as merely ``extreme''. Anomaly recall stays near its in-distribution value of
+The out-of-range regimes expose failures. Anomaly recall stays near its in-distribution value of
 $\bmlStressNatNp$ across most regimes, but collapses to $\bmlStressWidesep$ for very wide
-separations, where the caustic is rarely crossed within a season. Two contaminant regimes fail
-outright: long-period variables whose period exceeds the season are recovered as
+separations. This recall is conditional on an anomaly already passing the detectability policy, so
+the collapse is a classifier failure on the retained wide-separation subset, not relabelling of
+uncrossed caustics. Two contaminant regimes fail
+outright: \texttt{PeriodicVar} examples whose period exceeds the season are recovered as
 \texttt{PeriodicVar} only $\bmlStressLongp$ of the time (a nearly complete failure, since within one
 window they are not observably periodic), and sub-day-timescale single lenses are recovered at
 $\bmlStressShortte$. For faint sources, \texttt{PSPL} recall falls to $\bmlStressFaintPspl$ and
 anomaly \emph{precision} to $\bmlStressFaintPrec$---noise manufacturing spurious anomalies is the
-single most consequential failure mode for a follow-up programme. In the deep-planetary regime,
+single most consequential failure mode for a follow-up programme. In the low-$q$ regime,
 recall holds at $\bmlStressPlanetNp$ but precision falls to $\bmlStressPlanetPrec$.
 
-We deliberately do not claim these are irreducible. Each has a plausible physical explanation---too
-few epochs on the peak, a signal that does not complete within the window, photometric noise
-comparable to the signal---but we have run no ablation showing that broader training coverage could
-not close them, and the deep-planetary deficit in particular is a regime the training distribution
-barely populates. They are better read as the current model's documented operating envelope than as
-limits of the method. Robustness to missing data is more encouraging: events observed without the
+Each failure has a plausible physical explanation---too few epochs on the peak, a signal that does
+not complete within the window, photometric noise comparable to the signal---and the low-$q$ deficit
+in particular is a regime the training distribution barely populates. These are the current model's
+operating envelope, not established limits of the method. Robustness to missing data is more
+encouraging: events observed without the
 blue band are still recovered at $\bmlSliceNoBlue$, so the model degrades gracefully when colour is
 unavailable.
 
-One boundary is deliberate and worth stating as such: BinML is a specialist for \Rom{}'s dense
-cadence. Its discriminating power---the non-learned min/max lanes that preserve a caustic spike, the
-colour bands, the fine time grid---presumes the $\sim$15-minute F146 sampling the survey will
-deliver. On the far sparser cadence of an archival ground survey the model is out of its regime, and
-should not be applied there: this is a matter of scope, not of accuracy, since \Rom{} will supply
-exactly the sampling the model is built for. The obstacle is more fundamental than raw cadence.
-Even the densest existing survey, the three-site KMTNet \citep{Kim2016}, does not validate the model: applied to
-real KMTNet events---including several sampled at $60$--$80$ points per day, above the density at
-which \emph{uniform} subsampling of our simulations still works---the model misclassifies them as
-periodic variables. The cause is the sampling \emph{pattern}, not its mean rate: ground data is
-clustered into nightly visits separated by daytime gaps, and that near-diurnal periodicity is read
-as stellar variability. A matched-density test isolates this from the trivial explanation that
-ground data simply has fewer points. Comparing uniform sampling against an eight-hour nightly
-observing window \emph{at identical total visit counts}---so that only the gap topology differs---%
-anomaly recall over $\bmlGapN$ events is $\bmlGapUniformA$ (uniform; 95\% CI
+One boundary is deliberate: BinML is a specialist for dense, nearly continuous space-based
+sampling. The non-learned min/max lanes, colour bands, and fine time grid were developed on the
+hybrid schedule described above. Archival ground-survey light curves lie outside this evaluated
+regime. Earlier ad-hoc applications to selected KMTNet and OGLE events are not treated as results
+because their event selection and predictions were not retained in frozen, hashed artifacts.
+
+We instead use simulation to isolate one relevant cadence effect. Existing ground networks such as
+the three-site KMTNet \citep{Kim2016} observe through nightly windows separated by daytime gaps. A
+matched-density test compares uniform sampling with an eight-hour nightly observing window
+\emph{at identical total visit counts}, so that only the gap topology differs. Anomaly recall over
+$\bmlGapN$ events is $\bmlGapUniformA$ (uniform; 95\% CI
 $[\bmlGapUniformALo,\bmlGapUniformAHi]$) versus $\bmlGapNightlyA$ (gapped; upper bound
 $\bmlGapNightlyAHi$) at $\bmlGapVisitsA$~visits per day, and $\bmlGapUniformB$ versus
 $\bmlGapNightlyA$ at $\bmlGapVisitsB$~per day; the intervals do not overlap. At
 $\bmlGapVisitsC$~visits per day both schedules fail ($\bmlGapUniformC$ uniform), so below that
 density sparsity alone dominates and the comparison is uninformative. In the regime where uniform
-sampling still works, the gapped schedule does not: the daily gap, not the visit count, is what
-defeats the model. We note this establishes gap \emph{sensitivity} in simulation; it is consistent
-with, but does not by itself prove, that gaps caused the KMTNet failures above. Roman's uninterrupted,
-space-based cadence has no such gaps, and no ground network can reproduce it. Genuine validation of
-the model in its own regime therefore awaits \Rom{}. Sparse single-band archival data is meanwhile
-the province of simpler feature- or single-band models---and, as a sanity check that the overall
-approach transfers to real photometry at all, an earlier single-band variant of this model
-correctly flagged the caustic-crossing binary lenses OGLE-2014-BLG-0289 and OGLE-2013-BLG-0578 in
-real OGLE-IV data \citep{Udalski2015}.
+sampling still works, the gapped schedule does not. This establishes gap sensitivity in the
+simulation, not the cause of any behaviour on real data.
 
-A further scope limitation concerns the survey design itself. The cadence we simulate---%
-$\sim$15-minute F146 sampling with 6-hour colour visits over a single 72-day season---follows the
-older Cycle-7-inspired \Rom{} design \citep{Khakpash2021}, not the current Galactic Bulge
-Time-Domain Survey definition, which specifies a faster ($\sim$12-minute) high-cadence F146,
-more frequent colour visits, and six high-cadence plus four low-cadence seasons with the
-attendant seasonal gaps \citep{ROTAC2025}. Our results are therefore a benchmark under a
-legacy \Rom{}-like schedule, not a forecast under the survey as it will actually run.
+Our hybrid schedule---$\sim$15-minute F146 sampling with 6-hour visits in each colour filter over
+a single 72-day season---is not an exact historical survey design. The current Galactic Bulge
+Time-Domain Survey definition specifies F146 approximately every 12 minutes, F087 and F213 each on
+a 6-hour cycle staggered so that one colour or the other is obtained every 3 hours, 66-second
+exposures, and six high-cadence plus four low-cadence seasons of about 72 days each
+\citep{STScI2025GBTDS,
+ROTAC2025}. Our per-band colour cadence therefore already matches the current design; what differs
+is the F146 rate, the exposure time and the photometric calibration that follows from it, the
+absence of the staggered colour interleaving, and---most consequentially---the multi-season
+structure. Our results are a benchmark under a legacy \Rom{}-like schedule, not a forecast under
+the survey as it will actually run.
 
 We can, however, bound how much the \emph{sampling rate} alone matters. We repeated the entire
 pipeline---simulation, training from scratch, and evaluation---at the current $\sim$12-minute F146
-rate and at our legacy 15-minute rate, holding everything else fixed (matched shard count,
-$\bmlCadN$ events, $\bmlCadEpochs$ epochs, identical seed). The two arms are indistinguishable:
+rate and at our legacy 15-minute rate, holding everything else fixed (same shards, seed and
+$\bmlCadEpochs$ epochs; $\bmlCadNfifteen$ and $\bmlCadNtwelve$ events survived the
+detectability cuts in the two arms). The two arms score closely:
 anomaly average precision $\bmlCadFifteenAp$ (15\,min) versus $\bmlCadTwelveAp$ (12\,min), and
 completeness $\bmlCadFifteenCompleteness$ at purity $\bmlCadFifteenPurity$ versus
-$\bmlCadTwelveCompleteness$ at purity $\bmlCadTwelvePurity$, with per-class F1 differing by less
-than $0.02$ everywhere. The two headline differences even disagree in sign, which is the signature
-of run-to-run variation rather than a systematic effect. This is physically unsurprising: both rates
-sample an hours-to-day caustic densely, so a $25\%$ change in epoch count adds little information.
-The rate change is thus not the risk; what remains untested is the current design's
-\emph{structure}---six high-cadence plus four low-cadence seasons with seasonal gaps---which our
-single-season, fixed-window input cannot represent without an architectural change. That, rather
-than re-tuning the cadence, is the most important extension of this work.
+$\bmlCadTwelveCompleteness$ at purity $\bmlCadTwelvePurity$, with no per-class F1 differing by more
+than $\bmlCadMaxFOneDelta$. With one seed per arm this bounds the rate change as unimportant at the
+resolution we can measure rather than establishing equivalence. Both rates sample an hours-to-day
+caustic densely, so a $25\%$ change in epoch count adds little information. Two effects remain
+untested. The exposure time and colour-band zeropoints of the current design
+differ from ours (Section~\ref{sec:limits}), and their effect on the colour channels is
+unquantified. More consequentially, the current design's \emph{structure}---six high-cadence plus
+four low-cadence seasons with seasonal gaps---cannot be represented by our single-season,
+fixed-window input without an architectural change. That, rather than re-tuning the cadence, is the
+most important extension of this work.
 
-The single most important caveat on the headline numbers concerns the class mixture. The purity we
-quote is not a property of the classifier alone but of the classifier \emph{and} the assumed
-prevalence of anomalous events in the input stream. Our synthetic evaluation mixture contains
+The purity we quote is a property of the classifier \emph{and} the assumed prevalence of anomalous
+events in the input stream, not of the classifier alone. Our synthetic evaluation mixture contains
 detectable anomalies at a prevalence of $\bmlPriorPiZero\%$; the prevalence in a real survey stream
 is set by microlensing event rates and any upstream candidate selection, and is typically far
-lower. Figure~\ref{fig:prior} makes the dependence explicit. Completeness is prevalence-independent
-and stays at $\bmlCompleteness$; but at the fixed operating threshold the purity falls from the
+lower. Figure~\ref{fig:prior} makes the dependence explicit. Under a pure prior shift that leaves
+the class-conditional score distributions fixed, completeness at the fixed threshold is
+prevalence-independent and stays at $\bmlCompleteness$. Purity is not: it falls from the
 $\bmlPurity$ we report at the synthetic prevalence to $\bmlPurityOnePct$ at a $1\%$ anomaly
-prevalence and $\bmlPurityTenthPct$ at $0.1\%$. The $\bmlPurity$ figure should therefore be read as
-conditional on the adopted mixture, not as a survey purity; establishing the latter requires cited
-event-rate priors for the specific input population, which we do not attempt here. This is exactly
-why we frame completeness at fixed purity, rather than a single accuracy, as the reportable
-quantity---and why the completeness, not the purity, is the number that transfers.
+prevalence, and to $\bmlPurityTenthPct$ at $0.1\%$. Read $\bmlPurity$ as conditional on the adopted
+mixture; a survey purity would need event-rate priors for the specific input population. Under
+prior shift, fixed-threshold completeness transfers and purity does not, which is why we frame
+completeness at fixed purity as the reportable quantity.
 
-It is fair to ask what a survey team could actually achieve at $0.90$ purity if they re-tuned the
-threshold for their own prevalence, rather than what our fixed threshold delivers. Re-optimising on
-the frozen artifact: at the synthetic mixture's prevalence the answer is $\bmlPrevCompSynth$,
-essentially our headline; at a $1\%$ anomaly prevalence it falls to $\bmlPrevCompOne$; and at
-$0.1\%$ to $\bmlPrevCompTenth$. The degradation is intrinsic---holding purity fixed as the
-contaminant pool grows requires a stricter threshold, which costs completeness---and any deployment
-should plan against the figure matching its own input prevalence, not against $\bmlCompleteness$.
+A survey team could instead re-tune the threshold to its own prevalence and ask what completeness
+remains at $\bmlPrevPurTarget$ purity. For each assumed prevalence we select the threshold on the
+reserved validation rows and apply it unchanged to the frozen test rows, so the completeness below
+is held out rather than the best point of the test set's own precision-recall curve. At the
+synthetic mixture's prevalence the answer is
+$\bmlPrevCompSynth$, essentially our headline; at a $1\%$ anomaly prevalence it falls to
+$\bmlPrevCompOne$; and at $0.1\%$ to $\bmlPrevCompTenth$. The degradation is arithmetic: holding
+purity fixed as the contaminant pool grows requires a stricter threshold, which costs completeness.
+Any deployment should plan against the figure matching its own input prevalence, not against
+$\bmlCompleteness$.
 
-\begin{figure}[htbp]
+This transfer is prior shift and nothing more: we rescale the class mixture and hold the
+class-conditional score distributions fixed. It is the right model for a survey whose events look
+like ours but arrive in different proportions, and the wrong one for a survey whose events look
+different---different cadence, blending, or variables our simulator does not contain.
+
+\begin{figure*}[tbp]
 \centering
-\includegraphics[width=0.85\columnwidth]{outputs/figures/prior_sensitivity.pdf}
+\includegraphics[width=0.86\textwidth]{outputs/figures/prior_sensitivity.pdf}
 \caption{Prior sensitivity of the operating point. At the fixed threshold, completeness (dotted)
 is independent of anomaly prevalence, but purity (solid) and the alert burden (dash-dot, right
-axis) are not. The dashed line marks our synthetic mixture's $\bmlPriorPiZero\%$ prevalence, where
-purity is $\bmlPurity$; at the lower prevalences of a real stream, purity is substantially smaller.}
+axis) are not. The right panel shows held-out completeness when the threshold is selected on the
+separate validation split for each assumed prevalence at purity $\bmlPrevPurTarget$. The dashed
+line marks our synthetic mixture's $\bmlPriorPiZero\%$ prevalence; lower-prevalence values assume
+prior shift rather than a change in class-conditional light curves.}
 \label{fig:prior}
-\end{figure}
+\end{figure*}
 
-A related caveat concerns the photometric calibration of the colour bands. Our simulated
-zeropoints were anchored to the published Cycle-7 values for the wide band and scaled for F087 and
-F213, and an audit against the current Roman zeropoint tables \citep{ROTAC2025} shows the wide-band
-value is accurate to $0.03$~mag while our F087 and F213 zeropoints are optimistic by roughly $0.10$
-and $0.14$~mag respectively. Two further colour-band assumptions are less defensible: our F087
-saturation limit was carried over from a much longer Cycle-7 exposure and is almost certainly
-wrong in the wrong direction (at equal exposure F087 should saturate at a \emph{fainter} magnitude
-than F146, not a brighter one), and our sky-background ratios do not reproduce the published
-thermal backgrounds, which make F213 substantially worse and F087 substantially better relative to
-F146 than we assume. These errors sit in the colour bands, which the model uses chiefly to reject variable-star
-contaminants. We deliberately do not characterise the resulting bias as small: we have not
-quantified it, and doing so requires regenerating the training set and retraining, or at minimum a
-colour/noise ablation. The affected quantity is most plausibly contaminant rejection rather than
-the anomaly channel, but that expectation is untested. The corrected values are recorded alongside the
-originals in the released code so that any future retraining starts from the audited numbers.
+The colour bands carry a calibration error. Our simulated zeropoints were anchored to the published
+Cycle-7 values for the wide band and scaled for F087 and F213, and an audit against the current
+Roman zeropoint tables \citep{RomanTechInfo} shows the wide-band value is accurate to $0.03$~mag while
+our F087 and F213 zeropoints are optimistic by roughly $0.10$ and $0.14$~mag respectively. Two
+further colour-band assumptions are less defensible. Our F087
+saturation limit was carried over from a much longer Cycle-7 exposure, and it errs in the wrong
+direction: at equal exposure F087 should saturate at a \emph{fainter} magnitude than F146, not a
+brighter one. Our sky-background ratios also fail to reproduce the published thermal backgrounds,
+which make F213 substantially worse and F087 substantially better relative to F146 than we assume.
+Both errors sit in the colour bands, which the model uses chiefly to reject variable-star
+contaminants. Quantifying the resulting bias requires regenerating the training set and retraining,
+or at minimum a colour/noise ablation; the affected quantity is most plausibly contaminant rejection
+rather than the anomaly channel. The corrected values are recorded alongside the originals in the
+released code so that any future retraining starts from the audited numbers.
 
-One assumption underlying every number in this paper deserves to be stated plainly, because it is
-the most consequential modelling choice we make. The boundaries between our classes---flat versus
-event, and single lens versus anomalous---are set not only by a goodness-of-fit threshold but also
-by a minimum detectable amplitude, which we fix at twenty times an assumed one-millimagnitude
-systematic floor. This floor stands in for the correlated, night-to-week photometric systematics
+The boundaries between our classes---flat versus event, and single lens versus anomalous---are set
+not only by a goodness-of-fit threshold but also by a minimum detectable amplitude, which we fix at
+twenty times an assumed one-millimagnitude systematic floor. This floor stands in for the
+correlated, night-to-week photometric systematics
 that do not average down the way independent per-epoch noise does, and which no real pipeline can
 follow below some level; we adopt a fixed amplitude cut rather than modelling a full red-noise
-process. It is, however, a modelling choice and not a measured property of \Rom{}, and because it
-sits on both class boundaries at once, the absolute completeness and purity we quote will shift if
-the true systematic floor differs from our assumption. The \emph{relative} results---the size of
-the label surgery, the direction and magnitude of the cascade effect, the shape of the parameter
-dependence---are far less sensitive to it, but a quantitative recalibration of this floor against a
-real \Rom{} red-noise estimate is a prerequisite before the absolute numbers are used to set a
-survey requirement.
+process. Because that choice sits on both class boundaries at once, the absolute completeness and
+purity we quote will shift if the true systematic floor differs from our assumption. Repeating the
+labelling, training, and evaluation across plausible red-noise floors is therefore a prerequisite
+before the numbers are used to set a survey requirement.
 
 \section{Discussion}\label{sec:discussion}
 
-BinML is built to be a triage layer for the \Rom{} GBTDS: a cheap first pass that flags candidate
-microlensing and anomalous events for the expensive, definitive step of full light-curve modelling.
-Two properties make it suited to that role rather than merely accurate on a static benchmark. The
-completeness-at-fixed-purity framing lets a survey team set the operating point directly against
-their follow-up budget, trading completeness for purity along a curve they control rather than
-accepting whatever an argmax delivers. And the real-time cascade means the flag can be trusted as a
-\emph{trigger}: a \texttt{NonPSPL} call is raised, in the large majority of cases, only after the anomaly is
-observable rather than in anticipation of it, which is the precondition for autonomous follow-up. That BinML reconstructs the
-truth-informed anomaly ranking from raw photometry in a single forward pass, without per-event
-fitting, is what makes running it across the full survey stream computationally feasible.
+BinML is intended as a cheap first-pass triage layer before full binary-lens modelling. The
+completeness-at-fixed-purity framing exposes the tradeoff a survey team would need to set, and the
+network's forward pass is fast enough for repeated large-scale scoring. Those properties establish
+a computational benchmark rather than a deployable broker: the evaluation uses synthetic
+photometry, a simulator-provided baseline, a truth-informed onset, and half-day rather than
+native-cadence updates.
 
-It is important to be concrete about which follow-up modes this latency actually serves, because a
-median first alert $\bmlCascMedianLag$~days after onset arrives \emph{after} a short caustic
-crossing has finished. A planetary perturbation lasting hours to a day is therefore over by the
-time the alert fires: BinML cannot be used to trigger observations \emph{of that feature}. What a
-few-day latency does support is the substantial fraction of anomalies that are not brief---extended
-or repeating caustic structure, second crossings of a caustic the source has entered, and
-long-timescale binaries whose perturbations persist for many days---together with everything that
-depends on recognising the \emph{event} rather than the feature: scheduling denser photometry for
-the remainder of a still-ongoing event, initiating colour or parallax campaigns, and prioritising
-which light curves receive expensive binary-lens modelling. For the brief planetary anomalies that
-motivate the survey, the honest statement is that BinML is a rapid \emph{post-hoc} identifier;
-triggering on the anomaly itself would require evaluating at the survey's native cadence, with a
-correspondingly higher premature-alert rate (\S\ref{sec:cascade})---a trade we have not optimised.
+Which follow-up modes does this latency serve? A median alert $\bmlCascMedianLagNonPrem$~days after
+onset arrives once a short caustic crossing has finished, so for the brief planetary anomalies that
+motivate the survey BinML is a \emph{post-hoc} identifier rather than a trigger for the feature
+itself.
+
+A few-day latency could still serve two other tasks. The first is anomalies that are not brief:
+extended or repeating caustic structure, second crossings, and long-timescale binaries whose
+perturbations persist for days. The second is everything that depends on
+recognising the \emph{event} rather than the feature---scheduling denser photometry for the rest
+of an ongoing event, initiating colour or parallax campaigns, and prioritising which light curves
+receive expensive binary-lens modelling.
+Triggering on the anomaly itself would require evaluating at the survey's native cadence: our grid
+sensitivity (\S\ref{sec:cascade}) covers only grids coarser than the half-day one, where the
+premature rate does not rise, and does not extrapolate to a $15$-minute grid with far more
+evaluation opportunities.
+
+Latency does not vary strongly with mass ratio: the median post-onset lag is within a day of the
+population value above $q=10^{-4}$, though the detection fraction falls for $10^{-4}<q<10^{-3}$.
+We did not stratify by anomaly duration or caustic topology, so the follow-up modes above are a
+reading of what a multi-day latency can serve rather than a measurement of those subpopulations.
 
 \subsection{Ablating the two mechanisms}\label{sec:ablations}
 
 Both of this paper's methodological claims are testable by removing the mechanism and retraining.
-We do so with four arms trained from scratch on identical shards with identical hyper-parameters
-and seed, differing only in the stated variable, and evaluated on a common held-out set from an
-unseen seed base. These are small-scale runs (16 shards, 10 epochs) rather than production
-trainings, so absolute values sit below the headline numbers; the comparison between arms is the
-result.
+Each ablation trains arms from scratch on identical shards with identical hyper-parameters and
+seed, differing only in the stated variable, and evaluates them on a common held-out set from an
+unseen seed base. These are small-scale runs (16 shards, $\bmlAbLabelEpochs$ epochs) rather than
+production trainings, so absolute values sit below the headline numbers and the comparison between
+arms is the result. The two ablations come from separate runs whose evaluation sets differ by 18
+events out of $\sim$45{,}000, so arms should be compared within a run, not across them.
 
-\paragraph{Detectability-conditioned labelling: supported.} Training on generator-intent labels
-instead of observational ones, and scoring both arms against the observational label---the
-operational task, and the only common yardstick---costs a great deal. Macro-F1 falls from
-$\bmlAbLabelObsMacrofOne$ to $\bmlAbLabelGenMacrofOne$, with the damage concentrated exactly where
-the relabelling acts: \texttt{PSPL} F1 collapses from $\bmlAbLabelObsPsplFOne$ to
-$\bmlAbLabelGenPsplFOne$ and \texttt{NonPSPL} from $\bmlAbLabelObsNonpsplFOne$ to
-$\bmlAbLabelGenNonpsplFOne$. Asked to assert anomalies that leave no observable trace on $39.5\%$
-of its examples, the network learns a decision rule that does not transfer to what is actually
-visible. This is the ablation the title's first claim needed, and it supports it.
+\paragraph{Detectability-conditioned labelling.} The intervention is the training label alone.
+Both principal arms use weights derived from the policy-conditioned class balance, so they differ in
+the target label but not in the weighting objective. An additional arm using label-derived weights
+is retained as a sensitivity check.
 
-\paragraph{The truncation augmentation: not established.} The second ablation does \emph{not}
-cleanly support its claim, and we report it as such. Removing the truncation augmentation changes
+Against the policy-conditioned label, macro-F1 falls from $\bmlAbLabelObsMacroFOne$ to
+$\bmlAbLabelGenMacroFOne$ when the network is trained on generator intent---a gap of
+$\bmlAbLabelGap$ (95\% CI $[\bmlAbLabelGapLo,\bmlAbLabelGapHi]$, paired bootstrap over the
+$\bmlAbLabelNeval$ evaluation events).
+Every arm is scored against \emph{both} label sets, and against the generator label the ordering
+reverses, $\bmlAbLabelObsMacroFOneGen$ versus $\bmlAbLabelGenMacroFOneGen$: each arm wins on the
+ontology it was trained for. The experiment shows optimization alignment, not that the
+policy-conditioned ontology is objectively correct.
+
+The damage concentrates where the relabelling acts: \texttt{PSPL} F1 moves from
+$\bmlAbLabelObsPsplFOne$ to $\bmlAbLabelGenPsplFOne$ and \texttt{NonPSPL} from
+$\bmlAbLabelObsNonpsplFOne$ to $\bmlAbLabelGenNonpsplFOne$. The generator-intent arm is not merely
+worse but differently behaved: at the frozen threshold it flags almost every event, reaching
+completeness $\bmlAbLabelGenComp$ at a purity of $\bmlAbLabelGenPur$, because it was trained to call
+sub-threshold binaries anomalous.
+
+The label-derived-weight sensitivity arm scores $\bmlAbLabelGenOwnWMacroFOne$ against the
+policy-conditioned label, compared with $\bmlAbLabelGenMacroFOne$ when the weights are pinned. Weighting
+does affect the operating threshold: the sensitivity arm never crosses the frozen threshold.
+
+The mechanism is concrete. Across the final test split, $\bmlRelabelled\%$ of events carry a
+policy-conditioned label different from their generated class; a fifth of all events ($\bmlGenNpDemoted\%$,
+half of all disagreements) are generated binaries whose anomaly falls below the detection
+thresholds. A network trained on generator intent is asked to assign those binaries the anomalous
+label despite their perturbations falling below the adopted policy threshold.
+
+Both arms are single training seeds, so the interval above covers evaluation noise, not
+initialisation noise; a seed sweep is the next step.
+
+\paragraph{The truncation augmentation: unresolved.} At a single threshold the second ablation
+does not identify a timing benefit. Removing the truncation augmentation changes
 the premature-alert rate in opposite directions depending on the decision rule: at the frozen
 operating threshold the augmented model is better ($\bmlAbCascOnPremThr$ versus
 $\bmlAbCascOffPremThr$), but under six-class argmax it is worse ($\bmlAbCascOnPremArgmax$ versus
 $\bmlAbCascOffPremArgmax$), on $N=\bmlAbCascN$ binaries. It is also expensive: within-season
 detection at the same threshold falls from $\bmlAbCascOffDet$ to $\bmlAbCascOnDet$, and static
-macro-F1 from $\bmlAbCascOffMacrofOne$ to $\bmlAbCascOnMacrofOne$.
+macro-F1 from $\bmlAbCascOffMacroFOne$ to $\bmlAbCascOnMacroFOne$.
 
-The consistent reading is not that truncation training teaches a better temporal ordering, but that
-it makes the model \emph{more conservative about the anomaly class in general}: it says
-\texttt{NonPSPL} less often, which lowers premature alerts and genuine detections together. A
-threshold shift would produce much the same pattern. We therefore withdraw the causal claim that the
-augmentation is what produces the real-time behaviour; the ordering reported in
-\S\ref{sec:cascade} is a property of the released model, not a demonstrated consequence of this
-training choice. Establishing it would require matching the arms at equal detection rate---sweeping
-the threshold for each and comparing premature rates at fixed recall---which we have not done. We
-flag this as the clearest outstanding weakness in the paper's second contribution.
+These changes are consistent with the augmented model saying \texttt{NonPSPL} less often, lowering
+premature alerts and genuine detections together. A threshold-only comparison cannot separate that
+conservatism from better temporal ordering.
 
-\subsection{Targeted fine-tuning recovers the low-mass-ratio deficit}\label{sec:finetune}
+\paragraph{Exploratory risk--coverage comparison.} Using stored probability traces for both arms
+on the same $\bmlMatchN$ eligible binaries, we select a separate threshold for each arm to attain
+each of six common within-season detection fractions (Figure~\ref{fig:cascade_matched}). The augmented arm has fewer premature alerts
+from $0.50$ through $0.90$ detection: at $0.60$ the rates are $\bmlMatchOnSixty\%$ and
+$\bmlMatchOffSixty\%$, and at $0.80$ they are $\bmlMatchOnEighty\%$ and
+$\bmlMatchOffEighty\%$. The ordering reverses at $0.95$ detection.
+The separation at the lower rates is one-sided at the level of individual events: at $0.60$
+detection the two arms disagree on 16 events, and all 16 are premature for the unaugmented arm
+and none for the augmented one, so the augmented arm's premature set is a strict subset of the
+unaugmented arm's on this sample.
 
-The mass-ratio breakdown of \S\ref{sec:results} identifies where the model is weakest, and it is
-natural to ask whether that deficit is intrinsic or simply a matter of training exposure. We tested
-this directly: starting from the shipped checkpoint, we fine-tuned for six epochs at a reduced
-learning rate on data drawn from the planetary regime ($10^{-6}<q<10^{-3}$), then scored both the
-shipped and the fine-tuned model on the \emph{same} $\bmlFtEvalN$-event natural-mixture set
-generated from a seed base neither had seen.
+The thresholds are selected and the premature-alert rates evaluated on the same $\bmlMatchN$ events, and
+both training arms use one seed, so this curve is descriptive rather than confirmatory. A causal
+timing claim requires thresholds selected on a disjoint calibration sample, paired evaluation on
+held-out events, and repeated training seeds.
 
-The deficit is largely recoverable. Completeness at the fixed operating threshold rises from
-$\bmlFtNeptuneBefore$ to $\bmlFtNeptuneAfter$ in the Neptune-mass decade ($N=\bmlFtNeptuneN$) and
-from $\bmlFtGiantBefore$ to $\bmlFtGiantAfter$ for giant planets ($N=\bmlFtGiantN$), both
-significant at $\gtrsim3\sigma$; for the lowest mass ratios it rises from $\bmlFtLowmassBefore$ to
-$\bmlFtLowmassAfter$, though with only $N=\bmlFtLowmassN$ such events in this evaluation set that
-particular figure is suggestive ($\sim$$1.7\sigma$) rather than established. Crucially, nothing
-degrades: stellar-binary completeness is unchanged within noise
-($\bmlFtStellarBefore\rightarrow\bmlFtStellarAfter$), and no per-class F1 falls by more than
-$\bmlFtWorstRegress$, with the contaminant classes improving slightly.
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.98\columnwidth]{outputs/figures/cascade_matched.pdf}
+\caption{Exploratory risk--coverage comparison between the truncation-augmented and unaugmented
+arms. At each point the two arms are thresholded to exactly the same detection count; bars are
+Wilson 95\% intervals on the eligible-event denominator. Thresholds and outcomes use the same
+$N=\bmlMatchN$ events; see the text for what that permits.}
+\label{fig:cascade_matched}
+\end{figure}
 
-We draw a deliberately limited conclusion. This does not show the model is now good at low-mass
-planets in absolute terms, and the fine-tuning set itself is thin---in the deep-planetary regime
-only about one simulated binary in seven produces a detectable anomaly at all, so targeted
-generation yields far fewer trainable examples than its raw event count suggests. What it does show
-is that the mass-ratio deficit reported above is substantially a matter of training exposure rather
-than an intrinsic limit of the architecture or the photometry.
+Two exploratory fine-tuning runs remain as archived JSON summaries rather than results here: each
+used a single training seed, and the retained outputs lack the provenance and per-event pairs
+needed for matched-purity comparisons.
 
-\subsection{Which failures targeted training \emph{cannot} fix}\label{sec:hardregime}
-
-The natural follow-up is whether the same treatment repairs the other weak regimes of
-\S\ref{sec:limits}. We repeated the experiment at larger scale, fine-tuning on a mixture of eleven
-hard regimes chosen to cover every documented failure---wide and resonant separations, short and
-long timescales, faint and flat-rich fields, and the difficult contaminant populations---and scored
-both models per class on out-of-range evaluation sets built where each failure actually occurs.
-
-The outcome is informative precisely because it is not uniform. Two failures barely move.
-\texttt{PeriodicVar} recall for variables whose period exceeds the observing season goes from
-$\bmlHrLongpPerBefore$ to $\bmlHrLongpPerAfter$, and \texttt{NonPSPL} recall for very wide
-separations from $\bmlHrWidesepNpBefore$ to $\bmlHrWidesepNpAfter$---no change at all, despite
-training data drawn specifically from those regimes. Both have an obvious physical reading: a
-variable whose period is longer than the window is not observably periodic within it, and a wide
-caustic that is never crossed leaves no anomaly in the photometry. We are careful about the
-strength of this claim: it rests on a single fine-tuning run without repeated seeds, and the
-wide-separation cell contains only $\bmlHrWidesepN$ detectable anomalies, so the evidence is that
-targeted training \emph{did not} help under this protocol---consistent with an information limit,
-but not a demonstration of one. Two other failures do respond, modestly: \texttt{PSPL}
-recall improves from $\bmlHrShortteBefore$ to $\bmlHrShortteAfter$ on sub-day timescales and from
-$\bmlHrFaintPsplBefore$ to $\bmlHrFaintPsplAfter$ for faint sources.
-
-The fine-tune also rebalances precision against recall rather than improving both. The clearest
-case is \texttt{LongPeriodVar} in faint fields, where precision rises sharply from
-$\bmlHrFaintLpvPrecBefore$ to $\bmlHrFaintLpvPrecAfter$ while recall falls from
-$\bmlHrFaintLpvRecBefore$ to $\bmlHrFaintLpvRecAfter$; anomaly precision on the natural mixture
-drifts down slightly ($\bmlHrNatNpPrecBefore\rightarrow\bmlHrNatNpPrecAfter$). Aggressive multi-regime
-fine-tuning is therefore not a free improvement, unlike the narrowly targeted planetary case.
-
-Taken together the two experiments motivate a working distinction, offered as a hypothesis these
-results support rather than as a proven dichotomy: some shortfalls are deficits of training
-exposure and respond strongly to targeted data (the mass-ratio deficit, recovered at no measurable
-cost), while others resisted the same treatment entirely and coincide with regimes where the
-observable signal is plausibly absent within a single season. Establishing the latter as a genuine
-information limit would need repeated seeds, larger samples in the affected cells, and ideally an
-explicit estimate of the recoverable information; we have not done that here. What we can say is
-which limitations moved under targeted training and which did not, which is the practically useful
-guidance for anyone extending this model.
-
-The natural next step is validation on real events in the model's own regime. As shown in
-\S\ref{sec:limits}, this cannot be done from the ground---even KMTNet's dense but nightly-gapped
-sampling defeats the model---so it genuinely awaits \Rom{} itself, whose continuous cadence is what
-the model is built for. We stress that this is not a request to make BinML cadence-agnostic: a
-model tuned to \Rom{}'s sampling should stay tuned to it, and sparse archival data is better served
-by simpler single-band classifiers. The one weak
-spot with real follow-up implications---faint-source false anomalies---is the obvious thing to watch
-in that validation, should it matter in practice; the remaining limits sit close enough to the
-physics that we expect little return from chasing them.
+The natural next step is validation on real events in the model's own regime. Faint-source false
+anomalies, the baseline estimate, and colour-band calibration are the specific priorities for that
+validation; sparse archival data may be better served by models trained for that sampling than by
+making BinML cadence-agnostic.
 
 \section{Conclusion}\label{sec:conclusion}
 
-We have presented BinML, a compact multi-band transformer classifier for \Rom{}-like GBTDS light
-curves, built around two ideas---detectability-conditioned labelling and a real-time anomaly-onset
-cascade---that make it a candidate for prospective survey use rather than only accurate on a static
-benchmark. On the adopted synthetic class mixture it reaches a completeness of $\bmlCompleteness$ at
-a purity of $\bmlPurity$ (average precision $\bmlAP$), reconstructs the truth-informed anomaly
-ranking from raw photometry, and issues its first anomaly alert a median of
-$\bmlCascMedianLag$~days after the caustic becomes detectable. These results establish a reproducible synthetic benchmark; validation
-against survey event-rate priors and the current \Rom{} survey design remains future work. The
-model, its weights, and the full simulation-to-inference pipeline are released as open source.
+BinML is a compact multi-band classifier for six classes of synthetic, progressively revealed
+\Rom{}-like light curves. On the adopted class mixture it reaches completeness
+$\bmlCompleteness$ at purity $\bmlPurity$ for detectable \texttt{NonPSPL} events. These values are
+conditional on the simulation and its class priors; they are not planet yields or survey purity.
+
+At half-day resolution the model alerts on $\bmlCascDetFrac\%$ of eligible simulated binaries.
+Relative to a truth-informed, noise-free onset, $\bmlCascPrematurePct\%$ alert early and the
+non-premature alerts have a median delay of $\bmlCascMedianLagNonPrem$~days. The scan covers
+eligible binaries only, under a threshold selected on complete seasons, so it measures timing
+rather than streaming purity. The matched-risk comparison between models trained with and without
+truncation is exploratory---thresholds and outcomes use the same $\bmlMatchN$ events---and does not
+establish a causal timing benefit.
+
+The principal remaining tests are a mixed-class prefix scan that measures sequential false alerts
+and alert burden, an estimated-baseline ablation, sensitivity to the adopted $0.02$~mag floor,
+disjoint calibration and evaluation of the streaming policy with repeated training seeds,
+retraining under the current multi-season survey design, and validation on real photometry. The
+released code and weights provide a rebuildable static benchmark, with per-artifact provenance
+recorded below.
 
 \begin{acknowledgments}
 I thank the gravitational lensing group at the Astronomisches Rechen-Institut (ARI), Zentrum für
-Astronomie der Universität Heidelberg, and in particular Yiannis Tsapras, for guidance and
-discussions that shaped this work. Simulations were run on Amazon Web Services (AWS) EC2, and
+Astronomie der Universität Heidelberg, and in particular Yiannis Tsapras, for scientific feedback
+and discussions that shaped this work.
+Simulations were run on Amazon Web Services (AWS) EC2, and
 model development used a combination of local Apple Silicon hardware and cloud GPU credits from
 AWS and Modal; I gratefully acknowledge both for computational credits. This work made use of
 \textsc{VBBinaryLensing} \citep{Bozza2018} and the OGLE variable-star catalogues
@@ -924,21 +1004,46 @@ VBBinaryLensing \citep{Bozza2018}, Astropy \citep{astropy2022}}
 
 \section*{Data availability}
 BinML, its trained weights, and the full simulation-to-inference pipeline are openly available at
-\url{https://github.com/kunalb541/BinML}. The frozen evaluation artifact---the per-event logits,
-labels, generator classes, selection weights, event parameters, and the final-test index, with a
-manifest recording each array's shape, dtype, and hash---is committed alongside the paper, and
-every table and figure regenerates from it via the build script, so the results reproduce from the
-repository alone without access to any local output directory. The full multi-million-event
-training set is too large to host there and is available on request; it can also be regenerated
-from the released simulation code, since each shard is seeded deterministically by its index.
+\url{https://github.com/kunalb541/BinML}. Reproducibility comes at three distinct levels, and we
+distinguish them because they are not equally cheap.
+
+\emph{Manuscript rebuild.} Every number, table and figure in this paper is generated by the build
+script from the artifacts distributed with a release, with no access to any local output directory.
+This runs in minutes on a laptop and is exercised in continuous integration from a clean
+\code{git archive} of the repository.
+
+\emph{Analysis regeneration.} The frozen evaluation artifact---per-event logits, labels, generator
+classes, selection weights, event parameters and the final-test index, with a manifest recording
+each array's shape, dtype and hash---supports the static results in
+\S\ref{sec:results}--\ref{sec:limits}. The streaming results come from a separate archived scan
+(\code{validation/cascade\_trace.npz}, the full probability trace for the frozen $\bmlCascN$-event
+sample) and the ablations and auxiliary experiments from their own archived JSON artifacts, each
+with the script that produced it. Re-deriving any reported statistic from these requires only the
+reduction scripts; regenerating the artifacts themselves requires the model and the simulator, and
+takes minutes to hours. Two provenance limitations remain in the archived runs. The primary trace
+records the checkpoint hash but was generated from a dirty tree without recording its patch; the
+matched-cascade trace records neither source nor checkpoint hashes. The labelling ablation's source
+hash was repaired after the run because the in-run hash was empty. The earlier ablation run that
+supplies the truncation-augmentation comparison predates this harness entirely and records no
+commit, data or checkpoint hashes at all; its artifact carries a provenance block saying so. Its
+labelling arms are superseded by the fixed-weight rerun, and the cascade comparison it still
+supplies is the one we report as \emph{not} supporting our claim. These disclosures are retained
+in the artifacts; future executions fail on an empty or mismatched source hash, but the published
+experiments have not been rerun solely to replace those metadata fields.
+
+\emph{Training reproduction.} The multi-million-event training set is too large to host and is
+available on request; it can also be regenerated from the released simulation code, since each
+shard is seeded deterministically by its index. Reproducing the released checkpoint, the ablation
+arms or the fine-tuning runs means rerunning that generation and the training, which is the
+cloud-scale cost described in Appendix~\ref{app:infra}. The build script does not do this, and no
+claim in this paper should be read as implying that it does.
 
 \appendix
 
 \section{Simulation and training infrastructure}\label{app:infra}
 
-Because reproducibility and the real computational cost of a method are as much a part of a survey
-tool as its accuracy, we describe here exactly how the data were generated and the model trained,
-and what it cost.
+For reproducibility we describe the compute configuration used to generate the data and train the
+model. We did not retain billing records and therefore do not report a currency cost.
 
 \paragraph{Simulation (AWS).} The training set of roughly $\bmlSimEvents$~million events was
 generated on Amazon Web Services in the \texttt{\bmlSimRegion} region, on a small fleet of
@@ -947,25 +1052,25 @@ embarrassingly parallel: one process builds one self-contained shard of a few th
 curves, seeded purely by its index, so a shard that is lost to a Spot interruption costs at most
 that shard and the run resumes by skipping shards already written to cloud storage. At a measured
 throughput of about $\bmlSimEps$ events per second across the fleet, the full set was produced in
-roughly $\bmlSimHours$~hours. Because the instances are free-tier-eligible Spot capacity, the
-compute cost of a full generation is at the level of cents; the only non-trivial cost is storage of
-the compact binned shards, a few dollars per month.
+roughly $\bmlSimHours$~hours. Storage use and cloud price vary with provider, region, and date and
+are not reconstructed here.
 
 \paragraph{Training recipe.} The production model was trained with AdamW (learning rate
 $3\times10^{-4}$, weight decay $0.01$), batch size $\bmlTrainBatch$, cross-entropy loss with the
 selection weights of \S\ref{sec:eval} and an additional factor $2$ on the anomaly class, and the
 truncation augmentation applied to half of all training examples. Seeds are fixed
-($\bmlSeedTrain$) and the data loader is seeded per worker. Fine-tuning runs use a reduced learning
-rate of $5\times10^{-5}$.
+($\bmlSeedTrain$) and the data loader is seeded per worker. The recorded production run completed
+$\bmlTrainEpochs$ epochs; the released checkpoint is zero-based epoch 4, selected by the highest
+validation-set \texttt{NonPSPL} F1. Fine-tuning runs use a reduced learning rate of $5\times10^{-5}$.
 
-\paragraph{Training (local, with a cloud comparison).} The network is small enough that it was
+\paragraph{Training (local).} The network is small enough that it was
 trained end to end on a personal computer, on the \bmlTrainDevice, at a batch size of
 $\bmlTrainBatch$. A benchmark of the training step (forward and backward pass on a full batch)
 sustains about $\bmlTrainEps$ events per second, which puts a full training run of a few passes
 over the $\bmlSimEvents$-million-event set at roughly $\bmlTrainHours$~hours of wall-clock, and the
 production model was trained in this range. On local hardware no compute is rented, so the marginal
-training cost is only electricity; a modest cloud GPU (for example on AWS or Modal) would train the
-same model faster for a few dollars. The compactness of the network (\S\ref{sec:model}) is what
+training cost is local electricity; we did not estimate it. The compactness of the network
+(\S\ref{sec:model}) is what
 keeps both training and survey-scale inference within reach of a single workstation rather than
 requiring a dedicated computing allocation.
 

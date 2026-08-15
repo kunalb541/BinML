@@ -1,10 +1,9 @@
 # Training pipeline
 
-> **v5 note.** The current 6-class multi-band pipeline — simulation, binning, training,
-> fine-tuning, evaluation, and every module's role — is documented in
-> **[`pipeline.md`](pipeline.md)**, with verified quick-start commands. Read that.
->
-> This page is retained for the **legacy 3-class CNN-GRU** pipeline (`binml/` package) only.
+> **Current model.** This page summarises the 6-class multi-band training commands. The complete
+> simulation-to-evaluation walkthrough is in **[`pipeline.md`](pipeline.md)**. The superseded
+> 3-class CNN-GRU is documented separately in **[`legacy_3class.md`](legacy_3class.md)** and lives
+> under `binml.legacy`.
 
 ---
 
@@ -26,7 +25,7 @@ python -m pipeline.to_memmap --in-dir data/cache --out data/mm
 # 4a. train from scratch
 python -m pipeline.train --cache data/mm --out runs/binml.pt --epochs 6 --device mps
 
-# 4b. OR warm-start fine-tune with the real-time cascade enabled
+# 4b. OR warm-start fine-tune with partial-season truncation augmentation
 python -m pipeline.train --cache data/mm --out runs/binml.pt \
   --init-weights runs/base.pt --truncate-aug 0.5 --alpha-nonpspl 1.0 \
   --lr 5e-5 --epochs 6 --resume
@@ -35,14 +34,21 @@ python -m pipeline.train --cache data/mm --out runs/binml.pt \
 ### The two levers that matter
 
 - **`--truncate-aug 0.5`** turns on truncation augmentation with **detectability-conditioned
-  relabelling**: a partially-observed season is relabelled by what is observable in the revealed
-  window (undetectable → Flat; binary before its `t_anom` → PSPL). This is what produces the
-  real-time cascade — it is the single most important flag for the v5 behaviour.
+  relabelling**: a partially revealed season is relabelled under the synthetic policy
+  (undetectable → Flat; binary before its `t_anom` → PSPL). `t_anom` is derived from the injected,
+  noise-free binary-versus-PSPL deviation and is not observable to a live broker. The flag defines
+  the intended partial-season label progression; it does not by itself establish a real-time alert
+  system or an absence of premature crossings.
 
-- **Warm-start fine-tuning beats more base training.** The model line is
-  a curriculum of targeted warm-starts (`--init-weights`) on harder data
-  (hard microlensing regimes, then the cascade + weak-spot coverage). Base training plateaued;
-  targeted fine-tuning on the hard regimes is the lever.
+- **Reported training lineage.** The shipped checkpoint followed a curriculum of targeted
+  warm-starts (`--init-weights`) on harder data and then partial-season augmentation. The retained
+  fine-tuning comparisons use one seed per arm and do not provide a matched, repeated-seed test
+  against additional base training. Treat them as lineage/provenance, not an established recipe
+  advantage.
+
+The released training data use a legacy one-season Roman-like schedule and known outdated
+colour-band photometric constants; see [`model_card.md`](model_card.md). A production retrain should
+use the audited current constants and preserve a source/config/checkpoint manifest.
 
 ### Class balancing
 

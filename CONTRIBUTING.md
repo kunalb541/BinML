@@ -1,8 +1,8 @@
 # Contributing to BinML
 
-Thanks for your interest in BinML — a deep-learning classifier for gravitational
-microlensing light curves (Flat / PSPL / Binary), built for Nancy Grace Roman Space
-Telescope cadence. Contributions of all kinds are welcome: bug reports, new survey
+Thanks for your interest in BinML — a six-class deep-learning classifier for gravitational
+microlensing and variable-star light curves, built for Nancy Grace Roman Space Telescope-like
+cadence. Contributions of all kinds are welcome: bug reports, new survey
 loaders, documentation fixes, tests, and improvements to the model or research pipeline.
 
 By participating you agree that your contributions will be released under the project's
@@ -13,17 +13,21 @@ By participating you agree that your contributions will be released under the pr
 BinML is two things in one repository. Knowing which part your change belongs in makes
 review much faster.
 
-- **`binml/`** — the installable inference package (`pip install binml`). This is what
-  end users import. It ships the trained weights and depends only on `torch` and `numpy`
-  for inference. Modules: `classifier.py`, `preprocess.py`, `evaluate.py`, `surveys.py`,
-  `plotting.py`, `cli.py`, `model.py`, and bundled `weights/`. Keep this package small,
-  dependency-light, and stable — it is the public API.
-- **`pipeline/`** — the research pipeline used to produce the models. This is *not*
-  installed by the package: `simulate.py` (event simulation with VBBinaryLensing),
-  `select_subset.py` (detectability-aware subset selection), `train.py` (single-GPU
-  streaming trainer), `evaluate.py`, `model.py`, `train_modal.py` (Modal L4 orchestration),
-  `analysis/` (real-data scripts) and `curricula/` (fine-tuning round scripts). Heavier
-  dependencies are expected here.
+- **`binml/`** — the installable 6-class inference API. It is not currently on PyPI; install it
+  from a checkout or Git URL. The package exposes `classifier.py`, `preprocess.py`, and `cli.py`,
+  bundles the trained weights, and imports the shared network definition from `pipeline/model.py`.
+  The earlier 3-class API and its historical loaders live under **`binml/legacy/`**.
+- **`pipeline/`** — the research pipeline used to produce the models. It is installed because
+  the public package currently imports shared model/preprocessing components from it, but its
+  research interfaces are not part of the stable public API. The current stages are
+  `run_shard.py`/`assemble.py`/`generators.py` (simulation), `cache.py`/`to_memmap.py`,
+  `train.py`, `evaluate.py`, `plots.py`, and the distributed bin/evaluation helpers. Heavier
+  optional dependencies are expected here.
+- **`validation/`** — frozen experiment artifacts plus local and Modal experiment scripts. Do
+  not hand-edit a reported result JSON; regenerate it with its reducer and update the paper
+  manifest.
+- **`paper/`** — manuscript source, frozen evaluation artifacts, generated-number tooling, and a
+  fail-closed build.
 
 Supporting directories: `docs/`, `paper/`, `examples/`, `tests/`, `data/`, `results/`.
 
@@ -43,7 +47,8 @@ pip install -e ".[all]"     # editable install with plotting + analysis extras
 pip install pytest          # for running the test suite
 ```
 
-The `[all]` extra pulls in `matplotlib` and `scipy` (used by plotting and evaluation).
+The `[all]` extra pulls in `matplotlib`, `h5py`, `scipy`, `scikit-learn`, and
+`VBBinaryLensing` (used by simulation, validation, plotting, and evaluation).
 For a minimal inference-only environment, `pip install -e .` installs just `torch` and
 `numpy`.
 
@@ -55,11 +60,12 @@ The test suite lives in `tests/` and runs with `pytest`:
 python -m pytest tests/ -q
 ```
 
-Tests are smoke-level and fast: they check that the package imports, that both bundled
-models load, and that a synthetic light curve classifies with a valid probability
-distribution. Please make sure the suite passes before opening a pull request, and add a
-test when you fix a bug or add a feature. Continuous integration runs the same command on
-Python 3.9, 3.10, and 3.11 for every push and pull request.
+The suite covers the public API and CLI, numerical/input invariants, artifact integrity,
+deterministic reducers, and clean-build behaviour. Some clean-archive integration tests are marked
+`slow`. Please make sure the suite passes before opening a pull request, and add a test when you
+fix a bug or add a feature. Continuous integration runs the package tests on Python 3.9, 3.10,
+and 3.11, exercises the paper dependency preflight on newer interpreters, and builds/checks the
+wheel and source distribution on Python 3.11.
 
 ## Code style
 
@@ -98,39 +104,17 @@ For feature requests, describe the use case and, where relevant, which part of t
 Maintainers may request changes during review; this is a normal part of the process and
 not a reflection on your work. Small, well-tested PRs are merged fastest.
 
-## Adding a new survey loader
+## Adding a survey format
 
-Survey loaders live in `binml/surveys.py`. Every loader takes a file path and returns a
-tuple of three float arrays `(time, mag, mag_err)`, ready to hand straight to
-`Classifier.predict`. Existing examples include `load_ogle`, `load_moa`, and
-`load_generic`.
+The current 6-class API accepts arrays directly, or a dictionary mapping F146/F087/F213 to
+`(time, magnitude)` arrays. Its CLI accepts a generic CSV or whitespace file for F146. The OGLE,
+MOA, and generic loader helpers belong to the historical 3-class API at
+`binml/legacy/surveys.py`; do not present them as current `binml` exports.
 
-To add support for a new survey format:
-
-1. **Write the loader.** Add a function to `binml/surveys.py` that reads your format and
-   returns `(time, mag, mag_err)` as `numpy` arrays. Convert flux to magnitude if the
-   survey publishes flux, and provide a sensible default error column if one is missing.
-
-   ```python
-   def load_mysurvey(path) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-       """MySurvey photometry: columns = time, mag, mag_err."""
-       a = np.loadtxt(str(path))
-       return a[:, 0], a[:, 1], a[:, 2]
-   ```
-
-2. **Export it.** Add the function name to the module's `__all__` list so it is part of the
-   public `binml.surveys` API.
-
-3. **Register it for auto-dispatch (optional).** If you want the format available through
-   `read_lightcurve(path, fmt="mysurvey")` and the `binml classify --format` CLI option,
-   add a branch for it in `read_lightcurve`.
-
-4. **Test it.** Add a small test in `tests/` — a tiny fixture file or an inline array is
-   enough — asserting that the loader returns three equal-length arrays and that a curve
-   classifies without error.
-
-Loaders should not download data implicitly; network access (as in `fetch_ogle_ews`)
-should be an explicit, clearly documented function.
+If a new format belongs in the current API, add an explicit loader module, document its passband
+and time/magnitude conventions, and add tests for malformed rows, missing values, and an end-to-end
+classification. Network downloads must remain explicit. Note that the current 6-class model does
+not consume per-epoch magnitude uncertainties even if a source format supplies them.
 
 ## Questions
 

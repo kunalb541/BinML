@@ -5,6 +5,22 @@ on:
   pull_request:
 
 jobs:
+  modern-preflight:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install pytest numpy
+      - name: Execute the paper dependency preflight
+        run: >-
+          python -m pytest tests/test_validation_and_invariants.py::test_build_preflight_runs_on_a_modern_interpreter -q
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -26,3 +42,9 @@ jobs:
 
       - name: Run tests
         run: python -m pytest tests/ -q
+
+      - name: Build and inspect distributions
+        if: matrix.python-version == '3.11'
+        run: |
+          python -m build
+          python -m twine check dist/*

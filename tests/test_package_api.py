@@ -53,6 +53,19 @@ def test_no_data_and_bad_input_raise():
         clf.predict(np.arange(10.0), np.full(10, np.nan))
 
 
+def test_nonfinite_window_metadata_raise_before_inference():
+    """NaN/Inf baselines or window origins must never yield confident-looking predictions."""
+    import numpy as np, pytest, binml
+    clf = binml.Classifier()
+    t = np.linspace(0, 72, 20)
+    mag = np.full_like(t, 22.0)
+    for value in (np.nan, np.inf, -np.inf):
+        with pytest.raises(ValueError, match="m_base_ref must be finite"):
+            clf.predict(t, mag, m_base_ref=value)
+        with pytest.raises(ValueError, match="t_start must be finite"):
+            clf.predict(t, mag, m_base_ref=22.0, t_start=value)
+
+
 def test_evolution_and_missing_baseline_warns():
     import numpy as np, warnings, binml
     t = np.linspace(0, 72, 2000)
@@ -64,3 +77,32 @@ def test_evolution_and_missing_baseline_warns():
         warnings.simplefilter("always")
         clf.predict(t, mag)
         assert any("m_base_ref" in str(x.message) for x in w)
+
+
+def test_evolution_validates_inputs_and_does_not_score_empty_prefixes():
+    import pytest
+
+    clf = binml.Classifier()
+    t = np.linspace(30.0, 72.0, 100)
+    mag = np.full_like(t, 22.0)
+
+    days, probs = clf.predict_evolution(
+        {"F146": (t, mag)}, m_base_ref=22.0, t_start=0.0, n_steps=4)
+    assert np.array_equal(days, [18.0, 36.0, 54.0, 72.0])
+    assert np.isnan(probs[0]).all()
+    assert np.allclose(probs[1:].sum(1), 1.0, atol=1e-4)
+
+    for value in (np.nan, np.inf, -np.inf):
+        with pytest.raises(ValueError, match="m_base_ref must be finite"):
+            clf.predict_evolution({"F146": (t, mag)}, m_base_ref=value)
+        with pytest.raises(ValueError, match="t_start must be finite"):
+            clf.predict_evolution({"F146": (t, mag)}, m_base_ref=22.0, t_start=value)
+    with pytest.raises(ValueError, match="F146 is required"):
+        clf.predict_evolution({"F087": (t, mag)}, m_base_ref=22.0)
+    with pytest.raises(ValueError, match="equal length"):
+        clf.predict_evolution({"F146": (t, mag[:-1])}, m_base_ref=22.0)
+    with pytest.raises(ValueError, match="positive integer"):
+        clf.predict_evolution({"F146": (t, mag)}, m_base_ref=22.0, n_steps=0)
+    with pytest.raises(ValueError, match="no finite"):
+        clf.predict_evolution({"F146": (np.full(5, np.nan), np.full(5, 22.0))},
+                              m_base_ref=22.0)

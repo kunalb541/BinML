@@ -1,5 +1,13 @@
 # BinML paper plan (1.0 — 6-class, real-time cascade)
 
+> **OBSOLETE — HISTORICAL PLANNING DOCUMENT (frozen 2026-07-28).**
+> This file records what the paper was *planned* to say before the experiments were run. Several
+> numbers in it did not survive: the "42%→9%" premature-flagging figure was untracked and is
+> **withdrawn**, and the pre-onset P(NonPSPL) figures were superseded by an event-level
+> first-crossing analysis. Do not cite anything here. The authoritative numbers are
+> `paper/canonical_numbers.json` and the JSON artifacts in `validation/`; the authoritative text
+> is `paper/paper.tex`.
+
 Status: 2026-07-28. Drives the rewrite of `paper.md`.
 
 > **Public framing.** Externally this is **BinML 1.0**. Internal development numbering

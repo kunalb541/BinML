@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "binml"
 version = "1.0.0"
-description = "A real-time, detectability-conditioned deep-learning classifier for Nancy Grace Roman Space Telescope microlensing and variable light curves (6 classes: Flat, PSPL, NonPSPL, PeriodicVar, LongPeriodVar, Eruptive)."
+description = "A detectability-conditioned classifier for streaming Roman-like microlensing and variable-star light curves (6 classes: Flat, PSPL, NonPSPL, PeriodicVar, LongPeriodVar, Eruptive)."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Kunal Bhatia" }]
 maintainers = [{ name = "Kunal Bhatia" }]
 keywords = [
@@ -22,7 +23,6 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Astronomy",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -37,7 +37,8 @@ dependencies = [
 plot = ["matplotlib>=3.5"]
 data = ["h5py>=3.0", "scipy>=1.7"]
 all = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "scikit-learn>=1.0", "VBBinaryLensing"]
-dev = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "pytest>=7.0", "build", "twine"]
+dev = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "scikit-learn>=1.0",
+       "VBBinaryLensing", "pytest>=7.0", "build", "twine"]
 
 [project.scripts]
 binml = "binml.cli:main"
@@ -49,10 +50,14 @@ Documentation = "https://github.com/kunalb541/BinML/tree/main/docs"
 Issues = "https://github.com/kunalb541/BinML/issues"
 
 [tool.setuptools]
-packages = ["binml", "binml.legacy", "pipeline"]
+# binml.weights holds the checkpoints and no Python. It is listed EXPLICITLY because setuptools
+# otherwise treats an importable data directory ambiguously: the files ship today via
+# package-data, but the discovery configuration did not say so, and the warning is a real one.
+packages = ["binml", "binml.legacy", "binml.weights", "pipeline"]
+include-package-data = false
 
 [tool.setuptools.package-data]
-binml = ["weights/*.pt"]
+"binml.weights" = ["*.pt"]
 
 [tool.pytest.ini_options]
 markers = ["slow: integration tests that build from a clean archive"]

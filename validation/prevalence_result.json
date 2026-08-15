@@ -1,0 +1,254 @@
+{
+  "_doc": "What a survey could achieve at fixed purity if it re-tuned the threshold for its own prevalence.",
+  "purity_target": 0.9,
+  "n_validation": 90117,
+  "n_final_test": 360472,
+  "synthetic_prevalence": 0.0558,
+  "frozen_threshold": 0.9042405486106873,
+  "selection": "threshold chosen on validation rows, reported on final-test rows",
+  "assumption": "label shift only: class-conditional score distributions held fixed",
+  "scenarios": {
+    "synthetic": {
+      "prevalence": 0.05581,
+      "threshold": 0.90287,
+      "completeness_test": 0.88,
+      "purity_test": 0.907,
+      "completeness_val": 0.88,
+      "purity_val": 0.9,
+      "counts_val": {
+        "n_selected": 9532,
+        "n_selected_true_anomaly": 9332,
+        "n_anomaly_rows": 10599
+      },
+      "counts_test": {
+        "n_selected": 38407,
+        "n_selected_true_anomaly": 37656,
+        "n_anomaly_rows": 42805
+      },
+      "completeness_test_at_frozen_thr": 0.879,
+      "purity_test_at_frozen_thr": 0.908
+    },
+    "one_pct": {
+      "prevalence": 0.01,
+      "threshold": 0.982455,
+      "completeness_test": 0.735,
+      "purity_test": 0.925,
+      "completeness_val": 0.741,
+      "purity_val": 0.903,
+      "counts_val": {
+        "n_selected": 7879,
+        "n_selected_true_anomaly": 7852,
+        "n_anomaly_rows": 10599
+      },
+      "counts_test": {
+        "n_selected": 31546,
+        "n_selected_true_anomaly": 31455,
+        "n_anomaly_rows": 42805
+      },
+      "completeness_test_at_frozen_thr": 0.879,
+      "purity_test_at_frozen_thr": 0.627
+    },
+    "tenth_pct": {
+      "prevalence": 0.001,
+      "threshold": 0.996186,
+      "completeness_test": 0.513,
+      "purity_test": 1.0,
+      "completeness_val": 0.519,
+      "purity_val": 0.925,
+      "counts_val": {
+        "n_selected": 5505,
+        "n_selected_true_anomaly": 5503,
+        "n_anomaly_rows": 10599
+      },
+      "counts_test": {
+        "n_selected": 21960,
+        "n_selected_true_anomaly": 21960,
+        "n_anomaly_rows": 42805
+      },
+      "completeness_test_at_frozen_thr": 0.879,
+      "purity_test_at_frozen_thr": 0.143
+    }
+  },
+  "curve": [
+    {
+      "prevalence": 0.0001,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.00013,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.000169,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.00022,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.000285,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.000371,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.000482,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.000626,
+      "threshold": 0.99733,
+      "completeness_test": 0.4345,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.000814,
+      "threshold": 0.996186,
+      "completeness_test": 0.513,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.001058,
+      "threshold": 0.996186,
+      "completeness_test": 0.513,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.001375,
+      "threshold": 0.995978,
+      "completeness_test": 0.5234,
+      "purity_test": 1.0
+    },
+    {
+      "prevalence": 0.001787,
+      "threshold": 0.994026,
+      "completeness_test": 0.5925,
+      "purity_test": 0.964
+    },
+    {
+      "prevalence": 0.002322,
+      "threshold": 0.993763,
+      "completeness_test": 0.5999,
+      "purity_test": 0.9662
+    },
+    {
+      "prevalence": 0.003018,
+      "threshold": 0.99374,
+      "completeness_test": 0.6004,
+      "purity_test": 0.9739
+    },
+    {
+      "prevalence": 0.003923,
+      "threshold": 0.992597,
+      "completeness_test": 0.6269,
+      "purity_test": 0.9585
+    },
+    {
+      "prevalence": 0.005098,
+      "threshold": 0.99229,
+      "completeness_test": 0.6324,
+      "purity_test": 0.9681
+    },
+    {
+      "prevalence": 0.006626,
+      "threshold": 0.991092,
+      "completeness_test": 0.6532,
+      "purity_test": 0.9712
+    },
+    {
+      "prevalence": 0.008612,
+      "threshold": 0.983959,
+      "completeness_test": 0.7259,
+      "purity_test": 0.9178
+    },
+    {
+      "prevalence": 0.011192,
+      "threshold": 0.980223,
+      "completeness_test": 0.7476,
+      "purity_test": 0.9175
+    },
+    {
+      "prevalence": 0.014546,
+      "threshold": 0.978606,
+      "completeness_test": 0.756,
+      "purity_test": 0.9295
+    },
+    {
+      "prevalence": 0.018905,
+      "threshold": 0.972599,
+      "completeness_test": 0.7805,
+      "purity_test": 0.9285
+    },
+    {
+      "prevalence": 0.02457,
+      "threshold": 0.958825,
+      "completeness_test": 0.8169,
+      "purity_test": 0.9099
+    },
+    {
+      "prevalence": 0.031932,
+      "threshold": 0.947701,
+      "completeness_test": 0.8364,
+      "purity_test": 0.91
+    },
+    {
+      "prevalence": 0.041501,
+      "threshold": 0.932837,
+      "completeness_test": 0.8562,
+      "purity_test": 0.9097
+    },
+    {
+      "prevalence": 0.053937,
+      "threshold": 0.905934,
+      "completeness_test": 0.8781,
+      "purity_test": 0.9058
+    },
+    {
+      "prevalence": 0.0701,
+      "threshold": 0.866397,
+      "completeness_test": 0.8967,
+      "purity_test": 0.9024
+    },
+    {
+      "prevalence": 0.091105,
+      "threshold": 0.81856,
+      "completeness_test": 0.9112,
+      "purity_test": 0.9049
+    },
+    {
+      "prevalence": 0.118406,
+      "threshold": 0.724117,
+      "completeness_test": 0.9286,
+      "purity_test": 0.9049
+    },
+    {
+      "prevalence": 0.153887,
+      "threshold": 0.574477,
+      "completeness_test": 0.9431,
+      "purity_test": 0.9019
+    },
+    {
+      "prevalence": 0.2,
+      "threshold": 0.407105,
+      "completeness_test": 0.9536,
+      "purity_test": 0.8982
+    }
+  ]
+}

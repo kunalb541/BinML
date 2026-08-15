@@ -5,6 +5,12 @@ The original BinML was a **3-class** classifier — **Flat** (no event), **PSPL*
 the 6-class multi-band model, but is documented here and preserved for reproducibility and
 provenance. This is how it was built.
 
+> **Note on paths.** The scripts named below (`pipeline/simulate.py`,
+> `pipeline/select_subset.py`, `pipeline/train_modal.py`) belong to the legacy 3-class
+> codebase and are **not present in this repository**. They are recorded here for provenance;
+> the current 6-class pipeline lives in `pipeline/` under different names
+> (`run_shard.py`, `cache.py`, `to_memmap.py`, `train.py`, `evaluate.py`).
+
 ## Where the code lives
 - **Inference package:** still importable at `binml.legacy` (`from binml.legacy import Classifier`).
   Weights `binml/weights/binml_base.pt` and `binml/weights/binml_finetuned.pt` are bundled.
@@ -37,23 +43,26 @@ detectability-conditioned evaluation.
 3. **Train** the base model with a single-GPU streaming trainer — `pipeline/train.py`, orchestrated
    on a Modal L4 GPU via `pipeline/train_modal.py`.
 4. **Fine-tune** with a warm start (`train.py --init-weights`) on a bump-rich, low-mass-ratio
-   (hard planetary) set — moved the needle far more than additional base training. A second, more
-   aggressive fine-tune round **collapsed** (drove PSPL recall to ~18% by calling nearly everything
-   Binary) and was discarded; round 1 shipped. This is why the fine-tune schedule is conservative.
+   (hard planetary) set. Historical summaries report that a second, more aggressive round collapsed
+   and was discarded. The current repository does not ship a provenance-complete matched comparison
+   against additional base training, so this is lineage, not a causal recipe claim.
 
-## Results (full 1,000,000-event held-out evaluation)
+## Historical results (not reproduced by the current release)
+
+The following values were recorded for the legacy model, but the current tree does not contain a
+frozen, hashed evaluation artifact from which to regenerate them. Treat them as historical context,
+not current validation.
+
 | model | accuracy | Flat | PSPL | Binary (raw pop.) | planetary recall (q∈1e-4..1e-3) |
 |---|---|---|---|---|---|
 | base | 64.3% | 100% | 80.0% | 52.2% | 41.2% |
 | **fine-tuned** (shipped) | 67.2% | 100% | 70.9% | 62.3% | 57.4% |
 
-Binary recall rose monotonically with anomaly Δχ² from ~11% (no detectable signal) to ~85%
-(strong anomaly); at Δχ²≥300, ~32% of binaries were physically indistinguishable from PSPL and
-the detectable-only binary recall was ~78%. Validated on real OGLE-IV events (correctly flagged
-caustic-crossing binaries OGLE-2014-BLG-0289, OGLE-2013-BLG-0578).
+Historical analysis reported that binary recall rose with anomaly Δχ². Prior ad-hoc OGLE checks
+are not counted as validation: no frozen, hashed result artifact or complete protocol is shipped.
 
 ## Why it was superseded
 The 3-class, single-band model could not use colour (a real discriminator against variables),
 had no variable-star classes (contaminants had nowhere to go but the three lensing classes), and
-labelled/flagged without the detectability-conditioned, real-time cascade. The 6-class multi-band
+labelled/flagged without the detectability-conditioned partial-season objective. The 6-class multi-band
 model addresses all three. See [architecture.md](architecture.md) and [evaluation.md](evaluation.md).

@@ -1,0 +1,22 @@
+{
+  "_doc": "Reproducible CPU inference throughput for the shipped checkpoint.",
+  "events_per_sec": 359,
+  "ms_per_event": 2.788,
+  "batch": 1024,
+  "protocol": "2 warmup + 7 timed forward passes on pre-tokenised inputs; median reported. Tokenisation is excluded and depends on the caller's I/O path.",
+  "seconds_per_batch": {
+    "median": 2.855,
+    "min": 2.4273,
+    "max": 3.6773
+  },
+  "environment": {
+    "cpu": "Apple M5",
+    "logical_cores": 10,
+    "torch_threads": 10,
+    "torch_interop_threads": 10,
+    "torch": "2.11.0",
+    "numpy": "2.2.6",
+    "python": "3.11.8",
+    "platform": "macOS-27.0-arm64-arm-64bit"
+  }
+}

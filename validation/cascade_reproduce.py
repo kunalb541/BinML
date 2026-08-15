@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
-"""Reproduce the cascade numbers with a tracked, event-level artifact.
+"""Draw the frozen cascade event sample and record each event's first threshold crossing.
 
-Every reported field is computed BY THIS SCRIPT -- an earlier version of the committed JSON had
-the day-11 and argmax figures merged in by hand, so rerunning would have silently dropped them.
+WHERE THIS SITS IN THE PIPELINE.  This script DEFINES the event sample (which seeds, how many, the
+eligibility rule).  It is not where the manuscript's cascade numbers come from any more:
 
-Audit finding: the manuscript's cascade figures (premature-flag rate, pre-onset probability) were
-summary values with no committed script or per-event output that regenerates them.
+    cascade_reproduce.py   ->  cascade_events.json        the frozen sample + published crossings
+    cascade_trace.py       ->  cascade_trace.npz          full probability traces for those seeds
+    cascade_reduce.py      ->  cascade_reproduce_result.json   every reported statistic
 
-This measures, for the SHIPPED model, the two quantities directly on freshly simulated binaries:
-  * premature-flag rate -- fraction of detectable binaries flagged NonPSPL (at the frozen operating
-    threshold) while the revealed window still ends BEFORE the anomaly onset t_anom;
-  * mean pre-onset P(NonPSPL) -- the average anomaly probability over those same pre-onset windows.
+Everything the paper reports is a reduction of the trace, so the evaluation grid, alert rule,
+persistence requirement, band set and onset definition can all be varied on ONE event sample
+instead of being re-measured on a new draw each time.  cascade_events.json is kept as the
+regression fixture: cascade_reduce.py asserts that its reduction reproduces these crossings
+exactly, and fails loudly if the simulator or checkpoint has changed.
 
-Both are evaluated on truncated windows sampled uniformly before t_anom, which is the situation a
-live alert stream faces. Per-event rows are written to cascade_events.json so the summary is
-auditable, alongside the summary in cascade_reproduce_result.json.
+WHY --promote EXISTS.  The published artifact is a 1,000-event sample.  An earlier version of this
+script defaulted to 150 events and wrote straight to the published path, so running the documented
+command with no argument silently replaced the headline artifact with a smaller, noisier one.  The
+default is now the published protocol, and writing to the published path requires --promote.
 
-NOTE: this reproduces the CASCADE model's (shipped) values only. The "baseline (no cascade)"
-comparison numbers in the manuscript come from a model trained without truncation augmentation,
-which is a separate training run; reproducing those requires retraining and is flagged as such.
-
-Usage:  python validation/cascade_reproduce.py [n_events]
+Usage:  python validation/cascade_reproduce.py [--n 1000] [--out PATH] [--promote]
 """
 from __future__ import annotations
 import json, os, sys, warnings
@@ -42,7 +41,7 @@ def wilson(k, n, z=1.96):
     return (max(0.0, c - h), min(1.0, c + h))
 
 
-def main(n_events=150, step_days=0.5):
+def main(n_events=1000, step_days=0.5, out_dir=None, promote=False):
     """Event-level time-to-first-crossing. For each eligible detectable binary we sweep the
     revealed season and record the FIRST day P(NonPSPL) crosses the operating threshold. An alert
     is PREMATURE if that first crossing precedes t_anom.
@@ -52,6 +51,11 @@ def main(n_events=150, step_days=0.5):
     a randomly chosen pre-onset snapshot happens to be over threshold. An earlier version of this
     script measured the snapshot rate (2% of random pre-onset windows) and the manuscript wrongly
     equated it with the premature-alert rate; the event-level rate is several times larger.
+
+    NOTE ON t_anom: the onset recorded here is the generator's, quantised to a 7.2 d grid, so the
+    'premature' flag in cascade_events.json is the coarse-onset one. cascade_reduce.py recomputes
+    the onset on the 0.5 d grid matched to the sweep and reports that as primary; see its
+    docstring for why the coarse grid biases the premature rate upward.
     """
     clf = binml.Classifier(); cfg = SurveyConfig()
     thr = json.load(open(os.path.join(os.path.dirname(HERE), "paper", "results",
@@ -100,11 +104,29 @@ def main(n_events=150, step_days=0.5):
            "premature_ci_of_eligible": [round(lo, 3), round(hi, 3)],
            "premature_rate_of_detected": round(len(prem) / max(len(det), 1), 3),
            "median_lag_detected_days": round(float(np.median(lags)), 2) if lags.size else None}
-    json.dump(rows, open(os.path.join(HERE, "cascade_events.json"), "w"), indent=1)
-    json.dump(out, open(os.path.join(HERE, "cascade_reproduce_result.json"), "w"), indent=2)
+    out["onset_grid_days"] = 7.2
+    out["_note"] = ("summary under the COARSE generator onset grid. The manuscript reports "
+                    "cascade_reduce.py's reduction of cascade_trace.npz, which recomputes the "
+                    "onset on the 0.5 d sweep grid.")
+    dest = out_dir or os.path.join(HERE, "runs", f"n{n_events}")
+    if promote:
+        dest = HERE
+    os.makedirs(dest, exist_ok=True)
+    json.dump(rows, open(os.path.join(dest, "cascade_events.json"), "w"), indent=1)
+    json.dump(out, open(os.path.join(dest, "cascade_summary.json"), "w"), indent=2)
     print(json.dumps(out, indent=2))
-    print(f"per-event rows -> {HERE}/cascade_events.json")
+    print(f"per-event rows -> {dest}/cascade_events.json")
+    if not promote:
+        print("NOT promoted: the published sample in validation/ is untouched. Re-run with "
+              "--promote to replace it, then rerun cascade_trace.py and cascade_reduce.py.")
 
 
 if __name__ == "__main__":
-    main(int(sys.argv[1]) if len(sys.argv) > 1 else 150)
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--n", type=int, default=1000, help="events (published protocol: 1000)")
+    ap.add_argument("--out", default=None, help="output directory (default validation/runs/nN)")
+    ap.add_argument("--promote", action="store_true",
+                    help="write to validation/, REPLACING the published frozen sample")
+    a = ap.parse_args()
+    main(a.n, out_dir=a.out, promote=a.promote)

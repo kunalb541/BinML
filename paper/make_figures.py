@@ -9,7 +9,7 @@ baseline average precision) so make_macros.py can cite them without re-deriving.
 Deterministic: no RNG, no network. Run from the paper/ directory:  python make_figures.py
 """
 from __future__ import annotations
-import json, os
+import hashlib, json, os
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -56,6 +56,23 @@ pred = P.argmax(1)
 NONP = CLASSES.index("NonPSPL")
 
 stats = {"n_test": int(len(_ti))}   # derived numbers -> figures_stats.json
+
+
+def _sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _require_trace_link(summary, trace_path, label):
+    expected = summary.get("reduction_provenance", {}).get("input_trace_sha256")
+    actual = _sha256_file(trace_path)
+    if not expected:
+        raise SystemExit(f"FATAL: {label} summary has no input-trace hash; rerun its reducer")
+    if expected != actual:
+        raise SystemExit(f"FATAL: {label} summary/trace mismatch: {expected} != {actual}")
 
 
 # ---------------------------------------------------------------- Fig: confusion matrix
@@ -121,10 +138,10 @@ def fig_pr_nonpspl():
     fn = (w * (~op & (tgt == 1))).sum()
     ax.scatter([tp / (tp + fn)], [tp / (tp + fp)], zorder=5, s=40,
                color="black", marker="o",
-               label="operating point (purity 0.90)")
+               label=f"operating point (purity {tp / (tp + fp):.3f})")
     ax.set_xlabel("Completeness (recall)"); ax.set_ylabel("Purity (precision)")
     ax.set_xlim(0, 1.02); ax.set_ylim(0, 1.02)
-    ax.legend(loc="lower left", frameon=False)
+    ax.legend(loc="lower left", fontsize=7, frameon=True, framealpha=0.92, edgecolor="none", facecolor="white")
     ax.grid(alpha=0.25, lw=0.5)
     fig.savefig(os.path.join(OUT, "pr_nonpspl.pdf"))
     plt.close(fig)
@@ -149,7 +166,8 @@ def fig_efficiency_plane():
     qe = np.linspace(-6, 0, n_q + 1); se = np.linspace(np.log10(0.2), np.log10(5.0), n_s + 1)
     qi = np.clip(np.digitize(lq, qe) - 1, 0, n_q - 1)
     si = np.clip(np.digitize(ls, se) - 1, 0, n_s - 1)
-    A = np.full((n_q, n_s), np.nan); Cc = np.full((n_q, n_s), np.nan); N = np.zeros((n_q, n_s))
+    A = np.full((n_q, n_s), np.nan); Cc = np.full((n_q, n_s), np.nan)
+    N = np.zeros((n_q, n_s)); Nd = np.zeros((n_q, n_s))
     for i in range(n_q):
         for j in range(n_s):
             cell = (qi == i) & (si == j)
@@ -157,17 +175,18 @@ def fig_efficiency_plane():
             if neff < 30:
                 continue
             A[i, j] = (ww[cell] * det[cell]).sum() / neff
-            dcell = cell & det; nd = ww[dcell].sum()
+            dcell = cell & det; nd = ww[dcell].sum(); Nd[i, j] = nd
             if nd >= 30:
                 Cc[i, j] = (ww[dcell] * rec[dcell]).sum() / nd
     stats["eff_cond_recall_median"] = round(float(np.nanmedian(Cc)), 3)
     stats["eff_cond_recall_min"] = round(float(np.nanmin(Cc)), 3)
 
     fig, axes = plt.subplots(1, 3, figsize=(7.8, 2.9), sharey=True)
-    logN = np.log10(np.where(N > 0, N, np.nan))
+    logNd = np.log10(np.where(Nd > 0, Nd, np.nan))
     panels = [(A, "Survey detectability", 0, 1, "viridis", "fraction detectable"),
               (Cc, r"Classifier recall $|$ detectable", 0, 1, "viridis", "conditional recall"),
-              (logN, "Effective support", None, None, "magma", r"$\log_{10} n_{\rm eff}$")]
+              (logNd, "Detectable support", None, None, "magma",
+               r"$\log_{10} n_{\rm eff,det}$")]
     for ax, (M, ttl, vmn, vmx, cm, cl) in zip(axes, panels):
         im = ax.pcolormesh(se, qe, M, cmap=cm, vmin=vmn, vmax=vmx, shading="flat")
         ax.set_title(ttl, fontsize=8.5); ax.set_xlabel(r"$\log_{10} s$")
@@ -219,40 +238,69 @@ def fig_param_dependence():
 def fig_cascade_summary():
     """Fraction of eligible binaries alerted by time t relative to anomaly onset.
 
-    A survival-style view of the same per-event artifact Figure 5 histograms, which makes the two
-    operationally distinct quantities visible at once: the curve's value at t<0 is the premature
-    alert fraction, and its plateau is the within-season detection fraction (the shortfall to 1 is
-    the right-censored events). Reads validation/cascade_events.json, so it cannot disagree with
-    Figure 5 or with the reported numbers.
-    """
-    src = os.path.join(os.path.dirname(HERE), "validation", "cascade_events.json")
-    res = os.path.join(os.path.dirname(HERE), "validation", "cascade_reproduce_result.json")
-    if not (os.path.exists(src) and os.path.exists(res)):
-        raise SystemExit("FATAL: run validation/cascade_reproduce.py first (Figures 4-5 need it)")
-    rows = json.load(open(src)); summ = json.load(open(res))
-    n = len(rows)
-    lags = np.array([r["lag_days"] for r in rows if r["detected"]], float)
-    grid = np.linspace(-25, 45, 400)
-    cum = np.array([(lags <= t).sum() / n for t in grid])      # denominator = ALL eligible
-    prem = summ["premature_rate_of_eligible"]; det = summ["detection_fraction"]
+    A survival-style view of the frozen cascade sample which makes the two operationally distinct
+    quantities visible at once: the curve's value at t<0 is the premature alert fraction, and its
+    plateau is the within-season detection fraction (the shortfall to 1 is the right-censored
+    events). The axis spans the FULL range of observed lags -- an earlier version clipped it to
+    [-25, 45] d, which silently dropped 11 detections and made the plateau fall short of the
+    detection line it was meant to meet.
 
-    fig, ax = plt.subplots(figsize=(4.6, 3.1))
-    ax.plot(grid, cum, color="#1f4e79", lw=1.8)
+    Both curves come from validation/cascade_trace.npz via cascade_reduce.py, so this figure,
+    Figure 5 and the reported numbers cannot disagree.
+    """
+    npz = os.path.join(os.path.dirname(HERE), "validation", "cascade_trace.npz")
+    res = os.path.join(os.path.dirname(HERE), "validation", "cascade_reproduce_result.json")
+    if not (os.path.exists(npz) and os.path.exists(res)):
+        raise SystemExit("FATAL: run validation/cascade_trace.py then cascade_reduce.py "
+                         "(Figures 4-5 need them)")
+    summ = json.load(open(res))
+    _require_trace_link(summ, npz, "cascade")
+    d = np.load(npz, allow_pickle=False)
+    thr = summ["protocol"]["threshold"]
+    cuts = d["cuts"].astype(float)
+    n = len(d["seed"])
+
+    def first_alert(P):
+        over = np.nan_to_num(P.astype(float), nan=0.0) >= thr
+        return np.where(over.any(1), cuts[np.argmax(over, 1)], np.nan)
+
+    onset_fine = d["t_anom_fine"].astype(float)
+    onset_coarse = d["t_anom_coarse"].astype(float)
+    a = first_alert(d["p_f146"])
+    lag_fine = (a - onset_fine)[np.isfinite(a)]
+    lag_coarse = (a - onset_coarse)[np.isfinite(a)]
+
+    lo = float(min(lag_fine.min(), lag_coarse.min()))
+    hi = float(max(lag_fine.max(), lag_coarse.max()))
+    pad = 0.03 * (hi - lo)
+    grid = np.linspace(lo - pad, hi + pad, 600)
+    cum = np.array([(lag_fine <= t).sum() / n for t in grid])      # denominator = ALL eligible
+    cum_c = np.array([(lag_coarse <= t).sum() / n for t in grid])
+    prem = summ["premature_rate_of_eligible"]
+    det = summ["detection_fraction"]
+
+    fig, ax = plt.subplots(figsize=(4.8, 3.2))
+    ax.plot(grid, cum, color="#1f4e79", lw=1.8, label="onset on the 0.5 d grid")
+    ax.plot(grid, cum_c, color="#1f4e79", lw=1.1, ls="--", alpha=0.6,
+            label="onset on the 7.2 d generator grid")
     ax.axvline(0, color="k", ls="--", lw=1.0)
     ax.axhline(det, color="#b0562a", ls=":", lw=1.2,
-               label=f"within-season detection {100*det:.0f}\%")
+               label=f"within-season detection {100*det:.1f}%")
     ax.axhline(prem, color="#888", ls="-.", lw=1.2,
-               label=f"premature (alerted before onset) {100*prem:.0f}\%")
+               label=f"premature {100*prem:.1f}% "
+                     f"[{100*summ['premature_ci_of_eligible'][0]:.1f},"
+                     f"{100*summ['premature_ci_of_eligible'][1]:.1f}]%")
     ax.fill_between(grid, 0, cum, where=(grid < 0), color="#888", alpha=0.25)
     ax.set_xlabel("days relative to anomaly onset $t_{\\rm anom}$")
     ax.set_ylabel("fraction of eligible binaries alerted")
-    ax.set_ylim(0, 1.0); ax.set_xlim(-25, 45)
-    ax.legend(frameon=False, fontsize=7, loc="upper left")
-    ax.set_title(f"Cumulative first-alert time ($N={n}$ eligible)", fontsize=8.5)
+    ax.set_ylim(0, 1.0); ax.set_xlim(grid[0], grid[-1])
+    ax.legend(fontsize=6.2, loc="lower right", frameon=True, framealpha=0.92, edgecolor="none", facecolor="white")  # opaque: the reference lines run under it
+    ax.set_title(f"Cumulative first-alert time ($N={n}$ eligible, F146 only)", fontsize=8.5)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "cascade_summary.pdf"))
     plt.close(fig)
     stats["cascade_premature_fraction"] = round(float(prem), 3)
+    stats["cascade_lag_range_days"] = [round(lo, 1), round(hi, 1)]
 
 
 # ---------------------------------------------------------------------- Fig: model schematic
@@ -291,6 +339,40 @@ def fig_schematic():
 
 
 # ------------------------------------------------ Fig: prior-sensitivity of purity/alert burden
+def derived_prose_numbers():
+    """Numbers quoted in the prose that were previously hard-coded literals.
+
+    Each of these appeared in paper.tex as a bare number. Three of them agreed with the artifact
+    to the quoted precision; the fourth (an "about 38%" F087-loss rate) did not agree with
+    anything, and is replaced here by the artifact's own definition -- the fraction of
+    detectable-anomaly events for which no F087 epoch survives. A number that cannot be
+    regenerated is a number that can drift, which is the failure this pipeline exists to prevent.
+    """
+    pred = P.argmax(1)
+    NONP_, PSPL_ = 2, 1
+
+    def row_frac(true_c, pred_c):
+        m = y == true_c
+        return float(100 * (w[m] * (pred[m] == pred_c)).sum() / w[m].sum())
+
+    stats["conf_nonpspl_to_pspl_pct"] = round(row_frac(NONP_, PSPL_), 2)
+    stats["conf_pspl_to_nonpspl_pct"] = round(row_frac(PSPL_, NONP_), 2)
+    # generator-NonPSPL events demoted by detectability-conditioned labelling, as a fraction of
+    # ALL final-test rows (the paper contrasts this with the 39.5% overall relabelling rate)
+    stats["gen_nonpspl_demoted_pct"] = round(float(100 * ((tc == NONP_) & (y != NONP_)).mean()), 2)
+    # Missed anomalies and the LongPeriodVar->PSPL confusion. Both were hand-copied into
+    # canonical_numbers.json and both disagreed with this artifact (0.048 vs 0.052, 0.010 vs
+    # 0.009). Derive them.
+    LPV_ = CLASSES.index("LongPeriodVar")
+    _m = y == NONP_
+    stats["missed_anomaly_rate"] = round(float((w[_m] * (pred[_m] != NONP_)).sum() / w[_m].sum()), 3)
+    _m2 = y == LPV_
+    stats["lpv_to_pspl_rate"] = round(float((w[_m2] * (pred[_m2] == PSPL_)).sum() / w[_m2].sum()), 3)
+    cnj = json.load(open(os.path.join(HERE, "canonical_numbers.json")))
+    stats["no_f087_pct"] = round(100 * cnj["slices"]["no_blue_band"]["n"]
+                                 / cnj["per_class_support"]["NonPSPL"], 1)
+
+
 def fig_prior_sensitivity():
     """Purity and alert burden as a function of the ASSUMED anomaly prevalence.
 
@@ -313,32 +395,64 @@ def fig_prior_sensitivity():
     pis = np.logspace(-3.3, np.log10(0.3), 200)
     purity = pis * Rc / (pis * Rc + (1 - pis) * fpr)
     burden = pis * Rc + (1 - pis) * fpr
-    fig, ax = plt.subplots(figsize=(4.6, 3.2))
+
+    # Right panel: what is ACHIEVABLE if the threshold is re-tuned for the assumed prevalence.
+    # Thresholds come from validation/prevalence_thresholds.py, which selects them on the reserved
+    # validation rows and reports the outcome on these frozen test rows -- never both on the same
+    # rows, which is what an earlier revision did.
+    pv_path = os.path.join(os.path.dirname(HERE), "validation", "prevalence_result.json")
+    if not os.path.exists(pv_path):
+        raise SystemExit("FATAL: run validation/prevalence_thresholds.py (Figure 12 needs it)")
+    pv = json.load(open(pv_path))
+    cx = np.array([c["prevalence"] for c in pv["curve"] if c.get("completeness_test") is not None])
+    cy = np.array([c["completeness_test"] for c in pv["curve"]
+                   if c.get("completeness_test") is not None])
+
+    fig, (ax, axb) = plt.subplots(1, 2, figsize=(7.1, 3.1))
     ax.semilogx(pis, purity, color="#1f4e79", lw=1.8, label="purity")
     ax.axvline(pi0, color="grey", ls="--", lw=1.0)
-    ax.text(pi0 * 1.1, 0.05, "synthetic\nmixture", fontsize=6.5, color="grey")
+    # Sits just right of the dashed prevalence line, high in the panel where both the purity
+    # curve and the alert-burden curve are absent -- the lower-right corner now holds the legend.
+    ax.text(pi0 * 1.15, 0.30, "synthetic\nmixture", fontsize=6.5, color="grey", va="center")
     ax.axhline(Rc, color="#b0562a", ls=":", lw=1.2, label=f"completeness {Rc:.3f} (fixed)")
     ax.set_xlabel("assumed detectable-anomaly prevalence"); ax.set_ylabel("purity")
     ax.set_ylim(0, 1.02)
     ax2 = ax.twinx()
     ax2.semilogx(pis, 100 * burden, color="#2ca02c", lw=1.3, ls="-.")
-    ax2.set_ylabel("alert burden (\\% of light curves)", color="#2ca02c")
+    ax2.set_ylabel("alert burden (% of light curves)", color="#2ca02c")
     ax2.tick_params(axis="y", labelcolor="#2ca02c")
-    ax.legend(loc="upper left", frameon=False, fontsize=7.5)
-    ax.set_title("Purity depends on the assumed anomaly prevalence", fontsize=9)
+    ax.legend(loc="lower right", fontsize=6.5, frameon=True, framealpha=0.92, edgecolor="none", facecolor="white")
+    ax.set_title("At the fixed threshold", fontsize=9)
+
+    axb.semilogx(cx, cy, color="#1f4e79", lw=1.8, marker="o", ms=2.5)
+    axb.axvline(pi0, color="grey", ls="--", lw=1.0)
+    for k, lab in (("one_pct", "1%"), ("tenth_pct", "0.1%")):
+        s = pv["scenarios"][k]
+        if s.get("completeness_test") is not None:
+            axb.plot([s["prevalence"]], [s["completeness_test"]], "s", color="#b0562a", ms=5)
+            axb.annotate(f"{lab}: {s['completeness_test']:.3f}",
+                         (s["prevalence"], s["completeness_test"]),
+                         textcoords="offset points", xytext=(6, -10), fontsize=6.5,
+                         color="#b0562a")
+    axb.set_xlabel("assumed detectable-anomaly prevalence")
+    axb.set_ylabel(f"completeness achievable at purity {pv['purity_target']:.2f}")
+    axb.set_ylim(0, 1.02)
+    axb.set_title("Threshold re-tuned on validation rows", fontsize=9)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "prior_sensitivity.pdf"))
     plt.close(fig)
+    stats["prev_comp_one_pct"] = pv["scenarios"]["one_pct"]["completeness_test"]
+    stats["prev_comp_tenth_pct"] = pv["scenarios"]["tenth_pct"]["completeness_test"]
 
 
 # -------------------------------------------------------------- Fig: calibration (reliability)
 def fig_calibration():
-    """Top-label reliability diagram + ECE and Brier on the frozen test (population-weighted).
+    """Reliability of the anomaly score actually used by the alert policy.
 
-    The audit noted the model card's ECE was never stored in the released metrics; here it is
-    recomputed and shown. Confidence = max softmax probability; correctness = argmax matches label.
+    Top-label calibration does not validate a threshold on P(NonPSPL). This is therefore a
+    population-weighted one-vs-rest diagram, with a binary Brier score for the same probability.
     """
-    conf = P.max(1); correct = (pred == y).astype(float)
+    conf = P[:, NONP]; correct = (y == NONP).astype(float)
     nb = 12; edges = np.linspace(0, 1, nb + 1)
     bi = np.clip(np.digitize(conf, edges) - 1, 0, nb - 1)
     xc, acc, wsum, ece = [], [], [], 0.0
@@ -350,23 +464,71 @@ def fig_calibration():
         ww = w[m]; a = (ww * correct[m]).sum() / ww.sum(); c = (ww * conf[m]).sum() / ww.sum()
         xc.append(c); acc.append(a); wsum.append(ww.sum())
         ece += ww.sum() / W * abs(a - c)
-    # Brier (one-vs-rest, weighted, over 6 classes)
-    onehot = np.zeros_like(P); onehot[np.arange(len(y)), y] = 1
-    brier = float((w[:, None] * (P - onehot) ** 2).sum() / W)
-    stats["ece_weighted"] = round(float(ece), 4)
-    stats["brier_weighted"] = round(brier, 4)
+    brier = float((w * (conf - correct) ** 2).sum() / W)
+    stats["nonpspl_ece_weighted"] = round(float(ece), 4)
+    stats["nonpspl_brier_weighted"] = round(brier, 4)
 
-    fig, ax = plt.subplots(figsize=(3.9, 3.6))
-    ax.plot([0, 1], [0, 1], ls=":", color="grey", lw=1)
+    fig, (ax, zoom) = plt.subplots(1, 2, figsize=(6.8, 3.2))
+    for panel in (ax, zoom):
+        panel.plot([0, 1], [0, 1], ls=":", color="grey", lw=1)
     sizes = 400 * np.array(wsum) / max(wsum)
     ax.scatter(xc, acc, s=sizes, color="#1f4e79", alpha=0.7, edgecolor="white", lw=0.5, zorder=3)
     ax.plot(xc, acc, color="#1f4e79", lw=1.2)
-    ax.set_xlabel("confidence (max softmax)"); ax.set_ylabel("accuracy")
+    zoom.scatter(xc, acc, s=sizes, color="#1f4e79", alpha=0.7, edgecolor="white", lw=0.5,
+                 zorder=3)
+    zoom.plot(xc, acc, color="#1f4e79", lw=1.2)
+    threshold = metrics["headline"]["threshold"]
+    for panel in (ax, zoom):
+        panel.axvline(threshold, color="#b0562a", ls="--", lw=1,
+                     label=f"operating threshold {threshold:.3f}")
+    ax.set_xlabel(r"predicted $P(\mathrm{NonPSPL})$")
+    ax.set_ylabel("weighted anomaly frequency")
     ax.set_xlim(0, 1.02); ax.set_ylim(0, 1.02)
     ax.text(0.05, 0.9, f"ECE = {ece:.3f}\nBrier = {brier:.3f}", fontsize=8,
             transform=ax.transAxes, va="top")
-    ax.set_title("Top-label calibration (frozen test)", fontsize=9)
+    ax.set_title("Full probability range", fontsize=9)
+    zoom.set_xlim(0.75, 1.005); zoom.set_ylim(0.5, 1.005)
+    zoom.set_xlabel(r"predicted $P(\mathrm{NonPSPL})$")
+    zoom.set_title("Near the operating threshold", fontsize=9)
+    zoom.legend(fontsize=6.5, loc="lower right", frameon=True, framealpha=0.92, edgecolor="none", facecolor="white")
     fig.tight_layout(); fig.savefig(os.path.join(OUT, "calibration.pdf")); plt.close(fig)
+
+
+# ---------------------------------------- Fig: matched-detection exploratory risk--coverage
+def fig_matched_risk_coverage():
+    """Paired cascade arms at exactly matched detection counts.
+
+    Thresholds were selected and evaluated on the same 400 events, so the plot is descriptive and
+    not a confirmatory causal test. Showing the full predeclared range also exposes the reversal at
+    the highest detection target instead of elevating one favourable operating point.
+    """
+    root = os.path.dirname(HERE)
+    trace = os.path.join(root, "validation", "matched_traces.npz")
+    result = os.path.join(root, "validation", "cascade_matched_result.json")
+    if not (os.path.exists(trace) and os.path.exists(result)):
+        raise SystemExit("FATAL: matched cascade trace/result missing; run cascade_matched_reduce.py")
+    d = json.load(open(result))
+    _require_trace_link(d, trace, "matched cascade")
+    rows = sorted(d["matched"].values(),
+                  key=lambda r: r["cascade_on"]["detection_fraction"])
+
+    fig, ax = plt.subplots(figsize=(4.9, 3.25))
+    styles = (("cascade_on", "truncation augmented", "#1f4e79", "o"),
+              ("cascade_off", "no truncation augmentation", "#b0562a", "s"))
+    for arm, label, color, marker in styles:
+        x = np.array([r[arm]["detection_fraction"] for r in rows])
+        yv = np.array([r[arm]["premature_rate_of_eligible"] for r in rows])
+        ci = np.array([r[arm]["premature_ci_of_eligible"] for r in rows])
+        yerr = np.vstack((yv - ci[:, 0], ci[:, 1] - yv))
+        ax.errorbar(100 * x, 100 * yv, yerr=100 * yerr, color=color, marker=marker,
+                    ms=4, lw=1.35, capsize=2.5, label=label)
+    ax.set_xlabel("within-season detection (% of eligible events)")
+    ax.set_ylabel("premature alerts (% of eligible events)")
+    ax.grid(alpha=0.25, lw=0.5)
+    ax.legend(fontsize=7, loc="upper left", frameon=True, framealpha=0.92, edgecolor="none", facecolor="white")
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "cascade_matched.pdf"))
+    plt.close(fig)
 
 
 if __name__ == "__main__":
@@ -377,7 +539,9 @@ if __name__ == "__main__":
     fig_prior_sensitivity(); print("prior_sensitivity.pdf")
     fig_param_dependence(); print("param_dependence.pdf")
     fig_cascade_summary();  print("cascade_summary.pdf")
+    fig_matched_risk_coverage(); print("cascade_matched.pdf")
     fig_schematic();        print("schematic.pdf")
+    derived_prose_numbers()
     with open(os.path.join(HERE, "outputs", "figures_stats.json"), "w") as f:
         json.dump(stats, f, indent=2)
     print("figures_stats.json:", stats)

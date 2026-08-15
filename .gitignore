@@ -47,6 +47,22 @@ env/
 *.pkl
 *.pickle
 
+# ...except the committed evaluation artifacts the paper build reads. These are small, frozen,
+# and the manuscript cannot be rebuilt without them (see paper/README.md).
+# The eight arrays named in paper/results/MANIFEST.json -- and only those. A blanket
+# !paper/results/*.npy would also sweep in evaluate.py's local by-products (a_ks.npy,
+# dchi2_event.npy, score_nonpspl.npy), which are not part of the released artifact.
+!paper/results/dchi2_anomaly.npy
+!paper/results/keep_prob.npy
+!paper/results/label.npy
+!paper/results/logits.npy
+!paper/results/m_base_ref.npy
+!paper/results/params.npy
+!paper/results/test_idx.npy
+!paper/results/true_class.npy
+!validation/cascade_trace.npz
+!validation/matched_traces.npz
+
 # Model checkpoints (but allow best_model.pt in results)
 *.pth
 *.pt
@@ -103,3 +119,9 @@ v5runs/
 
 # operational fleet scripts (account-specific infra, not for publication)
 aws/
+
+# Submission working notes: cover-letter drafts, Editorial Manager field text, and
+# reviewer-suggestion guidance. These are correspondence, not research artifacts, and they
+# name a third party in a conflict-of-interest context. Keep them local.
+paper/SUBMISSION_AC.md
+paper/SUBMISSION_FIELDS.txt

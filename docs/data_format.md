@@ -51,12 +51,14 @@ A fixed (N, 16) float32 array; unused fields for a given class are `NaN`. Order 
 t0, tE, u0, q, s, alpha, rho,      # microlensing
 P, amp_I, ratio_k,                 # periodic / general variability
 t_start, rise, decay, plateau, recur,   # eruptive
-t_anom                             # day the binary anomaly first becomes observable
+t_anom                             # truth-informed noise-free anomaly-onset proxy
 ```
 
-`t_anom` is **new in BinML 1.0** and only finite for events observably labelled NonPSPL. It drives the
-real-time cascade (see [`evaluation.md`](evaluation.md) §3): under truncation a binary is
-labelled PSPL until `t_anom`, then NonPSPL.
+`t_anom` is **new in BinML 1.0** and only finite for events labelled NonPSPL under the adopted
+synthetic policy. It is computed from the injected noise-free binary curve and its best-fit PSPL
+counterpart, so a live broker cannot observe it directly. It drives the partial-season training
+labels (see [`evaluation.md`](evaluation.md) §3): under truncation a binary is labelled PSPL until
+`t_anom`, then NonPSPL.
 
 ## 4. Labels
 

@@ -1,8 +1,9 @@
 """BinML — a 6-class classifier for Nancy Grace Roman Space Telescope light curves.
 
 Six classes: Flat, PSPL, NonPSPL (binary/planetary microlensing), PeriodicVar, LongPeriodVar,
-Eruptive. Labelled by what is *observable*, and — under a partial season — only flags a class
-once its evidence is on screen (Flat -> PSPL -> NonPSPL).
+Eruptive. Training labels follow an adopted synthetic detectability policy and, for partial
+seasons, an intended Flat -> PSPL -> NonPSPL progression. This is not a guarantee against
+premature alerts; see the evaluation documentation for the measured timing rates.
 
     import binml
     clf = binml.Classifier()

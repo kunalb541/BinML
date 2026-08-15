@@ -1,21 +1,28 @@
 # BinML — Simulation, Training & Evaluation Pipeline
 
-The v5 pipeline (`pipeline/`) is a ground-up rebuild of the original 3-class classifier
-into a **6-class, multi-band, real-time-aware** model for the Nancy Grace Roman Galactic Bulge
-Time-Domain Survey.
+The v5 pipeline (`pipeline/`) is a ground-up rebuild of the original 3-class classifier into a
+**6-class, multi-band model for partial Roman-like seasons**. It is a synthetic streaming-triage
+benchmark for the Nancy Grace Roman Galactic Bulge Time-Domain Survey, not a validated autonomous
+real-time trigger.
+
+The released model uses a legacy Cycle-7-inspired one-season schedule (15-min F146, 6-h F087/F213),
+not the current GBTDS design. Current planning uses approximately 12-min F146 sampling, 66-s
+exposures, staggered colour visits, and a multi-season programme.
 
 ## What changed from the original (3-class) pipeline
 
 | | original | **v5** |
 |---|---|---|
 | Classes | 3 (Flat / PSPL / Binary) | **6** — Flat, PSPL, NonPSPL, PeriodicVar, LongPeriodVar, Eruptive |
-| Bands | single | **3** — F146 (6912 epochs), F087, F213 (288 epochs each) |
+| Bands | single | **3** under the legacy schedule — F146 (6912 epochs), F087, F213 (288 epochs each) |
 | Labelling | by generator intent | **detectability-conditioned** — an event is labelled by what is *observable*, not by what we generated (undetectable event → Flat; undetectable anomaly → PSPL) |
-| Real-time behaviour | none | **cascade** — under truncation a binary reads Flat→PSPL→NonPSPL as evidence arrives (`t_anom`), so the model never flags a class before its evidence is on screen |
+| Partial-season objective | none | **cascade** — under truncation a binary is relabelled Flat→PSPL→NonPSPL using a truth-informed onset proxy (`t_anom`) |
 | Headline metric | accuracy / F1 | **completeness at fixed purity** (what a follow-up pipeline is actually specified against) |
 | Scale | laptop subset | distributed generation on AWS (millions of events), in-region binning + inference |
 
 The six classes and the labelling rule live in `classes.py` and `assemble.py`.
+`NonPSPL` is the binary-lens anomaly class and contains both stellar binaries and
+planetary-mass-ratio systems; it is not a planet-only label.
 
 ---
 
@@ -46,18 +53,20 @@ plot_evolution_cloud   per-event probability-evolution plots
 ## File-by-file
 
 ### Core physics / data model (libraries)
+
 | file | what it is |
 |---|---|
 | `classes.py` | the 6-class registry and label indices |
-| `priors.py` | parameter priors (tE, u0, q, s, ρ, blending…) from Mróz+2019 / Suzuki+2016 / Penny+2019 |
-| `generators.py` | per-class light-curve generators (PSPL, binary via VBBinaryLensing, RR Lyrae/EB/Mira/DN…) |
+| `priors.py` | broad analytic training supports for tE, u0, q, s, ρ, blending, and other parameters; these are literature-informed supports, not fitted population distributions |
+| `generators.py` | per-class light-curve generators: PSPL, binary lenses via VBBinaryLensing, and analytic/phenomenological variable and eruptive waveforms (not OGLE templates) |
 | `photometry.py` | per-band SED, bulge extinction, blending, flux-space noise, detectability |
-| `assemble.py` | **the heart** — windows an event, samples all 3 bands, applies noise, and **labels by observability**; also computes `t_anom` (the day a binary's anomaly first becomes detectable) |
+| `assemble.py` | **the heart** — windows an event, samples all 3 bands, applies noise, and applies the adopted detectability-conditioned label policy; also computes truth-informed, noise-free `t_anom` |
 | `writer.py` | HDF5 shard writer; defines `PARAM_FIELDS` (the per-event parameter vector, incl. `t_anom`) |
 | `cache.py` | raw shard → compact cache (min/max-pooled tokens that preserve caustic extrema exactly) |
 | `model.py` | the classifier — conv stem with non-learned min/max carry lanes → SDPA transformer over 156 tokens, ~505k params |
 
 ### Stage modules (CLIs)
+
 | file | run it to… |
 |---|---|
 | `run_shard.py` | **generate** raw shards. `--regime` selects a hard/OOR regime; `--seed-base` gives a disjoint RNG stream for unseen test data |
@@ -78,8 +87,14 @@ plot_evolution_cloud   per-event probability-evolution plots
 
 ## Quick start — train & evaluate locally
 
-Everything below is CPU/MPS-friendly and needs only `numpy scipy h5py torch` (+ `VBBinaryLensing`
-for binary-lens generation). See `environment.yml`.
+Install the full optional dependency set before running the simulation or paper pipeline:
+
+```bash
+pip install -e ".[all]"
+```
+
+This includes `numpy`, `scipy`, `h5py`, `torch`, plotting/evaluation packages, and
+`VBBinaryLensing`. The simulator and paper build must not proceed with a single-lens fallback.
 
 **1. Generate a little data** (one shard ≈ 7,500 events across all 6 classes):
 ```bash
@@ -104,7 +119,7 @@ python -m pipeline.to_memmap --in-dir data/cache --out data/mm
 python -m pipeline.train --cache data/mm --out runs/binml.pt \
   --epochs 6 --batch-size 384 --device mps
 
-# warm-start fine-tune with the real-time cascade enabled
+# warm-start fine-tune with partial-season cascade augmentation
 python -m pipeline.train --cache data/mm --out runs/binml.pt \
   --init-weights runs/base.pt --truncate-aug 0.5 --alpha-nonpspl 1.0 \
   --lr 5e-5 --epochs 6 --resume
@@ -131,16 +146,32 @@ python -m pipeline.plot_evolution_cloud --cache data/cache/shard_00000.h5 \
 
 ## Key concepts you need to read the numbers
 
-- **Detectability-conditioned labelling.** `assemble.py` labels by what is observable in the
-  window. An event whose peak falls outside the season, or whose amplitude is buried by noise,
-  is **Flat**. A binary whose anomaly is below the Δχ² floor is **PSPL**. This removes the label
-  noise that would otherwise punish the classifier for not seeing what isn't there.
+- **Detectability-conditioned labelling.** `assemble.py` applies an operational label policy to
+  each simulated window. An event whose peak falls outside the season, or whose amplitude is
+  below the adopted floor, is Flat; a binary below the anomaly criterion is PSPL. The 0.02-mag
+  floor is a modelling choice and has not been validated on Roman data.
 
-- **The real-time cascade (`t_anom`).** For truncation augmentation, `train._apply_truncation`
-  relabels by what is observable *in the revealed window*: a binary reads **PSPL until its
-  anomaly onset day `t_anom`**, then NonPSPL. This is what stops the model flagging a binary
-  before the caustic is on screen. Measured effect: premature NonPSPL flagging at day 11 dropped
-  from 42% to 9%.
+- **The partial-season cascade (`t_anom`).** For truncation augmentation,
+  `train._apply_truncation` relabels a binary PSPL before `t_anom` and NonPSPL after it. This onset
+  is computed from injected, noise-free binary-versus-PSPL deviations and is unavailable to a
+  live broker. The stored validation scan samples revealed seasons every 0.5 days; among
+  nonpremature detections its median lag is +5 days. The matched 400-event ablation is an
+  exploratory risk–coverage comparison because it selects thresholds and evaluates outcomes on
+  the same events; its conditional McNemar values are not confirmatory inference. The main prefix
+  scan contains eligible binaries only and reuses a complete-season threshold, so it does not
+  measure streaming false alerts, purity, or workload on contaminant classes.
+
+- **Simulation supports.** The distributions are broad analytic supports in the style of Zhang
+  et al., not a measured Roman population model. The `tE` prior is an authored truncated
+  lognormal anchored to a literature mean. Variable-star generators are analytic or
+  phenomenological shapes rather than samples from OGLE templates.
+
+- **Legacy photometry.** The released model was trained with 46.8-s legacy exposures. Against the
+  current Roman calibration, its F087/F213 zeropoints are optimistic by about 0.10/0.14 mag, its
+  F087 saturation ordering is wrong at equal exposure, and its colour-band background ratios do
+  not match the published thermal backgrounds. Corrected constants are recorded in
+  `photometry.py`, but the released checkpoint has not been retrained with them and their effect is
+  unquantified.
 
 - **`keep_prob` reweighting is asymmetric.** NonPSPL rows have `keep_prob=1`; the byproduct
   PSPL/Flat rows are subsampled. So **recall must NOT be reweighted, but precision/purity MUST**.
@@ -157,8 +188,10 @@ scripts (fleet launchers, controller) are operational and account-specific, kept
 public tree. The modules themselves take `--bucket`/`--seed-base`/`--worker`/`--workers` so the
 same code runs one shard locally or thousands in-region.
 
-## Verified
+## Scope of reproducibility
 
-All 21 modules import cleanly and every stage CLI responds to `--help`
-(checked 2026-07-26). The commands above are the exact invocations used to produce the
-model.
+The commands above exercise the local pipeline. The paper build has a separate five-stage
+artifact-validation and rendering workflow documented in [`../paper/README.md`](../paper/README.md).
+Stored cloud artifacts have known provenance limits: the published labelling-ablation source hash
+was repaired after its run, and the newer content-addressed mechanism has not yet produced that
+artifact.

@@ -1,8 +1,47 @@
 {
+  "_doc": "Reduction of validation/cascade_trace.npz. Regenerate with validation/cascade_trace.py then validation/cascade_reduce.py; do not hand-edit.",
   "model": "shipped (cascade-trained)",
-  "protocol": "event-level first threshold crossing",
-  "threshold": 0.9042405486106873,
-  "step_days": 0.5,
+  "protocol": {
+    "rule": "event-level first threshold crossing",
+    "threshold": 0.9042405486106873,
+    "step_days": 0.5,
+    "bands_revealed": "F146 only (primary); all three bands reported as a sensitivity",
+    "onset": "first day the anomaly is detectable, on the 0.5 d grid matched to the alert grid (primary). The persistent-detectability onset and the 7.2 d generator grid bracket it and are reported as sensitivities.",
+    "persistence": "one crossing (primary); 2 and 3 consecutive crossings reported"
+  },
+  "provenance": {
+    "git_commit": "9c3389ac9b4da77e3fb895ea3b95054c4d92815c",
+    "git_dirty": true,
+    "checkpoint": "binml/weights/binml.pt",
+    "checkpoint_sha256": "897a9aec1785dc15664ae5a3c7183c46f13fb4332cb20414d013860ef5c41c34",
+    "python": "3.11.8",
+    "numpy": "2.2.6",
+    "torch": "2.11.0",
+    "binml": "1.0.0",
+    "platform": "darwin",
+    "survey_config": {
+      "window_days": 72.0,
+      "dchi2_event": 500.0,
+      "dchi2_anomaly": 160.0,
+      "min_amplitude_mag": 0.02
+    },
+    "step_days": 0.5,
+    "onset_cuts": 144
+  },
+  "reduction_provenance": {
+    "input_trace_sha256": "deff0f0438dd7f9a118cb3651daec4061722b405e6448aa9abd7c3ba0d7dd2e6",
+    "reducer_sha256": "241891403bbe5c37d286de8694a9b62049b34de68239e704e4f4d7bbe6813598",
+    "threshold_source": "paper/results/metrics.json:headline.threshold",
+    "threshold_source_sha256": "a69add24bfa5f3bda8d800269f541700ee7a18c749578935962124499a42c73c"
+  },
+  "upstream_provenance_limitation": "The trace records a dirty source tree at its generation commit but not a source-tree hash or patch. Its checkpoint hash is recorded; its exact uncommitted generator source cannot be reconstructed from the trace alone.",
+  "published_artifact_agreement": {
+    "n_events": 1000,
+    "detection_status_mismatches": 0,
+    "crossings_differing": 0,
+    "max_deviation_days": 0.0,
+    "note": "Exact residual vs the published per-event artifact; this reduction contains no model inference, so any non-zero residual is fatal."
+  },
   "n_eligible": 1000,
   "n_detected": 890,
   "n_censored": 110,
@@ -11,11 +50,426 @@
     0.869,
     0.908
   ],
-  "premature_rate_of_eligible": 0.313,
+  "n_premature": 16,
+  "premature_rate_of_eligible": 0.016,
   "premature_ci_of_eligible": [
-    0.285,
-    0.342
+    0.01,
+    0.026
   ],
-  "premature_rate_of_detected": 0.352,
-  "median_lag_detected_days": 1.3
+  "premature_rate_of_detected": 0.018,
+  "median_lag_detected_days": 5.0,
+  "n_lag_detected": 890,
+  "median_lag_non_premature_days": 5.0,
+  "n_lag_non_premature": 874,
+  "median_lag_strictly_positive_days": 5.0,
+  "n_lag_strictly_positive": 859,
+  "primary_definition": "F146-only, 0.5 d alert grid, onset = first day the anomaly is detectable on the same grid, alert = single crossing",
+  "sensitivity": {
+    "onset_definition": {
+      "first_detectable": {
+        "n_eligible": 1000,
+        "n_detected": 890,
+        "n_censored": 110,
+        "detection_fraction": 0.89,
+        "detection_ci": [
+          0.869,
+          0.908
+        ],
+        "n_premature": 16,
+        "premature_rate_of_eligible": 0.016,
+        "premature_ci_of_eligible": [
+          0.01,
+          0.026
+        ],
+        "premature_rate_of_detected": 0.018,
+        "median_lag_detected_days": 5.0,
+        "n_lag_detected": 890,
+        "median_lag_non_premature_days": 5.0,
+        "n_lag_non_premature": 874,
+        "median_lag_strictly_positive_days": 5.0,
+        "n_lag_strictly_positive": 859
+      },
+      "persistent_detectable": {
+        "n_eligible": 1000,
+        "n_detected": 890,
+        "n_censored": 110,
+        "detection_fraction": 0.89,
+        "detection_ci": [
+          0.869,
+          0.908
+        ],
+        "n_premature": 45,
+        "premature_rate_of_eligible": 0.045,
+        "premature_ci_of_eligible": [
+          0.034,
+          0.06
+        ],
+        "premature_rate_of_detected": 0.051,
+        "median_lag_detected_days": 4.5,
+        "n_lag_detected": 890,
+        "median_lag_non_premature_days": 4.5,
+        "n_lag_non_premature": 845,
+        "median_lag_strictly_positive_days": 4.5,
+        "n_lag_strictly_positive": 826
+      },
+      "coarse_7p2d_generator_grid": {
+        "n_eligible": 1000,
+        "n_detected": 890,
+        "n_censored": 110,
+        "detection_fraction": 0.89,
+        "detection_ci": [
+          0.869,
+          0.908
+        ],
+        "n_premature": 314,
+        "premature_rate_of_eligible": 0.314,
+        "premature_ci_of_eligible": [
+          0.286,
+          0.343
+        ],
+        "premature_rate_of_detected": 0.353,
+        "median_lag_detected_days": 1.3,
+        "n_lag_detected": 890,
+        "median_lag_non_premature_days": 3.45,
+        "n_lag_non_premature": 576,
+        "median_lag_strictly_positive_days": 3.65,
+        "n_lag_strictly_positive": 556
+      },
+      "note": "first <= persistent by construction, so these bracket the premature rate. The coarse grid is the previously published definition; it rounds the onset up and so counts alerts within 7.2 d of a detectable anomaly as premature.",
+      "median_coarse_minus_first_days": 3.7,
+      "median_persistent_minus_first_days": 0.0,
+      "n_non_monotone": 187
+    },
+    "onset_coarse_7p2d": {
+      "n_eligible": 1000,
+      "n_detected": 890,
+      "n_censored": 110,
+      "detection_fraction": 0.89,
+      "detection_ci": [
+        0.869,
+        0.908
+      ],
+      "n_premature": 314,
+      "premature_rate_of_eligible": 0.314,
+      "premature_ci_of_eligible": [
+        0.286,
+        0.343
+      ],
+      "premature_rate_of_detected": 0.353,
+      "median_lag_detected_days": 1.3,
+      "n_lag_detected": 890,
+      "median_lag_non_premature_days": 3.45,
+      "n_lag_non_premature": 576,
+      "median_lag_strictly_positive_days": 3.65,
+      "n_lag_strictly_positive": 556
+    },
+    "evaluation_grid_days": {
+      "0.5": {
+        "n_eligible": 1000,
+        "n_detected": 890,
+        "n_censored": 110,
+        "detection_fraction": 0.89,
+        "detection_ci": [
+          0.869,
+          0.908
+        ],
+        "n_premature": 16,
+        "premature_rate_of_eligible": 0.016,
+        "premature_ci_of_eligible": [
+          0.01,
+          0.026
+        ],
+        "premature_rate_of_detected": 0.018,
+        "median_lag_detected_days": 5.0,
+        "n_lag_detected": 890,
+        "median_lag_non_premature_days": 5.0,
+        "n_lag_non_premature": 874,
+        "median_lag_strictly_positive_days": 5.0,
+        "n_lag_strictly_positive": 859
+      },
+      "1.0": {
+        "n_eligible": 1000,
+        "n_detected": 864,
+        "n_censored": 136,
+        "detection_fraction": 0.864,
+        "detection_ci": [
+          0.841,
+          0.884
+        ],
+        "n_premature": 16,
+        "premature_rate_of_eligible": 0.016,
+        "premature_ci_of_eligible": [
+          0.01,
+          0.026
+        ],
+        "premature_rate_of_detected": 0.019,
+        "median_lag_detected_days": 5.5,
+        "n_lag_detected": 864,
+        "median_lag_non_premature_days": 5.5,
+        "n_lag_non_premature": 848,
+        "median_lag_strictly_positive_days": 5.5,
+        "n_lag_strictly_positive": 842,
+        "paired_vs_half_day": {
+          "delta_premature_rate": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_changed_status": 0
+        }
+      },
+      "2.0": {
+        "n_eligible": 1000,
+        "n_detected": 830,
+        "n_censored": 170,
+        "detection_fraction": 0.83,
+        "detection_ci": [
+          0.805,
+          0.852
+        ],
+        "n_premature": 10,
+        "premature_rate_of_eligible": 0.01,
+        "premature_ci_of_eligible": [
+          0.005,
+          0.018
+        ],
+        "premature_rate_of_detected": 0.012,
+        "median_lag_detected_days": 6.0,
+        "n_lag_detected": 830,
+        "median_lag_non_premature_days": 6.0,
+        "n_lag_non_premature": 820,
+        "median_lag_strictly_positive_days": 6.0,
+        "n_lag_strictly_positive": 814,
+        "paired_vs_half_day": {
+          "delta_premature_rate": 0.006,
+          "delta_ci95": [
+            0.002,
+            0.011
+          ],
+          "n_changed_status": 6
+        }
+      }
+    },
+    "persistence_consecutive_crossings": {
+      "1": {
+        "n_eligible": 1000,
+        "n_detected": 890,
+        "n_censored": 110,
+        "detection_fraction": 0.89,
+        "detection_ci": [
+          0.869,
+          0.908
+        ],
+        "n_premature": 16,
+        "premature_rate_of_eligible": 0.016,
+        "premature_ci_of_eligible": [
+          0.01,
+          0.026
+        ],
+        "premature_rate_of_detected": 0.018,
+        "median_lag_detected_days": 5.0,
+        "n_lag_detected": 890,
+        "median_lag_non_premature_days": 5.0,
+        "n_lag_non_premature": 874,
+        "median_lag_strictly_positive_days": 5.0,
+        "n_lag_strictly_positive": 859
+      },
+      "2": {
+        "n_eligible": 1000,
+        "n_detected": 861,
+        "n_censored": 139,
+        "detection_fraction": 0.861,
+        "detection_ci": [
+          0.838,
+          0.881
+        ],
+        "n_premature": 12,
+        "premature_rate_of_eligible": 0.012,
+        "premature_ci_of_eligible": [
+          0.007,
+          0.021
+        ],
+        "premature_rate_of_detected": 0.014,
+        "median_lag_detected_days": 5.5,
+        "n_lag_detected": 861,
+        "median_lag_non_premature_days": 5.5,
+        "n_lag_non_premature": 849,
+        "median_lag_strictly_positive_days": 5.5,
+        "n_lag_strictly_positive": 846,
+        "paired_vs_single": {
+          "delta_premature_rate": 0.004,
+          "delta_ci95": [
+            0.001,
+            0.008
+          ],
+          "n_changed_status": 4
+        }
+      },
+      "3": {
+        "n_eligible": 1000,
+        "n_detected": 843,
+        "n_censored": 157,
+        "detection_fraction": 0.843,
+        "detection_ci": [
+          0.819,
+          0.864
+        ],
+        "n_premature": 10,
+        "premature_rate_of_eligible": 0.01,
+        "premature_ci_of_eligible": [
+          0.005,
+          0.018
+        ],
+        "premature_rate_of_detected": 0.012,
+        "median_lag_detected_days": 6.0,
+        "n_lag_detected": 843,
+        "median_lag_non_premature_days": 6.0,
+        "n_lag_non_premature": 833,
+        "median_lag_strictly_positive_days": 6.25,
+        "n_lag_strictly_positive": 832,
+        "paired_vs_single": {
+          "delta_premature_rate": 0.006,
+          "delta_ci95": [
+            0.002,
+            0.011
+          ],
+          "n_changed_status": 6
+        }
+      }
+    },
+    "bands": {
+      "f146_only": {
+        "n_eligible": 1000,
+        "n_detected": 890,
+        "n_censored": 110,
+        "detection_fraction": 0.89,
+        "detection_ci": [
+          0.869,
+          0.908
+        ],
+        "n_premature": 16,
+        "premature_rate_of_eligible": 0.016,
+        "premature_ci_of_eligible": [
+          0.01,
+          0.026
+        ],
+        "premature_rate_of_detected": 0.018,
+        "median_lag_detected_days": 5.0,
+        "n_lag_detected": 890,
+        "median_lag_non_premature_days": 5.0,
+        "n_lag_non_premature": 874,
+        "median_lag_strictly_positive_days": 5.0,
+        "n_lag_strictly_positive": 859
+      },
+      "all_three_bands": {
+        "n_eligible": 1000,
+        "n_detected": 910,
+        "n_censored": 90,
+        "detection_fraction": 0.91,
+        "detection_ci": [
+          0.891,
+          0.926
+        ],
+        "n_premature": 10,
+        "premature_rate_of_eligible": 0.01,
+        "premature_ci_of_eligible": [
+          0.005,
+          0.018
+        ],
+        "premature_rate_of_detected": 0.011,
+        "median_lag_detected_days": 6.75,
+        "n_lag_detected": 910,
+        "median_lag_non_premature_days": 7.0,
+        "n_lag_non_premature": 900,
+        "median_lag_strictly_positive_days": 7.0,
+        "n_lag_strictly_positive": 888,
+        "paired_vs_f146": {
+          "delta_premature_rate": 0.006,
+          "delta_ci95": [
+            0.0,
+            0.012
+          ],
+          "n_changed_status": 10
+        }
+      }
+    },
+    "argmax_rule": {
+      "n_eligible": 1000,
+      "n_detected": 960,
+      "n_censored": 40,
+      "detection_fraction": 0.96,
+      "detection_ci": [
+        0.946,
+        0.97
+      ],
+      "n_premature": 127,
+      "premature_rate_of_eligible": 0.127,
+      "premature_ci_of_eligible": [
+        0.108,
+        0.149
+      ],
+      "premature_rate_of_detected": 0.132,
+      "median_lag_detected_days": 1.75,
+      "n_lag_detected": 960,
+      "median_lag_non_premature_days": 2.0,
+      "n_lag_non_premature": 833,
+      "median_lag_strictly_positive_days": 2.5,
+      "n_lag_strictly_positive": 767,
+      "note": "alert when NonPSPL is the argmax class, ignoring the threshold"
+    }
+  },
+  "stratified": {
+    "by_mass_ratio": {
+      "stellar": {
+        "n_eligible": 805,
+        "detection_fraction": 0.902,
+        "premature_rate_of_eligible": 0.015,
+        "median_lag_non_premature_days": 5.0
+      },
+      "giant": {
+        "n_eligible": 138,
+        "detection_fraction": 0.891,
+        "premature_rate_of_eligible": 0.014,
+        "median_lag_non_premature_days": 4.5
+      },
+      "neptune": {
+        "n_eligible": 48,
+        "detection_fraction": 0.729,
+        "premature_rate_of_eligible": 0.042,
+        "median_lag_non_premature_days": 4.5
+      }
+    },
+    "by_onset_third": {
+      "early": {
+        "onset_range_days": [
+          0.5,
+          21.5
+        ],
+        "n_eligible": 333,
+        "detection_fraction": 0.919,
+        "premature_rate_of_eligible": 0.009,
+        "median_lag_non_premature_days": 5.5
+      },
+      "middle": {
+        "onset_range_days": [
+          21.5,
+          46.5
+        ],
+        "n_eligible": 327,
+        "detection_fraction": 0.914,
+        "premature_rate_of_eligible": 0.006,
+        "median_lag_non_premature_days": 6.0
+      },
+      "late": {
+        "onset_range_days": [
+          46.5,
+          72.0
+        ],
+        "n_eligible": 340,
+        "detection_fraction": 0.838,
+        "premature_rate_of_eligible": 0.032,
+        "median_lag_non_premature_days": 3.5
+      }
+    }
+  }
 }

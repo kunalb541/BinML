@@ -59,5 +59,60 @@
       "dtype": "int64",
       "sha256_16": "017f6526eb5002e1"
     }
+  },
+  "files": {
+    "paper/canonical_numbers.json": {
+      "sha256": "4c868405c630a120835537deceac75e3460cb156a1ab29d6e11e52e87e832ec5",
+      "_note": "hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67..."
+    },
+    "paper/results/metrics.json": {
+      "sha256": "a69add24bfa5f3bda8d800269f541700ee7a18c749578935962124499a42c73c"
+    },
+    "paper/results/meta.json": {
+      "sha256": "d838dd940171019d2b88e85b7a8c9235a80740fc40d97ebfc6d4db20859f62b1"
+    },
+    "paper/results/stress_report.json": {
+      "sha256": "23b14e36ede4c4f50ae5d695c194ef9e5dc3c32c610240140f41c3ed39a68b6e"
+    },
+    "binml/weights/binml.pt": {
+      "sha256": "897a9aec1785dc15664ae5a3c7183c46f13fb4332cb20414d013860ef5c41c34"
+    },
+    "validation/cascade_events.json": {
+      "sha256": "a2b2d87b843031003ade6781a3877c3b6b1b091474acc72ed862977ca55b210e"
+    },
+    "validation/cascade_reproduce_result.json": {
+      "sha256": "02d0307853f271ac198af75380578aca7a39cc7259cf1f36f0004ef127e2baa2"
+    },
+    "validation/cascade_matched_result.json": {
+      "sha256": "84196247288d43937e716391f323cc04a688985f94fe1db46a6ae5b7c49ed972"
+    },
+    "validation/prevalence_result.json": {
+      "sha256": "2424128c79e2a4a66163f16a4f496d489ca8cb2717cb0d489b8015ab5d552978"
+    },
+    "validation/ablations_result.json": {
+      "sha256": "742f5c97cfc0c09e012b7d4fbbb109b612483716187b1ddf26181407a298fea0",
+      "_note": "hash updated when a retrospective provenance block was added; measured values untouched. Previous: cc64e85326c6a158..."
+    },
+    "validation/labelling_ablation_result.json": {
+      "sha256": "5eec75cb52093b17c76bd8d9ef4aedae4d41db5f4fabb4620dda44ed57194c65"
+    },
+    "validation/baselines_result.json": {
+      "sha256": "106ec0b8804ac20639b85dc6e19517a1dd81f6f137f0015fe05118ecae1a3212"
+    },
+    "validation/cadence_result.json": {
+      "sha256": "30bd192b163e8a1ee4b84ed8cf9406b67402ec114a6306b0fbb525279f1f3b82"
+    },
+    "validation/gap_matched_result.json": {
+      "sha256": "ef11d729444b67fb6fcf4bafb2515c7c6d4d116dfcf36dc5ac1a63b668bd32ea"
+    },
+    "validation/hardregime_result.json": {
+      "sha256": "61e66cc5b2463853616aec65fd293533a7ed393d262aa1da60e969b3e78acd9f"
+    },
+    "validation/massregime_result.json": {
+      "sha256": "ca96b54c761c97274b113cc2144d321b641ecdcf0eca8b88173b1de67d61a828"
+    },
+    "validation/latency_gaps_result.json": {
+      "sha256": "a7922d21509bf0d38068de9c9f444390778704720b29c8124a70aef7d2d98784"
+    }
   }
 }

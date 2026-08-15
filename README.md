@@ -1,8 +1,9 @@
 <h1 align="center">BinML</h1>
 
 <p align="center">
-  <b>Multi-band, 6-class deep-learning classifier for microlensing & variable light curves.</b><br>
-  Built for the <i>Nancy Grace Roman Space Telescope</i> Galactic Bulge Time-Domain Survey.
+  <b>Multi-band, 6-class triage of progressively revealed microlensing and variable-star light curves.</b><br>
+  A synthetic Roman-like benchmark for the <i>Nancy Grace Roman Space Telescope</i> Galactic
+  Bulge Time-Domain Survey.
 </p>
 
 <p align="center">
@@ -14,15 +15,21 @@
 
 ---
 
-BinML classifies Roman light curves into **six physically-meaningful classes**, from three
-photometric bands (F146 at 15-min cadence, F087/F213 at 6-h), and does so **in a way a real
-survey can act on**: it only flags a class once that class's evidence is actually observable.
+BinML classifies simulated Roman-like light curves into **six operational classes** from three
+photometric bands (F146 at 15-min cadence, F087/F213 at 6-h). It is designed for triage as a
+season is revealed. The present evidence is simulation-only and does not establish autonomous
+real-time planet triggering.
+
+The released checkpoint uses a **legacy Cycle-7-inspired schedule**, not the current GBTDS
+definition: one 72-day season, 15-min F146 sampling, and separate 6-h colour visits. The current
+design uses approximately 12-min F146 sampling, 66-s exposures, staggered F087/F213 visits, and a
+multi-season programme. Results below describe the released legacy-schedule benchmark.
 
 | class | meaning |
 |---|---|
 | **Flat** | no detectable event (baseline / noise) |
 | **PSPL** | single-lens microlensing |
-| **NonPSPL** | binary / planetary lens — *the science-critical anomalous class* |
+| **NonPSPL** | detectable non-PSPL structure from stellar- or planetary-mass-ratio binary lenses |
 | **PeriodicVar** | short-period variables (RR Lyrae, eclipsing binaries, δ Scuti) |
 | **LongPeriodVar** | Miras, semiregulars, OSARGs — the dangerous microlensing impostor |
 | **Eruptive** | dwarf novae, Be outbursts |
@@ -32,14 +39,14 @@ Two design choices set it apart from a standard classifier:
 1. **Detectability-conditioned labelling.** An event is labelled by what is *observable*, not by
    what we simulated. A microlensing event whose peak falls outside the season, or whose
    amplitude is buried by noise, is **Flat**. A binary whose caustic anomaly is below the noise
-   floor is, observationally, a **PSPL** — no classifier or human modeller could tell them apart
-   from the photometry. This removes the label noise that would otherwise punish the model for
-   not seeing what isn't there.
+   floor is assigned **PSPL** under the adopted synthetic detectability rule. This rule prevents
+   the classifier from being scored against injected structure that the simulation declares
+   undetectable; the floor is a modelling choice, not a theorem about real data.
 
-2. **The real-time cascade.** Under a partially-observed season, BinML flags classes only as
-   their evidence arrives: **Flat → PSPL → NonPSPL**. A binary reads as a plain PSPL during its
-   smooth rise and becomes NonPSPL only when the caustic is on screen. This is what a Roman
-   follow-up pipeline needs — **it must not trigger on a false binary before it has seen one.**
+2. **A partial-season cascade objective.** During truncation training, a simulated binary is
+   relabelled **Flat → PSPL → NonPSPL** as more of the season is exposed. The transition uses
+   a truth-informed, noise-free anomaly-onset proxy. It therefore tests streaming behaviour in a
+   controlled simulation; it is not an observable alert timestamp available to a live broker.
 
 ## The model
 
@@ -47,7 +54,7 @@ The network is a **convolutional stem feeding a small transformer encoder** — 
 parameters** — deliberately small, because the task is not data-starved (millions of simulated
 events) but inference-heavy at survey scale.
 
-- **Input: 3 bands → 156 tokens × 5 channels.** F146 is the workhorse (15-min cadence, 6912
+- **Input: 3 bands → 156 tokens × 5 channels.** In the released legacy schedule, F146 is the workhorse (15-min cadence, 6912
   epochs / 72-day season); F087 and F213 are the colour bands (6-h, 288 epochs). Each band is
   binned into fixed token slots (F146→864, colour→96) and every bin carries `mean, min, max,
   observed-fraction, observed-mask`.
@@ -72,28 +79,34 @@ Per-class F1 (population-weighted, selection-corrected):
 |---|---|---|---|---|---|
 | 0.97 | 0.96 | 0.82 | 0.97 | 0.91 | 0.88 |
 
-> The NonPSPL F1 (0.82) is held down by *precision*. A diagnostic on those false positives:
-> **94.7% are events generated as binaries whose caustic falls below the detectability floor**,
-> and were therefore correctly labelled PSPL. They remain false positives for a follow-up trigger
-> — by our own definition the anomaly is not observable — but it indicates the model responds to
-> sub-threshold anomaly signal rather than emitting random alerts. NonPSPL **recall is 0.95**.
-> This is why completeness@purity, not F1, is the headline.
+> The NonPSPL F1 (0.82) is precision-limited; its recall is 0.95. Of its false positives, 94.7%
+> were generated as binaries but demoted to PSPL by the adopted detectability floor. They remain
+> false positives for the stated observational task. This diagnostic may reflect sensitivity to
+> sub-threshold structure or correlated simulation properties and is not a second precision
+> estimate.
 
-- **Completeness at fixed purity: 0.879** (the headline a follow-up pipeline is specified
-  against, not accuracy or F1). Average precision 0.952.
-- **The cascade, measured honestly (n=1000):** evaluated event by event (first
-  threshold crossing as the season is revealed), the model detects
-  89% of eligible binaries within the season, with a median alert
-  **1.3 days after** the caustic becomes detectable. Its first
-  alert is *premature* for **31.3%** of eligible binaries
-  (95% CI 28.5–34.2%),
-  35.2% of those detected. This is grid-dependent — evaluating
-  more often finds more early crossings — so treat it as a **lower bound**. *Note:* an earlier
-  42%→9% before/after claim was untracked, could not be reproduced, and has been withdrawn; see
-  `validation/cascade_reproduce.py`.
-- **Generalises to unseen parameter draws:** a ~19-million-event stress set from a disjoint seed
-  reproduces the held-out numbers on its natural-population subset; several out-of-range regimes
-  degrade, and are documented rather than hidden.
+- **Completeness at fixed purity: 0.879** (the headline triage metric, rather than accuracy or
+  F1). Average precision 0.952. NonPSPL-versus-rest calibration has weighted ECE **0.0533** and
+  weighted Brier score **0.0209**.
+- **The cascade, measured event by event (n=1000, F146 only, 0.5 d steps):** the model alerts on
+  **89.0%** of eligible binaries within the season. Among detections that were not premature,
+  the median first crossing is **+5.0 days** after a truth-informed, noise-free anomaly-onset
+  proxy. The first crossing is *premature* relative to that proxy for
+  **1.6%** of eligible binaries (95% CI 1.0–2.6%), rising to **4.5%** under a stricter definition
+  of onset that requires the anomaly to stay detectable. The premature rate depends on the alert
+  policy and on the onset definition far more than on the model — see
+  `validation/cascade_reproduce_result.json`, which reports it under coarser grids, a
+  two-crossing persistence rule, multi-band revealing, and an argmax rule.
+- **Cascade ablation:** the matched 400-event comparison is an exploratory risk–coverage curve.
+  Its thresholds and paired outcomes were selected on the same events, so its conditional
+  McNemar values are descriptive and do not support confirmatory population-level inference.
+- **Streaming scope:** the prefix scan contains eligible binaries only and reuses a threshold
+  selected on complete seasons. It measures conditional detection timing, not sequential false
+  alerts, streaming purity, or broker workload on Flat/PSPL/variable contaminants.
+- **Stress testing:** the full suite contains 14.9 million events, but the reported macro-F1
+  reproduction applies to its **4.5-million-event same-prior subset**. Separate deliberately
+  out-of-distribution arms expose substantial failures; they are diagnostics, not evidence of
+  broad population validity.
 
 Full methodology and the honest reading of each number: [`docs/evaluation.md`](docs/evaluation.md).
 
@@ -104,8 +117,13 @@ from source:
 ```bash
 pip install git+https://github.com/kunalb541/BinML.git
 ```
-For the full simulation/training pipeline (adds `h5py`, `scipy`, and `VBBinaryLensing` for
-binary-lens generation) use the conda environment:
+For the full simulation, validation, and paper pipeline, install all optional dependencies
+(including `VBBinaryLensing`):
+```bash
+git clone https://github.com/kunalb541/BinML.git && cd BinML
+pip install -e ".[all]"
+```
+The conda environment is an alternative:
 ```bash
 conda env create -f environment.yml && conda activate binml
 ```
@@ -123,12 +141,12 @@ r = clf.predict({"F146": (t146, m146), "F087": (t087, m087), "F213": (t213, m213
 print(r)                    # <BinML NonPSPL 0.98 | microlensing 0.99 anomalous 0.98>
 r.probabilities            # {'Flat':.., 'PSPL':.., 'NonPSPL':.., 'PeriodicVar':.., ...}
 r.is_microlensing          # P(PSPL)+P(NonPSPL)
-r.is_anomalous             # P(NonPSPL)  -- is it binary/planetary?
+r.is_anomalous             # P(NonPSPL) -- anomalous binary-lens score
 
 # single band (F146 only) is fine:
 r = clf.predict(t146, m146, m_base_ref=22.1)
 
-# the real-time cascade: probabilities as the season is revealed
+# streaming probabilities as the season is revealed
 days, probs = clf.predict_evolution({"F146": (t146, m146)}, m_base_ref=22.1)
 ```
 Command line: `binml classify lc.csv --m-base 22.1`. More: [`docs/usage.md`](docs/usage.md).
@@ -152,13 +170,17 @@ The simulator runs at two scales from one codebase — a single shard on a lapto
 across a transient cloud fleet — because the modules take `--bucket`/`--prefix` and write locally
 if you omit the bucket. Generation is embarrassingly parallel:
 
-- **Content-addressed shards.** One process builds one shard (an HDF5 file of a few thousand
-  light curves), seeded purely by its index: `seed = seed_base + shard * 7919`. Workers HEAD each
-  shard's S3 key and skip existing ones, so a Spot interruption costs at most one shard, and runs
-  are fully resumable. Work is split by a modulo partition (`--worker W --workers N`).
+- **Index-addressed shards.** One process builds one shard (an HDF5 file of a few thousand light
+  curves), with `seed = seed_base + shard * 7919`. Workers HEAD the key
+  `prefix/shard_NNNNN.h5` and skip it if present, so a Spot interruption costs at most one shard
+  within a frozen run configuration. This is **not content addressing**: the skip check does not
+  compare source, simulator configuration, regime, or seed base. Use a new prefix for every such
+  change and preserve a run manifest. Work is split by a modulo partition
+  (`--worker W --workers N`).
 - **`--seed-base` makes evaluation honest.** Train/val/test used base `20260720`; a far-off base
-  (e.g. `900000000`) gives a different PCG64 stream — parameter tuples the model *provably* never
-  saw. That's how the 12.9M-event unseen-parameter stress test is built.
+  (e.g. `900000000`) gives a different PCG64 stream — parameter tuples the model did not see in
+  training. The full stress suite has 10.4M targeted out-of-distribution events plus a 4.5M
+  same-prior subset.
 - **Binning & inference run in-region.** Raw shards are ~312 MB each (~125 GB for a full run);
   binning them to compact caches (~46 MB) and running the model *in the S3 region* means the
   light curves never leave — only the compact predictions (~30 floats/event) come back.
@@ -184,17 +206,29 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
 
 ## Limitations & intended use
 
-- **Roman-quality cadence.** Trained on dense ~15-min F146 sampling. Binary *characterization*
+- **Legacy Roman-like cadence.** Trained on dense 15-min F146 sampling for one 72-day season.
+  The current survey design differs in cadence, exposure, colour interleaving, and multi-season
+  structure. Binary *characterization*
   needs that density — the short caustic anomaly must be observed. On sparse ground-survey
   cadence (LSST, multi-day gaps) detection degrades and characterization is not recoverable.
-- **Known weak spots** (rare out-of-range extremes, documented in [`docs/model_card.md`](docs/model_card.md)):
+- **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
   faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
-  sub-day tE (few epochs on the peak). These are near fundamental physical limits, not gaps.
+  sub-day tE (few epochs on the peak).
+- **Synthetic support, not a population forecast.** The simulator uses broad analytic training
+  supports, including an authored truncated-lognormal timescale distribution anchored to a
+  literature mean. Variable-star curves are analytic or phenomenological shapes, not sampled
+  OGLE templates. The 0.02-mag detectability floor has not been validated on Roman data.
+- **Known colour-photometry mismatch.** Relative to the current Roman calibration, the released
+  simulator's F087 and F213 zeropoints are optimistic by about 0.10 and 0.14 mag, respectively;
+  its F087 saturation assumption has the wrong ordering at equal exposure, and its colour-band
+  background ratios do not reproduce the published thermal backgrounds. The effect on contaminant
+  rejection is unquantified, and the released model has not been retrained with corrected values.
 - **Provide `m_base_ref`.** The model input is baseline-relative; give the F146 quiescent
   magnitude when you have it (a catalogue value). The faint-tail estimate is only reliable for
   short, well-sampled events.
-- **Intended use:** triage/vetting of Roman GBTDS light curves — a follow-up-triggering aid, not
-  a substitute for full light-curve modelling of a candidate.
+- **Intended use:** research triage/vetting of partial Roman-like seasons. The +5-day conditional
+  latency does not demonstrate response during a short planetary perturbation. Use the output to
+  prioritise modelling and review, not as an autonomous discovery or follow-up trigger.
 
 ## Documentation
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "Single source of truth for every number in the manuscript. Values are drawn from paper/results/metrics.json (the independent 450,589-event evaluation of the production model) and from the project's cascade / stress-test analyses. make_macros.py turns this file (plus figures_stats.json, produced by make_figures.py) into paper_macros.tex. NEVER hand-edit numbers in paper.tex.",
+  "_comment": "Static-evaluation numbers for the manuscript, drawn from paper/results/metrics.json (the independent 450,589-event evaluation of the production model) and the stress-test analyses. This is NOT the only source make_macros.py reads, and claiming otherwise was a documentation error: the cascade numbers come from validation/cascade_reproduce_result.json, the prevalence scenarios from validation/prevalence_result.json, and the ablations from validation/ablations_result.json -- each read directly and fail-closed, so they cannot be hand-copied and drift. make_macros.py turns all of these (plus figures_stats.json from make_figures.py) into paper_macros.tex. NEVER hand-edit numbers in paper.tex.",
   "test": {
     "_comment": "evaluation pool split by rng(7): 20% validation (threshold selection), 80% final test. All reported metrics AND figures use the final-test rows only (test_idx.npy).",
     "n_pool": 450589,
@@ -104,8 +104,8 @@
     }
   },
   "stress": {
-    "_comment": "30 unseen-parameter regimes (14.9M) + natural-population subset (4.5M) = 19.4M; macro-F1 is the natural-population subset",
-    "n_events_millions": 19.4,
+    "_comment": "30 unseen-parameter regimes totalling 14,941,046 events (14.9M). The natural-population subset (4,502,855) is ONE OF those regimes, not an addition to them -- an earlier revision summed the two and reported 19.4M, double-counting it. macro-F1 is the natural-population subset.",
+    "n_events_millions": 14.9,
     "natural_events_millions": 4.5,
     "natural_macro_f1": 0.927,
     "seed_base_train": 20260720,
@@ -229,13 +229,6 @@
     "ap_logistic": 0.371,
     "ap_fitted_pspl": 0.261
   },
-  "inference": {
-    "_comment": "measured on CPU, batch 1024, torch inference_mode; see make_data_figures notes",
-    "events_per_sec": 1224,
-    "ms_per_event": 0.82,
-    "cpu_cores": 10,
-    "median_detection_lag_days": 5
-  },
   "infra": {
     "_comment": "measured/recorded infrastructure numbers for the appendix",
     "sim_events_millions": 10.0,
@@ -249,11 +242,6 @@
     "train_batch": 256,
     "train_hours": 15,
     "train_epochs_effective": 5
-  },
-  "false_positive": {
-    "_comment": "timing false positives = premature flags; missed planets = false negatives",
-    "missed_planet_rate": 0.048,
-    "long_period_var_to_pspl": 0.01
   },
   "model": {
     "n_params": 505479,
@@ -273,31 +261,8 @@
   },
   "_cascade_note": "Cascade numbers are NOT stored here. make_macros.py reads them directly from validation/cascade_reproduce_result.json and fails if it is missing or its schema changed, so the manuscript cannot drift from the artifact.",
   "_latency_note": "Latency numbers are NOT stored here either. Like the cascade block they come from validation/cascade_reproduce_result.json via make_macros.py, so \u00a74, the abstract and Figures 4-5 all read ONE artifact. A duplicated copy here is what produced two contradictory sets of latency statistics in an earlier draft.",
-  "prevalence_operating": {
-    "_comment": "Referee issue 4: completeness ACHIEVABLE at 0.90 purity when the threshold is re-optimised for an assumed anomaly prevalence (frozen test artifact). The headline 0.879@0.908 exists only at the synthetic mixture's 5.6% prevalence.",
-    "comp_at_synthetic": 0.885,
-    "comp_at_one_pct": 0.756,
-    "comp_at_tenth_pct": 0.604,
-    "thr_synthetic": 0.8944,
-    "thr_one_pct": 0.9786,
-    "thr_tenth_pct": 0.9936
-  },
-  "ablations": {
-    "_comment": "Referee Major issue 2. Four arms trained from scratch on identical shards/recipe/seed (16 shards, 10 epochs); only the stated variable differs. Both label arms scored against the OBSERVATIONAL label. Source: validation/modal_ablations.py -> validation/ablations_result.json.",
-    "label_obs_macrof1": 0.828,
-    "label_gen_macrof1": 0.48,
-    "label_obs_pspl_f1": 0.878,
-    "label_gen_pspl_f1": 0.0,
-    "label_obs_nonpspl_f1": 0.57,
-    "label_gen_nonpspl_f1": 0.137,
-    "casc_on_prem_thr": 0.123,
-    "casc_off_prem_thr": 0.193,
-    "casc_on_prem_argmax": 0.37,
-    "casc_off_prem_argmax": 0.273,
-    "casc_on_det": 0.643,
-    "casc_off_det": 0.993,
-    "casc_on_macrof1": 0.828,
-    "casc_off_macrof1": 0.866,
-    "casc_n": 300
-  }
+  "_prevalence_note": "prevalence-scenario thresholds and completeness are NOT stored here. They are computed by validation/prevalence_thresholds.py (threshold selected on the reserved validation rows, reported on the frozen final-test rows) and read directly from validation/prevalence_result.json by make_macros.py. An earlier revision hand-copied numbers that had been selected AND reported on the final-test rows.",
+  "_ablations_note": "ablation numbers are NOT stored here; make_macros.py reads validation/ablations_result.json (cascade arm) and validation/labelling_ablation_result.json (label-only rerun with the loss weights held fixed) directly and fail-closed.",
+  "_false_positive_note": "missed-anomaly and LongPeriodVar->PSPL rates are no longer stored here; they are computed from the frozen artifact in make_figures.py. The hand-copied values (0.048, 0.010) disagreed with the artifact (0.052, 0.009).",
+  "_inference_note": "throughput is no longer stored here. validation/inference_benchmark.py measures it reproducibly and records CPU, thread count and protocol; make_macros.py reads validation/inference_benchmark_result.json. The previous hand-entered 1,224 events/s could not be reproduced on the recorded hardware (measured 359/s at 10 threads) and was withdrawn."
 }

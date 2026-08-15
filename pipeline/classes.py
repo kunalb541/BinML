@@ -9,9 +9,11 @@ Six classes, organised around the questions an observer actually asks:
 
 The microlensing split is deliberately **PSPL vs NON-PSPL**, not "single vs binary lens".
 NonPSPL is defined *operationally* -- by DEVIATION from the best-fitting point-source
-point-lens model (delta-chi^2 above a threshold) -- which is exactly how a real vetting
-pipeline flags an anomaly. That definition naturally absorbs binary-lens, binary-source
-(1L2S) and finite-source events, all of which a "binary lens" label would mis-assign.
+point-lens model (delta-chi^2 above a threshold).  The released generator and trained
+checkpoint cover static binary-lens (2L1S) events with finite-source magnification only;
+they do not cover binary-source (1L2S), parallax, or lens orbital motion.  The broader
+operational label could encompass those effects only after they are added to training and
+evaluation.
 
 The registry is data, not code: adding a class means adding an entry plus a generator, and
 metrics/heads key off the registry so they extend automatically.
@@ -54,10 +56,10 @@ CLASS_REGISTRY: Dict[str, ClassSpec] = {
 
     "NonPSPL": ClassSpec(
         2, "NonPSPL", True,
-        "Anomalous microlensing -- any event whose best-fit PSPL model is rejected at "
-        "delta-chi^2 above threshold. Includes binary-lens (planetary through stellar mass "
-        "ratio), binary-source (1L2S) and strong finite-source events. This is the "
-        "science-critical class: it carries the planets.",
+        "Detectable anomalous microlensing under the released policy. The current training "
+        "generator contains static binary lenses (2L1S, planetary through stellar mass ratio) "
+        "with finite-source magnification; 1L2S, parallax, and lens orbital motion are omitted. "
+        "This is the science-critical class containing detectable binary and planetary lenses.",
         density_per_deg2=0.0, sampling_weight=3.0, confusion_risk="n/a"),
 
     # --- contaminants: grouped by BEHAVIOUR (what the classifier sees), not taxonomy -----

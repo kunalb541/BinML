@@ -4296,5 +4296,25 @@
       ],
       "detection_fraction_argmax": 1.0
     }
+  },
+  "provenance": {
+    "_status": "INCOMPLETE - recorded retrospectively",
+    "generated_by": "validation/modal_ablations.py",
+    "generator_sha256_at_annotation_time": "8e6041a9c5b2b790a5abadd77d94a540795e9159920b30a8a0d8521076a4362c",
+    "run_harness": "modal_ablations.py, before the hash-keyed cache/checkpoint harness existed",
+    "known": {
+      "epochs": 10,
+      "seed": 20260720,
+      "threshold": 0.9042405486106873,
+      "n_eval_static": 45088
+    },
+    "NOT_recorded": [
+      "git commit at run time",
+      "shard/data hashes",
+      "checkpoint SHA-256",
+      "pinned dependency versions",
+      "Modal run id"
+    ],
+    "limitation": "This artifact predates the provenance harness used by labelling_ablation_result.json and cascade_matched_result.json. Its shards and checkpoints were keyed by split/index and arm name only, so a rerun cannot be proven to reuse the same inputs. The LABELLING arms from this run are superseded by validation/labelling_ablation_result.json, which holds the loss weights fixed and carries a full manifest. Only the CASCADE (truncation-augmentation) arms are still cited from here, and the paper reports that comparison as not supporting its causal claim - a negative result, so the provenance gap does not prop up a positive finding."
   }
 }

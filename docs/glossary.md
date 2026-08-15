@@ -7,9 +7,10 @@ Terms used across BinML's docs and API, for readers new to microlensing or to th
   passes near the line of sight and gravitationally focuses its light.
 - **PSPL** (point-source point-lens) — a single-lens event; a smooth, symmetric brightening
   described by the Paczyński curve.
-- **NonPSPL / anomalous** — any event a single-lens model cannot fit: **binary** or **planetary**
-  lenses, binary sources, strong finite-source effects. The science-critical class — planets show
-  up here.
+- **NonPSPL / anomalous** — under the released training policy, a detectable deviation from a
+  single-lens fit produced by a static binary lens (2L1S, planetary through stellar mass ratios),
+  with finite-source magnification included. Binary-source (1L2S), parallax, and lens orbital
+  motion are not present in the released generator or evaluation.
 - **tE** (Einstein timescale, days) — how long the event lasts; the time to cross the Einstein
   radius. Roman-bulge events peak around 10–40 d.
 - **u0** (impact parameter) — closest approach of the source to the lens, in Einstein radii.
@@ -37,9 +38,11 @@ Terms used across BinML's docs and API, for readers new to microlensing or to th
 
 ## Survey / data
 - **Roman GBTDS** — Nancy Grace Roman Space Telescope Galactic Bulge Time-Domain Survey.
-- **F146 / F087 / F213** — Roman filters. F146 (wide) is the workhorse at 15-min cadence; F087,
-  F213 are colour bands at 6-h cadence.
-- **season** — a 72-day Roman observing window; BinML classifies one season at a time.
+- **F146 / F087 / F213** — Roman filters. The current design samples F146 approximately every
+  12 minutes and each colour band on a staggered 6-hour cycle. BinML's released legacy schedule
+  instead uses 15-min F146 sampling and non-staggered 6-hour colour grids.
+- **season** — a roughly 72-day Roman observing window. BinML classifies one simulated season at a
+  time and does not represent the current survey's multi-season structure.
 - **m_base** — the source's baseline (quiescent, out-of-event) magnitude. The model input is
   magnitude *relative to* this baseline.
 - **detectability-conditioned label** — an event is labelled by what is *observable*: an
@@ -54,7 +57,10 @@ Terms used across BinML's docs and API, for readers new to microlensing or to th
 - **keep_prob** — a per-event byproduct-subsampling weight; NonPSPL rows are 1, subsampled
   Flat/PSPL byproducts are <1. Used to reweight *precision/purity* (never recall) back to the
   true population.
-- **the cascade** — BinML's real-time behaviour: on a partial season, class probabilities follow
-  Flat → PSPL → NonPSPL, flagging a binary only once the caustic is observable.
-- **t_anom** — the day a binary's anomaly first becomes detectable; drives the cascade under
-  truncation.
+- **the cascade** — the intended training-label progression on a partial synthetic season:
+  Flat → PSPL → NonPSPL. The binary-only half-day scan measures timing relative to a
+  truth-informed onset proxy; it does not prove that every event follows all three states or that
+  no premature alert occurs.
+- **t_anom** — a truth-informed, noise-free proxy for the first cut at which the injected binary
+  differs sufficiently from its best-fit single-lens curve. It drives truncation labels but is not
+  an alert timestamp available from live survey data.

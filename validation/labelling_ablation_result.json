@@ -1,0 +1,161 @@
+{
+  "key": "79608c38a23529b8",
+  "n_eval": 45070,
+  "config": {
+    "n_train_shards": 16,
+    "n_eval_shards": 6,
+    "n_shards_total": 200,
+    "seed_base_train": 20260720,
+    "seed_base_eval": 990000,
+    "epochs": 10,
+    "seed": 20260720,
+    "alpha_nonpspl": 2.0,
+    "truncate_aug": 0.5,
+    "threshold": 0.9042405486106873,
+    "bootstrap": 2000,
+    "protocol": "label-only-v2"
+  },
+  "manifest": {
+    "code_sha256": "f72aabb72f8b3b520afdae4566bc53f09e98135f33745082553c56314eb96a09",
+    "deps": [
+      "torch==2.5.1",
+      "numpy==1.26.4",
+      "scipy==1.14.1",
+      "h5py==3.12.1",
+      "VBBinaryLensing==3.7.0"
+    ],
+    "train_shard_sha256": [
+      "ab41de34aaeee8eb1f71d5cda23ee5f1c2caaebae1fe7f2a3e6cbfcf77a4cb2f",
+      "2abdec02ff162974308eb7f4de302db980344083bbd46faefde3b709af58f589",
+      "12ec53c4eaa798fce95e689ee49c5e3c7cf67e958ebd4bc1d675961a889c0157",
+      "3a6c6dfef2fc96004d97dfc6b0b2b95545588a671fd0efb1d044c943510ad6b0",
+      "6053a2e2d9d5f725f6e10fac9750a48c774a2a4a41cfa4521a58993b91fc5336",
+      "70cbf57cd0d6bbbd35e2f00cb3d06775ca495533aeccb615aa9c411ef49bf145",
+      "d92a5f6d61937b0911fb57e0f1294e45a141980dd45811320e2fea403d41f11c",
+      "5f1ce9840eb794ecf697599486bab42c466155495a39bce9c039c502c95ab463",
+      "348295e2b890e88e12d54f9df4d4ba50997657c956c236a5be1356380d9c734a",
+      "90d69e7c701b27746763b6483e8a707bae122234c1e6145a9932f75094781fe9",
+      "c7fcf99d08ec032a79463503f532eee9d281817860cf82954e5f658840210fda",
+      "83756ceb298d53ef085d69d132f4f5a78724bbc1e861a44c8c26717425d5c0ae",
+      "924cb2baf983f60e4ece3b8e3afd4f3b46905006640e56083f58a9cd80120107",
+      "d21b18735b24380a6edb4842ec0c8fd5c281571bc35291016a71d3fe869a4a22",
+      "3da3e1c40ad131293d867c32f656ba6c8ff7bf83ed0304f3a981a03ddb245502",
+      "1fd5a556736d1d8fa9366d2b2aa94992f612c9abf531310c18e9e55dabc141e6"
+    ],
+    "eval_shard_sha256": [
+      "fee744b7e89eec1c2b1bfba5b7f6af08d9c9ee141ab1f6ea2cd9aa8aa98bb586",
+      "0f43ce194c80845fc31fd9b4650ec5cd2462aa8686e82de5f0ab382f6876efcc",
+      "235a8c11c6b3de834b953315a29f7ca3bcf8c669716b682c22b5376c6e33b2ce",
+      "38e50d5b17ccc3467182a21ab9a5210e8c8a2c54dba57958424df37643d279f8",
+      "2119f51dbfeacb7905e010ebae12fb0952c409a6b69be7dc178fcbea3f33b39e",
+      "f0301bf1f0fc1f1e8133eaeab701d181b1a8562f243401578623986ede9e3460"
+    ],
+    "checkpoint_sha256": {
+      "labels_observational": "9988e80e36a9ae4026d46dd0b7969f2d669f64b27f99b6e3de4ee0a7e1303642",
+      "labels_generator": "8a5835cad9d87df52733c67b2bb3585f6437f963606c1b2d2535caf04722e84a",
+      "labels_generator_ownweights": "93806ded5e944b4aa32e91a3f24281dea1aea7997e8701129375916c5c0d62a1"
+    },
+    "torch": "2.5.1+cu124",
+    "numpy": "1.26.4",
+    "code_sha256_recorded_in_run": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "_code_sha256_note": "The value written during the run was the SHA-256 of the EMPTY STRING: _code_hash() derived its root from the entrypoint's location, which inside the Modal container holds no pipeline/ or binml/, so the walk found nothing. The cache key therefore did not depend on the source at all. The value above (f72aabb72f8b3b52...) is the hash of the tree that produced this run, recomputed afterwards and verified unchanged since launch (the launch log printed 'code f72aabb72f8b'). It is a repair, not an in-run measurement. The script now takes the hash as an argument and re-verifies it against /repo inside the container, so a future run cannot record a hash that does not match the code it executed."
+  },
+  "arms": {
+    "labels_observational": {
+      "vs_observational": {
+        "macro_f1": 0.822,
+        "per_class_f1": {
+          "Flat": 0.965,
+          "PSPL": 0.885,
+          "NonPSPL": 0.592,
+          "PeriodicVar": 0.969,
+          "LongPeriodVar": 0.896,
+          "Eruptive": 0.627
+        }
+      },
+      "vs_generator": {
+        "macro_f1": 0.467,
+        "per_class_f1": {
+          "Flat": 0.358,
+          "PSPL": 0.159,
+          "NonPSPL": 0.264,
+          "PeriodicVar": 0.874,
+          "LongPeriodVar": 0.53,
+          "Eruptive": 0.619
+        }
+      },
+      "anomaly_completeness_at_thr": 0.705,
+      "anomaly_purity_at_thr": 0.802
+    },
+    "labels_generator": {
+      "vs_observational": {
+        "macro_f1": 0.456,
+        "per_class_f1": {
+          "Flat": 0.442,
+          "PSPL": 0.0,
+          "NonPSPL": 0.145,
+          "PeriodicVar": 0.909,
+          "LongPeriodVar": 0.515,
+          "Eruptive": 0.727
+        }
+      },
+      "vs_generator": {
+        "macro_f1": 0.703,
+        "per_class_f1": {
+          "Flat": 0.789,
+          "PSPL": 0.0,
+          "NonPSPL": 0.928,
+          "PeriodicVar": 0.91,
+          "LongPeriodVar": 0.873,
+          "Eruptive": 0.721
+        }
+      },
+      "anomaly_completeness_at_thr": 0.964,
+      "anomaly_purity_at_thr": 0.102
+    },
+    "labels_generator_ownweights": {
+      "vs_observational": {
+        "macro_f1": 0.46,
+        "per_class_f1": {
+          "Flat": 0.46,
+          "PSPL": 0.0,
+          "NonPSPL": 0.144,
+          "PeriodicVar": 0.929,
+          "LongPeriodVar": 0.526,
+          "Eruptive": 0.703
+        }
+      },
+      "vs_generator": {
+        "macro_f1": 0.703,
+        "per_class_f1": {
+          "Flat": 0.779,
+          "PSPL": 0.0,
+          "NonPSPL": 0.93,
+          "PeriodicVar": 0.914,
+          "LongPeriodVar": 0.893,
+          "Eruptive": 0.702
+        }
+      },
+      "anomaly_completeness_at_thr": 0.0,
+      "anomaly_purity_at_thr": 0.0
+    }
+  },
+  "macro_f1_gap_vs_observational": {
+    "point": 0.366,
+    "ci95": [
+      0.361,
+      0.371
+    ],
+    "note": "paired bootstrap over evaluation events; single training seed"
+  },
+  "macro_f1_gap_vs_generator": {
+    "point": -0.236,
+    "ci95": [
+      -0.24,
+      -0.232
+    ],
+    "note": "paired bootstrap over evaluation events; single training seed"
+  },
+  "key_recorded_in_run": "79608c38a23529b8",
+  "_key_note": "the run's directory key was derived from the empty code hash; the key derived from the real source tree is 46a50dbd80a7a11c"
+}

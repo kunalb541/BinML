@@ -1,5 +1,14 @@
 """The two ablations that substantiate the title's claims (referee Major issue 2).
 
+SUPERSEDED FOR THE LABELLING ARM -- see validation/modal_labelling_ablation.py.
+This script's labelling comparison was confounded: pipeline.train derives the per-class loss
+weights from whichever label array it is given, so switching --label-source changed the training
+objective as well as the targets. The replacement pins the weights across arms
+(--weight-labels observational), evaluates every arm against BOTH ontologies, and versions its
+caches and checkpoints by a hash of the source tree plus the full config. The cascade arm here is
+still the reported one; its result stands as recorded in ablations_result.json.
+
+
 A paper claiming "detectability-conditioned" and "real-time" must show that each mechanism does
 something. Both are cheap by the paper's own accounting, so both are run here:
 

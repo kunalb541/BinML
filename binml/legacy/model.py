@@ -81,7 +81,6 @@ IMPORTANT ASSUMPTION:
     loading pipeline in train.py.
 
 Author: Kunal Bhatia
-Institution: University of Heidelberg
 Version: 4.0.0
 Date: January 2025
 """

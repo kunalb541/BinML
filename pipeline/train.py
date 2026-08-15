@@ -376,6 +376,14 @@ def main(argv=None) -> int:
                     default="observational",
                     help="'observational' = detectability-conditioned label (shipped); 'generator' "
                          "= raw generation class (true_class), the ablation of the labelling scheme.")
+    ap.add_argument("--weight-labels", choices=["train", "observational"], default="train",
+                    help="which labels the class-balancing weights are derived from. 'train' (the "
+                         "default, and what the shipped model used) derives them from whatever "
+                         "--label-source selects, so switching label sources also changes the "
+                         "training objective. 'observational' pins the weights to label.npy for "
+                         "every arm, which is what a LABEL-ONLY ablation requires: otherwise the "
+                         "two arms differ in labels AND in per-class loss weights and the "
+                         "comparison cannot attribute the difference to either.")
     ap.add_argument("--cadence-aug", type=float, default=0.0,
                     help="probability of thinning an event's observed bins to a random density "
                          "and relabelling by what survives (see _apply_cadence). Teaches graceful "
@@ -430,9 +438,17 @@ def main(argv=None) -> int:
 
     # Weights are computed from the TRAIN split only; using all rows would leak the test
     # class composition into the training objective.
+    #
+    # --weight-labels decides WHICH labels set the class balance. compute_weights derives the
+    # per-class mass from the labels it is handed, so passing the generator labels changes the
+    # objective as well as the targets. A label-only ablation must hold the objective fixed:
+    # --weight-labels observational pins both arms to the observational class balance.
+    w_labels = labels
+    if args.weight_labels == "observational" and args.label_source != "observational":
+        w_labels = np.load(os.path.join(args.cache, "label.npy"))
     w_all = np.zeros(n, dtype=np.float32)
-    w_all[tr] = compute_weights(labels[tr], keep_prob[tr], args.alpha_nonpspl)
-    w_all[va] = compute_weights(labels[va], keep_prob[va], args.alpha_nonpspl)
+    w_all[tr] = compute_weights(w_labels[tr], keep_prob[tr], args.alpha_nonpspl)
+    w_all[va] = compute_weights(w_labels[va], keep_prob[va], args.alpha_nonpspl)
     w_all[te] = 1.0
 
     mk = lambda idx, shuf: DataLoader(

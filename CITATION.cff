@@ -5,7 +5,8 @@ type: software
 authors:
   - given-names: Kunal
     family-names: Bhatia
-    affiliation: "University of Heidelberg"
+    affiliation: "Independent Researcher"
+    orcid: "https://orcid.org/0009-0007-4447-6325"
 version: 1.0.0
 date-released: "2026-07-26"
 license: MIT

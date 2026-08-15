@@ -1,0 +1,99 @@
+name: paper build (clean archive)
+
+# Builds the manuscript end to end from `git archive HEAD` -- a clean tree with no untracked
+# files, no local caches, and no editor state. This is the claim the paper's data-availability
+# statement makes, so it is tested rather than asserted.
+#
+# Why a separate workflow: it installs a LaTeX toolchain and the full scientific stack, which is
+# far heavier than the unit tests and should not gate every push on every Python version.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "paper/**"
+      - "validation/**"
+      - "pipeline/**"
+      - "binml/**"
+      - "pyproject.toml"
+      - "environment.yml"
+      - ".github/workflows/paper-build.yml"
+  pull_request:
+    paths:
+      - "paper/**"
+      - "validation/**"
+      - "pipeline/**"
+      - "binml/**"
+      - "pyproject.toml"
+      - "environment.yml"
+      - ".github/workflows/paper-build.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended \
+            texlive-publishers latexmk
+
+      - name: Install Python dependencies
+        run: pip install -e ".[all]"
+
+      - name: Extract a clean archive of HEAD
+        run: |
+          mkdir -p "$RUNNER_TEMP/clean"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/clean"
+          test ! -e "$RUNNER_TEMP/clean/paper/paper.pdf" || rm "$RUNNER_TEMP/clean/paper/paper.pdf"
+
+      - name: Run the documented build
+        working-directory: ${{ runner.temp }}/clean/paper
+        run: bash build.sh
+
+      - name: Check the outputs the manuscript depends on
+        working-directory: ${{ runner.temp }}/clean/paper
+        run: |
+          python - <<'PY'
+          import os, re, sys
+          # 1. a PDF of plausible size
+          assert os.path.exists("paper.pdf"), "no PDF produced"
+          size = os.path.getsize("paper.pdf")
+          assert size > 200_000, f"PDF suspiciously small ({size} bytes)"
+
+          # 2. no undefined references or citations -- a build can 'succeed' with both
+          log = open("paper.log", errors="ignore").read()
+          for bad in ("There were undefined references",
+                      "There were undefined citations",
+                      "Citation(s) may have changed",
+                      "Citation `",
+                      "LaTeX Error"):
+              assert bad not in log, f"build log reports: {bad}"
+
+          # 3. every macro the manuscript uses is actually defined. A missing \bml* macro is a
+          #    hard LaTeX error, but a macro defined and never updated is not -- so also check
+          #    that make_macros regenerated the file during this build.
+          macros = open("paper_macros.tex").read()
+          used = set(re.findall(r"\\(bml[A-Za-z]+)", open("paper.tex").read()))
+          defined = set(re.findall(r"\\newcommand\{\\(bml[A-Za-z]+)\}", macros))
+          missing = sorted(used - defined)
+          assert not missing, f"macros used but not defined: {missing}"
+          print(f"OK: {size//1024} kB PDF, {len(defined)} macros defined, {len(used)} used")
+          PY
+
+      - name: Upload the PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-pdf
+          path: ${{ runner.temp }}/clean/paper/paper.pdf

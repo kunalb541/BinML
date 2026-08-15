@@ -11,6 +11,7 @@ Single-band (F146 only) is accepted too: ``clf.predict(t, mag)``.
 from __future__ import annotations
 
 import os
+import operator
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, Union
 
@@ -109,30 +110,51 @@ class Classifier:
         but IGNORED — the model is error-agnostic (it consumes binned magnitudes only).
         """
         if isinstance(light_curve, dict):
-            bands = {b: (np.asarray(v[0], float), np.asarray(v[1], float))
-                     for b, v in light_curve.items()}
+            bands = self._coerce_bands(light_curve)
         else:                                                 # single-band -> F146
             bands = {"F146": (np.asarray(light_curve, float), np.asarray(mag, float))}
         tok = to_tokens(bands, m_base_ref=m_base_ref, t_start=t_start)
         return self.predict_tokens(tok)
 
+    @staticmethod
+    def _coerce_bands(light_curve: BandInput) -> BandInput:
+        """Normalise public band inputs and turn malformed tuples into useful errors."""
+        bands = {}
+        for band, values in light_curve.items():
+            if not isinstance(values, (tuple, list)) or len(values) != 2:
+                raise ValueError(f"{band}: expected a (time, magnitude) pair")
+            bands[band] = (np.asarray(values[0], float), np.asarray(values[1], float))
+        return bands
+
     def predict_evolution(self, light_curve: BandInput, m_base_ref=None, t_start=None,
                           n_steps: int = 16):
-        """Class probabilities as the 72-day season is progressively revealed — the real-time
-        cascade. Returns ``(days, probs)`` with ``probs`` shape ``(n_steps, 6)``."""
-        bands = {b: (np.asarray(v[0], float), np.asarray(v[1], float))
-                 for b, v in light_curve.items()}
-        if t_start is None:
-            t_start = min(float(np.nanmin(t)) for t, _ in bands.values())
+        """Class probabilities as a 72-day window is progressively revealed.
+
+        Returns ``(days, probs)`` with ``probs`` shape ``(n_steps, 6)``. A row is NaN when
+        no usable F146 observation has arrived by that cut; the model has no calibrated
+        prior-only output, so an all-empty tensor is not scored.
+        """
+        try:
+            n_steps = operator.index(n_steps)
+        except TypeError as exc:
+            raise ValueError(f"n_steps must be a positive integer, got {n_steps!r}") from exc
+        if n_steps <= 0:
+            raise ValueError(f"n_steps must be a positive integer, got {n_steps!r}")
+
+        bands = self._coerce_bands(light_curve)
+        # Validate every band and both metadata fields once before any inference. Besides
+        # providing consistent errors with predict(), this freezes the baseline estimate for
+        # every prefix instead of re-estimating it as new points arrive.
+        full = to_tokens(bands, m_base_ref=m_base_ref, t_start=t_start)
+        t_start = full.t_start
+        m_base_ref = full.m_base["ref"]
         fracs = np.linspace(1.0 / n_steps, 1.0, n_steps)
-        out = np.zeros((n_steps, len(self.class_names)), np.float32)
+        out = np.full((n_steps, len(self.class_names)), np.nan, np.float32)
         for k, fr in enumerate(fracs):
             cut = t_start + fr * 72.0
             revealed = {b: (t[t <= cut], m[t <= cut]) for b, (t, m) in bands.items()}
-            if not len(revealed["F146"][0]):
-                out[k] = self._forward(
-                    {b: np.full((1, BAND_BINS[b], 3), np.nan, np.float32) for b in BAND_BINS},
-                    {b: np.zeros((1, BAND_BINS[b]), np.float32) for b in BAND_BINS})[0]
+            t146, m146 = revealed["F146"]
+            if not np.any(np.isfinite(t146) & np.isfinite(m146)):
                 continue
             tok = to_tokens(revealed, m_base_ref=m_base_ref, t_start=t_start)
             out[k] = self._forward({b: tok.feat[b][None] for b in BAND_BINS},
