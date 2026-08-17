@@ -229,8 +229,11 @@ def _worktree_copy(tmp_path):
     root = tmp_path / "tree"
     (root).mkdir()
     for sub in ("paper", "validation"):
+        # .npz is NOT excluded: make_figures reads validation/cascade_trace.npz and
+        # matched_traces.npz. Excluding them made make_figures fail, which the skip below then
+        # swallowed -- a test that never runs anywhere.
         shutil.copytree(os.path.join(REPO, sub), root / sub,
-                        ignore=shutil.ignore_patterns("__pycache__", "*.pdf", "*.npz", "runs"))
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pdf", "runs"))
     return root
 
 
@@ -251,6 +254,21 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
     if not art.exists():
         pytest.skip("cascade artifact not present")
     env = dict(os.environ, PYTHONPATH=str(root))
+
+    # make_macros reads paper/outputs/figures_stats.json, which make_figures GENERATES and which
+    # is deliberately gitignored -- it is derived, not source. build.sh therefore runs figures
+    # before macros, and this test has to honour that order. An earlier version called
+    # make_macros standalone and failed in CI on a missing figures_stats key, which was the test
+    # skipping a build step rather than a defect in make_macros.
+    gen = subprocess.run([sys.executable, "make_figures.py"], cwd=str(root / "paper"),
+                         env=env, capture_output=True, text=True)
+    if gen.returncode != 0:
+        # Only a genuinely absent plotting stack is a legitimate skip. Anything else is a real
+        # failure and must not be hidden -- an earlier version of this skip swallowed a missing
+        # input artifact and the test silently stopped running.
+        if "ModuleNotFoundError" in gen.stderr or "No module named" in gen.stderr:
+            pytest.skip(f"plotting stack unavailable:\n{gen.stderr[-300:]}")
+        raise AssertionError(f"make_figures failed for a non-dependency reason:\n{gen.stderr[-800:]}")
 
     def run():
         return subprocess.run([sys.executable, "make_macros.py"], cwd=str(root / "paper"),

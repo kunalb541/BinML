@@ -27,7 +27,8 @@ for triaging synthetic \Rom{}-like light curves into six classes: no detectable 
 microlensing, detectable binary-lens anomalies (\texttt{NonPSPL}), and three broad variable-star
 classes. Labels are conditioned on explicit synthetic detectability thresholds and on the portion
 of the season revealed to the model. BinML recovers $\bmlCompletenessPct\%$ of detectable
-\texttt{NonPSPL} events at a purity of $\bmlPurityTarget$ on complete 72-day light curves in a
+\texttt{NonPSPL} events at a target purity of $\bmlPurityTarget$ (achieved $\bmlPurity$) on
+complete 72-day light curves in a
 held-out $\bmlNtest$-event test set whose detectable-anomaly prevalence is
 $\bmlPriorPiZero\%$. Both numbers are conditional on that mixture: at a $1\%$ prevalence the
 same threshold yields purity $\bmlPurityOnePct$, and holding purity at $\bmlPrevPurTarget$

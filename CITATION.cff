@@ -19,3 +19,14 @@ keywords:
   - light-curve-classification
   - transformer
 repository-code: "https://github.com/kunalb541/BinML"
+preferred-citation:
+  type: article
+  title: "BinML: Detectability-Conditioned Anomaly Triage for Synthetic Roman-like Partial Light Curves"
+  authors:
+    - given-names: Kunal
+      family-names: Bhatia
+      orcid: "https://orcid.org/0009-0007-4447-6325"
+  year: 2026
+  journal: "SSRN preprint (under review, Astronomy and Computing)"
+  doi: "10.2139/ssrn.7295158"
+  url: "https://ssrn.com/abstract=7295158"

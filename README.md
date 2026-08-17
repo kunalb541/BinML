@@ -239,4 +239,22 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
 
 ## Citing
 
-See [`CITATION.cff`](CITATION.cff).
+The methods paper is under review at *Astronomy and Computing*. A preprint is available:
+
+> Bhatia, K. *BinML: Detectability-Conditioned Anomaly Triage for Synthetic Roman-like Partial
+> Light Curves.* SSRN preprint, 2026. https://doi.org/10.2139/ssrn.7295158
+
+```bibtex
+@article{Bhatia2026BinML,
+  author  = {Bhatia, Kunal},
+  title   = {{BinML: Detectability-Conditioned Anomaly Triage for Synthetic
+             Roman-like Partial Light Curves}},
+  journal = {SSRN preprint},
+  year    = {2026},
+  doi     = {10.2139/ssrn.7295158},
+  url     = {https://ssrn.com/abstract=7295158}
+}
+```
+
+For the software itself, see [`CITATION.cff`](CITATION.cff). The state submitted to the journal
+is tagged [`submitted-ac-2026-08-15`](https://github.com/kunalb541/BinML/releases/tag/submitted-ac-2026-08-15).
