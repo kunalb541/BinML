@@ -60,6 +60,13 @@ detail: [evaluation.md](evaluation.md).
 ## Limitations / known failure modes
 
 Documented in targeted out-of-distribution tests (their population frequency is not established):
+- **Continuous F146 required; Roman's planned schedule has gaps.** The training grid has no
+  mid-season gaps. The planned GBTDS schedule (RGES-PIT RMDC26 / GULLS release) pauses F146
+  ~6 h seven times per season, and the shipped checkpoint reads such a gap as evidence against
+  a single lens: PSPL recall 0.93 → 0.11, Flat 1.00 → 0.08, NonPSPL/PeriodicVar unaffected
+  (`validation/gulls/gap_sensitivity.json`, n=100/class). Gaps ≤ 2 h are harmless. For gapped
+  input use the gap-aware checkpoint `validation/gulls/weights/ft_g08e12.pt` (held-out macro-F1
+  under that schedule 0.384 → 0.879; −1.3 points on gap-free data). See `paper/REVISION.md`.
 - **Faint sources (m > 25):** noise-dominated; risk of noise excursions read as anomalies
   (NonPSPL precision collapses). The single most operationally relevant weak spot.
 - **Wide caustics (s > 5):** the caustic is rarely crossed, so many are unrecoverable.

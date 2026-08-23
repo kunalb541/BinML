@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — gap sensitivity and first cross-simulator validation (2026-08-23)
+- **Shipped checkpoint fails on Roman's planned F146 schedule.** The training grid is
+  continuous; the planned GBTDS schedule pauses F146 ~6 h seven times per season. Inserting
+  those gaps into in-distribution events drops PSPL recall 0.93 → 0.11 and Flat 1.00 → 0.08
+  (`validation/gulls/gap_sensitivity.py`). Reproduced with no external data.
+- **`pipeline/train.py --gap-aug`** blanks contiguous Roman-like runs in every band and
+  relabels; `tests/test_gap_augmentation.py` pins the contract. A warm-start fine-tune
+  (`validation/modal_gap_finetune.py`, checkpoint `validation/gulls/weights/ft_g08e12.pt`)
+  restores held-out macro-F1 under the gapped schedule from 0.384 to 0.879.
+- **First valid GULLS (RMDC26) transfer numbers.** `validation/gulls_transfer.py` now reads the
+  172 GB obs table locally by contiguous `event_id` block (0.09 s/event), pins HF revision
+  `a338d5ba` (RGES-PIT re-uploaded on 2026-08-18), measures the baseline empirically (the
+  catalogue value is 0.471 mag off in this release), and accepts `--weights`. On 1,286 events
+  the fine-tuned model cuts single-lens false alarms at the frozen threshold from 52% to 7%.
+- Shipped weights unchanged; submitted numbers unaffected. Write-up plan: `paper/REVISION.md`.
+
 ## Unreleased — audit round 3 (streaming analysis corrected)
 - **Cascade numbers rebuilt from one stored scan.** `validation/cascade_trace.py` records
   P(NonPSPL) at every 0.5 d cut for the frozen 1,000-event sample, under F146-only and

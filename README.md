@@ -211,6 +211,18 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   structure. Binary *characterization*
   needs that density — the short caustic anomaly must be observed. On sparse ground-survey
   cadence (LSST, multi-day gaps) detection degrades and characterization is not recoverable.
+- **The shipped checkpoint requires a continuous F146 season — Roman's planned schedule is
+  not one.** Found 2026-08-23, after submission. The planned GBTDS schedule (as implemented in
+  the RGES-PIT RMDC26 / GULLS release) pauses F146 for ~6 h seven times per season. The training
+  grid has no such gaps, and the model reads an empty mid-season bin as evidence against a
+  single lens: inserting those seven gaps into in-distribution events drops PSPL recall
+  0.93 → 0.11 and Flat 1.00 → 0.08, with NonPSPL and PeriodicVar unaffected. Gaps ≤ 2 h are
+  harmless. A gap-aware fine-tune (`pipeline/train.py --gap-aug`) restores held-out macro-F1
+  under that schedule from 0.384 to 0.879 at a cost of 1.3 points on gap-free data, and on
+  real GULLS light curves cuts single-lens false alarms at the operating threshold from 52% to
+  7%. The checkpoint is at `validation/gulls/weights/ft_g08e12.pt`; the shipped weights are
+  unchanged so that the submitted numbers stay exact. Full account in
+  [`paper/REVISION.md`](paper/REVISION.md); reproduce with `validation/gulls/gap_sensitivity.py`.
 - **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
   faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
   sub-day tE (few epochs on the peak).
