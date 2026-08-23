@@ -39,7 +39,8 @@ RMDC26_GAP_H = 6.2
 
 @app.function(image=image, cpu=16.0, timeout=5400, volumes={VOL: vol})
 def gen(shard: int, seed_base: int, split: str) -> str:
-    import subprocess, glob, shutil
+    import subprocess, glob, shutil, sys
+    sys.path.insert(0, "/repo")          # the subprocess gets PYTHONPATH; this interpreter does not
     dest_dir = f"{VOL}/{split}"
     os.makedirs(dest_dir, exist_ok=True)
     dest = f"{dest_dir}/shard_{shard:05d}.h5"
@@ -47,6 +48,8 @@ def gen(shard: int, seed_base: int, split: str) -> str:
         return dest
     W = f"/tmp/g_{split}_{shard}_{seed_base}"
     os.makedirs(f"{W}/raw", exist_ok=True)
+    # raw events are generated into the container's /tmp and do not survive it; there is no
+    # cheaper restart point than regenerating, so the only marker that matters is the final one
     subprocess.run(["python", "-m", "pipeline.run_shard", "--shard", str(shard), "--n-shards", "200",
                     "--out", f"{W}/raw", "--seed-base", str(seed_base)],
                    check=True, env=dict(os.environ, PYTHONPATH="/repo"), cwd="/repo")

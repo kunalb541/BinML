@@ -1,0 +1,146 @@
+{
+  "_doc": "Cross-simulator transfer of BinML onto RMDC26 (GULLS) light curves.",
+  "status": "NOT A TRANSFER MEASUREMENT for the shipped checkpoint: the input contract (continuous F146) is violated by Roman's real schedule; see module docstring",
+  "dataset": "RGES-PIT/MachineLearning (RMDC26, GULLS simulator)",
+  "checkpoint": "validation/gulls/weights/ft_g08e12.pt",
+  "dataset_revision": "a338d5bab441b5caf551d2fea9469aadfdc81ec1",
+  "baseline": "empirical: median F146 mag at |t-t0| > 5 tE over the full mission",
+  "window_days": 72.0,
+  "dense_min_f146_epochs": 1000,
+  "threshold": 0.9042405486106873,
+  "min_peak_amplitude_mag": 0.1,
+  "selection_note": "events selected on a metadata-derived peak amplitude, applied identically to all three classes; GULLS' raw draw is dominated by sub-0.1 mag events that BinML's detectability-conditioned classes never contain",
+  "id_windows": {
+    "RMDC26_1S1L_ML": [
+      58979,
+      61664
+    ],
+    "RMDC26_1S2L_ML": [
+      313390,
+      315046
+    ],
+    "RMDC26_2S2L_ML": [
+      369296,
+      370912
+    ]
+  },
+  "te_support_days": [
+    1.0,
+    300.0
+  ],
+  "te_support_note": "BinML's training t_E prior is truncated to [1, 300] d; RMDC26 1S1L is 33.4% sub-day and its binary classes are 0.2%, so an uncut comparison conflates timescale with lens multiplicity",
+  "te_excluded": {
+    "RMDC26_1S1L_ML": {
+      "n_amp_eligible": 122122,
+      "n_dropped_outside_te_support": 49868,
+      "frac_dropped": 0.4083
+    },
+    "RMDC26_1S2L_ML": {
+      "n_amp_eligible": 13366,
+      "n_dropped_outside_te_support": 90,
+      "frac_dropped": 0.0067
+    },
+    "RMDC26_2S2L_ML": {
+      "n_amp_eligible": 15508,
+      "n_dropped_outside_te_support": 103,
+      "frac_dropped": 0.0066
+    }
+  },
+  "n_requested": 1800,
+  "n_classified": 1473,
+  "n_skipped": 327,
+  "n_dense": 1286,
+  "n_sparse_lowcadence": 187,
+  "by_class": {
+    "RMDC26_1S1L_ML": {
+      "description": "single lens (-> PSPL)",
+      "n_dense": 279,
+      "frac_over_threshold": 0.0717,
+      "frac_argmax_nonpspl": 0.3082,
+      "median_p_nonpspl": 0.2355,
+      "argmax_distribution": {
+        "Flat": 0.0323,
+        "PSPL": 0.6559,
+        "NonPSPL": 0.3082,
+        "PeriodicVar": 0.0,
+        "LongPeriodVar": 0.0,
+        "Eruptive": 0.0036
+      },
+      "sparse_lowcadence_window": {
+        "n": 129,
+        "frac_argmax_nonpspl": 0.0,
+        "argmax_distribution": {
+          "Flat": 0.4419,
+          "PSPL": 0.093,
+          "NonPSPL": 0.0,
+          "PeriodicVar": 0.2946,
+          "LongPeriodVar": 0.0,
+          "Eruptive": 0.1705
+        },
+        "note": "window landed in a low-cadence season; BinML is out of distribution and the paper documents the sparse-cadence failure separately"
+      }
+    },
+    "RMDC26_1S2L_ML": {
+      "description": "planetary lens (-> NonPSPL)",
+      "n_dense": 527,
+      "frac_over_threshold": 0.37,
+      "frac_argmax_nonpspl": 0.6926,
+      "median_p_nonpspl": 0.8165,
+      "argmax_distribution": {
+        "Flat": 0.0,
+        "PSPL": 0.3055,
+        "NonPSPL": 0.6926,
+        "PeriodicVar": 0.0,
+        "LongPeriodVar": 0.0,
+        "Eruptive": 0.0019
+      },
+      "sparse_lowcadence_window": {
+        "n": 14,
+        "frac_argmax_nonpspl": 0.0,
+        "argmax_distribution": {
+          "Flat": 0.5,
+          "PSPL": 0.0,
+          "NonPSPL": 0.0,
+          "PeriodicVar": 0.5,
+          "LongPeriodVar": 0.0,
+          "Eruptive": 0.0
+        },
+        "note": "window landed in a low-cadence season; BinML is out of distribution and the paper documents the sparse-cadence failure separately"
+      }
+    },
+    "RMDC26_2S2L_ML": {
+      "description": "planetary lens AND binary source (-> NonPSPL)",
+      "n_dense": 480,
+      "frac_over_threshold": 0.3583,
+      "frac_argmax_nonpspl": 0.7042,
+      "median_p_nonpspl": 0.7811,
+      "argmax_distribution": {
+        "Flat": 0.0021,
+        "PSPL": 0.2938,
+        "NonPSPL": 0.7042,
+        "PeriodicVar": 0.0,
+        "LongPeriodVar": 0.0,
+        "Eruptive": 0.0
+      },
+      "true_binary_source_only": {
+        "n": 251,
+        "frac_over_threshold": 0.4024,
+        "frac_argmax_nonpspl": 0.7211,
+        "median_p_nonpspl": 0.8069
+      },
+      "sparse_lowcadence_window": {
+        "n": 44,
+        "frac_argmax_nonpspl": 0.0,
+        "argmax_distribution": {
+          "Flat": 0.3409,
+          "PSPL": 0.0227,
+          "NonPSPL": 0.0,
+          "PeriodicVar": 0.5682,
+          "LongPeriodVar": 0.0,
+          "Eruptive": 0.0682
+        },
+        "note": "window landed in a low-cadence season; BinML is out of distribution and the paper documents the sparse-cadence failure separately"
+      }
+    }
+  }
+}

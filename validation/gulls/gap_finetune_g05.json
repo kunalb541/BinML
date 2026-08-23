@@ -1,0 +1,210 @@
+{
+  "n_events": 14958,
+  "epochs": 6,
+  "gap_aug": 0.5,
+  "lr": 5e-05,
+  "clean": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.96,
+        "precision": 0.984,
+        "n": 4786
+      },
+      "PSPL": {
+        "recall": 0.935,
+        "precision": 0.991,
+        "n": 4369
+      },
+      "NonPSPL": {
+        "recall": 0.962,
+        "precision": 0.685,
+        "n": 1721
+      },
+      "PeriodicVar": {
+        "recall": 0.99,
+        "precision": 0.956,
+        "n": 1360
+      },
+      "LongPeriodVar": {
+        "recall": 0.982,
+        "precision": 0.85,
+        "n": 1292
+      },
+      "Eruptive": {
+        "recall": 0.992,
+        "precision": 0.829,
+        "n": 1430
+      },
+      "macro_f1": 0.9202
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.953,
+        "precision": 0.96,
+        "n": 4786
+      },
+      "PSPL": {
+        "recall": 0.933,
+        "precision": 0.988,
+        "n": 4369
+      },
+      "NonPSPL": {
+        "recall": 0.929,
+        "precision": 0.705,
+        "n": 1721
+      },
+      "PeriodicVar": {
+        "recall": 0.968,
+        "precision": 0.851,
+        "n": 1360
+      },
+      "LongPeriodVar": {
+        "recall": 0.952,
+        "precision": 0.858,
+        "n": 1292
+      },
+      "Eruptive": {
+        "recall": 0.977,
+        "precision": 0.845,
+        "n": 1430
+      },
+      "macro_f1": 0.9054
+    }
+  },
+  "rmdc26": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.071,
+        "precision": 1.0,
+        "n": 4786
+      },
+      "PSPL": {
+        "recall": 0.078,
+        "precision": 0.954,
+        "n": 4369
+      },
+      "NonPSPL": {
+        "recall": 0.973,
+        "precision": 0.094,
+        "n": 1721
+      },
+      "PeriodicVar": {
+        "recall": 1.0,
+        "precision": 0.139,
+        "n": 1360
+      },
+      "LongPeriodVar": {
+        "recall": 0.832,
+        "precision": 0.892,
+        "n": 1292
+      },
+      "Eruptive": {
+        "recall": 0.61,
+        "precision": 0.965,
+        "n": 1430
+      },
+      "macro_f1": 0.3835
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.911,
+        "precision": 0.928,
+        "n": 4786
+      },
+      "PSPL": {
+        "recall": 0.751,
+        "precision": 0.977,
+        "n": 4369
+      },
+      "NonPSPL": {
+        "recall": 0.906,
+        "precision": 0.328,
+        "n": 1721
+      },
+      "PeriodicVar": {
+        "recall": 0.979,
+        "precision": 0.931,
+        "n": 1360
+      },
+      "LongPeriodVar": {
+        "recall": 0.921,
+        "precision": 0.785,
+        "n": 1292
+      },
+      "Eruptive": {
+        "recall": 0.934,
+        "precision": 0.507,
+        "n": 1430
+      },
+      "macro_f1": 0.7849
+    }
+  },
+  "random": {
+    "shipped": {
+      "Flat": {
+        "recall": 0.288,
+        "precision": 0.991,
+        "n": 4786
+      },
+      "PSPL": {
+        "recall": 0.112,
+        "precision": 0.978,
+        "n": 4369
+      },
+      "NonPSPL": {
+        "recall": 0.978,
+        "precision": 0.09,
+        "n": 1721
+      },
+      "PeriodicVar": {
+        "recall": 0.992,
+        "precision": 0.211,
+        "n": 1360
+      },
+      "LongPeriodVar": {
+        "recall": 0.856,
+        "precision": 0.799,
+        "n": 1292
+      },
+      "Eruptive": {
+        "recall": 0.682,
+        "precision": 0.804,
+        "n": 1430
+      },
+      "macro_f1": 0.4541
+    },
+    "finetuned": {
+      "Flat": {
+        "recall": 0.972,
+        "precision": 0.95,
+        "n": 4786
+      },
+      "PSPL": {
+        "recall": 0.751,
+        "precision": 0.984,
+        "n": 4369
+      },
+      "NonPSPL": {
+        "recall": 0.952,
+        "precision": 0.298,
+        "n": 1721
+      },
+      "PeriodicVar": {
+        "recall": 0.968,
+        "precision": 0.959,
+        "n": 1360
+      },
+      "LongPeriodVar": {
+        "recall": 0.937,
+        "precision": 0.819,
+        "n": 1292
+      },
+      "Eruptive": {
+        "recall": 0.948,
+        "precision": 0.756,
+        "n": 1430
+      },
+      "macro_f1": 0.8242
+    }
+  }
+}

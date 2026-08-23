@@ -111,6 +111,8 @@ def main(argv=None):
                          "model's support, not hard cases within it")
     ap.add_argument("--max-te", type=float, default=300.0, help="upper tE bound in days")
     ap.add_argument("--seed", type=int, default=20260817)
+    ap.add_argument("--weights", default=None,
+                    help="checkpoint to score (default: the shipped binml/weights/binml.pt)")
     ap.add_argument("--ids", default=None,
                     help="comma-separated event_ids to run instead of sampling (debugging)")
     ap.add_argument("--chunk", type=int, default=250,
@@ -242,7 +244,7 @@ def main(argv=None):
 
     con = duckdb.connect()
     con.execute("INSTALL httpfs; LOAD httpfs;")
-    clf = binml.Classifier()
+    clf = binml.Classifier(weights=args.weights)
     CLASSES = clf.class_names
     thr = json.load(open(os.path.join(REPO, "paper", "results",
                                       "metrics.json")))["headline"]["threshold"]
@@ -349,7 +351,7 @@ def main(argv=None):
                "status": "NOT A TRANSFER MEASUREMENT for the shipped checkpoint: the input contract "
                          "(continuous F146) is violated by Roman's real schedule; see module docstring",
                "dataset": "RGES-PIT/MachineLearning (RMDC26, GULLS simulator)",
-               "checkpoint": "binml/weights/binml.pt (shipped)",
+               "checkpoint": args.weights or "binml/weights/binml.pt (shipped)",
                "dataset_revision": REVISION,
                "baseline": "empirical: median F146 mag at |t-t0| > 5 tE over the full mission",
                "window_days": WINDOW_D, "dense_min_f146_epochs": DENSE_MIN, "threshold": thr,
