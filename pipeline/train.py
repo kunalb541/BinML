@@ -212,6 +212,57 @@ def _apply_cadence(out: Dict[str, np.ndarray], label: int, rng: np.random.Genera
     return label
 
 
+def _apply_gaps(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
+                params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
+                n_gaps_max: int = 8, gap_h_min: float = 1.0, gap_h_max: float = 12.0) -> int:
+    """Blank CONTIGUOUS runs of bins, as Roman's real schedule does, and re-label.
+
+    Roman's F146 sampling is not continuous: the GBTDS schedule as implemented in the RMDC26
+    (GULLS) release pauses F146 for ~6 h seven times per 70.7-day season.  BinML's training grid
+    (`pipeline.assemble._epochs`) is continuous, and 0/1800 sampled training events across all
+    classes contain an empty F146 bin, so the model's only prior for an empty mid-season token is
+    the unrevealed future of a truncated season.  Inserting RMDC26's seven gaps into in-
+    distribution events drops PSPL recall from 0.93 to 0.12 and Flat from 1.00 to 0.08 (both go
+    to NonPSPL / PeriodicVar) while NonPSPL and PeriodicVar are unaffected -- which is exactly
+    the GULLS cross-simulator failure (validation/gulls/gap_sensitivity.py).
+
+    `_apply_cadence` thins bins at RANDOM, which teaches sparse ground-survey sampling; it does
+    not produce contiguous blanks, and a random 6% dropout already costs PSPL recall.  This
+    augmentation draws 1..n_gaps_max gaps of gap_h_min..gap_h_max hours at random positions
+    and blanks every band inside them.  Re-labelling follows the same principle as the other
+    two augmentations: a binary whose caustic window fell entirely inside a gap is, as sampled,
+    a PSPL; an event with nothing detectable left is Flat.
+    """
+    ref = out["F146"]
+    nb = ref.shape[0]
+    bin_h = 72.0 * 24.0 / nb
+    n_gaps = int(rng.integers(1, n_gaps_max + 1))
+    blanked = np.zeros(nb, bool)
+    for _ in range(n_gaps):
+        width = max(1, int(round(rng.uniform(gap_h_min, gap_h_max) / bin_h)))
+        start = int(rng.integers(0, max(1, nb - width)))
+        blanked[start:start + width] = True
+    for b, x in out.items():
+        nbb = x.shape[0]
+        # map the reference-band blank mask onto this band's (coarser) grid
+        m = blanked if nbb == nb else blanked.reshape(nbb, nb // nbb).any(axis=1)
+        x[m, :3] = 0.0; x[m, 3] = 0.0; x[m, 4] = 0.0
+    if label == I_FLAT:
+        return label
+    surv = ref[ref[:, 4] > 0]
+    peak = float(np.abs(surv[:, :3]).max()) * MAG_SCALE if surv.size else 0.0
+    if peak < TRUNC_MIN_AMP_MAG:
+        return I_FLAT
+    if label == I_NON and params is not None and pf_idx is not None and "t_anom" in pf_idx:
+        ta = params[pf_idx["t_anom"]]
+        if np.isfinite(ta):
+            anom_bin = int(np.clip(ta / 72.0 * nb, 0, nb - 1))
+            lo, hi = max(0, anom_bin - 1), min(nb, anom_bin + 2)
+            if ref[lo:hi, 4].sum() == 0:
+                return I_PSPL
+    return label
+
+
 class CacheDataset(Dataset):
     """Serves pre-binned events from memory-mapped fp16 arrays.
 
@@ -226,7 +277,8 @@ class CacheDataset(Dataset):
                  weights: np.ndarray, dchi2_anom: np.ndarray, idx: np.ndarray,
                  truncate_aug: float = 0.0, seed: int = 0,
                  params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
-                 f_s_ref: Optional[np.ndarray] = None, cadence_aug: float = 0.0):
+                 f_s_ref: Optional[np.ndarray] = None, cadence_aug: float = 0.0,
+                 gap_aug: float = 0.0):
         self.a = arrays
         self.labels = labels
         self.weights = weights
@@ -234,6 +286,7 @@ class CacheDataset(Dataset):
         self.idx = idx
         self.truncate_aug = truncate_aug
         self.cadence_aug = cadence_aug
+        self.gap_aug = gap_aug
         self._rng = np.random.default_rng(seed)
         self.params = params
         self.pf_idx = pf_idx
@@ -266,6 +319,9 @@ class CacheDataset(Dataset):
         if self.cadence_aug > 0 and self._rng.random() < self.cadence_aug:
             pj = self.params[j] if self.params is not None else None
             lab = _apply_cadence(out, lab, self._rng, pj, self.pf_idx)
+        if self.gap_aug > 0 and self._rng.random() < self.gap_aug:
+            pj = self.params[j] if self.params is not None else None
+            lab = _apply_gaps(out, lab, self._rng, pj, self.pf_idx)
         return (out, lab, float(self.weights[j]), float(self.dchi2_anom[j]))
 
 
@@ -390,6 +446,12 @@ def main(argv=None) -> int:
                          "degradation to sparse, ground-survey-like cadence: the base model, "
                          "trained only on Roman's dense grid, misreads a sparse light curve as a "
                          "variable star (see validation/cadence_robustness.py).")
+    ap.add_argument("--gap-aug", type=float, default=0.0,
+                    help="probability of blanking 1-8 contiguous runs of 1-12 h in every band "
+                         "and relabelling by what survives (see _apply_gaps). Roman's real "
+                         "schedule pauses F146 for ~6 h seven times a season; the base model, "
+                         "trained on a continuous grid, reads such a gap as evidence against a "
+                         "single lens (validation/gulls/gap_sensitivity.py).")
     ap.add_argument("--num-workers", type=int, default=0,
                     help="dataloader workers; safe with a memmap (workers share file pages, "
                          "so there is no per-worker copy of the dataset)")
@@ -455,7 +517,8 @@ def main(argv=None) -> int:
         CacheDataset(arrays, labels, w_all, dchi2_anom, idx,
                      truncate_aug=args.truncate_aug if shuf else 0.0, seed=args.seed,
                      params=params, pf_idx=pf_idx, f_s_ref=f_s_ref,
-                     cadence_aug=args.cadence_aug if shuf else 0.0),
+                     cadence_aug=args.cadence_aug if shuf else 0.0,
+                     gap_aug=args.gap_aug if shuf else 0.0),
         batch_size=args.batch_size, shuffle=shuf, collate_fn=collate,
         num_workers=args.num_workers, pin_memory=False,
         worker_init_fn=_seed_worker,          # else forked workers share one RNG -> correlated truncation

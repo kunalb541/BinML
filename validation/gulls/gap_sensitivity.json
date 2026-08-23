@@ -1,0 +1,240 @@
+{
+  "_doc": "Why BinML fails on RMDC26 single-lens events: the season has gaps, training seasons do not.",
+  "n_per_class": 100,
+  "seed": 0,
+  "rmdc26_gaps_d": [
+    0.98,
+    2.48,
+    21.49,
+    31.48,
+    35.23,
+    62.23,
+    69.48
+  ],
+  "rmdc26_gap_h": 6.2,
+  "no_gaps": {
+    "PSPL": {
+      "recall": 0.93,
+      "argmax": {
+        "PSPL": 93,
+        "Eruptive": 3,
+        "LongPeriodVar": 2,
+        "NonPSPL": 1,
+        "Flat": 1
+      }
+    },
+    "NonPSPL": {
+      "recall": 0.98,
+      "argmax": {
+        "NonPSPL": 98,
+        "PSPL": 2
+      }
+    },
+    "Flat": {
+      "recall": 1.0,
+      "argmax": {
+        "Flat": 100
+      }
+    },
+    "PeriodicVar": {
+      "recall": 0.99,
+      "argmax": {
+        "PeriodicVar": 99,
+        "Flat": 1
+      }
+    }
+  },
+  "single_gap_by_length_h": {
+    "0.5": {
+      "PSPL": {
+        "recall": 0.93,
+        "argmax": {
+          "PSPL": 93,
+          "Eruptive": 3,
+          "LongPeriodVar": 2,
+          "NonPSPL": 1,
+          "Flat": 1
+        }
+      },
+      "NonPSPL": {
+        "recall": 0.98,
+        "argmax": {
+          "NonPSPL": 98,
+          "PSPL": 2
+        }
+      },
+      "Flat": {
+        "recall": 1.0,
+        "argmax": {
+          "Flat": 100
+        }
+      },
+      "PeriodicVar": {
+        "recall": 0.99,
+        "argmax": {
+          "PeriodicVar": 99,
+          "Flat": 1
+        }
+      }
+    },
+    "1.0": {
+      "PSPL": {
+        "recall": 0.86,
+        "argmax": {
+          "PSPL": 86,
+          "NonPSPL": 8,
+          "Eruptive": 3,
+          "LongPeriodVar": 2,
+          "Flat": 1
+        }
+      },
+      "NonPSPL": {
+        "recall": 0.98,
+        "argmax": {
+          "NonPSPL": 98,
+          "PSPL": 2
+        }
+      },
+      "Flat": {
+        "recall": 1.0,
+        "argmax": {
+          "Flat": 100
+        }
+      },
+      "PeriodicVar": {
+        "recall": 0.99,
+        "argmax": {
+          "PeriodicVar": 99,
+          "Flat": 1
+        }
+      }
+    },
+    "2.0": {
+      "PSPL": {
+        "recall": 0.86,
+        "argmax": {
+          "PSPL": 86,
+          "NonPSPL": 9,
+          "Eruptive": 3,
+          "Flat": 1,
+          "LongPeriodVar": 1
+        }
+      },
+      "NonPSPL": {
+        "recall": 0.99,
+        "argmax": {
+          "NonPSPL": 99,
+          "PSPL": 1
+        }
+      },
+      "Flat": {
+        "recall": 1.0,
+        "argmax": {
+          "Flat": 100
+        }
+      },
+      "PeriodicVar": {
+        "recall": 0.99,
+        "argmax": {
+          "PeriodicVar": 99,
+          "Flat": 1
+        }
+      }
+    },
+    "4.0": {
+      "PSPL": {
+        "recall": 0.65,
+        "argmax": {
+          "PSPL": 65,
+          "NonPSPL": 26,
+          "Eruptive": 3,
+          "PeriodicVar": 4,
+          "LongPeriodVar": 2
+        }
+      },
+      "NonPSPL": {
+        "recall": 0.99,
+        "argmax": {
+          "NonPSPL": 99,
+          "PSPL": 1
+        }
+      },
+      "Flat": {
+        "recall": 0.6,
+        "argmax": {
+          "PeriodicVar": 40,
+          "Flat": 60
+        }
+      },
+      "PeriodicVar": {
+        "recall": 0.99,
+        "argmax": {
+          "PeriodicVar": 99,
+          "Flat": 1
+        }
+      }
+    },
+    "6.0": {
+      "PSPL": {
+        "recall": 0.09,
+        "argmax": {
+          "NonPSPL": 90,
+          "PSPL": 9,
+          "LongPeriodVar": 1
+        }
+      },
+      "NonPSPL": {
+        "recall": 1.0,
+        "argmax": {
+          "NonPSPL": 100
+        }
+      },
+      "Flat": {
+        "recall": 0.81,
+        "argmax": {
+          "NonPSPL": 19,
+          "Flat": 81
+        }
+      },
+      "PeriodicVar": {
+        "recall": 0.99,
+        "argmax": {
+          "PeriodicVar": 99,
+          "Flat": 1
+        }
+      }
+    }
+  },
+  "rmdc26_schedule": {
+    "PSPL": {
+      "recall": 0.11,
+      "argmax": {
+        "NonPSPL": 69,
+        "PSPL": 11,
+        "Eruptive": 3,
+        "PeriodicVar": 16,
+        "LongPeriodVar": 1
+      }
+    },
+    "NonPSPL": {
+      "recall": 0.97,
+      "argmax": {
+        "NonPSPL": 97,
+        "PeriodicVar": 3
+      }
+    },
+    "Flat": {
+      "recall": 0.08,
+      "argmax": {
+        "PeriodicVar": 92,
+        "Flat": 8
+      }
+    },
+    "PeriodicVar": {
+      "recall": 1.0,
+      "argmax": {
+        "PeriodicVar": 100
+      }
+    }
+  }
+}
