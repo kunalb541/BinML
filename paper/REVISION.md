@@ -1,6 +1,12 @@
-# Revision plan — items to add when referee reports arrive
+# Revision plan — items to fold into the next submission
 
-Manuscript as submitted: commit `08337ed`, 2026-08-15, Astronomy & Computing. Nothing below
+**Status 2026-08-29:** Astronomy & Computing desk-rejected without peer review
+(ASCOM-D-26-00349), citing author status ("independent researchers without an established
+publication record") — not any scientific criticism. The science is unreviewed. This plan now
+targets the resubmission venue; everything below folds into that version rather than a
+response-to-referees.
+
+Manuscript as submitted to A&C: commit `08337ed`, 2026-08-15. Nothing below
 changes a submitted number. Each item is either complete (artifacts committed, ready to write up)
 or deferred (needs compute). Paper macros are regenerated from `paper/results/`; new numbers
 must enter through `make_macros.py`, never typed.
