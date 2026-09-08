@@ -1,10 +1,13 @@
 # Revision plan — items to fold into the next submission
 
-**Status 2026-08-29:** Astronomy & Computing desk-rejected without peer review
-(ASCOM-D-26-00349), citing author status ("independent researchers without an established
-publication record") — not any scientific criticism. The science is unreviewed. This plan now
-targets the resubmission venue; everything below folds into that version rather than a
-response-to-referees.
+**Status 2026-09-08:** the desk rejection was REVERSED after a formal complaint: A&C will
+peer-review the manuscript (with a third reviewer added). The editor has opened a revision
+slot and asked that the latest results be incorporated before review begins ("Please
+incorporate the latest results of your models before re-submission", 2026-09-07). So this plan
+now feeds a pre-review revised version at A&C. In progress: a FULL-POPULATION rerun of the
+GULLS transfer (all 100,935 eligible events, both checkpoints, via the new --curve-cache) to
+replace the 1,286-event tables below with population-scale numbers and per-parameter response
+curves.
 
 Manuscript as submitted to A&C: commit `08337ed`, 2026-08-15. Nothing below
 changes a submitted number. Each item is either complete (artifacts committed, ready to write up)

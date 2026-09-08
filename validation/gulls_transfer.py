@@ -118,6 +118,12 @@ def main(argv=None):
     ap.add_argument("--chunk", type=int, default=250,
                     help="events per remote query; the obs table is clustered by event_id, so "
                          "one query per contiguous block amortises the row-group seek")
+    ap.add_argument("--curve-cache", default=None,
+                    help="directory of windowed light-curve chunks. First run fills it while "
+                         "scoring; later runs (other checkpoints, threshold sweeps) read it and "
+                         "never touch the 172 GB remote table. Curves are stored float32 and, "
+                         "when caching, scored from the same float32 arrays, so every checkpoint "
+                         "sees bit-identical inputs.")
     ap.add_argument("--meta-cache", default="/tmp/rmdc26_meta.parquet")
     ap.add_argument("--epoch-cache", default="/tmp/rmdc26_epoch.parquet")
     ap.add_argument("--out", default=os.path.join(HERE, "gulls_transfer_result.json"))
@@ -254,89 +260,133 @@ def main(argv=None):
         blk = picks[c0:c0 + args.chunk]
         ids = sorted(int(eid_arr[j]) for j in blk)
         j_of = {int(eid_arr[j]): j for j in blk}
-        try:
-            # ONE query per block.  Per-event queries cost 3-7 s each because each pays the same
-            # row-group seek independently; a 250-id block costs 12 s total, i.e. 0.05 s/event.
-            q = con.execute(
-                f"SELECT event_id, epoch_id, filt, flux_uJy FROM read_parquet('{OBS}') "
-                f"WHERE event_id BETWEEN {ids[0]} AND {ids[-1]} "
-                f"AND event_id IN ({','.join(map(str, ids))}) AND saturation_flag = 0"
-            ).fetchnumpy()
-        except Exception as exc:
-            for e in ids:
-                rows.append({"event_id": e, "error": str(exc)[:200]})
-            n_done += len(ids)
-            continue
-        qe = np.asarray(q["event_id"], np.int64)
-        srt = np.argsort(qe, kind="stable")
-        qe = qe[srt]
-        q_ep = np.asarray(q["epoch_id"], np.int64)[srt]
-        q_ft = np.asarray(q["filt"])[srt]
-        q_fl = np.asarray(q["flux_uJy"], float)[srt]
-        lo_i = np.searchsorted(qe, ids, "left")
-        hi_i = np.searchsorted(qe, ids, "right")
-
-        for k, eid in enumerate(ids):
-            n_done += 1
-            j = j_of[eid]
-            seas = season_of(float(m["t0lens1"][j]))
-            if seas is None:
-                # t0 falls between seasons: the peak is never observed, so there is no season in
-                # which this event is the event BinML would be asked about.
-                rows.append({"event_id": eid, "sim_label": m["sim_label"][j],
-                             "skipped": "t0 falls in an inter-season gap"})
+        cache_f = (os.path.join(args.curve_cache, f"c_{ids[0]}_{ids[-1]}_{len(ids)}.npz")
+                   if args.curve_cache else None)
+        prepared = None
+        if cache_f and os.path.exists(cache_f):
+            z = np.load(cache_f, allow_pickle=False)
+            prepared = {}
+            for key in z.files:
+                p_ = key.split("|")
+                if p_[0] == "s":
+                    prepared[int(p_[1])] = str(z[key])
+                elif p_[0] == "mb":
+                    d = prepared.setdefault(int(p_[1]), {"bands": {}})
+                    d["mb"], d["mcat"] = float(z[key][0]), float(z[key][1])
+                else:
+                    d = prepared.setdefault(int(p_[1]), {"bands": {}})
+                    pair = d["bands"].setdefault(p_[2], [None, None])
+                    pair[0 if p_[3] == "t" else 1] = np.asarray(z[key], float)
+        if prepared is None:
+            try:
+                # ONE query per block.  Per-event queries cost 3-7 s each because each pays the
+                # same row-group seek independently; a 250-id block costs ~12 s, 0.05 s/event.
+                q = con.execute(
+                    f"SELECT event_id, epoch_id, filt, flux_uJy FROM read_parquet('{OBS}') "
+                    f"WHERE event_id BETWEEN {ids[0]} AND {ids[-1]} "
+                    f"AND event_id IN ({','.join(map(str, ids))}) AND saturation_flag = 0"
+                ).fetchnumpy()
+            except Exception as exc:
+                for e in ids:
+                    rows.append({"event_id": e, "error": str(exc)[:200]})
+                n_done += len(ids)
+                print(f"  {n_done}/{len(picks)}  ({time.time() - t_start:.0f}s)", flush=True)
                 continue
-            a, b_ = int(lo_i[k]), int(hi_i[k])
-            if a == b_:
-                rows.append({"event_id": eid, "sim_label": m["sim_label"][j],
-                             "skipped": "no unsaturated photometry returned"})
-                continue
-            lo_t, hi_t = seas[0], min(seas[1], seas[0] + WINDOW_D)
-            e_ep, e_ft, e_fl = q_ep[a:b_], q_ft[a:b_], q_fl[a:b_]
-            q_bjd = bjd_lookup(e_ep)
-            in_win = (q_bjd >= lo_t) & (q_bjd <= hi_t)
-            bands = {}
-            for bd in ("F146", "F087", "F213"):
-                sb = in_win & (e_ft == bd)
-                if not sb.any():
+            qe = np.asarray(q["event_id"], np.int64)
+            srt = np.argsort(qe, kind="stable")
+            qe = qe[srt]
+            q_ep = np.asarray(q["epoch_id"], np.int64)[srt]
+            q_ft = np.asarray(q["filt"])[srt]
+            q_fl = np.asarray(q["flux_uJy"], float)[srt]
+            lo_i = np.searchsorted(qe, ids, "left")
+            hi_i = np.searchsorted(qe, ids, "right")
+            prepared = {}
+            for k, eid in enumerate(ids):
+                j = j_of[eid]
+                seas = season_of(float(m["t0lens1"][j]))
+                if seas is None:
+                    # t0 falls between seasons: the peak is never observed, so there is no season
+                    # in which this event is the event BinML would be asked about.
+                    prepared[eid] = "t0 falls in an inter-season gap"
                     continue
-                t = q_bjd[sb] - lo_t
-                mag = flux_to_ab(e_fl[sb])
-                g = np.isfinite(mag)
-                if g.sum() >= 10:
-                    ordt = np.argsort(t[g])
-                    bands[bd] = (t[g][ordt], mag[g][ordt])
-            if "F146" not in bands:
-                rows.append({"event_id": eid, "sim_label": m["sim_label"][j],
-                             "skipped": "no usable F146 in window"})
+                a, b_ = int(lo_i[k]), int(hi_i[k])
+                if a == b_:
+                    prepared[eid] = "no unsaturated photometry returned"
+                    continue
+                lo_t, hi_t = seas[0], min(seas[1], seas[0] + WINDOW_D)
+                e_ep, e_ft, e_fl = q_ep[a:b_], q_ft[a:b_], q_fl[a:b_]
+                q_bjd = bjd_lookup(e_ep)
+                in_win = (q_bjd >= lo_t) & (q_bjd <= hi_t)
+                bands = {}
+                for bd in ("F146", "F087", "F213"):
+                    sb = in_win & (e_ft == bd)
+                    if not sb.any():
+                        continue
+                    t = q_bjd[sb] - lo_t
+                    mag = flux_to_ab(e_fl[sb])
+                    g = np.isfinite(mag)
+                    if g.sum() >= 10:
+                        ordt = np.argsort(t[g])
+                        bands[bd] = (t[g][ordt], mag[g][ordt])
+                if "F146" not in bands:
+                    prepared[eid] = "no usable F146 in window"
+                    continue
+                # BASELINE FROM THE DATA, not the catalogue.  Source_F146 + 2.5 log10(fs) should
+                # be the unmagnified total, but in this release it is uniformly 0.471 mag
+                # brighter than the observed quiescent flux (measured on both flux_uJy and the
+                # noiseless true_flux_uJy, across the whole id range).  BinML is sensitive to the
+                # baseline it is handed -- a wrong one turns PSPL into LongPeriodVar -- so we
+                # measure it as the median F146 magnitude more than 5 t_E from the peak over the
+                # FULL mission, which is what a survey pipeline would have anyway.  The catalogue
+                # value is kept for the record.
+                m_cat = float(m["Source_F146"][j] + 2.5 * np.log10(max(m["fs_F146"][j], 1e-6)))
+                f146_all = (e_ft == "F146")
+                mag_all = flux_to_ab(e_fl[f146_all])
+                off = (np.abs(q_bjd[f146_all] - float(m["t0lens1"][j])) > 5.0 * float(m["tE_ref"][j])) \
+                    & np.isfinite(mag_all)
+                if off.sum() < 200:
+                    prepared[eid] = "fewer than 200 off-event F146 epochs for a baseline"
+                    continue
+                prepared[eid] = {"bands": {bd: [tv, mv] for bd, (tv, mv) in bands.items()},
+                                 "mb": float(np.median(mag_all[off])), "mcat": m_cat}
+            if cache_f:
+                payload = {}
+                for eid, v in prepared.items():
+                    if isinstance(v, str):
+                        payload[f"s|{eid}"] = np.array(v)
+                        continue
+                    payload[f"mb|{eid}"] = np.array([v["mb"], v["mcat"]], np.float64)
+                    for bd, pair in v["bands"].items():
+                        t32, m32 = pair[0].astype(np.float32), pair[1].astype(np.float32)
+                        payload[f"b|{eid}|{bd}|t"] = t32
+                        payload[f"b|{eid}|{bd}|m"] = m32
+                        # score from the cached representation, so this run and every later
+                        # cache-fed run see bit-identical inputs
+                        pair[0], pair[1] = t32.astype(float), m32.astype(float)
+                os.makedirs(args.curve_cache, exist_ok=True)
+                np.savez_compressed(cache_f + ".tmp.npz", **payload)
+                os.replace(cache_f + ".tmp.npz", cache_f)
+
+        for eid in ids:
+            n_done += 1
+            v = prepared.get(eid)
+            j = j_of[eid]
+            if v is None:
                 continue
-            # BASELINE FROM THE DATA, not the catalogue.  Source_F146 + 2.5 log10(fs) should be
-            # the unmagnified total, but in this release it is uniformly 0.471 mag brighter than
-            # the observed quiescent flux (measured on both flux_uJy and the noiseless
-            # true_flux_uJy, across the whole id range).  BinML is sensitive to the baseline it
-            # is handed -- a wrong one turns PSPL into LongPeriodVar -- so we measure it as the
-            # median F146 magnitude more than 5 t_E from the peak over the FULL mission, which
-            # is what a survey pipeline would have anyway.  The catalogue value is kept for the
-            # record.
-            m_cat = float(m["Source_F146"][j] + 2.5 * np.log10(max(m["fs_F146"][j], 1e-6)))
-            f146_all = (e_ft == "F146")
-            mag_all = flux_to_ab(e_fl[f146_all])
-            off = (np.abs(q_bjd[f146_all] - float(m["t0lens1"][j])) > 5.0 * float(m["tE_ref"][j])) \
-                & np.isfinite(mag_all)
-            if off.sum() < 200:
-                rows.append({"event_id": eid, "sim_label": m["sim_label"][j],
-                             "skipped": "fewer than 200 off-event F146 epochs for a baseline"})
+            if isinstance(v, str):
+                rows.append({"event_id": eid, "sim_label": m["sim_label"][j], "skipped": v})
                 continue
-            m_base = float(np.median(mag_all[off]))
+            bands = {bd: (pair[0], pair[1]) for bd, pair in v["bands"].items()}
+            m_base, m_cat = v["mb"], v["mcat"]
             p = clf.predict(bands, m_base_ref=m_base, t_start=0.0)
             if os.environ.get("GT_DUMP") and str(eid) in os.environ["GT_DUMP"].split(","):
                 np.savez(f"/tmp/gt_dump_{eid}.npz", m_base=m_base, pred=p.label,
-                         **{f"{b}_t": v[0] for b, v in bands.items()},
-                         **{f"{b}_m": v[1] for b, v in bands.items()})
+                         **{b: v_[0] for b, v_ in bands.items()},
+                         **{b + "_m": v_[1] for b, v_ in bands.items()})
             rows.append({
                 "event_id": eid, "sim_label": m["sim_label"][j], "pred": p.label,
                 "p_nonpspl": round(p.probabilities["NonPSPL"], 4),
-                "probs": {kk: round(v, 4) for kk, v in p.probabilities.items()},
+                "probs": {kk: round(v_, 4) for kk, v_ in p.probabilities.items()},
                 "n_f146": int(len(bands["F146"][0])), "bands": sorted(bands),
                 "dense": bool(len(bands["F146"][0]) >= DENSE_MIN),
                 "m_base": round(m_base, 3), "m_base_catalogue": round(m_cat, 3),
