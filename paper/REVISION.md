@@ -4,10 +4,13 @@
 peer-review the manuscript (with a third reviewer added). The editor has opened a revision
 slot and asked that the latest results be incorporated before review begins ("Please
 incorporate the latest results of your models before re-submission", 2026-09-07). So this plan
-now feeds a pre-review revised version at A&C. In progress: a FULL-POPULATION rerun of the
-GULLS transfer (all 100,935 eligible events, both checkpoints, via the new --curve-cache) to
-replace the 1,286-event tables below with population-scale numbers and per-parameter response
-curves.
+now feeds a pre-review revised version at A&C. Planned: a FULL-POPULATION rerun of the
+GULLS transfer (all 100,935 eligible events, both checkpoints) to replace the 1,286-event
+tables below with population-scale numbers and per-parameter response curves — deferred to
+Modal. HF 429s Modal's datacenter IP, so the Modal design is: fill the --curve-cache locally
+(~4.5 h once; 7 chunks / ~1,750 events already cached at
+~/Desktop/Research/microlensing/gulls_curve_cache), `modal volume put` the ~4 GB cache, then
+fan out scoring as pure compute with zero HF traffic.
 
 Manuscript as submitted to A&C: commit `08337ed`, 2026-08-15. Nothing below
 changes a submitted number. Each item is either complete (artifacts committed, ready to write up)
