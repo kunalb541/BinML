@@ -330,6 +330,15 @@ if os.path.exists(_cadraw2):
     cmd("bmlCadNfifteen", f"{_cd2[15]['n_events']:,}")
     cmd("bmlCadNtwelve", f"{_cd2[12]['n_events']:,}")
 cmd("bmlCadEpochs", str(cx["epochs"]))
+# Held-out evaluation (validation/cadence_local.py, 2026-09-09): both arms score the same number of
+# disjoint-seed events, so one macro. The training-pool APs are kept to state the measured
+# inflation of the earlier, training-inclusive protocol.
+# The two held-out pools are the same seeds but not the same size (the detectability cuts keep
+# different events at different cadences), exactly as the training pools differ; report both.
+cmd("bmlCadEvalNfifteen", f"{cx['n_eval_events_15']:,}")
+cmd("bmlCadEvalNtwelve", f"{cx['n_eval_events_12']:,}")
+cmd("bmlCadFifteenApTrainpool", three(cx["trainpool_c15_ap"]))
+cmd("bmlCadTwelveApTrainpool", three(cx["trainpool_c12_ap"]))
 for k, name in (("completeness", "Completeness"), ("purity", "Purity"),
                 ("ap", "Ap"), ("nonpspl_f1", "Nonpspl")):   # no digits: TeX names are letters only
     cmd(f"bmlCadFifteen{name}", three(cx[f"c15_{k}"]))

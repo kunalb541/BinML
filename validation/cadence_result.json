@@ -1,32 +1,46 @@
 [
   {
     "cadence_min": 15,
-    "n_events": 89911,
-    "completeness_at_purity": 0.643,
-    "purity": 0.887,
-    "ap": 0.839,
+    "n_events": 89919,
+    "n_eval_events": 30013,
+    "completeness_at_purity": 0.663,
+    "purity": 0.878,
+    "ap": 0.827,
     "per_class_f1": {
-      "Flat": 0.957,
-      "PSPL": 0.9,
-      "NonPSPL": 0.596,
-      "PeriodicVar": 0.961,
-      "LongPeriodVar": 0.876,
-      "Eruptive": 0.744
-    }
+      "Flat": 0.959,
+      "PSPL": 0.908,
+      "NonPSPL": 0.614,
+      "PeriodicVar": 0.965,
+      "LongPeriodVar": 0.856,
+      "Eruptive": 0.746
+    },
+    "trainpool_for_reference": {
+      "completeness_at_purity": 0.651,
+      "purity": 0.893,
+      "ap": 0.846
+    },
+    "evaluation": "held-out shards 100-103 (disjoint seeds); trainpool_for_reference repeats the original leaky protocol (evaluate on the training memmap)"
   },
   {
     "cadence_min": 12,
-    "n_events": 89874,
-    "completeness_at_purity": 0.622,
-    "purity": 0.916,
-    "ap": 0.847,
+    "n_events": 89871,
+    "n_eval_events": 29777,
+    "completeness_at_purity": 0.58,
+    "purity": 0.925,
+    "ap": 0.83,
     "per_class_f1": {
-      "Flat": 0.966,
-      "PSPL": 0.9,
-      "NonPSPL": 0.582,
-      "PeriodicVar": 0.968,
-      "LongPeriodVar": 0.88,
-      "Eruptive": 0.744
-    }
+      "Flat": 0.958,
+      "PSPL": 0.907,
+      "NonPSPL": 0.606,
+      "PeriodicVar": 0.969,
+      "LongPeriodVar": 0.862,
+      "Eruptive": 0.767
+    },
+    "trainpool_for_reference": {
+      "completeness_at_purity": 0.629,
+      "purity": 0.893,
+      "ap": 0.835
+    },
+    "evaluation": "held-out shards 100-103 (disjoint seeds); trainpool_for_reference repeats the original leaky protocol (evaluate on the training memmap)"
   }
 ]

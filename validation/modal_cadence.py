@@ -1,5 +1,10 @@
 """P0.5 cadence comparison on Modal — two isolated containers, no local config-mixing.
 
+SUPERSEDED (2026-09-09) by validation/cadence_local.py for the REPORTED numbers: this script ran
+pipeline.evaluate on the same memmap each arm was trained on (train.py and evaluate.py split with
+independent seeds, so ~80% of scored rows were training rows). The local rerun keeps this recipe
+and scores a disjoint held-out set; it measured the inflation here at +0.019 / +0.005 AP.
+
 Each container runs one arm end to end (generate -> cache -> memmap -> train 12 epochs -> eval) at
 a fixed cadence: 15 min (production) or 12 min (current GBTDS rate). The 12-min container patches
 the cadence config at runtime before importing the pipeline; containers are isolated so the two

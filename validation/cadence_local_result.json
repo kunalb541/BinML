@@ -1,0 +1,145 @@
+{
+  "_doc": "Cadence comparison (15-min legacy vs 12-min GBTDS rate), rerun LOCALLY with a HELD-OUT evaluation.",
+  "code_commit": "76a50de",
+  "protocol": "train on shards 0-11 (as modal_cadence.py); evaluate on shards 100-103 (disjoint seeds). 'trainpool' repeats the original, leaky protocol for comparison only.",
+  "arms": [
+    {
+      "cadence_min": 15,
+      "n_train_events": 89919,
+      "n_eval_events": 30013,
+      "epochs": 12,
+      "seed": 20260720,
+      "train_shards": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "eval_shards": [
+        100,
+        101,
+        102,
+        103
+      ],
+      "heldout": {
+        "n_events": 30013,
+        "completeness_at_purity": 0.663,
+        "purity": 0.878,
+        "threshold": 0.9347079992294312,
+        "ap": 0.827,
+        "per_class_f1": {
+          "Flat": 0.959,
+          "PSPL": 0.908,
+          "NonPSPL": 0.614,
+          "PeriodicVar": 0.965,
+          "LongPeriodVar": 0.856,
+          "Eruptive": 0.746
+        }
+      },
+      "trainpool": {
+        "n_events": 89919,
+        "completeness_at_purity": 0.651,
+        "purity": 0.893,
+        "threshold": 0.9428750872612,
+        "ap": 0.846,
+        "per_class_f1": {
+          "Flat": 0.96,
+          "PSPL": 0.91,
+          "NonPSPL": 0.624,
+          "PeriodicVar": 0.968,
+          "LongPeriodVar": 0.853,
+          "Eruptive": 0.768
+        }
+      },
+      "completeness_at_purity": 0.663,
+      "purity": 0.878,
+      "ap": 0.827,
+      "per_class_f1": {
+        "Flat": 0.959,
+        "PSPL": 0.908,
+        "NonPSPL": 0.614,
+        "PeriodicVar": 0.965,
+        "LongPeriodVar": 0.856,
+        "Eruptive": 0.746
+      },
+      "n_events": 89919
+    },
+    {
+      "cadence_min": 12,
+      "n_train_events": 89871,
+      "n_eval_events": 29777,
+      "epochs": 12,
+      "seed": 20260720,
+      "train_shards": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "eval_shards": [
+        100,
+        101,
+        102,
+        103
+      ],
+      "heldout": {
+        "n_events": 29777,
+        "completeness_at_purity": 0.58,
+        "purity": 0.925,
+        "threshold": 0.9446238875389099,
+        "ap": 0.83,
+        "per_class_f1": {
+          "Flat": 0.958,
+          "PSPL": 0.907,
+          "NonPSPL": 0.606,
+          "PeriodicVar": 0.969,
+          "LongPeriodVar": 0.862,
+          "Eruptive": 0.767
+        }
+      },
+      "trainpool": {
+        "n_events": 89871,
+        "completeness_at_purity": 0.629,
+        "purity": 0.893,
+        "threshold": 0.9299285411834717,
+        "ap": 0.835,
+        "per_class_f1": {
+          "Flat": 0.96,
+          "PSPL": 0.91,
+          "NonPSPL": 0.615,
+          "PeriodicVar": 0.97,
+          "LongPeriodVar": 0.864,
+          "Eruptive": 0.766
+        }
+      },
+      "completeness_at_purity": 0.58,
+      "purity": 0.925,
+      "ap": 0.83,
+      "per_class_f1": {
+        "Flat": 0.958,
+        "PSPL": 0.907,
+        "NonPSPL": 0.606,
+        "PeriodicVar": 0.969,
+        "LongPeriodVar": 0.862,
+        "Eruptive": 0.767
+      },
+      "n_events": 89871
+    }
+  ]
+}

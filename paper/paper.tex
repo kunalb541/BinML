@@ -769,18 +769,19 @@ We can, however, bound how much the \emph{sampling rate} alone matters. We repea
 pipeline---simulation, training from scratch, and evaluation---at the current $\sim$12-minute F146
 rate and at our legacy 15-minute rate, holding everything else fixed (same shards, seed and
 $\bmlCadEpochs$ epochs; $\bmlCadNfifteen$ and $\bmlCadNtwelve$ events survived the
-detectability cuts in the two arms). The two arms score closely:
-anomaly average precision $\bmlCadFifteenAp$ (15\,min) versus $\bmlCadTwelveAp$ (12\,min), and
-completeness $\bmlCadFifteenCompleteness$ at purity $\bmlCadFifteenPurity$ versus
-$\bmlCadTwelveCompleteness$ at purity $\bmlCadTwelvePurity$, with no per-class F1 differing by more
-than $\bmlCadMaxFOneDelta$. Two caveats bound what this comparison can say. With one seed per arm
-it constrains the rate change as unimportant at the resolution we can measure rather than
-establishing equivalence. And the two arms were scored on their own simulation pools, whose
-evaluation split was drawn independently of the training split (about $80\%$ of scored events
-had been seen in training), so the \emph{absolute} values quoted here are optimistic and only the
-15-versus-12-minute \emph{contrast}---which shares that defect identically---is informative; the
-headline results elsewhere in this paper use the disjoint final-test split described in
-Section~\ref{sec:sims}. Both rates sample an hours-to-day
+detectability cuts in the two training pools). Each arm is scored on held-out events simulated
+from disjoint seeds that never entered training ($\bmlCadEvalNfifteen$ and $\bmlCadEvalNtwelve$
+survived the cuts in the two arms). The two arms score alike:
+anomaly average precision $\bmlCadFifteenAp$ (15\,min) versus $\bmlCadTwelveAp$ (12\,min), with
+no per-class F1 differing by more than $\bmlCadMaxFOneDelta$. Completeness at the purity target
+is $\bmlCadFifteenCompleteness$ at an achieved purity of $\bmlCadFifteenPurity$ versus
+$\bmlCadTwelveCompleteness$ at $\bmlCadTwelvePurity$; because the threshold search lands the
+two arms at different achieved purities, average precision is the like-for-like comparison. With
+one seed per arm this bounds the rate change as unimportant at the resolution we can measure
+rather than establishing equivalence. (An earlier version of this experiment scored each arm on
+a pool that overlapped its training data; that inflated the 15-minute AP to
+$\bmlCadFifteenApTrainpool$ and the 12-minute AP to $\bmlCadTwelveApTrainpool$ and did not
+change the contrast.) Both rates sample an hours-to-day
 caustic densely, so a $25\%$ change in epoch count adds little information. Two effects remain
 untested. The exposure time and colour-band zeropoints of the current design
 differ from ours (Section~\ref{sec:limits}), and their effect on the colour channels is

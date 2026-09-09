@@ -13,9 +13,11 @@ Nine-agent audit of every Python file (record: `docs/AUDIT_2026-09-09.md`): 0 cr
   full-population transfer (56,975 matched events) was re-scored with it: single-lens false alarms
   at threshold 35.6% → 11.7% (shipped → gap-aware), planetary recall at threshold 0.50 → 0.46.
   Raw-observation pooling gave 45.6% → 9.7% / 0.36; both are kept (`transfer_full_*_rawpool.json`).
-- **Cadence comparison disclosed as training-inclusive.** `modal_cadence.py` evaluated each arm on
-  the pool it trained on (independent split seeds); paper paragraph now states that the absolute
-  `\bmlCad*` values are optimistic and only the 15-vs-12-min contrast is informative.
+- **Cadence comparison rerun with a held-out evaluation** (`validation/cadence_local.py`): same training
+  shards, seeds and recipe as `modal_cadence.py` (which had scored each arm on ~80% training data),
+  scored on 30,013 disjoint-seed events. AP 0.827 (15 min) vs 0.830 (12 min); max per-class F1
+  delta 0.021. The training-pool scoring inflated AP by +0.019 / +0.005. `cadence_result.json`,
+  `canonical_numbers.json`, `MANIFEST.json` and the paper paragraph updated.
 - **OOR shard mix duplicate-key bug** (`run_shard.py`): the swept class got 500–1,000 events per
   shard, not 9,000. Recalls unbiased; the paper now quotes swept-class support (`\bmlStress*N`),
   e.g. wide-separation NonPSPL recall rests on n = 438.

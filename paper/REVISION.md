@@ -12,6 +12,10 @@ Modal. HF 429s Modal's datacenter IP, so the Modal design is: fill the --curve-c
 ~/Desktop/Research/microlensing/gulls_curve_cache), `modal volume put` the ~4 GB cache, then
 fan out scoring as pure compute with zero HF traffic.
 
+**Audit pass 2026-09-09** (`docs/AUDIT_2026-09-09.md`): two paper numbers changed — fitted-PSPL baseline AP
+0.261 → 0.545 (rescored at full cadence) and the cadence experiment re-evaluated on held-out events
+(AP 0.827 vs 0.830; the old protocol scored training data). Both are already in the paper via macros.
+
 Manuscript as submitted to A&C: commit `08337ed`, 2026-08-15. Nothing below
 changes a submitted number. Each item is either complete (artifacts committed, ready to write up)
 or deferred (needs compute). Paper macros are regenerated from `paper/results/`; new numbers
