@@ -25,7 +25,8 @@ done until this table says so.
 | `t_anom` 7.2-day resolution of training labels | — | ✅ stated in §training |
 | McNemar discordant counts as macros | ✅ | ✅ |
 | Finite-source fine-tune `ft_fspl_g08.pt` (GULLS false alarms 11.7% → 5.2%; recall at matched budget +6–7 pts; re-calibrated threshold 0.935 → 3.1% FA) | ✅ `validation/gulls/{fspl_finetune,transfer_full_reduced,transfer_tradeoff,gapped_threshold}_fspl_g08.json` | ❌ not yet — one paragraph + matched-budget table |
-| Decision: which fine-tune ships as the sidecar — `ft_fspl_g08.pt` now dominates `ft_g08e12.pt` on GULLS at every false-alarm budget; threshold to be re-calibrated on gapped finite-source sims | **OPEN — author's call** | — |
+| Round 2 `ft_fspl5_g08.pt` (rho ≤ 5 + binary rho ≤ 0.1): negative — no gain over round 1, finite-source bins worse | ✅ `fspl_finetune_fspl5_g08.json`, `transfer_tradeoff_all.json` | — (one sentence at most) |
+| Decision: sidecar = `ft_fspl_g08.pt` (dominates g08e12 at every budget; round 2 did not beat it); threshold 0.935 from the gapped calibration | **OPEN — author's call** | — |
 | Figures rebuilt through `build.sh` (weighted prevalence line) | ❌ not yet | — |
 | Zenodo release + DOI in Data Availability, CITATION.cff, README | ❌ needs one-time GitHub↔Zenodo authorisation by the author | — |
 | Resubmit via Editorial Manager (starts review) | — | ❌ after the rows above |
@@ -244,6 +245,22 @@ collapses. That is the operational meaning of the rho/|u0| table — not "a few 
 threshold is a little stricter than the frozen one and lands GULLS at ~3% single-lens false alarms
 with ~0.30–0.33 planetary recall at threshold; the matched-budget curve above remains the primary
 comparison, this row is the operating point one would actually ship.
+
+*Round 2 — GULLS-matched source sizes for both classes (`fspl5`: single-lens rho ≤ 5, binary rho ≤ 0.1;
+same recipe, warm-start from ft_g08e12; checkpoint `ft_fspl5_g08.pt`; `fspl_finetune_fspl5_g08.json`,
+`transfer_full_reduced_fspl5_g08{,_vs_fspl_g08}.json`, `transfer_tradeoff_all.json`).* A clean NEGATIVE
+result. On GULLS at the frozen threshold: FA 0.087, recall 0.446 / 0.471 — between g08e12 and round 1.
+The finite-source bins are worse than round 1 (rho/|u0| 0.3–1: 0.184 → 0.355; 1–3: 0.327 → 0.486;
+>3: 0.333 → 0.464) though still better than g08e12; at matched false-alarm budgets it trails round 1
+at low budgets (FA 2%: 0.216 vs 0.249) and ties it at high ones (FA 11.7%: 0.513 vs 0.518; mean recall
+over FA ≤ 30%: 0.528 vs 0.523). Own held-out physics check was as good as round 1 (PSPL recall 0.58 /
+0.83 in the 1–3 / >3 bins), so the model learned our extended population; it just transferred less
+cleanly. Most plausible reading: widening the BINARY rho to 0.1 smooths caustic features toward the
+finite-source single-lens shapes, so the two classes overlap more and the round-1 discrimination is
+partly lost — the combined change confounds this with the single-lens extension, so a PSPL-rho-only
+run (≈1 h) is the way to settle it. Until then **ft_fspl_g08 remains the sidecar candidate.**
+Single seed per arm throughout: the between-round differences in the small high-rho bins (n = 267–539)
+are several times the binomial error but seed-to-seed variance of the fine-tune is unmeasured.
 
 **How to present it.** One paragraph plus the matched-budget table in the cross-simulator
 subsection: the residual false alarms were traced to a missing physical effect in the training set,
