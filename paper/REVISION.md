@@ -24,7 +24,7 @@ done until this table says so.
 | F087 saturation physics corrected | ✅ `photometry.py` | ✅ paragraph corrected |
 | `t_anom` 7.2-day resolution of training labels | — | ✅ stated in §training |
 | McNemar discordant counts as macros | ✅ | ✅ |
-| Finite-source fine-tune `ft_fspl_g08.pt` (GULLS false alarms 11.7% → 5.2%; recall at matched budget +6–7 pts) | ✅ `validation/gulls/{fspl_finetune,transfer_full_reduced,transfer_tradeoff}_fspl_g08.json` | ❌ not yet — one paragraph + matched-budget table |
+| Finite-source fine-tune `ft_fspl_g08.pt` (GULLS false alarms 11.7% → 5.2%; recall at matched budget +6–7 pts; re-calibrated threshold 0.935 → 3.1% FA) | ✅ `validation/gulls/{fspl_finetune,transfer_full_reduced,transfer_tradeoff,gapped_threshold}_fspl_g08.json` | ❌ not yet — one paragraph + matched-budget table |
 | Decision: which fine-tune ships as the sidecar — `ft_fspl_g08.pt` now dominates `ft_g08e12.pt` on GULLS at every false-alarm budget; threshold to be re-calibrated on gapped finite-source sims | **OPEN — author's call** | — |
 | Figures rebuilt through `build.sh` (weighted prevalence line) | ❌ not yet | — |
 | Zenodo release + DOI in Data Availability, CITATION.cff, README | ❌ needs one-time GitHub↔Zenodo authorisation by the author | — |
@@ -223,6 +223,27 @@ finite-source fine-tune recovers 6–7 more points of planetary recall than g08e
 simulator. The frozen 0.9042 threshold was calibrated on gap-free, point-source data and should be
 re-calibrated on our own gapped finite-source simulations before either fine-tuned checkpoint is
 used as a sidecar; that is a minutes-long job from the curve cache.
+
+*Threshold re-calibration (`validation/gulls/calibrate_gapped_threshold.py`, results
+`gapped_threshold_{fspl_g08,ft_g08e12}.json`).* The threshold is chosen the way the paper chooses it
+— at the 0.90 purity target on OUR held-out simulations — but with finite-source single lenses in the
+population and the RMDC26 seven-gap schedule blanked in; GULLS is only read afterwards to report the
+consequence. Two results:
+
+| checkpoint | threshold @ purity 0.90 (gapped held-out) | our held-out compl. @ purity | GULLS FA / recall 1S2L / 2S2L |
+|---|---|---|---|
+| ft_g08e12 | 0.9992 (saturated) | 0.001 @ 0.42 | 0.000 / 0.000 / 0.000 |
+| ft_fspl_g08 | 0.9353 | 0.717 @ 0.882 | 0.031 / 0.296 / 0.329 |
+| ft_fspl_g08, clean (no gaps) | 0.9289 | 0.817 @ 0.887 | 0.035 / 0.312 / 0.348 |
+| (frozen 0.9042, for reference) | — | — | 0.052 / 0.370 / 0.400 |
+
+For g08e12 the target is **unreachable**: once finite-source single lenses exist in the population its
+NonPSPL precision cannot get near 0.90 at any threshold, so the search runs to 0.999 and completeness
+collapses. That is the operational meaning of the rho/|u0| table — not "a few extra false alarms" but
+"the paper's operating point does not exist". For the finite-source checkpoint the principled
+threshold is a little stricter than the frozen one and lands GULLS at ~3% single-lens false alarms
+with ~0.30–0.33 planetary recall at threshold; the matched-budget curve above remains the primary
+comparison, this row is the operating point one would actually ship.
 
 **How to present it.** One paragraph plus the matched-budget table in the cross-simulator
 subsection: the residual false alarms were traced to a missing physical effect in the training set,

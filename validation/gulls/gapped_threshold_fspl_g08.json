@@ -1,0 +1,49 @@
+{
+  "_doc": "Re-calibrate the anomaly threshold for Roman's gapped schedule WITHOUT touching GULLS.",
+  "checkpoint": "validation/gulls/weights/ft_fspl_g08.pt",
+  "target_purity": 0.9,
+  "heldout_source": "/Users/kunalbhatia/Desktop/Research/microlensing/fspl_local_work/mm_heldout",
+  "frozen_threshold": 0.9042405486106873,
+  "arms": {
+    "clean": {
+      "threshold_at_target_purity": 0.9288957118988037,
+      "our_heldout": {
+        "completeness": 0.8173,
+        "purity": 0.8866,
+        "ap": 0.9263
+      },
+      "gulls_at_this_threshold": {
+        "fa_1S1L": 0.0348,
+        "fa_1S1L_n": 33353,
+        "recall_1S2L": 0.3116,
+        "recall_1S2L_n": 11388,
+        "recall_2S2L": 0.3477,
+        "recall_2S2L_n": 12234
+      }
+    },
+    "rmdc26_gapped": {
+      "threshold_at_target_purity": 0.9353199601173401,
+      "our_heldout": {
+        "completeness": 0.7169,
+        "purity": 0.8824,
+        "ap": 0.8808
+      },
+      "gulls_at_this_threshold": {
+        "fa_1S1L": 0.0307,
+        "fa_1S1L_n": 33353,
+        "recall_1S2L": 0.2957,
+        "recall_1S2L_n": 11388,
+        "recall_2S2L": 0.3292,
+        "recall_2S2L_n": 12234
+      }
+    }
+  },
+  "gulls_at_frozen_threshold": {
+    "fa_1S1L": 0.0522,
+    "fa_1S1L_n": 33353,
+    "recall_1S2L": 0.3696,
+    "recall_1S2L_n": 11388,
+    "recall_2S2L": 0.4003,
+    "recall_2S2L_n": 12234
+  }
+}
