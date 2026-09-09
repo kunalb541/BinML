@@ -1,16 +1,40 @@
 # Revision plan — items to fold into the next submission
 
-**Status 2026-09-08:** the desk rejection was REVERSED after a formal complaint: A&C will
-peer-review the manuscript (with a third reviewer added). The editor has opened a revision
-slot and asked that the latest results be incorporated before review begins ("Please
-incorporate the latest results of your models before re-submission", 2026-09-07). So this plan
-now feeds a pre-review revised version at A&C. Planned: a FULL-POPULATION rerun of the
-GULLS transfer (all 100,935 eligible events, both checkpoints) to replace the 1,286-event
-tables below with population-scale numbers and per-parameter response curves — deferred to
-Modal. HF 429s Modal's datacenter IP, so the Modal design is: fill the --curve-cache locally
-(~4.5 h once; 7 chunks / ~1,750 events already cached at
-~/Desktop/Research/microlensing/gulls_curve_cache), `modal volume put` the ~4 GB cache, then
-fan out scoring as pure compute with zero HF traffic.
+**Status 2026-09-09 (evening):** the desk rejection was REVERSED after a formal complaint; A&C will
+peer-review the manuscript (third reviewer added) once we resubmit the revised version. The editor
+asked that the latest results be incorporated before review ("Please incorporate the latest results
+of your models before re-submission", 2026-09-07). No deadline was stated; review begins when we
+resubmit. The paper is under active consideration at A&C and may not be submitted elsewhere.
+
+**Where each piece stands — artifact vs manuscript.** "Artifact" means computed, committed and
+manifest-hashed; "In paper" means written into `paper/paper.tex`. Nothing in the second column is
+done until this table says so.
+
+| Item | Artifact | In paper |
+|---|---|---|
+| Gap-sensitivity table (7 × 6.2 h schedule; single-gap sweep) | ✅ `validation/gulls/gap_sensitivity.json` | ❌ not yet — replaces the "legacy-like schedule" paragraph |
+| Gap-aware fine-tune g08e12 (held-out macro-F1 0.384 → 0.879 under the schedule) | ✅ `validation/gulls/gap_finetune_g08e12.json`, weights `validation/gulls/weights/ft_g08e12.pt` | ❌ not yet |
+| GULLS/RMDC26 full-population transfer (56,975 matched dense events; 35.6% → 11.7% false alarms; recall at threshold 0.50 → 0.46) | ✅ `validation/gulls/transfer_full_{shipped,ft_g08e12,reduced}.json` (+ `_rawpool` variants) | ❌ not yet — new cross-simulator subsection |
+| Preprocessing-sensitivity note (epoch-pooled vs raw-pooled binning, ~10 points) | ✅ both variants committed | ❌ not yet — one paragraph in the subsection |
+| Abstract sentence for the above | draft below | ❌ not yet |
+| Model card / README input contract ("continuous F146; gap-aware checkpoint for the planned schedule") | — | ✅ README + model card carry the limitation note; contract line still to sharpen |
+| Fitted-PSPL baseline rescored at full cadence (0.261 → 0.545) | ✅ `validation/baselines_result.json`, canonical, manifest | ✅ via `\bmlBasePspl` + prose |
+| Cadence experiment re-evaluated held-out (AP 0.827 vs 0.830) | ✅ `validation/cadence_result.json`, canonical, manifest | ✅ paragraph rewritten |
+| OOR swept-class support (e.g. widesep NonPSPL n = 438) | ✅ read from `stress_report.json` | ✅ via `\bmlStress*N` |
+| F087 saturation physics corrected | ✅ `photometry.py` | ✅ paragraph corrected |
+| `t_anom` 7.2-day resolution of training labels | — | ✅ stated in §training |
+| McNemar discordant counts as macros | ✅ | ✅ |
+| Decision: ship `ft_g08e12.pt` as sidecar `binml-gapaware.pt` (recommended) or promote it | **OPEN — author's call** | — |
+| Figures rebuilt through `build.sh` (weighted prevalence line) | ❌ not yet | — |
+| Zenodo release + DOI in Data Availability, CITATION.cff, README | ❌ needs one-time GitHub↔Zenodo authorisation by the author | — |
+| Resubmit via Editorial Manager (starts review) | — | ❌ after the rows above |
+
+The GULLS work itself is finished: the curve cache (~4 GB at
+`~/Desktop/Research/microlensing/gulls_curve_cache`, outside the repo) re-scores the whole population
+with any checkpoint in ~6 minutes, so threshold re-tuning or a new checkpoint is cheap. Two optional
+extras were considered and set aside: scoring the sub-day-t_E 1S1L population as an explicit
+out-of-support row (cheap, informative — do if a referee asks) and the Beginner/Experienced challenge
+tiers (different format, low information for this paper — skip).
 
 **Audit pass 2026-09-09** (`docs/AUDIT_2026-09-09.md`): two paper numbers changed — fitted-PSPL baseline AP
 0.261 → 0.545 (rescored at full cadence) and the cadence experiment re-evaluated on held-out events
