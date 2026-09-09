@@ -37,8 +37,13 @@ REPO = os.path.dirname(HERE)
 SEED_GEN = 20260720            # run_shard default: seed = seed_base + shard*7919
 SEED_TRAIN = 20260909
 N_SHARDS_TOTAL = 200
-TRAIN = {"fspl": list(range(12)), "fspl_highmag": [0, 1, 2, 3]}
-HELDOUT = {"fspl": [100, 101, 102, 103], "fspl_highmag": [100]}
+def specs(prefix):
+    """Regime prefix -> training / held-out (regime, shards). `fspl` and `fspl5` share the layout."""
+    return ({prefix: list(range(12)), f"{prefix}_highmag": [0, 1, 2, 3]},
+            {prefix: [100, 101, 102, 103], f"{prefix}_highmag": [100]})
+
+
+TRAIN, HELDOUT = specs("fspl")
 INIT = os.path.join(REPO, "validation", "gulls", "weights", "ft_g08e12.pt")
 CACHE_CURVES = os.path.expanduser("~/Desktop/Research/microlensing/gulls_curve_cache")
 
@@ -148,8 +153,14 @@ def main(argv=None):
     ap.add_argument("--gap-aug", type=float, default=0.8)
     ap.add_argument("--device", default="mps")
     ap.add_argument("--tag", default="fspl_g08")
+    ap.add_argument("--prefix", default="fspl", help="regime prefix: fspl (rho<=1) or fspl5 (rho<=5, binary rho<=0.1)")
+    ap.add_argument("--init", default=INIT, help="warm-start checkpoint")
     ap.add_argument("--skip-gulls", action="store_true")
     args = ap.parse_args(argv)
+    global TRAIN, HELDOUT
+    TRAIN, HELDOUT = specs(args.prefix)
+    if args.work == os.path.expanduser("~/Desktop/Research/microlensing/fspl_local_work") and args.prefix != "fspl":
+        args.work = os.path.expanduser(f"~/Desktop/Research/microlensing/{args.prefix}_local_work")
     W = args.work; os.makedirs(W, exist_ok=True)
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=REPO,
                             capture_output=True, text=True).stdout.strip()
@@ -160,14 +171,14 @@ def main(argv=None):
 
     log("=== fine-tune from ft_g08e12 ===")
     ckpt = os.path.join(W, f"{args.tag}.pt")
-    stamp = f"init=ft_g08e12 epochs={args.epochs} lr={args.lr} gap_aug={args.gap_aug} truncate_aug=0.5 seed={SEED_TRAIN}"
+    stamp = f"init={os.path.basename(args.init)} prefix={args.prefix} epochs={args.epochs} lr={args.lr} gap_aug={args.gap_aug} truncate_aug=0.5 seed={SEED_TRAIN}"
     if not (os.path.exists(ckpt + ".done") and open(ckpt + ".done").read().strip() == stamp):
         for stale in (ckpt, ckpt + ".last", ckpt + ".done"):
             if os.path.exists(stale):
                 os.remove(stale)
         t0 = time.time()
         run([sys.executable, "-m", "pipeline.train", "--cache", mm_tr, "--out", ckpt,
-             "--init-weights", INIT, "--epochs", str(args.epochs), "--lr", str(args.lr),
+             "--init-weights", args.init, "--epochs", str(args.epochs), "--lr", str(args.lr),
              "--truncate-aug", "0.5", "--gap-aug", str(args.gap_aug),
              "--seed", str(SEED_TRAIN), "--device", args.device])
         open(ckpt + ".done", "w").write(stamp + "\n")
@@ -198,6 +209,12 @@ def main(argv=None):
              "--rows-a", os.path.join(CACHE_CURVES, "rows_full_ft_g08e12_v2.json"), "--rows-b", rows,
              "--label-a", "ft_g08e12", "--label-b", args.tag, "--out", red])
         log(f"wrote {red}")
+        prev = os.path.join(CACHE_CURVES, "rows_full_fspl_g08.json")
+        if args.tag != "fspl_g08" and os.path.exists(prev):
+            red2 = os.path.join(HERE, "gulls", f"transfer_full_reduced_{args.tag}_vs_fspl_g08.json")
+            run([sys.executable, "validation/gulls/transfer_reduce.py", "--rows-a", prev, "--rows-b", rows,
+                 "--label-a", "fspl_g08", "--label-b", args.tag, "--out", red2])
+            log(f"wrote {red2}")
     return 0
 
 
