@@ -150,6 +150,32 @@ instead gives 45.6% → 9.7% on 1S1L and 0.36/0.37 planetary recall at threshold
 because the per-bin min/max channels carry the noise footprint. The epoch-pooled numbers are the
 ones to report, with this sensitivity disclosed.
 
+### Where the gap-aware model's residual GULLS false alarms come from (2026-09-09, from the reduced rows)
+
+Joining the scored 1S1L rows with the RMDC26 metadata (`rho`, `piE`, `u0lens1`) gives a clean
+mechanism for the remaining 11.7%:
+
+| rho / \|u0\| (finite-source strength) | n | false-alarm rate, g08e12 |
+|---|---|---|
+| < 0.03 | 18,151 | 0.046 |
+| 0.03–0.1 | 8,722 | 0.100 |
+| 0.1–0.3 | 3,931 | 0.229 |
+| 0.3–1 | 1,743 | 0.429 |
+| 1–3 | 539 | 0.646 |
+| > 3 | 267 | 0.674 |
+
+Monotonic over a factor of 15, and it persists at fixed \|u0\| < 0.1 (0.33 → 0.65 across the same
+bins), so it is the source-size effect, not high magnification per se. Parallax is irrelevant:
+at \|u0\| ≥ 0.3 the rate is 0.033–0.043 across all \|piE\| bins. **Cause:** `PSPLGen` is
+point-source and has no parallax, while `NonPSPLGen` samples rho ∈ [1e-4, 1e-2] — so in the training
+set a rounded, flattened peak only ever belonged to a binary, and the model learned "finite-source
+rounding ⇒ NonPSPL". GULLS single lenses with rho/\|u0\| ≳ 0.3 (7.6% of the eligible 1S1L
+population, concentrated at high magnification and bright baselines) are then flagged. This is a
+training-set physics gap, fixable by adding finite-source single lenses (VBBinaryLensing `ESPLMag2`
+is available) and fine-tuning; the curve cache re-scores GULLS in ~6 min. For the shipped
+checkpoint the gap effect swamps this (0.40 → 0.26 across the same bins, i.e. no finite-source
+signal visible).
+
 ### What NOT to claim
 
 - 2S2L is **not** the binary-source (1L2S) contaminant. Every 2S2L event carries a planetary
