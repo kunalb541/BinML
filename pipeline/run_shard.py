@@ -66,11 +66,21 @@ HARD_REGIMES = {
     "wider":      dict(S_MIN=3.0, S_MAX=8.0),                         # wide-caustic (recall was 0.22 at s>5)
     "shortte":    dict(TE_MEDIAN_DAYS=2.0, TE_SIGMA_DEX=0.45,
                        TE_MIN_DAYS=0.3, TE_MAX_DAYS=10.0),            # sub-day/short (recall was 0.52 at tE<1)
+    # Finite-source single lenses (2026-09-09). The released PSPL generator is point-source while
+    # NonPSPL samples rho, so the model learned "rounded peak => binary"; on GULLS the gap-aware
+    # model's single-lens false-alarm rate rises with rho/|u0| from 0.05 to 0.67. `fspl` is the
+    # natural mix with finite-source single lenses; `fspl_highmag` also caps u0 at 0.2 so
+    # finite-source single lenses and high-magnification binaries are learned side by side
+    # (its PSPL-heavy mix lives in CONFIG_REGIMES/MIXES under the same name).
+    "fspl":         dict(PSPL_FINITE_SOURCE=True),
+    "fspl_highmag": dict(PSPL_FINITE_SOURCE=True, U0_MAX=0.2),
 }
 
 # Regimes that alter the OBSERVING conditions or the contaminant amplitude rather than the
 # lens priors. These target the Flat decision boundary and the observational edge cases.
 CONFIG_REGIMES = {
+    # (a regime may appear here AND in HARD_REGIMES: priors come from there, the mix from here)
+    "fspl_highmag": dict(mix="highmag"),
     # Variables scaled to straddle the 0.02 mag floor: the model must learn where Flat ends.
     "boundary":   dict(amp_scale=(0.05, 0.60), mix="contaminant"),
     "boundary2":  dict(amp_scale=(0.02, 0.20), mix="contaminant"),
@@ -105,6 +115,10 @@ MIXES = {
                     "Flat": 2000, "PeriodicVar": 1000, "LongPeriodVar": 1500},
     "periodic":    {"PeriodicVar": 8000, "LongPeriodVar": 2500, "Flat": 2000,
                     "PSPL": 2000, "NonPSPL": 1000, "Eruptive": 500},
+    # high-magnification single vs binary lenses; NonPSPL kept substantial so the model cannot
+    # learn "small u0 => PSPL" as a shortcut
+    "highmag":     {"PSPL": 7000, "NonPSPL": 4000, "Flat": 500,
+                    "PeriodicVar": 300, "LongPeriodVar": 300, "Eruptive": 300},
 }
 
 # ---------------------------------------------------------------------------------

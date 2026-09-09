@@ -78,6 +78,17 @@ class EventPriors:
     RHO_MIN: float = 1e-4
     RHO_MAX: float = 1e-2
 
+    # --- finite-source SINGLE lens (opt-in; off in the released training set) -----------
+    # The released PSPL generator is point-source while NonPSPL samples rho, so a rounded,
+    # flattened peak only ever belonged to a binary in training and the model learned
+    # "finite-source rounding => NonPSPL". On GULLS/RMDC26 single lenses the gap-aware model's
+    # false-alarm rate rises monotonically with rho/|u0| (0.05 -> 0.67; paper/REVISION.md).
+    # GULLS single-lens rho: median 0.012, 90th percentile 0.60 -- far above RHO_MAX above,
+    # because low-mass lenses have small Einstein radii. This prior is set to cover that.
+    PSPL_FINITE_SOURCE: bool = False
+    PSPL_RHO_MIN: float = 1e-3
+    PSPL_RHO_MAX: float = 1.0
+
     # --- source flux fraction (blending) ----------------------------------------
     # f_s = F_source / (F_source + F_blend). Roman's bulge fields are crowded; a typical
     # detected event has f_s well below 1. Sampled per-event, then made band-dependent
@@ -112,6 +123,10 @@ class EventPriors:
     def sample_rho(self, rng: np.random.Generator) -> float:
         """Log-uniform normalized source radius."""
         return float(10.0 ** rng.uniform(math.log10(self.RHO_MIN), math.log10(self.RHO_MAX)))
+
+    def sample_pspl_rho(self, rng: np.random.Generator) -> float:
+        """Log-uniform source radius for a finite-source single lens (see PSPL_FINITE_SOURCE)."""
+        return float(10.0 ** rng.uniform(math.log10(self.PSPL_RHO_MIN), math.log10(self.PSPL_RHO_MAX)))
 
     def sample_alpha(self, rng: np.random.Generator) -> float:
         """Uniform trajectory angle in radians."""

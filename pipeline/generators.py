@@ -41,7 +41,7 @@ import numpy as np
 
 from .photometry import ROMAN_BANDS
 
-__all__ = ["pspl_magnification", "Generator", "FlatGen", "PSPLGen", "NonPSPLGen",
+__all__ = ["pspl_magnification", "espl_magnification", "Generator", "FlatGen", "PSPLGen", "NonPSPLGen",
            "PeriodicVarGen", "LongPeriodVarGen", "EruptiveGen", "GENERATORS", "self_test"]
 
 
@@ -53,6 +53,37 @@ def pspl_magnification(t: np.ndarray, t0: float, tE: float, u0: float) -> np.nda
     u = np.sqrt(u0 ** 2 + ((np.asarray(t, dtype=float) - t0) / tE) ** 2)
     u = np.maximum(u, 1e-8)
     return (u ** 2 + 2.0) / (u * np.sqrt(u ** 2 + 4.0))
+
+
+_ESPL = None
+
+
+def _espl():
+    """VBBinaryLensing instance with the ESPL table loaded (finite-source single lens)."""
+    global _ESPL
+    if _ESPL is None:
+        import os
+        import VBBinaryLensing  # type: ignore
+        v = VBBinaryLensing.VBBinaryLensing()
+        v.LoadESPLTable(os.path.join(os.path.dirname(VBBinaryLensing.__file__), "data", "ESPL.tbl"))
+        _ESPL = v
+    return _ESPL
+
+
+def espl_magnification(t: np.ndarray, t0: float, tE: float, u0: float, rho: float) -> np.ndarray:
+    """Finite-source (uniform disc) single-lens magnification via VBBinaryLensing ESPLMag2.
+
+    Reduces to `pspl_magnification` as rho -> 0 (checked in tests/test_fspl.py). Used only when
+    priors.PSPL_FINITE_SOURCE is on; the released training set is point-source, which is why the
+    shipped model reads a rounded high-magnification peak as a binary (paper/REVISION.md).
+    """
+    u = np.sqrt(u0 ** 2 + ((np.asarray(t, dtype=float) - t0) / tE) ** 2)
+    u = np.maximum(u, 1e-8)
+    v = _espl()
+    out = np.empty(u.shape, dtype=float)
+    for i in range(u.size):
+        out[i] = v.ESPLMag2(float(u[i]), float(rho))
+    return out
 
 
 def _binary_magnification(t: np.ndarray, t0: float, tE: float, u0: float,
@@ -154,11 +185,20 @@ class PSPLGen(Generator):
     def sample(self, rng, span_days, priors=None):
         from .priors import DEFAULT_PRIORS
         p = priors or DEFAULT_PRIORS
-        return {"t0": float(rng.uniform(0.0, span_days)),
-                "tE": p.sample_tE(rng), "u0": p.sample_u0(rng)}
+        params = {"t0": float(rng.uniform(0.0, span_days)),
+                  "tE": p.sample_tE(rng), "u0": p.sample_u0(rng)}
+        if getattr(p, "PSPL_FINITE_SOURCE", False):
+            params["rho"] = p.sample_pspl_rho(rng)     # finite-source single lens (opt-in)
+        return params
 
     def delta(self, t, params, band):
-        # ACHROMATIC: band is ignored on purpose; computed once and reused.
+        # ACHROMATIC: band is ignored on purpose; computed once and reused. A uniform finite
+        # source is achromatic too (no limb darkening is modelled).
+        if "rho" in params and params["rho"] is not None and np.isfinite(params["rho"]):
+            return self._achromatic_cached(
+                t, params,
+                lambda: espl_magnification(t, params["t0"], params["tE"], params["u0"],
+                                           params["rho"]) - 1.0)
         return self._achromatic_cached(
             t, params,
             lambda: pspl_magnification(t, params["t0"], params["tE"], params["u0"]) - 1.0)

@@ -176,6 +176,15 @@ is available) and fine-tuning; the curve cache re-scores GULLS in ~6 min. For th
 checkpoint the gap effect swamps this (0.40 → 0.26 across the same bins, i.e. no finite-source
 signal visible).
 
+**Experiment in progress (2026-09-09 night): finite-source single lenses.** `priors.PSPL_FINITE_SOURCE`
+(opt-in; released training set unchanged), `generators.espl_magnification` (VBBinaryLensing ESPLMag2),
+regimes `fspl` / `fspl_highmag` in `run_shard.py`, runner `validation/fspl_finetune_local.py`:
+warm-start from ft_g08e12 with gap augmentation on 12 `fspl` + 4 `fspl_highmag` shards; held-out
+PSPL recall vs rho/|u0| on our own data; GULLS re-score from the curve cache reduced against
+ft_g08e12 on the identical matched events. Prediction: the rho/|u0| > 0.3 false-alarm bins collapse
+toward the 4.6% floor. Results → `validation/gulls/fspl_finetune_fspl_g08.json`,
+`transfer_full_reduced_fspl_g08.json`.
+
 ### What NOT to claim
 
 - 2S2L is **not** the binary-source (1L2S) contaminant. Every 2S2L event carries a planetary
