@@ -79,6 +79,9 @@ HARD_REGIMES = {
     # capped at 1; GULLS binary rho has p90 ~1e-2 and p99 0.07 against our [1e-4, 1e-2].
     "fspl5":         dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, RHO_MAX=0.1),
     "fspl5_highmag": dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, RHO_MAX=0.1, U0_MAX=0.2),
+    # Attribution run for round 2's negative result: single-lens rho to 5, binaries UNCHANGED.
+    "fspl5s":         dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0),
+    "fspl5s_highmag": dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, U0_MAX=0.2),
 }
 
 # Regimes that alter the OBSERVING conditions or the contaminant amplitude rather than the
@@ -87,6 +90,7 @@ CONFIG_REGIMES = {
     # (a regime may appear here AND in HARD_REGIMES: priors come from there, the mix from here)
     "fspl_highmag": dict(mix="highmag"),
     "fspl5_highmag": dict(mix="highmag"),
+    "fspl5s_highmag": dict(mix="highmag"),
     # Variables scaled to straddle the 0.02 mag floor: the model must learn where Flat ends.
     "boundary":   dict(amp_scale=(0.05, 0.60), mix="contaminant"),
     "boundary2":  dict(amp_scale=(0.02, 0.20), mix="contaminant"),

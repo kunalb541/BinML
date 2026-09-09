@@ -262,6 +262,12 @@ run (≈1 h) is the way to settle it. Until then **ft_fspl_g08 remains the sidec
 Single seed per arm throughout: the between-round differences in the small high-rho bins (n = 267–539)
 are several times the binomial error but seed-to-seed variance of the fine-tune is unmeasured.
 
+*In progress (2026-09-10, 00:15):* (a) attribution run `fspl5s` — single-lens rho ≤ 5 with binaries
+UNCHANGED (`ft_fspl5s_g08.pt`), to settle whether round 2's regression came from the binary-rho
+widening; (b) colour ablation on GULLS from the cache — `gulls_transfer.py --bands F146` for
+ft_fspl_g08 and ft_g08e12, reduced against their three-band rows
+(`transfer_full_reduced_fspl_g08_colour_ablation.json`).
+
 **How to present it.** One paragraph plus the matched-budget table in the cross-simulator
 subsection: the residual false alarms were traced to a missing physical effect in the training set,
 the effect was added, the false alarms halved and the recall-at-budget curve moved up. That is the

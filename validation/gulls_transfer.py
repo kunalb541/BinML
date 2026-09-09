@@ -117,6 +117,9 @@ def main(argv=None):
                          "model's support, not hard cases within it")
     ap.add_argument("--max-te", type=float, default=300.0, help="upper tE bound in days")
     ap.add_argument("--seed", type=int, default=20260817)
+    ap.add_argument("--bands", default="F146,F087,F213",
+                    help="bands handed to the model (colour ablation: --bands F146). Curves are "
+                         "always extracted and cached for all three; only prediction is restricted.")
     ap.add_argument("--weights", default=None,
                     help="checkpoint to score (default: the shipped binml/weights/binml.pt)")
     ap.add_argument("--ids", default=None,
@@ -257,6 +260,8 @@ def main(argv=None):
     con = duckdb.connect()
     con.execute("INSTALL httpfs; LOAD httpfs;")
     clf = binml.Classifier(weights=args.weights)
+    use_bands = {b.strip() for b in args.bands.split(",") if b.strip()}
+    assert "F146" in use_bands, "F146 is required"
     CLASSES = clf.class_names
     thr = json.load(open(os.path.join(REPO, "paper", "results",
                                       "metrics.json")))["headline"]["threshold"]
@@ -394,7 +399,8 @@ def main(argv=None):
             if isinstance(v, str):
                 rows.append({"event_id": eid, "sim_label": m["sim_label"][j], "skipped": v})
                 continue
-            bands = {bd: (pair[0], pair[1]) for bd, pair in v["bands"].items()}
+            bands = {bd: (pair[0], pair[1]) for bd, pair in v["bands"].items()
+                     if bd in use_bands}
             m_base, m_cat = v["mb"], v["mcat"]
             p = clf.predict(bands, m_base_ref=m_base, t_start=0.0)
             if os.environ.get("GT_DUMP") and str(eid) in os.environ["GT_DUMP"].split(","):
@@ -420,6 +426,7 @@ def main(argv=None):
                          "(continuous F146) is violated by Roman's real schedule; see module docstring",
                "dataset": "RGES-PIT/MachineLearning (RMDC26, GULLS simulator)",
                "checkpoint": args.weights or "binml/weights/binml.pt (shipped)",
+               "bands_used": sorted(use_bands),
                "dataset_revision": REVISION,
                "baseline": "empirical: median F146 mag at |t-t0| > 5 tE over the full mission",
                "window_days": WINDOW_D, "dense_min_f146_epochs": DENSE_MIN, "threshold": thr,

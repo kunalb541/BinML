@@ -54,3 +54,4 @@ def test_regimes_are_wired():
     assert MIXES[CONFIG_REGIMES["fspl_highmag"]["mix"]]["NonPSPL"] >= 3000   # not a PSPL-only shortcut
     assert HARD_REGIMES["fspl5"]["PSPL_RHO_MAX"] == 5.0 and HARD_REGIMES["fspl5"]["RHO_MAX"] == 0.1
     assert CONFIG_REGIMES["fspl5_highmag"]["mix"] == "highmag"
+    assert "RHO_MAX" not in HARD_REGIMES["fspl5s"] and HARD_REGIMES["fspl5s"]["PSPL_RHO_MAX"] == 5.0  # binaries unchanged
