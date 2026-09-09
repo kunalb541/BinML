@@ -24,7 +24,8 @@ done until this table says so.
 | F087 saturation physics corrected | ✅ `photometry.py` | ✅ paragraph corrected |
 | `t_anom` 7.2-day resolution of training labels | — | ✅ stated in §training |
 | McNemar discordant counts as macros | ✅ | ✅ |
-| Decision: ship `ft_g08e12.pt` as sidecar `binml-gapaware.pt` (recommended) or promote it | **OPEN — author's call** | — |
+| Finite-source fine-tune `ft_fspl_g08.pt` (GULLS false alarms 11.7% → 5.2%; recall at matched budget +6–7 pts) | ✅ `validation/gulls/{fspl_finetune,transfer_full_reduced,transfer_tradeoff}_fspl_g08.json` | ❌ not yet — one paragraph + matched-budget table |
+| Decision: which fine-tune ships as the sidecar — `ft_fspl_g08.pt` now dominates `ft_g08e12.pt` on GULLS at every false-alarm budget; threshold to be re-calibrated on gapped finite-source sims | **OPEN — author's call** | — |
 | Figures rebuilt through `build.sh` (weighted prevalence line) | ❌ not yet | — |
 | Zenodo release + DOI in Data Availability, CITATION.cff, README | ❌ needs one-time GitHub↔Zenodo authorisation by the author | — |
 | Resubmit via Editorial Manager (starts review) | — | ❌ after the rows above |
@@ -176,14 +177,59 @@ is available) and fine-tuning; the curve cache re-scores GULLS in ~6 min. For th
 checkpoint the gap effect swamps this (0.40 → 0.26 across the same bins, i.e. no finite-source
 signal visible).
 
-**Experiment in progress (2026-09-09 night): finite-source single lenses.** `priors.PSPL_FINITE_SOURCE`
-(opt-in; released training set unchanged), `generators.espl_magnification` (VBBinaryLensing ESPLMag2),
-regimes `fspl` / `fspl_highmag` in `run_shard.py`, runner `validation/fspl_finetune_local.py`:
-warm-start from ft_g08e12 with gap augmentation on 12 `fspl` + 4 `fspl_highmag` shards; held-out
-PSPL recall vs rho/|u0| on our own data; GULLS re-score from the curve cache reduced against
-ft_g08e12 on the identical matched events. Prediction: the rho/|u0| > 0.3 false-alarm bins collapse
-toward the 4.6% floor. Results → `validation/gulls/fspl_finetune_fspl_g08.json`,
-`transfer_full_reduced_fspl_g08.json`.
+**Finite-source single lenses — RESULT (2026-09-09 night).** `priors.PSPL_FINITE_SOURCE` (opt-in;
+released training set unchanged), `generators.espl_magnification` (VBBinaryLensing ESPLMag2, rho
+log-uniform in [1e-3, 1] to cover GULLS' single-lens rho, median 0.012 / p90 0.60), regimes `fspl`
+and `fspl_highmag` (U0_MAX 0.2, PSPL-heavy mix with substantial NonPSPL so "small u0 ⇒ PSPL" cannot be
+learned as a shortcut), runner `validation/fspl_finetune_local.py`. Warm-start from ft_g08e12, same
+gap augmentation, 12 epochs, 129,683 training events (12 `fspl` + 4 `fspl_highmag` shards), ~35 min on
+the M5. Checkpoint `validation/gulls/weights/ft_fspl_g08.pt`; results in
+`validation/gulls/fspl_finetune_fspl_g08.json`, `transfer_full_{fspl_g08,reduced_fspl_g08}.json`,
+`transfer_tradeoff_fspl_g08.json`.
+
+*Did it learn the physics?* Held-out PSPL recall on our own finite-source population (39,864 events,
+disjoint seeds), by rho/|u0|: shipped / g08e12 / new = 0.86 / 0.80 / **0.91** at 0.3–1, 0.16 / 0.16 /
+**0.62** at 1–3, 0.08 / 0.09 / **0.80** above 3. Macro-F1 0.885 / 0.870 / **0.909**; no other class
+lost (Flat 0.972, PeriodicVar 0.975, LPV 0.894, Eruptive 0.898). Caveat: this population is the new
+model's own training distribution and out-of-distribution for the other two, so their AP here (~0.53
+vs 0.93) is not a regression figure — the like-for-like test is GULLS.
+
+*Did it transfer?* GULLS, identical 56,975 matched events, frozen threshold 0.9042:
+
+| RMDC26 class | n | g08e12 → **fspl_g08** at threshold | weighted |
+|---|---|---|---|
+| 1S1L single lens (false alarms) | 33,353 | 0.117 → **0.052** | 0.135 → 0.080 |
+| 1S2L planet (recall) | 11,388 | 0.457 → 0.370 | 0.512 → 0.442 |
+| 2S2L planet + binary source (recall) | 12,234 | 0.469 → 0.400 | 0.523 → 0.459 |
+
+The rho/|u0| false-alarm bins collapsed as predicted: 0.046 → 0.032, 0.100 → 0.036, 0.229 → 0.066,
+0.429 → 0.184, 0.646 → 0.327, 0.674 → 0.333 — halved everywhere, though the largest-source bins are
+not yet at the floor (GULLS rho reaches 5; the prior stops at 1).
+
+*Threshold shift or real gain?* Recall at **matched** single-lens false-alarm budgets
+(`transfer_tradeoff_fspl_g08.json`) — the frozen threshold simply lands the new model at a lower
+false-alarm rate:
+
+| 1S1L false-alarm budget | shipped | g08e12 | **fspl_g08** |
+|---|---|---|---|
+| 2% | 0.122 | 0.185 | **0.249** |
+| 5.2% | 0.214 | 0.295 | **0.369** |
+| 11.7% | 0.313 | 0.457 | **0.518** |
+| 20% | 0.393 | 0.601 | **0.621** |
+| mean 1S2L recall over FA ≤ 30% | 0.322 | 0.486 | **0.523** |
+
+So at the operating point the paper actually uses (whatever false-alarm rate one accepts), the
+finite-source fine-tune recovers 6–7 more points of planetary recall than g08e12 on an independent
+simulator. The frozen 0.9042 threshold was calibrated on gap-free, point-source data and should be
+re-calibrated on our own gapped finite-source simulations before either fine-tuned checkpoint is
+used as a sidecar; that is a minutes-long job from the curve cache.
+
+**How to present it.** One paragraph plus the matched-budget table in the cross-simulator
+subsection: the residual false alarms were traced to a missing physical effect in the training set,
+the effect was added, the false alarms halved and the recall-at-budget curve moved up. That is the
+cleanest possible demonstration of the paper's thesis that the labels and the training population,
+not the architecture, are the lever. Do not claim the gap is closed (the >1 bins sit at 0.33), and
+state that the fine-tune used the pre-fix `--gap-aug` relabelling semantics like g08e12.
 
 ### What NOT to claim
 

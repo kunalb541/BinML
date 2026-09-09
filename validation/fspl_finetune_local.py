@@ -106,7 +106,7 @@ def pspl_recall_by_rho_u0(eval_dir):
         if os.path.exists(os.path.join(eval_dir, "meta.json")) else None
     if pf is None:
         from pipeline.writer import PARAM_FIELDS as pf
-    from pipeline.model import CLASS_NAMES
+    from pipeline.classes import CLASS_NAMES
     I_PSPL, I_NON = CLASS_NAMES.index("PSPL"), CLASS_NAMES.index("NonPSPL")
     m = np.zeros(len(lab), bool); m[ti] = True
     sel = m & (lab == I_PSPL) & (tc == I_PSPL)
