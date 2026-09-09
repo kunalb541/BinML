@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compare BinML against fieldable baselines for anomaly (NonPSPL) detection.
 
-FAIRNESS: every method receives the SAME data -- one band (F146), all 6912 epochs. An earlier
+FAIRNESS: every method receives the SAME data -- one band (F146), all 6912 epochs -- including the PSPL residual fit, since 2026-09-09. An earlier
 version scored BinML on the full curve while the baselines saw a 400-point downsample, which
 confounded method with available information (an audit finding). Equalising downward instead was
 rejected: 400 points is ~5.5/day, below the sparsity floor where BinML fails outright, so that
@@ -104,10 +104,14 @@ def main():
         # 400-point downsample, so the comparison confounded method with information available.
         td, md, ed = b.t, b.mag, b.mag_err          # FULL single-band curve for every method
         p = clf.predict(td, md, m_base_ref=ev.params["_m_base_ref"], t_start=0.0)
-        # The PSPL fit is the only step that cannot take 6912 epochs cheaply, so it is fitted on a
-        # regular thinned subset -- a computational shortcut, not an information advantage for
-        # BinML: the fit is over 5 smooth parameters and is not improved by denser sampling.
-        tf, mf, ef = _downsample(td, md, ed, k=800)
+        # FULL CADENCE for the PSPL residual too. An earlier version thinned it to 800 epochs "for
+        # tractability", and the justification was wrong on both counts: the fit costs 0.02 s per
+        # event at 6912 epochs, and the score is not the fit quality but a running-window bump
+        # statistic whose widths are in POINTS (3/5/9), so at 800 epochs it integrated a 9x longer
+        # timescale and suppressed caustic-length residuals -- an ~80x handicap on exactly the
+        # events that make a light curve NonPSPL. Committed ap_fitted_pspl_residual = 0.261 was
+        # produced that way; this rerun replaces it.
+        tf, mf, ef = td, md, ed
         labs.append(CLASSES.index(ev.label))
         binml_l.append(p.probabilities["NonPSPL"])
         Xl.append(features(td, md))

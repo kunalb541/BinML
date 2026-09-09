@@ -106,10 +106,22 @@ def run_ablations(epochs: int = 10) -> dict:
         if tag == "cascade_on":                     # identical config to labels_observational
             ckpts[tag] = ckpts["labels_observational"]; continue
         out = f"{VOL}/ckpt_{tag}.pt"
-        if not os.path.exists(out):
+        # A COMPLETION MARKER decides whether to skip, not the checkpoint's existence: train.py
+        # rewrites args.out at every new best epoch, so an interrupted run leaves a loadable
+        # checkpoint trained for fewer epochs than `epochs` claims (modal_labelling_ablation.py
+        # records two such kills). The recorded cascade_off arm was checked after the fact by
+        # loading ckpt_cascade_off.pt from the volume on 2026-09-09: its 'epoch' field is 9
+        # (10 of 10, zero-indexed), so the shipped ablations_result.json is not affected.
+        done = out + ".done"
+        if not os.path.exists(done):
+            for stale in (out, out + ".last"):
+                if os.path.exists(stale):
+                    print(f"[warn] removing incomplete {stale}", flush=True)
+                    os.remove(stale)
             subprocess.run(["python", "-m", "pipeline.train", "--cache", tr, "--out", out,
                             "--epochs", str(epochs), "--seed", str(SEED), "--device", "cuda"]
                            + extra, check=True, env=env, cwd="/repo")
+            open(done, "w").write("ok\n")
             vol.commit()
         ckpts[tag] = out
 
@@ -203,7 +215,12 @@ def run_ablations(epochs: int = 10) -> dict:
             out[f"detection_fraction_{rule}"] = round(d / max(N, 1), 3)
         return out
 
-    res = {"n_eval_static": int(n), "epochs": epochs, "seed": SEED, "threshold": thr}
+    # Record the epochs each checkpoint ACTUALLY trained for (from the file), next to the config.
+    import torch as _torch
+    trained_epochs = {tag: int(_torch.load(path, map_location="cpu", weights_only=False)
+                               .get("epoch", -1)) + 1 for tag, path in ckpts.items()}
+    res = {"n_eval_static": int(n), "epochs": epochs, "epochs_trained_per_arm": trained_epochs,
+           "seed": SEED, "threshold": thr}
     # NOTE: results are written to the VOLUME, not just returned. A detached run (required, since a
     # backgrounded local client disconnects and Modal then stops the app) has no live client to
     # receive the return value.

@@ -347,7 +347,11 @@ seeded with injected parameters, rather than from an observable broker statistic
 the network sees light curves truncated at random days: a
 binary truncated \emph{before} $t_{\mathrm{anom}}$ carries the \texttt{PSPL} label (with the
 detectability floor re-evaluated on the truncated data), and earns \texttt{NonPSPL} only once the
-anomaly lies inside the revealed window. The resulting training target follows the cascade
+anomaly lies inside the revealed window. In the training data $t_{\mathrm{anom}}$ is resolved
+only to the end of the $7.2$-day interval in which the anomaly first became detectable, so the
+training label switches to \texttt{NonPSPL} up to $7.2$ days after the true onset---a
+conservative bias that delays, never advances, the label; the evaluation onsets in
+Section~\ref{sec:cascade} are resolved at $0.5$~days and do not inherit it. The resulting training target follows the cascade
 \texttt{Flat}$\rightarrow$\texttt{PSPL}$\rightarrow$\texttt{NonPSPL}.
 
 The prefix labels for other classes are also generator-informed. Single-lens amplitude is
@@ -625,14 +629,17 @@ common set of $\bmlBaseNtest$ freshly simulated evaluation events
 score from fitting a Paczynski model to the noisy F146 curve---and gradient-boosted-tree and
 logistic classifiers \citep{scikit-learn} trained on hand-built morphological features
 (amplitude, moments, autocorrelation, peak counts). Every method sees the same events and the same
-single band. The network and feature models consume all 6912 epochs, whereas the
-five-parameter Paczynski fit uses a thinned 800-epoch subset for tractability, so its score is a
-computationally thinned estimate. The training budgets are also unmatched: BinML was trained on
+single band. The network and feature models consume all 6912 epochs; the five-parameter Paczynski fit is
+evaluated on the full cadence as well, since its residual statistic is a fixed-width running
+window in \emph{epochs} and thinning the input would change the timescale it integrates (an
+earlier version of this comparison thinned it to 800 epochs, which suppressed caustic-length
+residuals and understated the baseline). The training budgets are also unmatched: BinML was trained on
 roughly $\bmlSimEvents$ million simulated events, whereas the feature classifiers use only the
 training split of this 9,000-event comparison set. BinML scores $\bmlBaseBinml$, compared with
 $\bmlBaseGbt$ for gradient-boosted trees, $\bmlBaseLogistic$ for logistic regression, and
-$\bmlBasePspl$ for the fitted-residual statistic. Simple baselines do not solve this evaluation
-set.
+$\bmlBasePspl$ for the fitted-residual statistic. None of the baselines approaches the network
+on this evaluation set, although the fairly scored fitted-residual statistic is a far stronger
+reference than its thinned predecessor suggested.
 
 \begin{deluxetable}{lc}
 \tablecaption{Anomaly-detection average precision for BinML and noisy-photometry baselines on a
@@ -704,14 +711,18 @@ with a macro-F1 of $\bmlStressMacroF$.
 
 The out-of-range regimes expose failures. Anomaly recall stays near its in-distribution value of
 $\bmlStressNatNp$ across most regimes, but collapses to $\bmlStressWidesep$ for very wide
-separations. This recall is conditional on an anomaly already passing the detectability policy, so
+separations ($\bmlStressWidesepN$ retained wide-separation binaries; the out-of-range shards
+carry far fewer swept-class events than their totals suggest, and we quote the swept-class
+support for each number). This recall is conditional on an anomaly already passing the detectability policy, so
 the collapse is a classifier failure on the retained wide-separation subset, not relabelling of
 uncrossed caustics. Two contaminant regimes fail
 outright: \texttt{PeriodicVar} examples whose period exceeds the season are recovered as
-\texttt{PeriodicVar} only $\bmlStressLongp$ of the time (a nearly complete failure, since within one
-window they are not observably periodic), and sub-day-timescale single lenses are recovered at
-$\bmlStressShortte$. For faint sources, \texttt{PSPL} recall falls to $\bmlStressFaintPspl$ and
-anomaly \emph{precision} to $\bmlStressFaintPrec$---noise manufacturing spurious anomalies is the
+\texttt{PeriodicVar} only $\bmlStressLongp$ of the time ($\bmlStressLongpN$ events; a nearly
+complete failure, since within one window they are not observably periodic), and sub-day-timescale
+single lenses are recovered at $\bmlStressShortte$ ($\bmlStressShortteN$ events). For faint
+sources, \texttt{PSPL} recall falls to $\bmlStressFaintPspl$ ($\bmlStressFaintPsplN$ events) and
+anomaly \emph{precision} to $\bmlStressFaintPrec$ ($\bmlStressFaintNpN$ detectable
+anomalies)---noise manufacturing spurious anomalies is the
 single most consequential failure mode for a follow-up programme. In the low-$q$ regime,
 recall holds at $\bmlStressPlanetNp$ but precision falls to $\bmlStressPlanetPrec$.
 
@@ -762,8 +773,14 @@ detectability cuts in the two arms). The two arms score closely:
 anomaly average precision $\bmlCadFifteenAp$ (15\,min) versus $\bmlCadTwelveAp$ (12\,min), and
 completeness $\bmlCadFifteenCompleteness$ at purity $\bmlCadFifteenPurity$ versus
 $\bmlCadTwelveCompleteness$ at purity $\bmlCadTwelvePurity$, with no per-class F1 differing by more
-than $\bmlCadMaxFOneDelta$. With one seed per arm this bounds the rate change as unimportant at the
-resolution we can measure rather than establishing equivalence. Both rates sample an hours-to-day
+than $\bmlCadMaxFOneDelta$. Two caveats bound what this comparison can say. With one seed per arm
+it constrains the rate change as unimportant at the resolution we can measure rather than
+establishing equivalence. And the two arms were scored on their own simulation pools, whose
+evaluation split was drawn independently of the training split (about $80\%$ of scored events
+had been seen in training), so the \emph{absolute} values quoted here are optimistic and only the
+15-versus-12-minute \emph{contrast}---which shares that defect identically---is informative; the
+headline results elsewhere in this paper use the disjoint final-test split described in
+Section~\ref{sec:sims}. Both rates sample an hours-to-day
 caustic densely, so a $25\%$ change in epoch count adds little information. Two effects remain
 untested. The exposure time and colour-band zeropoints of the current design
 differ from ours (Section~\ref{sec:limits}), and their effect on the colour channels is
@@ -818,9 +835,11 @@ Cycle-7 values for the wide band and scaled for F087 and F213, and an audit agai
 Roman zeropoint tables \citep{RomanTechInfo} shows the wide-band value is accurate to $0.03$~mag while
 our F087 and F213 zeropoints are optimistic by roughly $0.10$ and $0.14$~mag respectively. Two
 further colour-band assumptions are less defensible. Our F087
-saturation limit was carried over from a much longer Cycle-7 exposure, and it errs in the wrong
-direction: at equal exposure F087 should saturate at a \emph{fainter} magnitude than F146, not a
-brighter one. Our sky-background ratios also fail to reproduce the published thermal backgrounds,
+saturation limit ($13.9$~AB) was carried over from a much longer Cycle-7 exposure and is too
+faint for the design exposure: a shorter exposure fills the detector well only for a brighter
+source, and at equal exposure and well depth F087, which collects roughly a third of F146's
+electrons at the same AB magnitude, saturates about $1.2$~mag \emph{brighter} than F146 rather
+than fainter. Our sky-background ratios also fail to reproduce the published thermal backgrounds,
 which make F213 substantially worse and F087 substantially better relative to F146 than we assume.
 Both errors sit in the colour bands, which the model uses chiefly to reject variable-star
 contaminants. Quantifying the resulting bias requires regenerating the training set and retraining,
@@ -933,8 +952,9 @@ from $0.50$ through $0.90$ detection: at $0.60$ the rates are $\bmlMatchOnSixty\
 $\bmlMatchOffSixty\%$, and at $0.80$ they are $\bmlMatchOnEighty\%$ and
 $\bmlMatchOffEighty\%$. The ordering reverses at $0.95$ detection.
 The separation at the lower rates is one-sided at the level of individual events: at $0.60$
-detection the two arms disagree on 16 events, and all 16 are premature for the unaugmented arm
-and none for the augmented one, so the augmented arm's premature set is a strict subset of the
+detection the two arms disagree on $\bmlMatchDiscordSixty$ events, of which
+$\bmlMatchOffOnlySixty$ are premature for the unaugmented arm only and $\bmlMatchOnOnlySixty$ for
+the augmented arm only, so the augmented arm's premature set is a strict subset of the
 unaugmented arm's on this sample.
 
 The thresholds are selected and the premature-alert rates evaluated on the same $\bmlMatchN$ events, and

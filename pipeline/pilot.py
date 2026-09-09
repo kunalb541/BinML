@@ -99,7 +99,11 @@ def validate(path: str, cfg: SurveyConfig, verbose: bool = True) -> dict:
         # A Flat label requires the event to be undetectable, unless it was born Flat.
         m = (label == i_flat) & (true_class != i_flat)
         if m.any():
-            check(bool(np.all(dchi2_e[m] < cfg.dchi2_event)) or True, "")  # amplitude floor also applies
+            # A demoted-to-Flat event must have failed the dchi2 cut or the amplitude floor. Only
+            # dchi2 is available here, so flag the case where EVERY such event passes the dchi2
+            # cut (then the floor did all the demoting, which the gate should at least report).
+            check(not bool(np.all(dchi2_e[m] >= cfg.dchi2_event)),
+                  "every Flat-relabelled event passes the dchi2_event cut; check the amplitude floor")
         check(bool(np.all(dchi2_e[true_class == i_flat] == 0.0)),
               "a generated-Flat event has non-zero dchi2_event")
 

@@ -1,5 +1,43 @@
 # Changelog
 
+## Unreleased — full-codebase audit fixes (2026-09-09)
+Nine-agent audit of every Python file (record: `docs/AUDIT_2026-09-09.md`): 0 critical, 13 major,
+64 minor; no submitted headline number wrong. Changes that touch reported numbers or their meaning:
+- **Fitted-PSPL baseline rescored at full cadence** (`validation/baselines.py`): AP 0.261 → **0.545**.
+  It had been scored on an 800-epoch thinning while its residual statistic is a running window in
+  POINTS, so thinning integrated a 9× longer timescale and suppressed caustic-length residuals.
+  All other baseline numbers are seed-identical. `canonical_numbers.json` / `MANIFEST.json` updated.
+- **`binml.preprocess.bin_band` pools one value per Roman epoch before binning.** Bit-identical for
+  on-grid input (all training/evaluation data); for denser input it now reproduces the training
+  cache's representation instead of inflating min/max and frac with the sampling density. The GULLS
+  full-population transfer (56,975 matched events) was re-scored with it: single-lens false alarms
+  at threshold 35.6% → 11.7% (shipped → gap-aware), planetary recall at threshold 0.50 → 0.46.
+  Raw-observation pooling gave 45.6% → 9.7% / 0.36; both are kept (`transfer_full_*_rawpool.json`).
+- **Cadence comparison disclosed as training-inclusive.** `modal_cadence.py` evaluated each arm on
+  the pool it trained on (independent split seeds); paper paragraph now states that the absolute
+  `\bmlCad*` values are optimistic and only the 15-vs-12-min contrast is informative.
+- **OOR shard mix duplicate-key bug** (`run_shard.py`): the swept class got 500–1,000 events per
+  shard, not 9,000. Recalls unbiased; the paper now quotes swept-class support (`\bmlStress*N`),
+  e.g. wide-separation NonPSPL recall rests on n = 438.
+- **F087 saturation physics corrected** in `photometry.py`, the paper and docs: a shorter exposure
+  saturates *brighter*; equal-well F087 sits ~1.2 mag brighter than F146. `ROMAN_BANDS_AUDITED`
+  F087 saturation 16.1 → 13.6 (derived; not used by the released model).
+- `evaluate.py`: efficiency plane computed on test rows only (the committed artifact already was;
+  regression test pins it); macro-F1 scores a never-predicted class 0 instead of dropping it;
+  `false_anomaly_by_true_class` now buckets by true class; `--max-events` subsets every column.
+- `plots.py`: PR-panel chance line is the weighted prevalence (0.056, as in the abstract), not 0.119.
+- `binml classify` requires `--m-base` (or explicit `--estimate-baseline`); the fallback estimator's
+  1.28σ faint bias on quiescent sources is documented. Legacy CLI import and `--flux` fixed.
+- `make_macros.py` fails closed on NaN/inf and on a missing `figures_stats.json`; `bmlFtWorstRegress`
+  is the largest F1 drop; McNemar discordant counts are macros, not prose. Three tautological tests
+  replaced with real bounds; a manifest-pinned regression test added for the efficiency plane.
+- Provenance: `modal_ablations.py` uses a `.done` marker and records trained epochs per arm (the
+  reported cascade_off arm was verified at 10/10 epochs); `modal_gap_finetune.py` records
+  hyper-parameters in its marker; `modal_gulls_transfer.py` pins the dataset revision.
+- Still open (design decision, no reported metric affected): augmentation relabelling in
+  `train.py` — `t_anom` quantised to 7.2 d, periodic amplitude proxy mis-scaled, dead Flat branch.
+  Paper text and REVISION.md now describe what the g08e12 fine-tune actually ran with.
+
 ## Unreleased — gap sensitivity and first cross-simulator validation (2026-08-23)
 - **Shipped checkpoint fails on Roman's planned F146 schedule.** The training grid is
   continuous; the planned GBTDS schedule pauses F146 ~6 h seven times per season. Inserting

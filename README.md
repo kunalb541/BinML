@@ -149,7 +149,7 @@ r = clf.predict(t146, m146, m_base_ref=22.1)
 # streaming probabilities as the season is revealed
 days, probs = clf.predict_evolution({"F146": (t146, m146)}, m_base_ref=22.1)
 ```
-Command line: `binml classify lc.csv --m-base 22.1`. More: [`docs/usage.md`](docs/usage.md).
+Command line: `binml classify lc.csv --m-base 22.1` (`--m-base` is required; see `--estimate-baseline` for the caveated fallback). More: [`docs/usage.md`](docs/usage.md).
 
 ## Train / evaluate from scratch
 
@@ -232,7 +232,8 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   OGLE templates. The 0.02-mag detectability floor has not been validated on Roman data.
 - **Known colour-photometry mismatch.** Relative to the current Roman calibration, the released
   simulator's F087 and F213 zeropoints are optimistic by about 0.10 and 0.14 mag, respectively;
-  its F087 saturation assumption has the wrong ordering at equal exposure, and its colour-band
+  its F087 saturation limit was carried from a longer exposure and is too faint (at equal exposure
+  F087 saturates ~1.2 mag brighter than F146, not fainter), and its colour-band
   background ratios do not reproduce the published thermal backgrounds. The effect on contaminant
   rejection is unquantified, and the released model has not been retrained with corrected values.
 - **Provide `m_base_ref`.** The model input is baseline-relative; give the F146 quiescent

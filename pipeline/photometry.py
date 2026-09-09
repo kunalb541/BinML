@@ -93,10 +93,21 @@ class Band:
 #   F146 cadence        15.0 min     12.1 min       ROTAC 2025 (see the paper's cadence experiment;
 #                                                   the rate change was measured to be immaterial)
 #   F087/F213 cadence   360 min      360 min        CORRECT: 6 h each, staggered to 3 h (RDox APT)
-#   F087 saturation     13.9         ~16.1 (est.)   LIKELY WRONG: Penny's 13.9 assumed a 286 s
-#                                                   exposure; at equal exposure F087 must saturate
-#                                                   FAINTER than F146, not brighter. No official
-#                                                   value is published for the 66 s design.
+#   F087 saturation     13.9         ~13.6 (derived) The trained 13.9 was carried over from Penny's
+#                                                   286 s exposure. Two things were previously
+#                                                   stated backwards here and in the paper: (1) a
+#                                                   SHORTER exposure fills the well only for a
+#                                                   BRIGHTER source, so a 46.8-66 s limit is
+#                                                   brighter than 13.9, not fainter; (2) at equal
+#                                                   exposure F087 collects 10^(-0.4*(27.6-26.3)) =
+#                                                   0.3x the electrons of F146 for the same AB mag,
+#                                                   so its equal-well limit is ~1.2 mag BRIGHTER
+#                                                   than F146's 14.8: 13.5-13.6 AB. F087's narrower
+#                                                   PSF concentrates ~2.8x more flux in the peak
+#                                                   pixel (~1.1 mag), which would move it back to
+#                                                   ~14.6 -- still not fainter than F146. 13.6 is
+#                                                   adopted as the equal-well value; no official
+#                                                   figure is published for the 66 s design.
 #   background ratios   F213/F146    F213/F146 ~3   internal_thermal_backgrounds.ecsv: F087 0.003,
 #                       = 1.24       F087 ~8x below F146 1.03, F213 4.38 e-/pix/s
 #
@@ -126,7 +137,7 @@ ROMAN_BANDS_AUDITED: Dict[str, Band] = {
     "F146": Band("F146", 1.4378, cadence_minutes=12.1, zeropoint=27.584,
                  exposure_s=_EXPOSURE_S_AUDITED, background_e2=3218.0, saturation_ab=14.8),
     "F087": Band("F087", 0.8696, cadence_minutes=360.0, zeropoint=26.302,
-                 exposure_s=_EXPOSURE_S_AUDITED, background_e2=400.0, saturation_ab=16.1),
+                 exposure_s=_EXPOSURE_S_AUDITED, background_e2=400.0, saturation_ab=13.6),
     "F213": Band("F213", 2.1230, cadence_minutes=360.0, zeropoint=25.863,
                  exposure_s=_EXPOSURE_S_AUDITED, background_e2=9700.0, saturation_ab=14.5),
 }

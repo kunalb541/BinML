@@ -32,8 +32,8 @@ def _print(pred):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="binml", description="Deep-learning microlensing classifier")
-    from . import __version__
-    ap.add_argument("--version", action="version", version=f"binml {__version__}")
+    from binml import __version__            # binml.legacy defines no __version__ of its own
+    ap.add_argument("--version", action="version", version=f"binml {__version__} (legacy 3-class)")
     ap.add_argument("--model", default="finetuned", help="finetuned | base | path to .pt")
     ap.add_argument("--device", default="cpu")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -102,7 +102,7 @@ def main(argv=None):
         _print(clf.predict(t, m, err, is_flux=args.flux))
     elif args.cmd == "evolution":
         from . import plotting
-        evo = clf.predict_evolution(t, m, err)
+        evo = clf.predict_evolution(t, m, err, is_flux=args.flux)   # --flux was silently ignored here
         _print(evo.final)
         plotting.plot_evolution(evo).savefig(args.out, dpi=130, bbox_inches="tight")
         print(f"  saved {args.out}")

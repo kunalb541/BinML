@@ -144,8 +144,12 @@ def _prf(conf: np.ndarray) -> dict:
     diag = np.diag(conf)
     rec = [float(diag[i] / support[i]) if support[i] > 0 else None for i in range(N_CLASSES)]
     pre = [float(diag[i] / predicted[i]) if predicted[i] > 0 else None for i in range(N_CLASSES)]
-    f1 = [None if (rec[i] is None or pre[i] is None or (rec[i] + pre[i]) == 0)
-          else 2 * rec[i] * pre[i] / (rec[i] + pre[i]) for i in range(N_CLASSES)]
+    # F1 is undefined only when a class has no support. A class WITH support that the model never
+    # predicts (precision undefined) has recall 0 and must score 0.0 -- dropping it from the macro
+    # average would hide a total failure on that class.
+    f1 = [None if rec[i] is None
+          else (0.0 if (pre[i] is None or (rec[i] + pre[i]) == 0)
+                else 2 * rec[i] * pre[i] / (rec[i] + pre[i])) for i in range(N_CLASSES)]
     got = [x for x in f1 if x is not None]
     return {
         "recall": {CLASS_NAMES[i]: rec[i] for i in range(N_CLASSES)},
@@ -322,9 +326,10 @@ def evaluate_checkpoint(ckpt_path: str, cache: str, out_dir: str, device: str = 
         y = y[idx]; tc = tc[idx]; kp = kp[idx]; w = w[idx]
         if params is not None:
             params = params[idx]
-        for k in ("dchi2_anomaly", "dchi2_event", "m_base_ref", "a_ks"):
+        for k in ("label", "true_class", "keep_prob",
+                  "dchi2_anomaly", "dchi2_event", "m_base_ref", "a_ks"):
             if k in cols:
-                cols[k] = cols[k][idx]
+                cols[k] = cols[k][idx]      # keep every saved column the same length as y
         for b in BAND_BINS:
             if f"n_kept_{b}" in cols:
                 cols[f"n_kept_{b}"] = cols[f"n_kept_{b}"][idx]
@@ -376,13 +381,19 @@ def evaluate_checkpoint(ckpt_path: str, cache: str, out_dir: str, device: str = 
                                                     cols["dchi2_anomaly"][ti], DCHI2_EDGES)
     # false positives per bin: where do spurious anomaly calls come from?
     fpmask = (~mt) & corr
+    # Keyed by the GENERATED class (tc), not the observational label: the question is what kind
+    # of object the spurious anomaly call was made on. Earlier versions bucketed by `y`.
     res["false_anomaly_by_true_class"] = {
-        CLASS_NAMES[c]: {"n": int((fpmask[ti] & (y[ti] == c)).sum()),
-                         "weighted": float((w[ti] * (fpmask[ti] & (y[ti] == c))).sum())}
+        CLASS_NAMES[c]: {"n": int((fpmask[ti] & (tc[ti] == c)).sum()),
+                         "weighted": float((w[ti] * (fpmask[ti] & (tc[ti] == c))).sum())}
         for c in range(N_CLASSES) if c != I_NON}
 
     # --- the (log s, log q) planes --------------------------------------------
-    plane = efficiency_plane(params, pf, y, pred_argmax, tc, w)
+    # TEST ROWS ONLY. Every other block indexes with [ti]; this call once passed the full pool,
+    # which silently folded the 90,117 threshold-selection rows into the plane (+25% n_eff). The
+    # committed metrics.json plane is the test-only computation, and a regression test pins it.
+    plane = efficiency_plane(params[ti] if params is not None else None, pf, y[ti],
+                             pred_argmax[ti], tc[ti], w[ti])
     if plane is not None:
         res["efficiency_plane"] = plane
 

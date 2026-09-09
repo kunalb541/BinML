@@ -68,7 +68,10 @@ def _param_vector(params: dict) -> np.ndarray:
             out[i] = float(v)
         except (TypeError, ValueError):
             pass
-    # LongPeriodVar carries a list of (period, weight); record the dominant period as P.
+    # LongPeriodVar carries a list of (period, weight); record the LONGEST period as P. This is
+    # max(period), not the highest-weight mode: for multi-mode OSARGs the stored P is therefore
+    # biased long relative to the dominant mode, and anything downstream that phases on P (the
+    # truncation amplitude proxy in train._visible_amplitude) inherits that.
     per = params.get("periods")
     if per:
         try:

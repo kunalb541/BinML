@@ -104,7 +104,7 @@ def run(cache: str, out: str, max_events: int = 30000, seed: int = 11,
         window_days: float = 72.0) -> dict:
     meta = json.load(open(os.path.join(cache, "meta.json")))
     n = int(meta["n_events"])
-    L = BIN_FACTORS[REF] and 864
+    L = 864                                   # F146 bins (BAND_BINS[REF]); was a truthiness expr
     feat = np.memmap(os.path.join(cache, f"feat_{REF}.f16"), dtype=np.float16, mode="r",
                      shape=(n, L, 3))
     fr = np.memmap(os.path.join(cache, f"frac_{REF}.f16"), dtype=np.float16, mode="r",

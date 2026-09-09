@@ -30,7 +30,8 @@ The 0.02-mag floor has not been validated on real Roman data.
 The released simulation predates the current survey definition. Current GBTDS planning uses
 approximately 12-min F146 sampling, 66-s exposures, staggered colour visits, and multiple seasons.
 An audit against the current calibration also found F087/F213 zeropoints optimistic by about
-0.10/0.14 mag, an incorrectly ordered F087 saturation assumption, and colour-band background
+0.10/0.14 mag, an F087 saturation limit carried from a longer exposure (too faint: at equal
+exposure F087 saturates ~1.2 mag brighter than F146), and colour-band background
 ratios inconsistent with the published thermal backgrounds. The resulting effect on contaminant
 rejection is unquantified; the checkpoint has not been retrained with corrected photometry.
 

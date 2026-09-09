@@ -75,7 +75,37 @@ def test_efficiency_map_is_a_bounded_probability():
     det = gen & (lab == NON)
     assert det.sum() > 100
     recall = (pred[det] == NON).mean()
-    assert 0.0 <= recall <= 1.0
+    # A real bound, not a tautology: the pooled conditional recall on detectable binaries must
+    # agree with the committed headline completeness to within the two quantities' definitional
+    # difference (argmax vs thresholded), i.e. sit in the same neighbourhood, not merely in [0,1].
+    headline = json.load(open(os.path.join(RES, "metrics.json")))["headline"]["completeness_at_fixed_purity"]
+    assert abs(recall - headline) < 0.15, (recall, headline)
+
+
+@pytest.mark.skipif(not os.path.exists(os.path.join(RES, "params.npy")),
+                    reason="evaluation artifact not present")
+def test_efficiency_plane_reproduces_committed_artifact_on_test_rows():
+    """Regression for an audit finding: evaluate_checkpoint once passed the FULL 450,589-row pool
+    to efficiency_plane while every other block used the test rows, so regenerating metrics.json
+    would silently change the plane (+25% n_eff). The committed plane is the test-only
+    computation; this pins that the code path reproduces it."""
+    from pipeline.evaluate import efficiency_plane, population_weights
+    lab = np.load(os.path.join(RES, "label.npy")).astype(int)
+    tc = np.load(os.path.join(RES, "true_class.npy")).astype(int)
+    lg = np.load(os.path.join(RES, "logits.npy"))
+    params = np.load(os.path.join(RES, "params.npy"))
+    kp = np.load(os.path.join(RES, "keep_prob.npy"))
+    pf = json.load(open(os.path.join(RES, "meta.json")))["param_fields"]
+    ti = np.load(os.path.join(RES, "test_idx.npy")).astype(int)
+    w = population_weights(kp)
+    plane = efficiency_plane(params[ti], pf, lab[ti], lg.argmax(1)[ti], tc[ti], w[ti])
+    committed = json.load(open(os.path.join(RES, "metrics.json")))["efficiency_plane"]
+    got = np.nansum(np.asarray(plane["n_eff"], float))
+    want = np.nansum(np.asarray(committed["n_eff"], float))
+    assert abs(got - want) < 1e-6 * max(want, 1.0), (got, want)
+    a = np.asarray(plane["survey_detectability"], float)
+    b = np.asarray(committed["survey_detectability"], float)
+    assert np.allclose(np.nan_to_num(a, nan=-1), np.nan_to_num(b, nan=-1), atol=1e-9)
 
 
 def test_evaluate_efficiency_function_is_bounded():

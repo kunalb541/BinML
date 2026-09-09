@@ -135,7 +135,11 @@ def fig_roc_pr(P: Preds, baseline: Optional[str], out: str):
         bap = float(np.sum(np.diff(np.concatenate([[0], br])) * bp))
         ax.plot(br, bp, color="#1f77b4", lw=1.6, ls="--",
                 label=f"classical $\\Delta\\chi^2$ (AP={bap:.4f})")
-    ax.axhline(pos.mean(), color="k", ls=":", lw=0.8, label=f"prevalence {pos.mean():.3f}")
+    # The chance level for a POPULATION-WEIGHTED PR curve is the weighted prevalence. The raw label
+    # fraction (0.119 on the committed artifact) is 2.1x the weighted value (0.056, the number the
+    # abstract quotes) and would draw the random-classifier line in the wrong place.
+    prev = float((P.w * pos).sum() / P.w.sum())
+    ax.axhline(prev, color="k", ls=":", lw=0.8, label=f"prevalence (weighted) {prev:.3f}")
     ax.set_xlabel("completeness (recall)"); ax.set_ylabel("purity (precision)")
     ax.set_title("NonPSPL precision–recall: network vs classical"); ax.legend(loc="lower left")
 

@@ -192,9 +192,15 @@ def _config_for(regime: Optional[str], cfg: SurveyConfig):
         # concentrate the shard on the swept class (plus a little context) so the OOR draw
         # dominates the statistics
         tgt = OOR_REGIMES[regime][0]
-        mix = {tgt: 9000, "Flat": 1500, "PSPL": 1000, "NonPSPL": 500,
+        # Set the swept class LAST. The previous dict literal put `tgt: 9000` first and the six
+        # context classes after it, so Python's last-duplicate-wins rule silently reset the swept
+        # class to its context value (500-1,000). Every OOR shard in the shipped stress suite was
+        # generated that way: the swept class was a minority in its own regime (e.g. 438
+        # NonPSPL-labelled events in oor_np_widesep, not 9,000/shard). The recalls are unbiased
+        # but their support is what stress_report.json's per-class n says, not the regime total.
+        mix = {"Flat": 1500, "PSPL": 1000, "NonPSPL": 500,
                "PeriodicVar": 500, "LongPeriodVar": 500, "Eruptive": 500}
-        mix = {k: v for k, v in mix.items()}
+        mix[tgt] = 9000
     if spec is not None:
         if "cfg" in spec:
             cfg = dataclasses.replace(cfg, **spec["cfg"])

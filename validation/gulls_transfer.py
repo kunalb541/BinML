@@ -1,9 +1,15 @@
 """Cross-simulator transfer of BinML onto RMDC26 (GULLS) light curves.
 
-RESULT (2026-08-23): as shipped, BinML cannot be scored on this data.  RMDC26 implements the
-real GBTDS schedule, in which F146 pauses ~6 h seven times per season; BinML was trained on a
-continuous grid and reads a gap as evidence against a single lens.  On 1S1L (single lens) the
-shipped model returns PSPL 4%, NonPSPL 65%, PeriodicVar 31%.  validation/gulls/gap_sensitivity.py
+RESULT (2026-08-23, population-scale rerun 2026-09-09): as shipped, BinML cannot be scored on this
+data.  RMDC26 implements the real GBTDS schedule, in which the observing sequence pauses ~6 h seven
+times per season; BinML was trained on a continuous grid and reads a gap as evidence against a
+single lens.  On all 33,353 dense, amplitude- and t_E-matched 1S1L (single-lens) events the shipped
+model exceeds the anomaly threshold on 35.6% [35.1, 36.1] and returns argmax PSPL on only 2.5%
+(validation/gulls/transfer_full_reduced.json); the gap-aware fine-tune cuts the false-alarm rate to
+11.7% [11.3, 12.0] while keeping planetary recall at threshold (0.50 -> 0.46).  These are with
+binml.preprocess pooling one value per Roman epoch; the same rows binned by raw observation
+(*_rawpool.json) give 45.6% -> 9.7%, so the operating point moves ~10 points with the pooling
+rule -- the min/max channels carry the noise footprint.  validation/gulls/gap_sensitivity.py
 reproduces that with NO GULLS data by inserting the same gaps into in-distribution events
 (PSPL 0.93 -> 0.11, Flat 1.00 -> 0.08, NonPSPL / PeriodicVar unchanged).  The remedy is
 `pipeline/train.py --gap-aug`; see validation/modal_gap_finetune.py.  Every other mechanism
@@ -266,6 +272,16 @@ def main(argv=None):
         if cache_f and os.path.exists(cache_f):
             z = np.load(cache_f, allow_pickle=False)
             prepared = {}
+            # The cache key is (first id, last id, count), which does not encode the selection
+            # (--min-amp, --min-te, --seed). Guard it: every requested id must be present in the
+            # chunk, or the chunk is treated as a miss and re-queried. Without this a run with a
+            # different selection could hit a stale chunk and silently drop events.
+            cached_ids = {int(k.split("|")[1]) for k in z.files}
+            if set(ids) - cached_ids:
+                print(f"[cache] {os.path.basename(cache_f)} lacks {len(set(ids) - cached_ids)} of "
+                      f"{len(ids)} requested ids (different selection?); re-querying", flush=True)
+                prepared = None
+        if prepared is not None and cache_f and os.path.exists(cache_f):
             for key in z.files:
                 p_ = key.split("|")
                 if p_[0] == "s":
@@ -372,6 +388,8 @@ def main(argv=None):
             v = prepared.get(eid)
             j = j_of[eid]
             if v is None:
+                rows.append({"event_id": eid, "sim_label": m["sim_label"][j],
+                             "skipped": "not present in prepared chunk (cache/query mismatch)"})
                 continue
             if isinstance(v, str):
                 rows.append({"event_id": eid, "sim_label": m["sim_label"][j], "skipped": v})

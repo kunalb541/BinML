@@ -1,7 +1,9 @@
 """Gap fine-tune on Modal: teach BinML that Roman's F146 schedule has gaps.
 
 Why this exists -- validation/gulls/gap_sensitivity.py.  RMDC26 (GULLS) implements the real GBTDS
-schedule, in which F146 pauses ~6 h seven times per season.  BinML's training grid is continuous;
+schedule, in which the observing sequence pauses ~6 h seven times per season (derived from the
+F146 epoch spacing; the pause is applied to every band here, as a spacecraft-level interruption
+would be).  BinML's training grid is continuous;
 inserting those gaps into in-distribution events drops PSPL recall 0.93 -> 0.12 and Flat
 1.00 -> 0.08 (both go to NonPSPL / PeriodicVar) with NonPSPL and PeriodicVar unaffected, which is
 the GULLS cross-simulator failure reproduced with no GULLS data.
@@ -84,6 +86,13 @@ def finetune_and_eval(epochs: int, gap_aug: float, lr: float, tag: str) -> dict:
     ev_mm = build_mm(f"{VOL}/eval/*.h5", "ev")
     base = "/repo/binml/weights/binml.pt"
     ckpt = f"{VOL}/ft_{tag}.pt"
+    # The cache key is the free-form tag, so guard it: the .done marker records the hyper-parameters
+    # the checkpoint was trained with, and a rerun under the same tag with different settings refuses
+    # to silently reuse it.
+    stamp = f"epochs={epochs} gap_aug={gap_aug} lr={lr}"
+    if os.path.exists(ckpt + ".done") and open(ckpt + ".done").read().strip() not in ("", "ok", stamp):
+        raise SystemExit(f"{ckpt} was trained with {open(ckpt + '.done').read().strip()!r}, "
+                         f"not {stamp!r}; choose a new --tag")
     if not os.path.exists(ckpt + ".done"):
         subprocess.run(["python", "-m", "pipeline.train", "--cache", tr_mm, "--out", "/tmp/ft.pt",
                         "--init-weights", base, "--epochs", str(epochs), "--lr", str(lr),
@@ -91,7 +100,7 @@ def finetune_and_eval(epochs: int, gap_aug: float, lr: float, tag: str) -> dict:
                         "--seed", "20260823", "--device", "cuda"],
                        check=True, env=dict(os.environ, PYTHONPATH="/repo"), cwd="/repo")
         shutil.copy("/tmp/ft.pt", ckpt)
-        open(ckpt + ".done", "w").close()
+        open(ckpt + ".done", "w").write(stamp + "\n")     # records what this checkpoint was trained with
         vol.commit()
 
     def load(p):
@@ -149,7 +158,9 @@ def finetune_and_eval(epochs: int, gap_aug: float, lr: float, tag: str) -> dict:
         out[mode] = {}
         for name, net in nets.items():
             P = score(net, mode); pred = P.argmax(1); w = 1.0 / np.clip(kp, 1e-3, 1.0)
-            d = {}
+            d = {"_note": ("recall/precision are keep_prob-weighted (population estimates); n is the "
+                           "raw unweighted support; in the 'random' mode one gap pattern is drawn "
+                           f"per {bs}-event batch, i.e. ~{-(-n // bs)} independent patterns")}
             for c, cname in enumerate(CLASSES):
                 tp = (w * ((pred == c) & (y == c))).sum(); fn = (w * ((pred != c) & (y == c))).sum()
                 fp = (w * ((pred == c) & (y != c))).sum(); ns = int((y == c).sum())

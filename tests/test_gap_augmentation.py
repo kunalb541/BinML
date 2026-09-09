@@ -29,7 +29,7 @@ def test_gaps_are_contiguous_and_consistent_across_bands():
     out = _event()
     lab = _apply_gaps(out, I_PSPL, np.random.default_rng(0))
     m146 = out["F146"][:, 4] == 0
-    assert 1 <= m146.sum() <= 8 * 12 * 12            # at most 8 gaps x 12 h on a 2-h grid
+    assert 1 <= m146.sum() <= 8 * 6                   # at most 8 gaps x 12 h = 6 bins each on a 2-h grid
     runs = np.diff(np.r_[0, m146.astype(int), 0])
     assert 1 <= (runs == 1).sum() <= 8                # contiguous runs, not scattered bins
     for b, n in BAND_BINS.items():
@@ -41,9 +41,17 @@ def test_gaps_are_contiguous_and_consistent_across_bands():
     assert lab == I_PSPL                              # a wide PSPL survives any gap
 
 
-def test_flat_stays_flat():
+def test_flat_stays_flat_but_is_still_blanked():
+    """The Flat early-return must keep the label AND still apply the gaps to every band --
+    a Flat that skipped blanking would teach the model that Flat means 'no gaps'."""
     for s in range(10):
-        assert _apply_gaps(_event(amp=0.0), I_FLAT, np.random.default_rng(s)) == I_FLAT
+        out = _event(amp=0.0)
+        assert _apply_gaps(out, I_FLAT, np.random.default_rng(s)) == I_FLAT
+        m146 = out["F146"][:, 4] == 0
+        assert m146.sum() >= 1, "Flat event was not blanked"
+        for b, n in BAND_BINS.items():
+            if b != "F146":
+                assert np.array_equal(out[b][:, 4] == 0, m146.reshape(n, 864 // n).any(axis=1)), b
 
 
 def test_signal_entirely_inside_gap_becomes_flat():

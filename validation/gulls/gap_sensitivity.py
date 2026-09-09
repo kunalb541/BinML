@@ -8,13 +8,17 @@ is SNR < 3 or saturation, and across every class 0/1800 sampled training events 
 F146 bin.  The model's sole prior for an empty-bin token is the unrevealed future of a partial
 season, so a mid-season gap is read as evidence against a clean single lens.
 
-Inserting those seven gaps into in-distribution events gives PSPL recall 0.12 (-> NonPSPL 0.65,
-PeriodicVar 0.18) and Flat recall 0.08 (-> PeriodicVar), while NonPSPL (0.98) and PeriodicVar
-(1.00) are unaffected.  The GULLS run itself gave PSPL 0.04 / NonPSPL 0.65 / PeriodicVar 0.31 on
-1S1L.  The two agree; the transfer failure is the schedule, not the simulator.
+Inserting those seven gaps into in-distribution events (n = 100 per class, seed 0; the committed
+gap_sensitivity.json) gives PSPL recall 0.11 and Flat recall 0.08, while NonPSPL (0.97) and
+PeriodicVar (1.00) are unaffected.  Single-gap length sweep at a FIXED position (the rng is
+re-seeded each iteration, so only the length varies): gaps of 0.5-2 h cost PSPL <= 7 points; at
+4 h PSPL is 0.65 and Flat 0.60; at 6 h PSPL is 0.09 and Flat 0.81 -- Flat is NOT monotonic in gap
+length on this matched event set.  The GULLS run gave PSPL 0.04 / NonPSPL 0.65 / PeriodicVar 0.31
+on 1S1L (validation/gulls/transfer_shipped.json).  The two agree; the failure is the schedule.
 
-`pipeline/train.py --cadence-aug` thins random bins with relabelling and is the designed remedy;
-the shipped checkpoint was trained with it at 0.0.
+The remedy is `pipeline/train.py --gap-aug` (contiguous Roman-like blanks with relabelling).
+`--cadence-aug` thins RANDOM bins, which is the sparse ground-survey regime, not this one; the
+shipped checkpoint was trained with neither (both 0.0).
 
 Usage:  python validation/gulls/gap_sensitivity.py [--n 60] [--out validation/gulls/gap_sensitivity.json]
 """
@@ -35,7 +39,6 @@ def recall_under_gaps(clf, cfg, gaps_d, gap_h, n, seed, classes=CLASSES):
     out = {}
     for cls in classes:
         rng = np.random.default_rng(seed)
-        r2 = np.random.default_rng(seed + 1)
         ok = 0; done = 0; lc = collections.Counter()
         while done < n:
             ev = simulate_event(cls, rng, cfg)

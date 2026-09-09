@@ -110,7 +110,13 @@ def main(argv=None) -> int:
     sub = ap.add_subparsers(dest="cmd")
     c = sub.add_parser("classify", help="classify a CSV/whitespace file (F146: time, mag[, err])")
     c.add_argument("file")
-    c.add_argument("--m-base", type=_finite_float, default=None, help="F146 baseline magnitude")
+    c.add_argument("--m-base", type=_finite_float, default=None,
+                   help="F146 quiescent baseline magnitude (catalogue or multi-season value). "
+                        "Required unless --estimate-baseline is given.")
+    c.add_argument("--estimate-baseline", action="store_true",
+                   help="allow the 90th-percentile fallback baseline; biased 1.28 sigma faint on a "
+                        "quiescent source (can turn Flat into PSPL) and bright on a long/blended "
+                        "event (microlensing -> LongPeriodVar). Use only for a quick look.")
     c.add_argument("--t-start", type=_finite_float, default=None, help="day the 72-d window opens")
     ap.add_argument("--version", action="store_true")
     a = ap.parse_args(argv)
@@ -118,6 +124,10 @@ def main(argv=None) -> int:
         import binml; print(binml.__version__); return 0
     if a.cmd != "classify":
         ap.print_help(); return 1
+    if a.m_base is None and not a.estimate_baseline:
+        # FAIL CLOSED. The model's classes are defined relative to the quiescent baseline, and the
+        # fallback estimator is biased in one direction or the other for every kind of source.
+        ap.error("--m-base is required (pass --estimate-baseline to accept the biased fallback)")
     try:
         t, m = _load_light_curve(a.file)
         import binml

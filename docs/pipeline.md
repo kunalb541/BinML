@@ -168,7 +168,8 @@ python -m pipeline.plot_evolution_cloud --cache data/cache/shard_00000.h5 \
 
 - **Legacy photometry.** The released model was trained with 46.8-s legacy exposures. Against the
   current Roman calibration, its F087/F213 zeropoints are optimistic by about 0.10/0.14 mag, its
-  F087 saturation ordering is wrong at equal exposure, and its colour-band background ratios do
+  F087 saturation limit (13.9, carried from a 286-s exposure) is too faint for the shorter exposure --
+  at equal exposure and well depth F087 saturates about 1.2 mag brighter than F146, not fainter -- and its colour-band background ratios do
   not match the published thermal backgrounds. Corrected constants are recorded in
   `photometry.py`, but the released checkpoint has not been retrained with them and their effect is
   unquantified.

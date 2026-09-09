@@ -48,8 +48,14 @@ def estimate_baseline(mag: np.ndarray) -> float:
     side. The 90th percentile is used rather than the median because a blended or long event
     keeps most epochs slightly brightened, so the median is biased bright — and a bright
     baseline error makes the whole (baseline-relative) curve read as slow variability, which
-    can flip a real microlensing event to LongPeriodVar. Even so this is only reliable for
-    short, well-sampled events; provide ``m_base_ref`` for anything else."""
+    can flip a real microlensing event to LongPeriodVar.
+
+    The price is the opposite failure on a QUIESCENT source: for pure noise the 90th percentile
+    sits 1.28 sigma faint of the true level, so the baseline-relative curve reads as a constant
+    brightening of 1.28 sigma. At typical Roman noise (sigma ~ 0.02-0.1 mag) that straddles the
+    0.02 mag amplitude floor the classes are defined on, and a flat star can come back PSPL or
+    LongPeriodVar. There is no estimator that is unbiased for both cases from one 72-day window;
+    provide ``m_base_ref`` (a catalogue or multi-season baseline) for anything that matters."""
     mag = np.asarray(mag, float)
     mag = mag[np.isfinite(mag)]
     return float(np.percentile(mag, 90)) if mag.size else 0.0
@@ -59,10 +65,13 @@ def bin_band(time: np.ndarray, mag: np.ndarray, band: str, m_base_ref: float,
              t_start: float) -> Tuple[np.ndarray, np.ndarray, int]:
     """Bin one band's observations onto the model's fixed grid.
 
-    Returns ``(feat[nbins,3], frac[nbins], n_used)``. Bin ``i`` covers
-    ``[t_start + i·w, t_start + (i+1)·w)`` with ``w = 72/nbins`` days — the same partition the
-    training cache produces by pooling epochs, so a Roman-cadence curve bins identically here
-    and in training.
+    Returns ``(feat[nbins,3], frac[nbins], n_used)``, where ``n_used`` counts distinct Roman
+    epochs with an observation. Bin ``i`` covers ``[t_start + i·w, t_start + (i+1)·w)`` with
+    ``w = 72/nbins`` days — the same partition the training cache produces by pooling epochs.
+    Observations are first reduced to one value per 15-min Roman epoch (mean of any that share an
+    epoch), then binned; for one-observation-per-epoch input this is bit-identical to binning the
+    raw observations, and for denser input it reproduces the cache's representation instead of
+    inflating the min/max and frac channels with the sampling density.
     """
     nbins = BAND_BINS[band]
     factor = BIN_FACTORS[band]             # epochs per bin (frac denominator, matches cache.py)
@@ -76,16 +85,29 @@ def bin_band(time: np.ndarray, mag: np.ndarray, band: str, m_base_ref: float,
     # a bin boundary into the wrong bin; integer epoch indexing does not.
     epoch = np.round((t - t_start) / step).astype(int)
     inwin = (epoch >= 0) & (epoch < n_epochs)
-    idx = (epoch[inwin] // factor)
     dm = m[inwin] - m_base_ref             # ONE reference baseline for all bands (colour survives)
+    epoch = epoch[inwin]
     feat = np.full((nbins, 3), np.nan, np.float32)
     frac = np.zeros(nbins, np.float32)
-    if idx.size:
-        for b in np.unique(idx):
-            v = dm[idx == b]
-            feat[b] = (v.mean(), v.min(), v.max())
-            frac[b] = min(v.size / factor, 1.0)
-    return feat, frac, int(idx.size)
+    if epoch.size == 0:
+        return feat, frac, 0
+    # ONE VALUE PER ROMAN EPOCH FIRST. The training cache (pipeline.cache.bin_curve) holds exactly
+    # one magnitude per epoch and pools at most `factor` of them per bin; its min/max are extrema
+    # over <= factor epoch values and its frac is (observed epochs)/factor. Input sampled finer
+    # than the grid (RMDC26's 12.1-min F146; any survey with repeat exposures) lands several
+    # observations on one epoch index. Pooling those raw observations directly would inflate the
+    # min/max channels with the sampling density and push frac past 1 -- the equivalence with the
+    # cache holds only for on-grid input. Averaging the observations that share an epoch first
+    # restores the cache's representation; for one-observation-per-epoch input (all training and
+    # evaluation data) this is bit-identical to pooling the raw observations.
+    uep, inv = np.unique(epoch, return_inverse=True)
+    epval = np.bincount(inv, weights=dm) / np.bincount(inv)
+    idx = uep // factor
+    for b in np.unique(idx):
+        v = epval[idx == b]
+        feat[b] = (v.mean(), v.min(), v.max())
+        frac[b] = min(v.size / factor, 1.0)
+    return feat, frac, int(uep.size)
 
 
 def to_tokens(bands: Dict[str, Tuple[np.ndarray, np.ndarray]],
@@ -130,9 +152,10 @@ def to_tokens(bands: Dict[str, Tuple[np.ndarray, np.ndarray]],
     if m_base_ref is None:
         m_base_ref = estimate_baseline(m146)
         warnings.warn(
-            "m_base_ref not given; estimating the F146 baseline from the faint tail. This is "
-            "unreliable except for short, well-sampled events and can misclassify (e.g. "
-            "microlensing -> LongPeriodVar). Pass the catalogue F146 baseline magnitude.",
+            "m_base_ref not given; estimating the F146 baseline as the 90th percentile. This is "
+            "biased in BOTH directions: a long or blended event biases it bright (microlensing "
+            "-> LongPeriodVar), and a quiescent source biases it 1.28 sigma faint (Flat -> "
+            "PSPL/LongPeriodVar). Pass the catalogue F146 baseline magnitude.",
             stacklevel=2)
     elif not np.isfinite(m_base_ref):
         raise ValueError(f"m_base_ref must be finite, got {m_base_ref!r}")

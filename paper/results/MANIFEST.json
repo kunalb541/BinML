@@ -62,8 +62,8 @@
   },
   "files": {
     "paper/canonical_numbers.json": {
-      "sha256": "4c868405c630a120835537deceac75e3460cb156a1ab29d6e11e52e87e832ec5",
-      "_note": "hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67..."
+      "sha256": "2cd1fa6b142372bb5a1f6a6a0ae7ca9c24f93477e39e476159bcb01c3f383bf3",
+      "_note": "hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67... | 2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 4c868405c630a120..."
     },
     "paper/results/metrics.json": {
       "sha256": "a69add24bfa5f3bda8d800269f541700ee7a18c749578935962124499a42c73c"
@@ -97,7 +97,8 @@
       "sha256": "5eec75cb52093b17c76bd8d9ef4aedae4d41db5f4fabb4620dda44ed57194c65"
     },
     "validation/baselines_result.json": {
-      "sha256": "106ec0b8804ac20639b85dc6e19517a1dd81f6f137f0015fe05118ecae1a3212"
+      "sha256": "df47be6bef7c876594ad14b0bd58250e98c97f14a91d56fb615d4534a1f45a85",
+      "_note": "2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 106ec0b8804ac206..."
     },
     "validation/cadence_result.json": {
       "sha256": "30bd192b163e8a1ee4b84ed8cf9406b67402ec114a6306b0fbb525279f1f3b82"

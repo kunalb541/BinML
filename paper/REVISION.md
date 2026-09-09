@@ -50,13 +50,25 @@ Inserting RMDC26's seven gaps into in-distribution events (n = 100 per class,
 | 1 gap × 6 h | 0.090 | 1.000 | 0.810 | 0.990 |
 | RMDC26 schedule (7 × 6.2 h) | 0.110 | 0.970 | 0.080 | 1.000 |
 
-Recall, argmax. Gaps ≤ 2 h are nearly harmless. The lost PSPL and Flat events go to NonPSPL and
-PeriodicVar; NonPSPL and PeriodicVar recall are unaffected. This is a property of the input
+Recall, argmax. Gaps ≤ 2 h are nearly harmless (a 0.5 h gap, not shown, costs nothing). The lost
+PSPL and Flat events go to NonPSPL and PeriodicVar; NonPSPL and PeriodicVar recall are unaffected.
+Flat is NOT monotonic in gap length (1.00 → 0.60 at 4 h → 0.81 at 6 h); every condition scores
+the same 100 events per class (the harness re-seeds per condition), so this is model behaviour,
+not sampling noise — do not describe the degradation as monotonic. This is a property of the input
 contract, not of the physics, and it is reproduced with no GULLS data at all.
 
 **The remedy.** `pipeline/train.py --gap-aug` blanks 1–8 contiguous runs of 1–12 h in every
-band and relabels on the same rule as the existing truncation augmentation (caustic inside a gap
-→ PSPL; nothing detectable left → Flat). The existing `--cadence-aug` thins bins at random,
+band and relabels. **Audit correction (2026-09-09) — describe what g08e12 actually ran with, not
+the intended rule:** the "caustic inside a gap → PSPL" test used `t_anom`, which the simulator
+resolves only to 7.2-day steps (the END of the first 7.2-d interval in which the anomaly became
+detectable), so it tested a 6-hour slot up to 7.2 d after the real caustic — effectively an
+arbitrary slot, relabelling ~1–2% of NonPSPL events to PSPL at random rather than the ones whose
+caustic was hidden. The "nothing detectable left → Flat" branch compares a NOISY max against the
+0.02 mag floor and never fires for m ≳ 21. Neither defect touches any reported metric (both act
+on training labels only), and the g08e12 result stands as measured, but the manuscript must say
+the fine-tune's relabelling was approximate. Fixing the rule (finer onset resolution; noise-aware
+floor) changes `--gap-aug` semantics relative to the released checkpoint, so do it under a
+version flag or retrain, not silently. The existing `--cadence-aug` thins bins at random,
 which is the sparse-ground-survey regime, not this one. A warm-start fine-tune from the shipped
 weights on 45k natural-prior events (`validation/modal_gap_finetune.py`, 12 epochs, p = 0.8,
 lr 1e-4, checkpoint `validation/gulls/weights/ft_g08e12.pt`), scored on 14,958 held-out events
@@ -69,27 +81,46 @@ lr 1e-4, checkpoint `validation/gulls/weights/ft_g08e12.pt`), scored on 14,958 h
 | random 1–8 gaps | 0.454 | 0.886 |
 
 Under the RMDC26 schedule PSPL recall goes 0.078 → 0.885 and Flat 0.071 → 0.975. The cost is
-1.3 macro-F1 points on clean data, mostly PeriodicVar precision (0.956 → 0.926).
+1.3 macro-F1 points on clean data. Per class the F1 losses are Eruptive −0.025 (precision
+0.829 → 0.790), **NonPSPL −0.021 (precision 0.685 → 0.661 — the science class gets less pure)**,
+PeriodicVar −0.019 (precision 0.956 → 0.926), PSPL −0.009, Flat −0.004, LongPeriodVar −0.002.
+Say this plainly; an earlier draft attributed the cost "mostly" to PeriodicVar, which the
+artifact does not support. Recall/precision in gap_finetune_g08e12.json are keep_prob-WEIGHTED
+population estimates; the `n` next to them is the raw unweighted support.
 
-**Cross-simulator transfer.** With the fine-tuned checkpoint BinML can, for the first time, be
-scored on an independent simulator. Selection: amplitude ≥ 0.1 mag from the metadata (GULLS
-simulates the whole population; its median 1S1L peak is 0.063 mag), t_E in BinML's training
-support [1, 300] d (RMDC26 1S1L is 33% sub-day, its binary classes 0.2%, so an uncut comparison
-conflates timescale with lens multiplicity), one contiguous id block per class (a 250-id block
-spans 105 of 129 fields), baseline measured empirically from the off-event flux. 1,286 dense
-events, identical set for both models (`validation/gulls/transfer_*.json`):
+**Cross-simulator transfer (full population, 2026-09-09).** With the fine-tuned checkpoint BinML
+can, for the first time, be scored on an independent simulator. Selection: amplitude ≥ 0.1 mag
+from the metadata (GULLS simulates the whole population; its median 1S1L peak is 0.063 mag), t_E
+in BinML's training support [1, 300] d (RMDC26 1S1L is 33% sub-day, its binary classes 0.2%, so
+an uncut comparison conflates timescale with lens multiplicity), **every** eligible event
+(100,935 requested; 25,871 skipped for t0 in an inter-season gap, no usable F146, or too few
+off-event epochs for a baseline; 18,089 fell in low-cadence seasons and are reported separately),
+baseline measured empirically from the off-event flux. **56,975 dense events**, identical set
+and bit-identical inputs for both models (`validation/gulls/transfer_full_*.json`, reduced by
+`validation/gulls/transfer_reduce.py`):
 
-| RMDC26 class | truth | n | PSPL | NonPSPL | PeriodicVar | ≥ 0.9042 |
-|---|---|---|---|---|---|---|
-| 1S1L single lens | PSPL | 279 | 0.03 → 0.66 | 0.69 → 0.31 | 0.27 → 0.00 | 0.52 → 0.07 |
-| 1S2L planet | NonPSPL | 527 | 0.00 → 0.31 | 0.77 → 0.69 | 0.23 → 0.00 | 0.58 → 0.37 |
-| 2S2L planet + binary source | NonPSPL | 480 | 0.00 → 0.29 | 0.81 → 0.70 | 0.19 → 0.00 | 0.68 → 0.36 |
+| RMDC26 class | truth | n | PSPL | NonPSPL | PeriodicVar | ≥ 0.9042 | weighted ≥ 0.9042 |
+|---|---|---|---|---|---|---|---|
+| 1S1L single lens | PSPL | 33,353 | 0.03 → 0.54 | 0.53 → 0.43 | 0.44 → 0.01 | **0.356 → 0.117** | 0.383 → 0.135 |
+| 1S2L planet | NonPSPL | 11,388 | 0.00 → 0.17 | 0.64 → 0.83 | 0.36 → 0.00 | 0.504 → 0.457 | 0.474 → 0.512 |
+| 2S2L planet + binary source | NonPSPL | 12,234 | 0.00 → 0.16 | 0.71 → 0.83 | 0.29 → 0.00 | 0.582 → 0.469 | 0.505 → 0.523 |
 
-Shipped → fine-tuned, argmax fractions; last column is the fraction over the frozen threshold.
-Single-lens false alarms at the frozen threshold fall from 52% to 7% and the PeriodicVar
-contamination disappears. Planetary over-threshold recall of 0.37 is the first meaningful such
-number: the shipped 0.58 was obtained while flagging single lenses at 52%. The threshold was
-calibrated on gap-free data and is open to re-tuning for this regime.
+Shipped → fine-tuned, argmax fractions; the two right-hand columns are the fraction over the
+frozen threshold, unweighted and GULLS `final_weight`-weighted (Wilson 95% intervals are ±0.5
+points or better at these n; they are in the reduced JSON). Single-lens false alarms at the
+frozen threshold fall by a factor of three (35.6% → 11.7%) while planetary recall at threshold
+is nearly preserved (0.50 → 0.46; 0.58 → 0.47), and the PeriodicVar contamination disappears.
+The fine-tune also lifts argmax anomaly recall on genuine binaries from 0.64/0.71 to 0.83. The
+threshold was calibrated on gap-free data and is open to re-tuning for this regime.
+
+**Preprocessing sensitivity (state it).** RMDC26 samples F146 every 12.1 min against BinML's
+15-min epoch grid, so a quarter of the observations share an epoch. `binml.preprocess` now
+reduces to one value per epoch before binning, which reproduces the training-cache
+representation exactly (bit-identical on-grid). Binning the same rows by raw observation
+instead gives 45.6% → 9.7% on 1S1L and 0.36/0.37 planetary recall at threshold
+(`transfer_full_*_rawpool.json`): the operating point moves by ~10 points with the pooling rule,
+because the per-bin min/max channels carry the noise footprint. The epoch-pooled numbers are the
+ones to report, with this sensitivity disclosed.
 
 ### What NOT to claim
 
@@ -98,7 +129,7 @@ calibrated on gap-free data and is open to re-tuning for this regime.
   RMDC26 ships no 2S1L class, so the Gaudi (1998) degeneracy raised in §discussion is still
   untested. Say so.
 - GULLS planets are harder than ours at matched amplitude (median q 1.25e-4; the amplitude cut
-  keeps faint perturbations). Do not read 0.37 against the in-distribution 0.879.
+  keeps faint perturbations). Do not read 0.46 against the in-distribution 0.879.
 - The catalogue baseline `Source_F146 + 2.5 log10(fs_F146)` is uniformly 0.471 mag brighter
   than the quiescent flux in this release. We did not use it. Mention in a footnote only if a
   referee asks how the baseline was obtained.
@@ -110,8 +141,9 @@ calibrated on gap-free data and is open to re-tuning for this regime.
 - **New short subsection, cross-simulator transfer:** the GULLS table, with the selection
   stated. This directly answers the standing objection that all validation uses our own
   simulator.
-- **Abstract:** one sentence. "On an independent simulator (GULLS/RMDC26) a gap-aware
-  fine-tune reduces single-lens false alarms at the operating threshold from 52% to 7%."
+- **Abstract:** one sentence. "On an independent simulator (GULLS/RMDC26, 56,975 matched
+  events) a gap-aware fine-tune cuts single-lens false alarms at the operating threshold from
+  36% to 12% while preserving planetary recall at threshold (0.50 → 0.46)."
 - **Model card / README:** input contract now states "continuous F146; for Roman's planned
   schedule use the gap-aware checkpoint."
 - **Decide:** whether `ft_g08e12.pt` becomes the shipped weights. If yes, every headline number

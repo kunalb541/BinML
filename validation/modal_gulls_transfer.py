@@ -41,7 +41,10 @@ app = modal.App("binml-gulls")
 vol = modal.Volume.from_name("binml-gulls", create_if_missing=True)
 VOL = "/data"
 
-BASE = "https://huggingface.co/datasets/RGES-PIT/MachineLearning/resolve/main/"
+# Pinned to the same dataset revision as validation/gulls_transfer.py. RGES-PIT re-uploaded obs and
+# meta on 2026-08-18; `resolve/main` is not a reproducible reference.
+REVISION = "a338d5bab441b5caf551d2fea9469aadfdc81ec1"
+BASE = f"https://huggingface.co/datasets/RGES-PIT/MachineLearning/resolve/{REVISION}/"
 OBS = BASE + "RMDC26_ML_Data_obs.parquet"
 EPOCH = BASE + "RMDC26_ML_Data_epoch.parquet"
 META = BASE + "RMDC26_ML_Data_meta.parquet"

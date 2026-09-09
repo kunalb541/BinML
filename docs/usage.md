@@ -70,6 +70,8 @@ days, probs = clf.predict_evolution({"F146": (t146, m146)}, m_base_ref=22.1, n_s
 
 ```bash
 binml classify lc.csv --m-base 22.1        # CSV/whitespace: time, mag[, ignored third column]
+# --m-base is required: the classes are defined relative to the quiescent baseline. Pass
+# --estimate-baseline only for a quick look; the fallback estimator is biased for every source type.
 binml --version
 ```
 
