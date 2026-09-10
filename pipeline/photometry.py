@@ -180,19 +180,24 @@ class BulgeExtinction:
 # ---------------------------------------------------------------------------------
 # Noise and detectability
 # ---------------------------------------------------------------------------------
-def photometric_sigma(band: Band, mag_ab: np.ndarray) -> np.ndarray:
+def photometric_sigma(band: Band, mag_ab: np.ndarray, noise_mult: float = 1.0) -> np.ndarray:
     """Per-epoch photometric uncertainty (mag), Penny et al. 2019 form.
 
-    sigma = sqrt( (1.0857 * sqrt(F + background) / F)^2 + floor^2 )
+    sigma = sqrt( (noise_mult * 1.0857 * sqrt(F + background) / F)^2 + floor^2 )
+
+    ``noise_mult`` scales the photon-noise term only (the systematic floor is a separate
+    physical effect). 1.0 is the released model; other values exist for the noise-model
+    ablation against GULLS/RMDC26 (SurveyConfig.noise_mult), whose per-epoch errors are larger
+    than this model's at the faint end.
     """
     F = band.flux_e(mag_ab)
     F = np.maximum(F, 1e-6)                       # guard: never divide by zero
-    shot = 1.0857 * np.sqrt(F + band.background_e2) / F
+    shot = noise_mult * 1.0857 * np.sqrt(F + band.background_e2) / F
     return np.sqrt(shot ** 2 + band.sys_floor_mag ** 2)
 
 
 def observe(band: Band, mag_true: np.ndarray, rng: np.random.Generator,
-            snr_threshold: float = 3.0
+            snr_threshold: float = 3.0, noise_mult: float = 1.0
             ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Turn a noise-free light curve into what the telescope actually records.
 
@@ -223,13 +228,13 @@ def observe(band: Band, mag_true: np.ndarray, rng: np.random.Generator,
     F_true = band.flux_e(mag_true)
 
     # detectability from the TRUE flux
-    sigma_true = photometric_sigma(band, mag_true)
+    sigma_true = photometric_sigma(band, mag_true, noise_mult)
     detected = (1.0857 / np.maximum(sigma_true, 1e-12)) >= snr_threshold
     saturated = mag_true < band.saturation_ab
     usable = detected & (~saturated)
 
     # noise in FLUX space; a non-positive draw is a legitimate non-detection
-    noise_e = np.sqrt(np.maximum(F_true, 0.0) + band.background_e2)
+    noise_e = noise_mult * np.sqrt(np.maximum(F_true, 0.0) + band.background_e2)
     F_obs = F_true + rng.normal(0.0, noise_e)
 
     # A real pipeline also cannot REPORT a magnitude for a measurement that is not itself
@@ -247,7 +252,7 @@ def observe(band: Band, mag_true: np.ndarray, rng: np.random.Generator,
         Fo = F_obs[usable]
         mag_obs[usable] = band.zeropoint - 2.5 * np.log10(Fo / band.exposure_s)
         # uncertainty from the MEASURED flux, plus the systematic floor
-        shot = 1.0857 * np.sqrt(Fo + band.background_e2) / Fo
+        shot = noise_mult * 1.0857 * np.sqrt(Fo + band.background_e2) / Fo
         mag_err[usable] = np.sqrt(shot ** 2 + band.sys_floor_mag ** 2)
     return usable, mag_obs, mag_err
 

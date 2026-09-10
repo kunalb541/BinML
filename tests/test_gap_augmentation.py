@@ -81,3 +81,36 @@ def test_binary_with_caustic_inside_gap_becomes_pspl():
         else:
             assert lab == I_NON
     assert seen > 0
+
+
+def test_rmdc26_schedule_mask_blanks_exactly_the_seven_pauses_and_the_season_end():
+    from pipeline.train import rmdc26_schedule_mask, RMDC26_GAPS_D, RMDC26_GAP_H, RMDC26_SEASON_D
+    m = rmdc26_schedule_mask(864)
+    centres = (np.arange(864) + 0.5) * 72.0 / 864
+    # every blanked bin is either inside a pause or past the season end, and vice versa
+    inside = np.zeros(864, bool)
+    for g in RMDC26_GAPS_D:
+        inside |= (centres >= g) & (centres < g + RMDC26_GAP_H / 24.0)
+    assert np.array_equal(m, inside | (centres > RMDC26_SEASON_D))
+    assert 7 * 3 <= inside.sum() <= 7 * 4          # 6.2 h on a 2 h grid: 3 or 4 bin centres per pause
+    assert (centres > RMDC26_SEASON_D).sum() == 16  # 1.3 d past season end
+
+
+def test_apply_gaps_with_schedule_blanks_the_fixed_mask_in_every_band():
+    from pipeline.train import rmdc26_schedule_mask
+    rng = np.random.default_rng(3)
+    out = {b: np.ones((L, 5), np.float32) for b, L in BAND_BINS.items()}
+    for x in out.values():
+        x[:, :3] = 0.5                                  # a 0.5 mag signal everywhere
+    m = rmdc26_schedule_mask(BAND_BINS["F146"])
+    lab = _apply_gaps(out, I_PSPL, rng, None, None, schedule=m)
+    assert lab == I_PSPL                                # plenty of signal survives
+    assert np.array_equal(out["F146"][:, 4] == 0, m)    # reference band: exactly the mask
+    for b, L in BAND_BINS.items():
+        if L != BAND_BINS["F146"]:
+            exp = m.reshape(L, BAND_BINS["F146"] // L).any(axis=1)
+            assert np.array_equal(out[b][:, 4] == 0, exp)
+    # deterministic: the same mask again, regardless of rng state
+    out2 = {b: np.ones((L, 5), np.float32) for b, L in BAND_BINS.items()}
+    _apply_gaps(out2, I_PSPL, np.random.default_rng(99), None, None, schedule=m)
+    assert np.array_equal(out2["F146"][:, 4], out["F146"][:, 4])

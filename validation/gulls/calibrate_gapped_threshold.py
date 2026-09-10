@@ -48,7 +48,8 @@ def gap_mask_f146():
     return m
 
 
-def make_gapped(src, dst):
+def make_gapped(src, dst, mask=None, note="RMDC26 seven ~6.2 h pauses"):
+    """Copy a memmap and blank `mask` (reference-band bins; default: the seven pauses) into it."""
     if os.path.exists(os.path.join(dst, "meta.json")):
         return
     os.makedirs(dst, exist_ok=True)
@@ -56,7 +57,7 @@ def make_gapped(src, dst):
         if f.endswith(".npy") or f == "meta.json":
             shutil.copy(os.path.join(src, f), os.path.join(dst, f))
     n = json.load(open(os.path.join(src, "meta.json")))["n_events"]
-    m146 = gap_mask_f146()
+    m146 = gap_mask_f146() if mask is None else np.asarray(mask, bool)
     for b, L in BAND_BINS.items():
         mask = m146 if L == 864 else m146.reshape(L, 864 // L).any(axis=1)
         feat = np.memmap(os.path.join(src, f"feat_{b}.f16"), np.float16, "r", shape=(n, L, 3))
@@ -70,7 +71,7 @@ def make_gapped(src, dst):
             fo[i:i + step] = x; fr[i:i + step] = y
         fo.flush(); fr.flush()
     meta = json.load(open(os.path.join(dst, "meta.json")))
-    meta["gapped"] = {"schedule": "RMDC26 seven ~6.2 h pauses", "gaps_d": RMDC26_GAPS_D,
+    meta["gapped"] = {"schedule": note, "gaps_d": RMDC26_GAPS_D,
                       "f146_bins_blanked": int(m146.sum())}
     json.dump(meta, open(os.path.join(dst, "meta.json"), "w"), indent=1)
 

@@ -25,7 +25,7 @@ Three things this module gets right that the v4 simulator got wrong:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace as _dc_replace
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -71,6 +71,12 @@ class SurveyConfig:
     # estimate before the production run.
     min_amplitude_mag: float = 0.02
     snr_threshold: float = 3.0
+    # Noise-model knobs for the GULLS/RMDC26 noise ablation (paper/REVISION.md S1.5, experiment 5).
+    # noise_mult scales the per-epoch photon-noise term in every band; bkg_mult scales the
+    # background VARIANCE (crowded-field light raises noise for faint sources but not bright
+    # ones). Both 1.0 = the released photometry, bit-for-bit.
+    noise_mult: float = 1.0
+    bkg_mult: float = 1.0
     # OBSERVED F146 baseline magnitude range (AB). This is the magnitude AFTER extinction --
     # sampling it before extinction (as an earlier version did) pushed sources to 27+ mag,
     # far below the detection limit, and made every light curve noise-dominated.
@@ -276,6 +282,8 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     for bname, band in ROMAN_BANDS.items():
         t = _epochs(bname, cfg.window_days)
         f_s_b = blend_fraction_in_band(f_s_ref, band, ref_band, blend_colour, ext, a_ks)
+        if cfg.bkg_mult != 1.0:                    # noise ablation only; default path untouched
+            band = _dc_replace(band, background_e2=band.background_e2 * cfg.bkg_mult)
 
         if fine_delta is not None:
             stride = _band_stride(cfg.reference_band, bname)
@@ -295,8 +303,8 @@ def simulate_event(true_class: str, rng: np.random.Generator,
         # Noise in FLUX space, detectability judged on the TRUE flux, reported error
         # derived from the MEASURED flux -- see photometry.observe for why each of those
         # three choices matters.
-        usable, mag_obs, mag_err = observe(band, mag_true, rng, cfg.snr_threshold)
-        sigma = photometric_sigma(band, mag_true)      # model sigma, for the chi^2 statistics
+        usable, mag_obs, mag_err = observe(band, mag_true, rng, cfg.snr_threshold, cfg.noise_mult)
+        sigma = photometric_sigma(band, mag_true, cfg.noise_mult)   # model sigma, for the chi^2 statistics
 
         # delta-chi^2 of the NOISE-FREE signal against a FLAT model at the known baseline.
         # Using mag_true (not mag_obs) is essential: an observed-vs-model chi^2 has
