@@ -1,0 +1,296 @@
+{
+ "_doc": "Sub-day-t_E single lenses (the FFP-like third of RMDC26 1S1L) as an explicit OUT-OF-SUPPORT row.",
+ "n_matched_dense_1S1L_subday": 1385,
+ "te_days": {
+  "median": 0.133,
+  "p10": 0.018,
+  "p90": 0.685
+ },
+ "note": "OUT OF SUPPORT: t_E below the [1, 300] d training prior; a 0.16 d event spans two of the 864 F146 bins",
+ "models": {
+  "shipped": {
+   "fa_at": {
+    "frozen": {
+     "threshold": 0.9042,
+     "fa": 0.0152,
+     "fa_weighted": 0.0189
+    }
+   },
+   "argmax_distribution": {
+    "Flat": 0.0022,
+    "NonPSPL": 0.0635,
+    "PSPL": 0.0007,
+    "PeriodicVar": 0.9336
+   },
+   "fa_frozen_by_te": [
+    {
+     "te_bin": [
+      0,
+      0.1
+     ],
+     "n": 600,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0
+    },
+    {
+     "te_bin": [
+      0.1,
+      0.25
+     ],
+     "n": 318,
+     "fa": 0.0031,
+     "frac_argmax_pspl": 0.0
+    },
+    {
+     "te_bin": [
+      0.25,
+      0.5
+     ],
+     "n": 222,
+     "fa": 0.0225,
+     "frac_argmax_pspl": 0.0
+    },
+    {
+     "te_bin": [
+      0.5,
+      1.0
+     ],
+     "n": 245,
+     "fa": 0.0612,
+     "frac_argmax_pspl": 0.0041
+    }
+   ]
+  },
+  "ft_g08e12": {
+   "fa_at": {
+    "frozen": {
+     "threshold": 0.9042,
+     "fa": 0.0303,
+     "fa_weighted": 0.1069
+    },
+    "calibrated_gapped": {
+     "threshold": 0.9992,
+     "fa": 0.0,
+     "fa_weighted": 0.0
+    }
+   },
+   "argmax_distribution": {
+    "Eruptive": 0.0419,
+    "Flat": 0.0903,
+    "NonPSPL": 0.2014,
+    "PSPL": 0.026,
+    "PeriodicVar": 0.6404
+   },
+   "fa_frozen_by_te": [
+    {
+     "te_bin": [
+      0,
+      0.1
+     ],
+     "n": 600,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0
+    },
+    {
+     "te_bin": [
+      0.1,
+      0.25
+     ],
+     "n": 318,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0063
+    },
+    {
+     "te_bin": [
+      0.25,
+      0.5
+     ],
+     "n": 222,
+     "fa": 0.045,
+     "frac_argmax_pspl": 0.0225
+    },
+    {
+     "te_bin": [
+      0.5,
+      1.0
+     ],
+     "n": 245,
+     "fa": 0.1306,
+     "frac_argmax_pspl": 0.1184
+    }
+   ]
+  },
+  "fspl_g08": {
+   "fa_at": {
+    "frozen": {
+     "threshold": 0.9042,
+     "fa": 0.0152,
+     "fa_weighted": 0.0458
+    },
+    "calibrated_gapped": {
+     "threshold": 0.9353,
+     "fa": 0.0065,
+     "fa_weighted": 0.0214
+    }
+   },
+   "argmax_distribution": {
+    "Eruptive": 0.0116,
+    "Flat": 0.1206,
+    "NonPSPL": 0.2289,
+    "PSPL": 0.0397,
+    "PeriodicVar": 0.5993
+   },
+   "fa_frozen_by_te": [
+    {
+     "te_bin": [
+      0,
+      0.1
+     ],
+     "n": 600,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0
+    },
+    {
+     "te_bin": [
+      0.1,
+      0.25
+     ],
+     "n": 318,
+     "fa": 0.0063,
+     "frac_argmax_pspl": 0.0031
+    },
+    {
+     "te_bin": [
+      0.25,
+      0.5
+     ],
+     "n": 222,
+     "fa": 0.0405,
+     "frac_argmax_pspl": 0.027
+    },
+    {
+     "te_bin": [
+      0.5,
+      1.0
+     ],
+     "n": 245,
+     "fa": 0.0408,
+     "frac_argmax_pspl": 0.1959
+    }
+   ]
+  },
+  "fspl5_g08": {
+   "fa_at": {
+    "frozen": {
+     "threshold": 0.9042,
+     "fa": 0.0332,
+     "fa_weighted": 0.1302
+    }
+   },
+   "argmax_distribution": {
+    "Eruptive": 0.0202,
+    "Flat": 0.0433,
+    "NonPSPL": 0.1942,
+    "PSPL": 0.0238,
+    "PeriodicVar": 0.7184
+   },
+   "fa_frozen_by_te": [
+    {
+     "te_bin": [
+      0,
+      0.1
+     ],
+     "n": 600,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0017
+    },
+    {
+     "te_bin": [
+      0.1,
+      0.25
+     ],
+     "n": 318,
+     "fa": 0.0031,
+     "frac_argmax_pspl": 0.0031
+    },
+    {
+     "te_bin": [
+      0.25,
+      0.5
+     ],
+     "n": 222,
+     "fa": 0.0631,
+     "frac_argmax_pspl": 0.018
+    },
+    {
+     "te_bin": [
+      0.5,
+      1.0
+     ],
+     "n": 245,
+     "fa": 0.1265,
+     "frac_argmax_pspl": 0.1102
+    }
+   ]
+  },
+  "fspl5s_g08": {
+   "fa_at": {
+    "frozen": {
+     "threshold": 0.9042,
+     "fa": 0.0072,
+     "fa_weighted": 0.0314
+    },
+    "calibrated_gapped": {
+     "threshold": 0.9492,
+     "fa": 0.0007,
+     "fa_weighted": 0.0033
+    }
+   },
+   "argmax_distribution": {
+    "Eruptive": 0.013,
+    "Flat": 0.1343,
+    "NonPSPL": 0.1899,
+    "PSPL": 0.0477,
+    "PeriodicVar": 0.6152
+   },
+   "fa_frozen_by_te": [
+    {
+     "te_bin": [
+      0,
+      0.1
+     ],
+     "n": 600,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0017
+    },
+    {
+     "te_bin": [
+      0.1,
+      0.25
+     ],
+     "n": 318,
+     "fa": 0.0031,
+     "frac_argmax_pspl": 0.0126
+    },
+    {
+     "te_bin": [
+      0.25,
+      0.5
+     ],
+     "n": 222,
+     "fa": 0.009,
+     "frac_argmax_pspl": 0.036
+    },
+    {
+     "te_bin": [
+      0.5,
+      1.0
+     ],
+     "n": 245,
+     "fa": 0.0286,
+     "frac_argmax_pspl": 0.2163
+    }
+   ]
+  }
+ }
+}

@@ -114,3 +114,20 @@ def test_apply_gaps_with_schedule_blanks_the_fixed_mask_in_every_band():
     out2 = {b: np.ones((L, 5), np.float32) for b, L in BAND_BINS.items()}
     _apply_gaps(out2, I_PSPL, np.random.default_rng(99), None, None, schedule=m)
     assert np.array_equal(out2["F146"][:, 4], out["F146"][:, 4])
+
+
+def test_relabel_anomaly_off_keeps_a_binary_whose_anomaly_is_blanked():
+    from pipeline.train import rmdc26_schedule_mask
+    m = rmdc26_schedule_mask(BAND_BINS["F146"])
+    pf_idx = {"t_anom": 0}
+    params = np.array([21.6])                             # a quantised t_anom inside the 21.49 d pause
+    mk = lambda: {b: np.concatenate([np.full((L, 3), 0.5, np.float32), np.ones((L, 2), np.float32)], 1)
+                  for b, L in BAND_BINS.items()}
+    on = _apply_gaps(mk(), I_NON, np.random.default_rng(0), params, pf_idx, schedule=m)
+    off = _apply_gaps(mk(), I_NON, np.random.default_rng(0), params, pf_idx, schedule=m, relabel_anomaly=False)
+    assert on == I_PSPL and off == I_NON
+    # and the 20% figure: two of the ten grid values fall inside the mask
+    nb = BAND_BINS["F146"]
+    inside = [t for t in np.arange(1, 11) * 7.2
+              if m[max(0, int(np.clip(t / 72 * nb, 0, nb - 1)) - 1):int(np.clip(t / 72 * nb, 0, nb - 1)) + 2].all()]
+    assert sorted(inside) == [21.6, 72.0]

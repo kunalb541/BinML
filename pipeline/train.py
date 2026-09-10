@@ -232,11 +232,17 @@ def _apply_cadence(out: Dict[str, np.ndarray], label: int, rng: np.random.Genera
 def _apply_gaps(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
                 params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
                 n_gaps_max: int = 8, gap_h_min: float = 1.0, gap_h_max: float = 12.0,
-                schedule: Optional[np.ndarray] = None) -> int:
+                schedule: Optional[np.ndarray] = None, relabel_anomaly: bool = True) -> int:
     """Blank CONTIGUOUS runs of bins, as Roman's real schedule does, and re-label.
 
     ``schedule``: a fixed reference-band blank mask (see ``rmdc26_schedule_mask``) used instead
     of the random draw -- the exact planned schedule rather than a distribution over gaps.
+    ``relabel_anomaly``: whether a binary whose anomaly window is blanked becomes PSPL. `t_anom`
+    is quantised to a 7.2-day grid (assemble._anomaly_onset_day, n_cuts=10); two of its ten
+    values (21.6 d, 72.0 d) sit inside the RMDC26 mask, so with a FIXED schedule this branch
+    relabels 20% of all NonPSPL events PSPL on every presentation (validation/
+    schedule_finetune_local.py measured it: schedule-arm NonPSPL recall 0.80 vs 0.91). With
+    random gaps the same quantisation error is diluted across positions. Off = keep the label.
 
     Roman's F146 sampling is not continuous: the GBTDS schedule as implemented in the RMDC26
     (GULLS) release pauses F146 for ~6 h seven times per 70.7-day season.  BinML's training grid
@@ -278,7 +284,8 @@ def _apply_gaps(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator
     peak = float(np.abs(surv[:, :3]).max()) * MAG_SCALE if surv.size else 0.0
     if peak < TRUNC_MIN_AMP_MAG:
         return I_FLAT
-    if label == I_NON and params is not None and pf_idx is not None and "t_anom" in pf_idx:
+    if (relabel_anomaly and label == I_NON and params is not None and pf_idx is not None
+            and "t_anom" in pf_idx):
         ta = params[pf_idx["t_anom"]]
         if np.isfinite(ta):
             anom_bin = int(np.clip(ta / 72.0 * nb, 0, nb - 1))
@@ -303,9 +310,11 @@ class CacheDataset(Dataset):
                  truncate_aug: float = 0.0, seed: int = 0,
                  params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
                  f_s_ref: Optional[np.ndarray] = None, cadence_aug: float = 0.0,
-                 gap_aug: float = 0.0, gap_schedule: Optional[np.ndarray] = None):
+                 gap_aug: float = 0.0, gap_schedule: Optional[np.ndarray] = None,
+                 gap_relabel_anomaly: bool = True):
         self.a = arrays
         self.gap_schedule = gap_schedule
+        self.gap_relabel_anomaly = gap_relabel_anomaly
         self.labels = labels
         self.weights = weights
         self.dchi2_anom = dchi2_anom
@@ -347,7 +356,8 @@ class CacheDataset(Dataset):
             lab = _apply_cadence(out, lab, self._rng, pj, self.pf_idx)
         if self.gap_aug > 0 and self._rng.random() < self.gap_aug:
             pj = self.params[j] if self.params is not None else None
-            lab = _apply_gaps(out, lab, self._rng, pj, self.pf_idx, schedule=self.gap_schedule)
+            lab = _apply_gaps(out, lab, self._rng, pj, self.pf_idx, schedule=self.gap_schedule,
+                              relabel_anomaly=self.gap_relabel_anomaly)
         return (out, lab, float(self.weights[j]), float(self.dchi2_anom[j]))
 
 
@@ -483,6 +493,11 @@ def main(argv=None) -> int:
                          "fixed season phases + the 1.3 d past the 70.7 d season end) instead of "
                          "random 1-12 h runs. Same relabelling. Schedule-matched vs distribution-"
                          "matched augmentation is the comparison in validation/schedule_finetune_local.py.")
+    ap.add_argument("--gap-relabel-anomaly", choices=["on", "off"], default="on",
+                    help="with --gap-aug: relabel a binary PSPL when its (7.2-d-quantised) anomaly "
+                         "onset falls in a blanked run. 'off' keeps the generator label; needed with "
+                         "--gap-schedule rmdc26, where two of the ten t_anom grid values sit inside "
+                         "the fixed mask and the relabel would fire on 20% of all binaries.")
     ap.add_argument("--num-workers", type=int, default=0,
                     help="dataloader workers; safe with a memmap (workers share file pages, "
                          "so there is no per-worker copy of the dataset)")
@@ -551,7 +566,8 @@ def main(argv=None) -> int:
                      cadence_aug=args.cadence_aug if shuf else 0.0,
                      gap_aug=args.gap_aug if shuf else 0.0,
                      gap_schedule=(rmdc26_schedule_mask(BAND_BINS["F146"])
-                                   if (shuf and args.gap_schedule == "rmdc26") else None)),
+                                   if (shuf and args.gap_schedule == "rmdc26") else None),
+                     gap_relabel_anomaly=(args.gap_relabel_anomaly == "on")),
         batch_size=args.batch_size, shuffle=shuf, collate_fn=collate,
         num_workers=args.num_workers, pin_memory=False,
         worker_init_fn=_seed_worker,          # else forked workers share one RNG -> correlated truncation

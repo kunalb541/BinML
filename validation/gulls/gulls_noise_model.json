@@ -1,0 +1,128 @@
+{
+ "_doc": "GULLS/RMDC26 per-epoch F146 noise vs pipeline.photometry.photometric_sigma, from the truth cache.",
+ "n_events": 5261,
+ "by_mag": [
+  {
+   "m_base_bin": [
+    17,
+    18
+   ],
+   "n": 45,
+   "gulls_sigma_median": 0.00175,
+   "ours_sigma_median": 0.00184,
+   "ratio_median": 0.95,
+   "ratio_p16_p84": [
+    0.939,
+    0.958
+   ]
+  },
+  {
+   "m_base_bin": [
+    18,
+    19
+   ],
+   "n": 135,
+   "gulls_sigma_median": 0.00265,
+   "ours_sigma_median": 0.00279,
+   "ratio_median": 0.957,
+   "ratio_p16_p84": [
+    0.942,
+    0.972
+   ]
+  },
+  {
+   "m_base_bin": [
+    19,
+    20
+   ],
+   "n": 795,
+   "gulls_sigma_median": 0.00448,
+   "ours_sigma_median": 0.00432,
+   "ratio_median": 1.036,
+   "ratio_p16_p84": [
+    0.991,
+    1.08
+   ]
+  },
+  {
+   "m_base_bin": [
+    20,
+    21
+   ],
+   "n": 1831,
+   "gulls_sigma_median": 0.00786,
+   "ours_sigma_median": 0.00651,
+   "ratio_median": 1.206,
+   "ratio_p16_p84": [
+    1.125,
+    1.296
+   ]
+  },
+  {
+   "m_base_bin": [
+    21,
+    22
+   ],
+   "n": 1279,
+   "gulls_sigma_median": 0.0145,
+   "ours_sigma_median": 0.00994,
+   "ratio_median": 1.463,
+   "ratio_p16_p84": [
+    1.358,
+    1.62
+   ]
+  },
+  {
+   "m_base_bin": [
+    22,
+    23
+   ],
+   "n": 580,
+   "gulls_sigma_median": 0.03563,
+   "ours_sigma_median": 0.0187,
+   "ratio_median": 1.886,
+   "ratio_p16_p84": [
+    1.737,
+    2.066
+   ]
+  },
+  {
+   "m_base_bin": [
+    23,
+    24
+   ],
+   "n": 439,
+   "gulls_sigma_median": 0.08528,
+   "ours_sigma_median": 0.03677,
+   "ratio_median": 2.322,
+   "ratio_p16_p84": [
+    2.155,
+    2.508
+   ]
+  },
+  {
+   "m_base_bin": [
+    24,
+    25
+   ],
+   "n": 147,
+   "gulls_sigma_median": 0.19451,
+   "ours_sigma_median": 0.07439,
+   "ratio_median": 2.641,
+   "ratio_p16_p84": [
+    2.462,
+    2.784
+   ]
+  }
+ ],
+ "best_fit": {
+  "bkg_mult": {
+   "mult": 7.407,
+   "rms_log_resid": 0.0623
+  },
+  "noise_mult": {
+   "mult": 1.409,
+   "rms_log_resid": 0.2667
+  }
+ }
+}

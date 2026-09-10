@@ -1,0 +1,608 @@
+{
+ "_doc": "Detectability-conditioned relabelling of GULLS/RMDC26 with BinML's OWN label policy.",
+ "n_events": 6600,
+ "policy": {
+  "dchi2_event": 500.0,
+  "dchi2_anomaly": 160.0,
+  "min_amplitude_mag": 0.02,
+  "sigma": "GULLS flux_err_uJy converted to magnitudes at the true flux",
+  "snr_min": 3.0,
+  "baseline": "median true-flux magnitude at |t-t0| > 5 tE over the full mission, per band",
+  "anomaly_statistic": "pipeline.assemble._pspl_refit_dchi2 on F146 (the training-label function)"
+ },
+ "relabelling": {
+  "RMDC26_1S1L_ML": {
+   "n": 1600,
+   "frac_Flat": 0.0219,
+   "frac_PSPL": 0.9556,
+   "frac_NonPSPL": 0.0225,
+   "wfrac_Flat": 0.0043,
+   "wfrac_PSPL": 0.9897,
+   "wfrac_NonPSPL": 0.0059,
+   "median_dchi2_anomaly": 0.0,
+   "median_anomaly_amp_mag": 0.0
+  },
+  "RMDC26_1S2L_ML": {
+   "n": 2500,
+   "frac_Flat": 0.0004,
+   "frac_PSPL": 0.4404,
+   "frac_NonPSPL": 0.5592,
+   "wfrac_Flat": 0.0,
+   "wfrac_PSPL": 0.4133,
+   "wfrac_NonPSPL": 0.5867,
+   "median_dchi2_anomaly": 676.5,
+   "median_anomaly_amp_mag": 0.0347
+  },
+  "RMDC26_2S2L_ML": {
+   "n": 2500,
+   "frac_Flat": 0.0,
+   "frac_PSPL": 0.4632,
+   "frac_NonPSPL": 0.5368,
+   "wfrac_Flat": 0.0,
+   "wfrac_PSPL": 0.401,
+   "wfrac_NonPSPL": 0.599,
+   "median_dchi2_anomaly": 826.3,
+   "median_anomaly_amp_mag": 0.0302
+  }
+ },
+ "models": {
+  "shipped": {
+   "thresholds": {
+    "frozen": 0.9042405486106873
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L_all": 0.3456,
+     "fa_1S1L_detectable_event": 0.3527,
+     "fa_1S1L_flat_by_policy": 0.0286,
+     "recall_1S2L_generator": 0.4964,
+     "recall_1S2L_detectable": 0.4778,
+     "recall_2S2L_generator": 0.5896,
+     "recall_2S2L_detectable": 0.5797,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.5615,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.4461,
+     "ontology_recall": 0.5252,
+     "ontology_fa_on_nonanomalous": 0.4733
+    }
+   },
+   "recall_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "fa": 0.0194,
+     "threshold": 0.9979,
+     "recall_1S2L_generator": 0.1328,
+     "recall_1S2L_detectable": 0.123,
+     "recall_2S2L_generator": 0.16,
+     "recall_2S2L_detectable": 0.1714
+    },
+    {
+     "fa_target": 0.031,
+     "fa": 0.0306,
+     "threshold": 0.9973,
+     "recall_1S2L_generator": 0.1664,
+     "recall_1S2L_detectable": 0.1545,
+     "recall_2S2L_generator": 0.2056,
+     "recall_2S2L_detectable": 0.2109
+    },
+    {
+     "fa_target": 0.052,
+     "fa": 0.0525,
+     "threshold": 0.9959,
+     "recall_1S2L_generator": 0.2188,
+     "recall_1S2L_detectable": 0.2096,
+     "recall_2S2L_generator": 0.2652,
+     "recall_2S2L_detectable": 0.2712
+    },
+    {
+     "fa_target": 0.117,
+     "fa": 0.1163,
+     "threshold": 0.991,
+     "recall_1S2L_generator": 0.306,
+     "recall_1S2L_detectable": 0.2926,
+     "recall_2S2L_generator": 0.3768,
+     "recall_2S2L_detectable": 0.3867
+    }
+   ],
+   "recall_detectable_by_anomaly_amp_frozen": [
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "n": 796,
+     "recall": 0.5452
+    },
+    {
+     "amp_bin": [
+      0.05,
+      0.1
+     ],
+     "n": 606,
+     "recall": 0.5017
+    },
+    {
+     "amp_bin": [
+      0.1,
+      0.2
+     ],
+     "n": 561,
+     "recall": 0.4652
+    },
+    {
+     "amp_bin": [
+      0.2,
+      0.5
+     ],
+     "n": 543,
+     "recall": 0.5543
+    },
+    {
+     "amp_bin": [
+      0.5,
+      null
+     ],
+     "n": 234,
+     "recall": 0.6239
+    }
+   ]
+  },
+  "ft_g08e12": {
+   "thresholds": {
+    "frozen": 0.9042405486106873,
+    "calibrated_gapped": 0.9991753697395325
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L_all": 0.1081,
+     "fa_1S1L_detectable_event": 0.1105,
+     "fa_1S1L_flat_by_policy": 0.0,
+     "recall_1S2L_generator": 0.4584,
+     "recall_1S2L_detectable": 0.568,
+     "recall_2S2L_generator": 0.4648,
+     "recall_2S2L_detectable": 0.6267,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.2978,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.6671,
+     "ontology_recall": 0.5962,
+     "ontology_fa_on_nonanomalous": 0.216
+    },
+    "calibrated_gapped": {
+     "fa_1S1L_all": 0.0,
+     "fa_1S1L_detectable_event": 0.0,
+     "fa_1S1L_flat_by_policy": 0.0,
+     "recall_1S2L_generator": 0.0,
+     "recall_1S2L_detectable": 0.0,
+     "recall_2S2L_generator": 0.0,
+     "recall_2S2L_detectable": 0.0,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.0,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.0,
+     "ontology_recall": 0.0,
+     "ontology_fa_on_nonanomalous": 0.0
+    }
+   },
+   "recall_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "fa": 0.02,
+     "threshold": 0.9736,
+     "recall_1S2L_generator": 0.1956,
+     "recall_1S2L_detectable": 0.2861,
+     "recall_2S2L_generator": 0.2024,
+     "recall_2S2L_detectable": 0.3308
+    },
+    {
+     "fa_target": 0.031,
+     "fa": 0.0312,
+     "threshold": 0.9645,
+     "recall_1S2L_generator": 0.2448,
+     "recall_1S2L_detectable": 0.3391,
+     "recall_2S2L_generator": 0.2536,
+     "recall_2S2L_detectable": 0.3994
+    },
+    {
+     "fa_target": 0.052,
+     "fa": 0.0519,
+     "threshold": 0.9473,
+     "recall_1S2L_generator": 0.3308,
+     "recall_1S2L_detectable": 0.432,
+     "recall_2S2L_generator": 0.3324,
+     "recall_2S2L_detectable": 0.4851
+    },
+    {
+     "fa_target": 0.117,
+     "fa": 0.1175,
+     "threshold": 0.8964,
+     "recall_1S2L_generator": 0.4776,
+     "recall_1S2L_detectable": 0.5887,
+     "recall_2S2L_generator": 0.4804,
+     "recall_2S2L_detectable": 0.6431
+    }
+   ],
+   "recall_detectable_by_anomaly_amp_frozen": [
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "n": 796,
+     "recall": 0.4673
+    },
+    {
+     "amp_bin": [
+      0.05,
+      0.1
+     ],
+     "n": 606,
+     "recall": 0.5347
+    },
+    {
+     "amp_bin": [
+      0.1,
+      0.2
+     ],
+     "n": 561,
+     "recall": 0.6007
+    },
+    {
+     "amp_bin": [
+      0.2,
+      0.5
+     ],
+     "n": 543,
+     "recall": 0.7366
+    },
+    {
+     "amp_bin": [
+      0.5,
+      null
+     ],
+     "n": 234,
+     "recall": 0.8632
+    }
+   ]
+  },
+  "fspl_g08": {
+   "thresholds": {
+    "frozen": 0.9042405486106873,
+    "calibrated_gapped": 0.9353199601173401
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L_all": 0.05,
+     "fa_1S1L_detectable_event": 0.0511,
+     "fa_1S1L_flat_by_policy": 0.0,
+     "recall_1S2L_generator": 0.372,
+     "recall_1S2L_detectable": 0.4642,
+     "recall_2S2L_generator": 0.3968,
+     "recall_2S2L_detectable": 0.5455,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.2394,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.6943,
+     "ontology_recall": 0.5007,
+     "ontology_fa_on_nonanomalous": 0.16
+    },
+    "calibrated_gapped": {
+     "fa_1S1L_all": 0.03,
+     "fa_1S1L_detectable_event": 0.0307,
+     "fa_1S1L_flat_by_policy": 0.0,
+     "recall_1S2L_generator": 0.3,
+     "recall_1S2L_detectable": 0.3856,
+     "recall_2S2L_generator": 0.3224,
+     "recall_2S2L_detectable": 0.4627,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.1752,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.7263,
+     "ontology_recall": 0.4197,
+     "ontology_fa_on_nonanomalous": 0.1148
+    }
+   },
+   "recall_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "fa": 0.02,
+     "threshold": 0.9489,
+     "recall_1S2L_generator": 0.262,
+     "recall_1S2L_detectable": 0.3412,
+     "recall_2S2L_generator": 0.2852,
+     "recall_2S2L_detectable": 0.4195
+    },
+    {
+     "fa_target": 0.031,
+     "fa": 0.0312,
+     "threshold": 0.9345,
+     "recall_1S2L_generator": 0.3036,
+     "recall_1S2L_detectable": 0.3913,
+     "recall_2S2L_generator": 0.326,
+     "recall_2S2L_detectable": 0.4687
+    },
+    {
+     "fa_target": 0.052,
+     "fa": 0.0519,
+     "threshold": 0.9033,
+     "recall_1S2L_generator": 0.3728,
+     "recall_1S2L_detectable": 0.4649,
+     "recall_2S2L_generator": 0.398,
+     "recall_2S2L_detectable": 0.5462
+    },
+    {
+     "fa_target": 0.117,
+     "fa": 0.1169,
+     "threshold": 0.7945,
+     "recall_1S2L_generator": 0.52,
+     "recall_1S2L_detectable": 0.618,
+     "recall_2S2L_generator": 0.554,
+     "recall_2S2L_detectable": 0.6885
+    }
+   ],
+   "recall_detectable_by_anomaly_amp_frozen": [
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "n": 796,
+     "recall": 0.3819
+    },
+    {
+     "amp_bin": [
+      0.05,
+      0.1
+     ],
+     "n": 606,
+     "recall": 0.4208
+    },
+    {
+     "amp_bin": [
+      0.1,
+      0.2
+     ],
+     "n": 561,
+     "recall": 0.5009
+    },
+    {
+     "amp_bin": [
+      0.2,
+      0.5
+     ],
+     "n": 543,
+     "recall": 0.6317
+    },
+    {
+     "amp_bin": [
+      0.5,
+      null
+     ],
+     "n": 234,
+     "recall": 0.8462
+    }
+   ]
+  },
+  "fspl5_g08": {
+   "thresholds": {
+    "frozen": 0.9042405486106873
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L_all": 0.0856,
+     "fa_1S1L_detectable_event": 0.0875,
+     "fa_1S1L_flat_by_policy": 0.0,
+     "recall_1S2L_generator": 0.4504,
+     "recall_1S2L_detectable": 0.5501,
+     "recall_2S2L_generator": 0.4692,
+     "recall_2S2L_detectable": 0.6192,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.3093,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.6626,
+     "ontology_recall": 0.5814,
+     "ontology_fa_on_nonanomalous": 0.215
+    }
+   },
+   "recall_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "fa": 0.02,
+     "threshold": 0.9624,
+     "recall_1S2L_generator": 0.2472,
+     "recall_1S2L_detectable": 0.3219,
+     "recall_2S2L_generator": 0.2724,
+     "recall_2S2L_detectable": 0.4054
+    },
+    {
+     "fa_target": 0.031,
+     "fa": 0.0312,
+     "threshold": 0.9541,
+     "recall_1S2L_generator": 0.2852,
+     "recall_1S2L_detectable": 0.3691,
+     "recall_2S2L_generator": 0.3116,
+     "recall_2S2L_detectable": 0.4508
+    },
+    {
+     "fa_target": 0.052,
+     "fa": 0.0519,
+     "threshold": 0.9358,
+     "recall_1S2L_generator": 0.3604,
+     "recall_1S2L_detectable": 0.4514,
+     "recall_2S2L_generator": 0.3844,
+     "recall_2S2L_detectable": 0.5335
+    },
+    {
+     "fa_target": 0.117,
+     "fa": 0.1169,
+     "threshold": 0.87,
+     "recall_1S2L_generator": 0.5224,
+     "recall_1S2L_detectable": 0.6223,
+     "recall_2S2L_generator": 0.5276,
+     "recall_2S2L_detectable": 0.6699
+    }
+   ],
+   "recall_detectable_by_anomaly_amp_frozen": [
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "n": 796,
+     "recall": 0.4862
+    },
+    {
+     "amp_bin": [
+      0.05,
+      0.1
+     ],
+     "n": 606,
+     "recall": 0.5116
+    },
+    {
+     "amp_bin": [
+      0.1,
+      0.2
+     ],
+     "n": 561,
+     "recall": 0.5722
+    },
+    {
+     "amp_bin": [
+      0.2,
+      0.5
+     ],
+     "n": 543,
+     "recall": 0.6943
+    },
+    {
+     "amp_bin": [
+      0.5,
+      null
+     ],
+     "n": 234,
+     "recall": 0.8761
+    }
+   ]
+  },
+  "fspl5s_g08": {
+   "thresholds": {
+    "frozen": 0.9042405486106873,
+    "calibrated_gapped": 0.9491875171661377
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L_all": 0.0488,
+     "fa_1S1L_detectable_event": 0.0498,
+     "fa_1S1L_flat_by_policy": 0.0,
+     "recall_1S2L_generator": 0.3796,
+     "recall_1S2L_detectable": 0.4735,
+     "recall_2S2L_generator": 0.404,
+     "recall_2S2L_detectable": 0.5574,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.2429,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.6961,
+     "ontology_recall": 0.5108,
+     "ontology_fa_on_nonanomalous": 0.1619
+    },
+    "calibrated_gapped": {
+     "fa_1S1L_all": 0.0163,
+     "fa_1S1L_detectable_event": 0.0166,
+     "fa_1S1L_flat_by_policy": 0.0,
+     "recall_1S2L_generator": 0.27,
+     "recall_1S2L_detectable": 0.3484,
+     "recall_2S2L_generator": 0.2924,
+     "recall_2S2L_detectable": 0.427,
+     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.1531,
+     "n_binaries_detectable": 2740,
+     "n_binaries_undetectable": 2260,
+     "ontology_precision": 0.7416,
+     "ontology_recall": 0.3826,
+     "ontology_fa_on_nonanomalous": 0.0968
+    }
+   },
+   "recall_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "fa": 0.02,
+     "threshold": 0.9466,
+     "recall_1S2L_generator": 0.2752,
+     "recall_1S2L_detectable": 0.3541,
+     "recall_2S2L_generator": 0.3004,
+     "recall_2S2L_detectable": 0.4367
+    },
+    {
+     "fa_target": 0.031,
+     "fa": 0.0312,
+     "threshold": 0.9302,
+     "recall_1S2L_generator": 0.3216,
+     "recall_1S2L_detectable": 0.4077,
+     "recall_2S2L_generator": 0.3536,
+     "recall_2S2L_detectable": 0.5045
+    },
+    {
+     "fa_target": 0.052,
+     "fa": 0.0519,
+     "threshold": 0.8976,
+     "recall_1S2L_generator": 0.3884,
+     "recall_1S2L_detectable": 0.4835,
+     "recall_2S2L_generator": 0.4188,
+     "recall_2S2L_detectable": 0.57
+    },
+    {
+     "fa_target": 0.117,
+     "fa": 0.1169,
+     "threshold": 0.7863,
+     "recall_1S2L_generator": 0.542,
+     "recall_1S2L_detectable": 0.6423,
+     "recall_2S2L_generator": 0.5696,
+     "recall_2S2L_detectable": 0.7086
+    }
+   ],
+   "recall_detectable_by_anomaly_amp_frozen": [
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "n": 796,
+     "recall": 0.3957
+    },
+    {
+     "amp_bin": [
+      0.05,
+      0.1
+     ],
+     "n": 606,
+     "recall": 0.4257
+    },
+    {
+     "amp_bin": [
+      0.1,
+      0.2
+     ],
+     "n": 561,
+     "recall": 0.508
+    },
+    {
+     "amp_bin": [
+      0.2,
+      0.5
+     ],
+     "n": 543,
+     "recall": 0.6519
+    },
+    {
+     "amp_bin": [
+      0.5,
+      null
+     ],
+     "n": 234,
+     "recall": 0.8462
+    }
+   ]
+  }
+ }
+}

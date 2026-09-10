@@ -43,7 +43,13 @@ WORK = f"{R}/schedule_local_work"
 POOL = f"{R}/cadence_local_work/work15/mm_train"
 HELD = f"{R}/cadence_local_work/work15/mm_eval"
 CURVES = f"{R}/gulls_curve_cache"
-ARMS = {"rand": [], "sched": ["--gap-schedule", "rmdc26"]}
+# sched_norelabel: the schedule WITHOUT the caustic-in-gap relabel. With a fixed mask the 7.2-d-quantised
+# t_anom (two of ten grid values inside the mask) makes that relabel fire on 20% of ALL binaries on every
+# presentation -- the sched arm's NonPSPL recall 0.80 vs rand 0.91 under the schedule is that label error,
+# not the augmentation. Turning the relabel off costs ~4% genuine label noise (binaries whose anomaly
+# really is inside a 37-bin mask) instead of 20% systematic error.
+ARMS = {"rand": [], "sched": ["--gap-schedule", "rmdc26"],
+        "sched_norelabel": ["--gap-schedule", "rmdc26", "--gap-relabel-anomaly", "off"]}
 COMMON = ["--init-weights", "binml/weights/binml.pt", "--epochs", "12", "--lr", "1e-4",
           "--truncate-aug", "0.5", "--gap-aug", "0.8", "--seed", "20260823"]
 REF = {"shipped": "binml/weights/binml.pt", "ft_g08e12": "validation/gulls/weights/ft_g08e12.pt"}
