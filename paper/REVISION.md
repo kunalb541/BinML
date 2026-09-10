@@ -35,10 +35,9 @@ done until this table says so.
 
 The GULLS work itself is finished: the curve cache (~4 GB at
 `~/Desktop/Research/microlensing/gulls_curve_cache`, outside the repo) re-scores the whole population
-with any checkpoint in ~6 minutes, so threshold re-tuning or a new checkpoint is cheap. Two optional
-extras were considered and set aside: scoring the sub-day-t_E 1S1L population as an explicit
-out-of-support row (cheap, informative — do if a referee asks) and the Beginner/Experienced challenge
-tiers (different format, low information for this paper — skip).
+with any checkpoint in ~6 minutes, so threshold re-tuning or a new checkpoint is cheap. Seven follow-up
+experiments were proposed on 2026-09-09; three are done and four are open — see the ledger in §1½.
+The Beginner/Experienced challenge tiers were set aside (different format, low information for this paper).
 
 **Audit pass 2026-09-09** (`docs/AUDIT_2026-09-09.md`): two paper numbers changed — fitted-PSPL baseline AP
 0.261 → 0.545 (rescored at full cadence) and the cadence experiment re-evaluated on held-out events
@@ -358,6 +357,24 @@ The transfer runs locally in ~5 min each; the dataset must not be read from Moda
 rate-limits the datacenter IP). Revision is pinned in the script.
 
 ---
+
+## 1½. Follow-up experiment ledger — the seven proposed 2026-09-09 (kept current)
+
+Seven post-revision experiments were proposed once the full-population GULLS numbers were final.
+Each row records the prediction made BEFORE running it, what actually came out, the artifact, and
+what remains. Three are done, four are open. Costs are wall-clock on the M5 (10 cores, MPS).
+
+| # | Experiment | Prediction (made first) | Outcome | Artifact | Status |
+|---|---|---|---|---|---|
+| 1 | Finite-source single lenses in the generator (VBBinaryLensing `ESPLMag2`), PSPL given a ρ prior, warm-start from g08e12 with gap augmentation, re-score GULLS from the cache | 1S1L false alarms 11.7% → ~5–6%; the ρ/\|u₀\| > 0.3 bins collapse toward the 4.6% floor | **Total hit, bins half-right.** FA 11.7% → 5.2% (round 1, ρ ≤ 1) → **4.9%** (round 3 `fspl5s`, single-lens ρ ≤ 5, binaries unchanged). Bins (0.3–1 / 1–3 / >3): 0.43/0.65/0.67 → **0.15/0.28/0.29** — halved to thirded, not at the floor. Planetary recall at the matched 5.2% budget 0.295 → **0.390**; mean recall over FA ≤ 0.3 0.486 → 0.538. Round 2 (also widening the *binary* ρ prior to 0.1) was negative; round 3 attributes the gain cleanly to the single-lens extension. Three rounds took ~2 h each including two disk-stall restarts. | `fspl_finetune_{fspl_g08,fspl5_g08,fspl5s_g08}.json`, `transfer_full_{fspl_g08,fspl5_g08,fspl5s_g08}.json`, `transfer_tradeoff_all.json`, weights `weights/ft_fspl*_g08.pt`; `tests/test_fspl.py` | ✅ done (3 rounds) |
+| 2 | Schedule-matched augmentation: fine-tune with the exact seven fixed ~6.2 h pauses at 12.1-min cadence in a 70.7-d season (the `arm12` tree from the cadence rerun has the 12-min config) and compare to g08e12's random 1–12 h gaps | not stated | — | — | ❌ open, ~1 h. Note the *evaluation* side is already schedule-exact: `calibrate_gapped_threshold.py` blanks the seven-gap schedule into held-out memmaps; only the training side still uses random gaps. `gap_sensitivity.json` (held-out macro-F1 0.879 under the exact schedule after random-gap training) suggests random gaps suffice; this experiment would settle it. |
+| 3 | Detectability-conditioned relabelling of GULLS itself: apply our Δχ² + 0.02 mag floor policy to the noise-free `true_flux_uJy` of GULLS binaries and score recall against detectability labels instead of generator labels | the 1S2L "recall 0.46" counts undetectable planets as misses; this gives the first like-for-like number | — | — | ❌ open. Needs a true_flux re-extraction (the curve cache holds `flux_uJy` only): same DuckDB/httpfs block reader with the extra column, ~20 min for 5k/class; also needs the per-epoch flux errors (check the obs schema for an error column) to form Δχ². Highest remaining scientific value: the paper currently says reconciling the two label ontologies is out of scope. |
+| 4 | Threshold recalibration for the gapped regime on OUR gapped finite-source held-out simulations (never on GULLS) | not stated | **g08e12 cannot reach purity 0.90 on a finite-source population**: its threshold saturates at 0.999 with completeness 0.001 — the gap-aware checkpoint has no valid operating point there. `fspl_g08`: clean 0.929 / gapped 0.935 → GULLS FA 3.5% / 3.1%, recall 0.312 / 0.296 (1S2L). **`fspl5s_g08`: clean 0.924 → FA 3.7%, recall 0.335 / 0.369; gapped 0.949 → FA 2.0%, recall 0.268 / 0.295** (held-out completeness 0.693 at purity 0.897). | `gapped_threshold_{ft_g08e12,fspl_g08,fspl5s_g08}.json` | ✅ done |
+| 5 | Noise-model matching: GULLS is 3–4× noisier at the faint end than our photometry; a noise-multiplier augmentation, fine-tune, re-score | not stated | — | — | ❌ open, ~1 h. Requires a new augmentation flag in `pipeline/train.py`; because the augmentation relabelling is under audit (findings 8–10) this should go in behind a version flag, not by editing `--gap-aug`. |
+| 6 | Sub-day-t_E single lenses (the FFP-like third of RMDC26 1S1L removed by the t_E ∈ [1, 300] d support cut) as an explicit out-of-support row | not stated | — | — | ❌ open, ~30 min on a sample. Not in the curve cache (the cut was applied at selection), so ~5k events must be re-extracted (~0.05–0.09 s/event) and scored with all five checkpoints. |
+| 7 | Colour ablation on GULLS: F146-only vs three-band from the cache | tells whether GULLS' colour bands help or hurt in transfer | **Colour helps for both checkpoints.** Recall at the matched 5.2% budget: `fspl_g08` 0.302 → 0.369 (1S2L), 0.334 → 0.399 (2S2L); g08e12 0.253 → 0.295, 0.271 → 0.313. Mean recall over FA ≤ 0.3: +0.042 / +0.057. About 9.4% of frozen-threshold decisions flip between the two inputs. | `transfer_colour_ablation.json`, `transfer_full_reduced_*_colour_ablation.json` | ✅ done for `fspl_g08` and `ft_g08e12`; `fspl5s_g08` F146-only not yet scored (12 min) |
+
+Open items in recommended order: 3 (changes what "recall" means in the paper), 6 (cheap, Roman will find these), 2, 5. None is needed for the resubmission; each is one paragraph if done.
 
 ## 2. Deferred items from the pre-submission referee round — need compute
 
