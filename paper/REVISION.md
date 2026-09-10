@@ -262,11 +262,19 @@ run (≈1 h) is the way to settle it. Until then **ft_fspl_g08 remains the sidec
 Single seed per arm throughout: the between-round differences in the small high-rho bins (n = 267–539)
 are several times the binomial error but seed-to-seed variance of the fine-tune is unmeasured.
 
-*In progress (2026-09-10, 00:15):* (a) attribution run `fspl5s` — single-lens rho ≤ 5 with binaries
-UNCHANGED (`ft_fspl5s_g08.pt`), to settle whether round 2's regression came from the binary-rho
-widening; (b) colour ablation on GULLS from the cache — `gulls_transfer.py --bands F146` for
-ft_fspl_g08 and ft_g08e12, reduced against their three-band rows
-(`transfer_full_reduced_fspl_g08_colour_ablation.json`).
+*Colour ablation on GULLS (2026-09-10; `gulls_transfer.py --bands F146`, identical 56,975 matched
+events).* For ft_fspl_g08, removing F087/F213 lowers single-lens false alarms slightly at the frozen
+threshold (0.052 → 0.048) but costs planetary recall everywhere: at a matched 5.2% false-alarm budget
+1S2L recall 0.369 → 0.302 and 2S2L 0.399 → 0.334; mean 1S2L recall over FA ≤ 30% 0.523 → 0.481.
+Per event the colour bands move P(NonPSPL) by a median 0.11 (p90 0.44) and flip 9.5% of threshold
+decisions. So GULLS' colour photometry — with its own blending fractions and zeropoints, none of which
+we corrected — still carries usable anomaly signal for a model trained on our colour model. This is the
+first cross-simulator evidence for the paper's three-band design; state it as such, with the caveat
+that the colour channels were also the ones flagged as mis-calibrated in §limits. (g08e12 half and
+the artifact `transfer_colour_ablation.json` to follow.)
+
+*In progress (2026-09-10):* attribution run `fspl5s` — single-lens rho ≤ 5 with binaries UNCHANGED
+(`ft_fspl5s_g08.pt`), to settle whether round 2's regression came from the binary-rho widening.
 
 **How to present it.** One paragraph plus the matched-budget table in the cross-simulator
 subsection: the residual false alarms were traced to a missing physical effect in the training set,
