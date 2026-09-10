@@ -1,0 +1,187 @@
+{
+  "_doc": "Finite-source single-lens fine-tune, run locally, scored on our own held-out set AND on GULLS.",
+  "code_commit": "0822e4e",
+  "train": {
+    "n_events": 129683,
+    "spec": {
+      "fspl5s": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "fspl5s_highmag": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  },
+  "heldout": {
+    "n_events": 39864,
+    "spec": {
+      "fspl5s": [
+        100,
+        101,
+        102,
+        103
+      ],
+      "fspl5s_highmag": [
+        100
+      ]
+    }
+  },
+  "recipe": "init=ft_g08e12.pt prefix=fspl5s epochs=12 lr=0.0001 gap_aug=0.8 truncate_aug=0.5 seed=20260909",
+  "models": {
+    "fspl5s_g08": {
+      "n_events": 39864,
+      "completeness_at_purity": 0.831,
+      "purity": 0.882,
+      "ap": 0.931,
+      "macro_f1": 0.9055,
+      "per_class_f1": {
+        "Flat": 0.97,
+        "PSPL": 0.953,
+        "NonPSPL": 0.772,
+        "PeriodicVar": 0.974,
+        "LongPeriodVar": 0.874,
+        "Eruptive": 0.89
+      },
+      "pspl_recall_by_rho_u0": {
+        "[0,0.03)": {
+          "n": 1651,
+          "pspl_recall": 0.9673,
+          "called_nonpspl": 0.0085
+        },
+        "[0.03,0.1)": {
+          "n": 1101,
+          "pspl_recall": 0.95,
+          "called_nonpspl": 0.0409
+        },
+        "[0.1,0.3)": {
+          "n": 1087,
+          "pspl_recall": 0.9338,
+          "called_nonpspl": 0.058
+        },
+        "[0.3,1)": {
+          "n": 1151,
+          "pspl_recall": 0.9114,
+          "called_nonpspl": 0.0799
+        },
+        "[1,3)": {
+          "n": 1082,
+          "pspl_recall": 0.6608,
+          "called_nonpspl": 0.3059
+        },
+        "[3,inf)": {
+          "n": 2280,
+          "pspl_recall": 0.8417,
+          "called_nonpspl": 0.0934
+        }
+      }
+    },
+    "ft_g08e12": {
+      "n_events": 39864,
+      "completeness_at_purity": 0.001,
+      "purity": 0.625,
+      "ap": 0.547,
+      "macro_f1": 0.8533,
+      "per_class_f1": {
+        "Flat": 0.966,
+        "PSPL": 0.908,
+        "NonPSPL": 0.603,
+        "PeriodicVar": 0.953,
+        "LongPeriodVar": 0.843,
+        "Eruptive": 0.847
+      },
+      "pspl_recall_by_rho_u0": {
+        "[0,0.03)": {
+          "n": 1651,
+          "pspl_recall": 0.9291,
+          "called_nonpspl": 0.043
+        },
+        "[0.03,0.1)": {
+          "n": 1101,
+          "pspl_recall": 0.8783,
+          "called_nonpspl": 0.1117
+        },
+        "[0.1,0.3)": {
+          "n": 1087,
+          "pspl_recall": 0.8464,
+          "called_nonpspl": 0.1417
+        },
+        "[0.3,1)": {
+          "n": 1151,
+          "pspl_recall": 0.8045,
+          "called_nonpspl": 0.1825
+        },
+        "[1,3)": {
+          "n": 1082,
+          "pspl_recall": 0.1969,
+          "called_nonpspl": 0.7283
+        },
+        "[3,inf)": {
+          "n": 2280,
+          "pspl_recall": 0.1636,
+          "called_nonpspl": 0.6167
+        }
+      }
+    },
+    "shipped": {
+      "n_events": 39864,
+      "completeness_at_purity": 0.001,
+      "purity": 0.333,
+      "ap": 0.563,
+      "macro_f1": 0.8677,
+      "per_class_f1": {
+        "Flat": 0.972,
+        "PSPL": 0.92,
+        "NonPSPL": 0.633,
+        "PeriodicVar": 0.974,
+        "LongPeriodVar": 0.854,
+        "Eruptive": 0.853
+      },
+      "pspl_recall_by_rho_u0": {
+        "[0,0.03)": {
+          "n": 1651,
+          "pspl_recall": 0.9624,
+          "called_nonpspl": 0.0206
+        },
+        "[0.03,0.1)": {
+          "n": 1101,
+          "pspl_recall": 0.9301,
+          "called_nonpspl": 0.059
+        },
+        "[0.1,0.3)": {
+          "n": 1087,
+          "pspl_recall": 0.9062,
+          "called_nonpspl": 0.0892
+        },
+        "[0.3,1)": {
+          "n": 1151,
+          "pspl_recall": 0.8619,
+          "called_nonpspl": 0.1268
+        },
+        "[1,3)": {
+          "n": 1082,
+          "pspl_recall": 0.2052,
+          "called_nonpspl": 0.7126
+        },
+        "[3,inf)": {
+          "n": 2280,
+          "pspl_recall": 0.1759,
+          "called_nonpspl": 0.6088
+        }
+      }
+    }
+  }
+}
