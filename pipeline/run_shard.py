@@ -82,6 +82,12 @@ HARD_REGIMES = {
     # Attribution run for round 2's negative result: single-lens rho to 5, binaries UNCHANGED.
     "fspl5s":         dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0),
     "fspl5s_highmag": dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, U0_MAX=0.2),
+    # Noise-model ablation: fspl5s priors under a GULLS-like background (SurveyConfig.bkg_mult=7,
+    # measured in validation/gulls/gulls_noise_vs_ours.py: GULLS' F146 errors equal ours for
+    # m_base < 20 and rise to 2.5x ours at m_base 24-25; a 7x background variance reproduces that
+    # run, a global multiplier does not). Config half lives in CONFIG_REGIMES under the same names.
+    "fspl5s_noisy":         dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0),
+    "fspl5s_noisy_highmag": dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, U0_MAX=0.2),
 }
 
 # Regimes that alter the OBSERVING conditions or the contaminant amplitude rather than the
@@ -91,6 +97,8 @@ CONFIG_REGIMES = {
     "fspl_highmag": dict(mix="highmag"),
     "fspl5_highmag": dict(mix="highmag"),
     "fspl5s_highmag": dict(mix="highmag"),
+    "fspl5s_noisy":         dict(cfg=dict(bkg_mult=7.0)),
+    "fspl5s_noisy_highmag": dict(cfg=dict(bkg_mult=7.0), mix="highmag"),
     # Variables scaled to straddle the 0.02 mag floor: the model must learn where Flat ends.
     "boundary":   dict(amp_scale=(0.05, 0.60), mix="contaminant"),
     "boundary2":  dict(amp_scale=(0.02, 0.20), mix="contaminant"),

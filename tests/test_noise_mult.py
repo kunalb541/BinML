@@ -43,3 +43,14 @@ def test_bkg_mult_hurts_faint_sources_more_than_bright_ones():
     assert sig(b9, faint) / sig(b, faint) > sig(b9, bright) / sig(b, bright) > 0.99
     ev = simulate_event("PSPL", np.random.default_rng(5), cfg)          # runs end to end
     assert ev is None or all(np.isfinite(bb.mag).all() for bb in ev.bands.values())
+
+
+def test_noisy_regimes_are_wired_in_both_dicts():
+    from pipeline.run_shard import HARD_REGIMES, CONFIG_REGIMES, _config_for
+    for r in ("fspl5s_noisy", "fspl5s_noisy_highmag"):
+        assert HARD_REGIMES[r]["PSPL_FINITE_SOURCE"] is True and HARD_REGIMES[r]["PSPL_RHO_MAX"] == 5.0
+        cfg, mix, _ = _config_for(r, SurveyConfig())
+        assert cfg.bkg_mult == 7.0 and cfg.noise_mult == 1.0
+    assert HARD_REGIMES["fspl5s_noisy_highmag"]["U0_MAX"] == 0.2
+    assert CONFIG_REGIMES["fspl5s_noisy_highmag"]["mix"] == "highmag"
+    assert _config_for("fspl5s", SurveyConfig())[0].bkg_mult == 1.0      # the clean regime is untouched
