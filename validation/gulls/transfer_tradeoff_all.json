@@ -1,48 +1,72 @@
 {
- "_doc": "Three fine-tunes vs shipped on the identical GULLS matched dense events: false alarms by finite-source strength, recall at matched false-alarm budgets, frozen-threshold operating point.",
- "n_matched": 56975,
- "bins_rho_over_u0": [
-  [
-   0,
-   0.03
-  ],
-  [
-   0.03,
-   0.1
-  ],
-  [
-   0.1,
-   0.3
-  ],
-  [
-   0.3,
-   1
-  ],
-  [
-   1,
-   3
-  ],
-  [
-   3,
-   null
-  ]
+ "_doc": "GULLS/RMDC26 summary tables across checkpoints, from the per-event rows -- one command, no typing.",
+ "n_matched_dense": 56975,
+ "frozen_threshold": 0.9042405486106873,
+ "budgets": [
+  0.02,
+  0.031,
+  0.052,
+  0.117,
+  0.2
  ],
  "models": {
   "shipped": {
-   "frozen": {
+   "frozen_threshold": {
     "fa_1S1L": 0.3561,
     "recall_1S2L": 0.504,
     "recall_2S2L": 0.5819
    },
-   "fa_by_rho_over_u0": [
-    0.4021,
-    0.314,
-    0.2974,
-    0.2616,
-    0.2709,
-    0.2584
+   "fa_1S1L_by_rho_over_u0": [
+    {
+     "bin": [
+      0,
+      0.03
+     ],
+     "n": 18151,
+     "fa": 0.4021
+    },
+    {
+     "bin": [
+      0.03,
+      0.1
+     ],
+     "n": 8722,
+     "fa": 0.314
+    },
+    {
+     "bin": [
+      0.1,
+      0.3
+     ],
+     "n": 3931,
+     "fa": 0.2974
+    },
+    {
+     "bin": [
+      0.3,
+      1
+     ],
+     "n": 1743,
+     "fa": 0.2616
+    },
+    {
+     "bin": [
+      1,
+      3
+     ],
+     "n": 539,
+     "fa": 0.2709
+    },
+    {
+     "bin": [
+      3,
+      null
+     ],
+     "n": 267,
+     "fa": 0.2584
+    }
    ],
-   "at_matched_fa": [
+   "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
      "threshold": 0.9981,
@@ -79,23 +103,66 @@
      "recall_2S2L": 0.4545
     }
    ],
-   "mean_recall_1S2L_fa_le_0p3": 0.3222
+   "mean_recall_1S2L_fa_le_0p3": 0.3222,
+   "mean_recall_2S2L_fa_le_0p3": 0.3724
   },
   "ft_g08e12": {
-   "frozen": {
+   "frozen_threshold": {
     "fa_1S1L": 0.1165,
     "recall_1S2L": 0.4567,
     "recall_2S2L": 0.4693
    },
-   "fa_by_rho_over_u0": [
-    0.0462,
-    0.0996,
-    0.2292,
-    0.4291,
-    0.6456,
-    0.6742
+   "fa_1S1L_by_rho_over_u0": [
+    {
+     "bin": [
+      0,
+      0.03
+     ],
+     "n": 18151,
+     "fa": 0.0462
+    },
+    {
+     "bin": [
+      0.03,
+      0.1
+     ],
+     "n": 8722,
+     "fa": 0.0996
+    },
+    {
+     "bin": [
+      0.1,
+      0.3
+     ],
+     "n": 3931,
+     "fa": 0.2292
+    },
+    {
+     "bin": [
+      0.3,
+      1
+     ],
+     "n": 1743,
+     "fa": 0.4291
+    },
+    {
+     "bin": [
+      1,
+      3
+     ],
+     "n": 539,
+     "fa": 0.6456
+    },
+    {
+     "bin": [
+      3,
+      null
+     ],
+     "n": 267,
+     "fa": 0.6742
+    }
    ],
-   "at_matched_fa": [
+   "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
      "threshold": 0.9749,
@@ -132,23 +199,66 @@
      "recall_2S2L": 0.6113
     }
    ],
-   "mean_recall_1S2L_fa_le_0p3": 0.4864
+   "mean_recall_1S2L_fa_le_0p3": 0.4864,
+   "mean_recall_2S2L_fa_le_0p3": 0.4992
   },
   "fspl_g08": {
-   "frozen": {
+   "frozen_threshold": {
     "fa_1S1L": 0.0522,
     "recall_1S2L": 0.3696,
     "recall_2S2L": 0.4003
    },
-   "fa_by_rho_over_u0": [
-    0.0322,
-    0.0357,
-    0.0664,
-    0.1842,
-    0.3265,
-    0.3333
+   "fa_1S1L_by_rho_over_u0": [
+    {
+     "bin": [
+      0,
+      0.03
+     ],
+     "n": 18151,
+     "fa": 0.0322
+    },
+    {
+     "bin": [
+      0.03,
+      0.1
+     ],
+     "n": 8722,
+     "fa": 0.0357
+    },
+    {
+     "bin": [
+      0.1,
+      0.3
+     ],
+     "n": 3931,
+     "fa": 0.0664
+    },
+    {
+     "bin": [
+      0.3,
+      1
+     ],
+     "n": 1743,
+     "fa": 0.1842
+    },
+    {
+     "bin": [
+      1,
+      3
+     ],
+     "n": 539,
+     "fa": 0.3265
+    },
+    {
+     "bin": [
+      3,
+      null
+     ],
+     "n": 267,
+     "fa": 0.3333
+    }
    ],
-   "at_matched_fa": [
+   "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
      "threshold": 0.9518,
@@ -185,23 +295,66 @@
      "recall_2S2L": 0.6523
     }
    ],
-   "mean_recall_1S2L_fa_le_0p3": 0.5226
+   "mean_recall_1S2L_fa_le_0p3": 0.5226,
+   "mean_recall_2S2L_fa_le_0p3": 0.5537
   },
   "fspl5_g08": {
-   "frozen": {
+   "frozen_threshold": {
     "fa_1S1L": 0.0868,
     "recall_1S2L": 0.4455,
     "recall_2S2L": 0.4712
    },
-   "fa_by_rho_over_u0": [
-    0.0402,
-    0.0611,
-    0.1603,
-    0.3546,
-    0.4861,
-    0.4644
+   "fa_1S1L_by_rho_over_u0": [
+    {
+     "bin": [
+      0,
+      0.03
+     ],
+     "n": 18151,
+     "fa": 0.0402
+    },
+    {
+     "bin": [
+      0.03,
+      0.1
+     ],
+     "n": 8722,
+     "fa": 0.0611
+    },
+    {
+     "bin": [
+      0.1,
+      0.3
+     ],
+     "n": 3931,
+     "fa": 0.1603
+    },
+    {
+     "bin": [
+      0.3,
+      1
+     ],
+     "n": 1743,
+     "fa": 0.3546
+    },
+    {
+     "bin": [
+      1,
+      3
+     ],
+     "n": 539,
+     "fa": 0.4861
+    },
+    {
+     "bin": [
+      3,
+      null
+     ],
+     "n": 267,
+     "fa": 0.4644
+    }
    ],
-   "at_matched_fa": [
+   "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
      "threshold": 0.9681,
@@ -238,7 +391,104 @@
      "recall_2S2L": 0.6614
     }
    ],
-   "mean_recall_1S2L_fa_le_0p3": 0.5277
+   "mean_recall_1S2L_fa_le_0p3": 0.5277,
+   "mean_recall_2S2L_fa_le_0p3": 0.5496
+  },
+  "fspl5s_g08": {
+   "frozen_threshold": {
+    "fa_1S1L": 0.0485,
+    "recall_1S2L": 0.3784,
+    "recall_2S2L": 0.4086
+   },
+   "fa_1S1L_by_rho_over_u0": [
+    {
+     "bin": [
+      0,
+      0.03
+     ],
+     "n": 18151,
+     "fa": 0.031
+    },
+    {
+     "bin": [
+      0.03,
+      0.1
+     ],
+     "n": 8722,
+     "fa": 0.0367
+    },
+    {
+     "bin": [
+      0.1,
+      0.3
+     ],
+     "n": 3931,
+     "fa": 0.0605
+    },
+    {
+     "bin": [
+      0.3,
+      1
+     ],
+     "n": 1743,
+     "fa": 0.1538
+    },
+    {
+     "bin": [
+      1,
+      3
+     ],
+     "n": 539,
+     "fa": 0.2801
+    },
+    {
+     "bin": [
+      3,
+      null
+     ],
+     "n": 267,
+     "fa": 0.2884
+    }
+   ],
+   "recall_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "threshold": 0.95,
+     "fa": 0.02,
+     "recall_1S2L": 0.2652,
+     "recall_2S2L": 0.2929
+    },
+    {
+     "fa_target": 0.031,
+     "threshold": 0.9321,
+     "fa": 0.031,
+     "recall_1S2L": 0.3147,
+     "recall_2S2L": 0.3482
+    },
+    {
+     "fa_target": 0.052,
+     "threshold": 0.8982,
+     "fa": 0.052,
+     "recall_1S2L": 0.3902,
+     "recall_2S2L": 0.4211
+    },
+    {
+     "fa_target": 0.117,
+     "threshold": 0.7947,
+     "fa": 0.117,
+     "recall_1S2L": 0.5328,
+     "recall_2S2L": 0.564
+    },
+    {
+     "fa_target": 0.2,
+     "threshold": 0.6781,
+     "fa": 0.2,
+     "recall_1S2L": 0.637,
+     "recall_2S2L": 0.6632
+    }
+   ],
+   "mean_recall_1S2L_fa_le_0p3": 0.5385,
+   "mean_recall_2S2L_fa_le_0p3": 0.567
   }
  }
 }

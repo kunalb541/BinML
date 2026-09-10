@@ -26,7 +26,9 @@ done until this table says so.
 | McNemar discordant counts as macros | ✅ | ✅ |
 | Finite-source fine-tune `ft_fspl_g08.pt` (GULLS false alarms 11.7% → 5.2%; recall at matched budget +6–7 pts; re-calibrated threshold 0.935 → 3.1% FA) | ✅ `validation/gulls/{fspl_finetune,transfer_full_reduced,transfer_tradeoff,gapped_threshold}_fspl_g08.json` | ❌ not yet — one paragraph + matched-budget table |
 | Round 2 `ft_fspl5_g08.pt` (rho ≤ 5 + binary rho ≤ 0.1): negative — no gain over round 1, finite-source bins worse | ✅ `fspl_finetune_fspl5_g08.json`, `transfer_tradeoff_all.json` | — (one sentence at most) |
-| Decision: sidecar = `ft_fspl_g08.pt` (dominates g08e12 at every budget; round 2 did not beat it); threshold 0.935 from the gapped calibration | **OPEN — author's call** | — |
+| Round 3 `ft_fspl5s_g08.pt` (single-lens rho ≤ 5, binaries unchanged): best on every GULLS measure — FA 4.9%, recall 0.390 @ 5.2% FA, mean 0.538 | ✅ `fspl_finetune_fspl5s_g08.json`, `transfer_tradeoff_all.json` | ❌ not yet — the matched-budget table |
+| Colour ablation on GULLS (both checkpoints): colour adds 4–7 pts planetary recall at matched budget | ✅ `transfer_colour_ablation.json` | ❌ not yet — one sentence |
+| Decision: sidecar = `ft_fspl5s_g08.pt` (threshold from `gapped_threshold_fspl5s_g08.json`) | **OPEN — author's call** | — |
 | Figures rebuilt through `build.sh` (weighted prevalence line) | ❌ not yet | — |
 | Zenodo release + DOI in Data Availability, CITATION.cff, README | ❌ needs one-time GitHub↔Zenodo authorisation by the author | — |
 | Resubmit via Editorial Manager (starts review) | — | ❌ after the rows above |
@@ -273,8 +275,39 @@ first cross-simulator evidence for the paper's three-band design; state it as su
 that the colour channels were also the ones flagged as mis-calibrated in §limits. (g08e12 half and
 the artifact `transfer_colour_ablation.json` to follow.)
 
-*In progress (2026-09-10):* attribution run `fspl5s` — single-lens rho ≤ 5 with binaries UNCHANGED
-(`ft_fspl5s_g08.pt`), to settle whether round 2's regression came from the binary-rho widening.
+*Round 3 — attribution (`fspl5s`: single-lens rho ≤ 5, binaries UNCHANGED; `ft_fspl5s_g08.pt`;
+`fspl_finetune_fspl5s_g08.json`, `transfer_full_reduced_fspl5s_g08{,_vs_fspl_g08}.json`,
+`transfer_tradeoff_all.json`).* Settled: the single-lens extension helps and round 2's regression was
+entirely the binary-rho widening. On the identical 56,975 GULLS events (`gulls_summary_tables.py`):
+
+| checkpoint | FA @ frozen | 1S1L FA by rho/\|u0\| bin (<0.03 … >3) | recall @ 5.2% FA (1S2L) | mean 1S2L recall, FA ≤ 0.3 |
+|---|---|---|---|---|
+| shipped | 0.356 | 0.40 0.31 0.30 0.26 0.27 0.26 | 0.214 | 0.322 |
+| ft_g08e12 | 0.117 | 0.046 0.100 0.229 0.429 0.646 0.674 | 0.295 | 0.486 |
+| ft_fspl_g08 (rho ≤ 1) | 0.052 | 0.032 0.036 0.066 0.184 0.327 0.333 | 0.369 | 0.523 |
+| ft_fspl5_g08 (rho ≤ 5 + binary rho ≤ 0.1) | 0.087 | 0.040 0.061 0.160 0.355 0.486 0.464 | 0.344 | 0.528 |
+| **ft_fspl5s_g08 (rho ≤ 5, binaries unchanged)** | **0.049** | **0.031 0.037 0.060 0.154 0.280 0.288** | **0.390** | **0.538** |
+
+Own held-out physics check for fspl5s: PSPL recall 0.66 / 0.84 in the 1–3 / >3 bins (g08e12: 0.20 /
+0.16), macro-F1 0.906, no other class regressed. **ft_fspl5s_g08 is the sidecar candidate.** The
+remaining 0.28–0.29 in the largest-source bins is now the floor to chase with something other than the
+prior (limb darkening, or the binary-source population, which we do not simulate at all).
+
+*Gapped-threshold calibration for fspl5s (`gapped_threshold_fspl5s_g08.json`).* Purity-0.90 threshold on
+our gapped finite-source held-out set: 0.9492 (held-out completeness
+0.693 @ purity 0.897); on GULLS that gives
+2.0% single-lens false alarms with planetary recall
+0.268 / 0.295
+(clean-data threshold 0.9236 → 3.7% /
+0.335). This is the operating point to ship with the sidecar:
+two percent single-lens false alarms on an independent simulator, chosen without looking at it.
+
+*Colour ablation, both checkpoints (`transfer_colour_ablation.json`).* Removing F087/F213 costs
+planetary recall at matched false-alarm budget for both: fspl_g08 0.369/0.399 → 0.302/0.334 at 5.2%
+FA (mean recall 0.523 → 0.481); g08e12 0.295/0.313 → 0.253/0.271 (0.486 → 0.429). Per event the colour
+bands move P(NonPSPL) by a median 0.11 and flip ~9–10% of threshold decisions. GULLS' colour photometry,
+with its own blending and zeropoints, carries usable anomaly signal for a model trained on our colour
+model: the first cross-simulator evidence for the three-band design.
 
 **How to present it.** One paragraph plus the matched-budget table in the cross-simulator
 subsection: the residual false alarms were traced to a missing physical effect in the training set,
