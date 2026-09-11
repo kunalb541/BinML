@@ -1,0 +1,385 @@
+{
+ "_doc": "EXPERIMENTAL -- replay RMDC26 as if it arrived in daily batches, the way IPAC's GBTDS photometry pipeline",
+ "threshold": 0.9563422799110413,
+ "bands": "F146",
+ "n_events": {
+  "RMDC26_1S1L_ML": 300,
+  "RMDC26_1S2L_ML": 300,
+  "RMDC26_2S2L_ML": 300
+ },
+ "alerted_by_season_end": {
+  "RMDC26_1S1L_ML": 0.02,
+  "RMDC26_1S2L_ML": 0.33,
+  "RMDC26_2S2L_ML": 0.37
+ },
+ "median_alert_day": {
+  "RMDC26_1S1L_ML": 36.5,
+  "RMDC26_1S2L_ML": 48.0,
+  "RMDC26_2S2L_ML": 41.0
+ },
+ "alerts_per_1000_per_day_single_lens": 0.278,
+ "cpu": [
+  {
+   "day": 1,
+   "n_scored": 899,
+   "cpu_s": 1.982
+  },
+  {
+   "day": 2,
+   "n_scored": 900,
+   "cpu_s": 1.942
+  },
+  {
+   "day": 3,
+   "n_scored": 900,
+   "cpu_s": 1.923
+  },
+  {
+   "day": 4,
+   "n_scored": 900,
+   "cpu_s": 1.946
+  },
+  {
+   "day": 5,
+   "n_scored": 900,
+   "cpu_s": 1.978
+  },
+  {
+   "day": 6,
+   "n_scored": 900,
+   "cpu_s": 2.013
+  },
+  {
+   "day": 7,
+   "n_scored": 899,
+   "cpu_s": 2.048
+  },
+  {
+   "day": 8,
+   "n_scored": 900,
+   "cpu_s": 2.084
+  },
+  {
+   "day": 9,
+   "n_scored": 898,
+   "cpu_s": 2.11
+  },
+  {
+   "day": 10,
+   "n_scored": 897,
+   "cpu_s": 2.134
+  },
+  {
+   "day": 11,
+   "n_scored": 895,
+   "cpu_s": 2.178
+  },
+  {
+   "day": 12,
+   "n_scored": 892,
+   "cpu_s": 2.213
+  },
+  {
+   "day": 13,
+   "n_scored": 888,
+   "cpu_s": 2.243
+  },
+  {
+   "day": 14,
+   "n_scored": 888,
+   "cpu_s": 2.273
+  },
+  {
+   "day": 15,
+   "n_scored": 885,
+   "cpu_s": 2.287
+  },
+  {
+   "day": 16,
+   "n_scored": 882,
+   "cpu_s": 2.317
+  },
+  {
+   "day": 17,
+   "n_scored": 877,
+   "cpu_s": 2.361
+  },
+  {
+   "day": 18,
+   "n_scored": 872,
+   "cpu_s": 2.373
+  },
+  {
+   "day": 19,
+   "n_scored": 867,
+   "cpu_s": 2.391
+  },
+  {
+   "day": 20,
+   "n_scored": 866,
+   "cpu_s": 2.432
+  },
+  {
+   "day": 21,
+   "n_scored": 864,
+   "cpu_s": 2.504
+  },
+  {
+   "day": 22,
+   "n_scored": 862,
+   "cpu_s": 2.486
+  },
+  {
+   "day": 23,
+   "n_scored": 858,
+   "cpu_s": 2.515
+  },
+  {
+   "day": 24,
+   "n_scored": 854,
+   "cpu_s": 2.541
+  },
+  {
+   "day": 25,
+   "n_scored": 852,
+   "cpu_s": 2.579
+  },
+  {
+   "day": 26,
+   "n_scored": 846,
+   "cpu_s": 2.587
+  },
+  {
+   "day": 27,
+   "n_scored": 843,
+   "cpu_s": 2.612
+  },
+  {
+   "day": 28,
+   "n_scored": 840,
+   "cpu_s": 2.657
+  },
+  {
+   "day": 29,
+   "n_scored": 839,
+   "cpu_s": 2.703
+  },
+  {
+   "day": 30,
+   "n_scored": 834,
+   "cpu_s": 2.702
+  },
+  {
+   "day": 31,
+   "n_scored": 833,
+   "cpu_s": 2.731
+  },
+  {
+   "day": 32,
+   "n_scored": 828,
+   "cpu_s": 2.756
+  },
+  {
+   "day": 33,
+   "n_scored": 825,
+   "cpu_s": 2.818
+  },
+  {
+   "day": 34,
+   "n_scored": 822,
+   "cpu_s": 2.821
+  },
+  {
+   "day": 35,
+   "n_scored": 817,
+   "cpu_s": 2.837
+  },
+  {
+   "day": 36,
+   "n_scored": 815,
+   "cpu_s": 2.885
+  },
+  {
+   "day": 37,
+   "n_scored": 813,
+   "cpu_s": 2.904
+  },
+  {
+   "day": 38,
+   "n_scored": 809,
+   "cpu_s": 2.923
+  },
+  {
+   "day": 39,
+   "n_scored": 808,
+   "cpu_s": 2.975
+  },
+  {
+   "day": 40,
+   "n_scored": 805,
+   "cpu_s": 2.992
+  },
+  {
+   "day": 41,
+   "n_scored": 803,
+   "cpu_s": 3.026
+  },
+  {
+   "day": 42,
+   "n_scored": 800,
+   "cpu_s": 3.093
+  },
+  {
+   "day": 43,
+   "n_scored": 795,
+   "cpu_s": 3.085
+  },
+  {
+   "day": 44,
+   "n_scored": 792,
+   "cpu_s": 3.121
+  },
+  {
+   "day": 45,
+   "n_scored": 790,
+   "cpu_s": 3.13
+  },
+  {
+   "day": 46,
+   "n_scored": 787,
+   "cpu_s": 3.168
+  },
+  {
+   "day": 47,
+   "n_scored": 785,
+   "cpu_s": 3.205
+  },
+  {
+   "day": 48,
+   "n_scored": 783,
+   "cpu_s": 3.245
+  },
+  {
+   "day": 49,
+   "n_scored": 778,
+   "cpu_s": 3.253
+  },
+  {
+   "day": 50,
+   "n_scored": 775,
+   "cpu_s": 3.301
+  },
+  {
+   "day": 51,
+   "n_scored": 770,
+   "cpu_s": 3.307
+  },
+  {
+   "day": 52,
+   "n_scored": 768,
+   "cpu_s": 3.375
+  },
+  {
+   "day": 53,
+   "n_scored": 766,
+   "cpu_s": 3.373
+  },
+  {
+   "day": 54,
+   "n_scored": 763,
+   "cpu_s": 3.415
+  },
+  {
+   "day": 55,
+   "n_scored": 762,
+   "cpu_s": 3.463
+  },
+  {
+   "day": 56,
+   "n_scored": 760,
+   "cpu_s": 3.501
+  },
+  {
+   "day": 57,
+   "n_scored": 758,
+   "cpu_s": 3.522
+  },
+  {
+   "day": 58,
+   "n_scored": 753,
+   "cpu_s": 3.554
+  },
+  {
+   "day": 59,
+   "n_scored": 750,
+   "cpu_s": 3.583
+  },
+  {
+   "day": 60,
+   "n_scored": 748,
+   "cpu_s": 3.6
+  },
+  {
+   "day": 61,
+   "n_scored": 748,
+   "cpu_s": 3.65
+  },
+  {
+   "day": 62,
+   "n_scored": 747,
+   "cpu_s": 3.673
+  },
+  {
+   "day": 63,
+   "n_scored": 741,
+   "cpu_s": 3.688
+  },
+  {
+   "day": 64,
+   "n_scored": 735,
+   "cpu_s": 3.7
+  },
+  {
+   "day": 65,
+   "n_scored": 730,
+   "cpu_s": 3.723
+  },
+  {
+   "day": 66,
+   "n_scored": 723,
+   "cpu_s": 3.747
+  },
+  {
+   "day": 67,
+   "n_scored": 719,
+   "cpu_s": 3.774
+  },
+  {
+   "day": 68,
+   "n_scored": 714,
+   "cpu_s": 3.797
+  },
+  {
+   "day": 69,
+   "n_scored": 708,
+   "cpu_s": 3.816
+  },
+  {
+   "day": 70,
+   "n_scored": 699,
+   "cpu_s": 3.789
+  },
+  {
+   "day": 71,
+   "n_scored": 689,
+   "cpu_s": 3.776
+  },
+  {
+   "day": 72,
+   "n_scored": 0,
+   "cpu_s": 0.011
+  }
+ ],
+ "cpu_s_per_1000_rescored": 3.54,
+ "command": "experimental/deployment/replay_rmdc26.py"
+}

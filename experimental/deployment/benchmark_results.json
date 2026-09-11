@@ -1,0 +1,35 @@
+{
+ "_doc": "EXPERIMENTAL -- CPU inference cost of BinML, to size a deployment (experimental/deployment/README.md).",
+ "machine": {
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "processor": "arm",
+  "cpu_count": 10,
+  "python": "3.11.8",
+  "torch": "2.11.0"
+ },
+ "inputs": {
+  "source": "RMDC26 curve cache",
+  "n_curves": 200,
+  "median_f146_points": 7701
+ },
+ "threads": {
+  "1": {
+   "tokens_ms_per_curve": 2.595,
+   "forward_ms_per_curve_batch1": 1.436,
+   "forward_ms_per_curve_batch64": 1.893,
+   "forward_ms_per_curve_batch200": 1.98,
+   "season_scan_144_cuts_s_per_event": 0.385,
+   "full_season_scores_per_core_second": 222.852
+  },
+  "10": {
+   "tokens_ms_per_curve": 2.629,
+   "forward_ms_per_curve_batch1": 2.109,
+   "forward_ms_per_curve_batch64": 1.454,
+   "forward_ms_per_curve_batch200": 1.437,
+   "season_scan_144_cuts_s_per_event": 0.498,
+   "full_season_scores_per_core_second": 24.491
+  }
+ },
+ "peak_rss_mb": 520.7,
+ "command": "experimental/deployment/benchmark_inference.py"
+}
