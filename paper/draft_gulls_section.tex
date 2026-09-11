@@ -215,6 +215,40 @@ budgets, against $\bmlGullsRecDetAtBudget$ in-season. A whole-mission model woul
 anomalies that fall in the gap; what it would uniquely add is events spanning seasons and the
 four low-cadence seasons ($\bmlGullsLowcadPct\%$ of eligible events, outside BinML's support).
 
+\subsection{The cascade on an independent simulation}\label{sec:gulls:cascade}
+
+The partial-light-curve protocol of \S\ref{sec:cascade} was repeated on $\bmlGullsCascN$ RMDC26
+seasons from the same cache: 144 half-day cuts, the first threshold crossing as the alert, and
+the truth-informed onset recomputed at every cut on the noise-free curve by our own rule, with
+GULLS' errors as $\sigma$. Eligibility is as before (binary lens, anomaly detectable over the
+full window, finite onset; $\bmlGullsCascElig$ events), and nothing is selected on the model's
+output. Under the primary protocol (F146 only, frozen threshold) the finite-source checkpoint
+alerts prematurely on $\bmlGullsCascPrematurePct\%$ of eligible binaries (95\% CI
+$[\bmlGullsCascPrematureLo, \bmlGullsCascPrematureHi]\%$; in-house $\bmlCascPrematurePct\%$)
+with a median non-premature lag of $\bmlGullsCascLag$~days (in-house
+$\bmlCascMedianLagNonPrem$), so the timing behaviour transfers; within-season detection is
+lower, $\bmlGullsCascDetPct\%$ against $\bmlCascDetFrac\%$, because the eligible GULLS anomalies
+are smaller at matched selection. What the in-house scan could not give is the burden on the
+dominant class: $\bmlGullsCascFaSeasonPct\%$ of single lenses alert at least once per season
+($\bmlGullsCascFaPerDay$ alerts per 1{,}000 events per day; $\bmlGullsCascFaSeasonCalPct\%$ at the
+calibrated threshold), so at a planetary prevalence of 1\% a streaming alert list would be
+$\bmlGullsCascPurityOnePct\%$ detectable planets, and $\bmlGullsCascPurityFivePct\%$ at 5\%.
+That is the quantitative form of the conclusion in \S\ref{sec:cascade}: the latency and purity
+support post-hoc modelling priority, not real-time triggering.
+
+\subsection{Sensitivity to the detectability floor, on the label side}\label{sec:gulls:floor}
+
+Because the noise-free statistics of every relabelled event are stored, the adopted
+$0.02$~mag floor can be swept without re-simulation. The fraction of RMDC26 planetary events
+with a claimable anomaly is $\bmlGullsFloorDetLo\%$ at a $0.005$~mag floor,
+$\bmlGullsFloorDetAdopted\%$ at the adopted $0.02$, and $\bmlGullsFloorDetHi\%$ at $0.05$; the
+checkpoint's precision under the resulting labels is highest, $\bmlGullsFloorPrecLo$, at the
+lowest floor and falls to $\bmlGullsFloorPrecAdopted$ at $0.02$. The model, trained under the
+$0.02$~mag policy, nonetheless detects a class of small but statistically significant anomalies
+that the policy declines to claim; whether a survey would claim them is the red-noise question
+the floor stands in for (\S\ref{sec:detcond}). The training side of the sensitivity, retraining
+under another floor, is not covered here.
+
 \subsection{What this test does and does not establish}
 
 It establishes that the failure of the shipped model on the planned schedule is a property of
@@ -281,3 +315,5 @@ natural next version.
 % bmlGapHeldN, bmlGapShipped*, bmlGapAware*, bmlGapSched/RandApSched   schedule_finetune.json heldout_eval (30013; 0.959/0.211; PSPL 0.94/0.08; Flat 0.96/0.25; F1 0.412 -> 0.900; 0.924 / 0.906)
 % bmlGapRelabelPct              = 20.1 (measured on the pool; record in schedule_finetune.json)
 % bmlGapAwareF1CleanDelta       schedule_finetune.json (macroF1 clean 0.915 -> 0.915 for rand; g08e12: 0.920 -> 0.907, i.e. -0.013)
+% bmlGullsCasc*                cascade_gulls.json results["fspl5s_g08|f146|frozen"]: n_scanned (6000), timing.n_eligible (1667), premature_frac x100 (2.2) + ci, median_lag (6.5), detected_frac x100 (56.9), burden.1S1L alert_frac_per_season x100 (5.7) / alerts_per_1000_events_per_day (0.80); calibrated_gapped alert_frac (2.7); streaming_purity at 0.01 / 0.05 x100 (5.2 / 20.9)
+% bmlGullsFloor*               floor_sensitivity.json by_floor: relabelling 1S2L NonPSPL x100 at 0.005 / 0.02 / 0.05 (70 / 56 / 40); models.fspl5s_g08.frozen.ontology_precision at 0.005 / 0.02 (0.84 / 0.70)
