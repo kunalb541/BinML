@@ -38,7 +38,9 @@ plot = ["matplotlib>=3.5"]
 data = ["h5py>=3.0", "scipy>=1.7"]
 all = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "scikit-learn>=1.0", "VBBinaryLensing"]
 dev = ["matplotlib>=3.5", "h5py>=3.0", "scipy>=1.7", "scikit-learn>=1.0",
-       "VBBinaryLensing", "pytest>=7.0", "build", "twine"]
+       "VBBinaryLensing", "pytest>=7.0", "build", "twine",
+       "nbformat>=5.0", "nbclient>=0.9", "ipykernel>=6.0"]
+roman = ["duckdb>=1.5", "pyarrow>=14", "pandas>=2.0"]          # binml.gulls: remote RMDC26 access
 
 [project.scripts]
 binml = "binml.cli:main"

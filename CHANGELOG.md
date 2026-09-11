@@ -20,7 +20,12 @@ Validation (new scripts and artifacts under `validation/gulls/`):
 - `gulls_summary_tables.py` (matched-budget table, colour ablation), `calibrate_gapped_threshold.py`,
   `subday_summary.py` (sub-day t_E out-of-support row), `gulls_noise_vs_ours.py` (noise-model comparison),
   `validation/schedule_finetune_local.py`, `validation/fspl_finetune_local.py`.
-- Results and what NOT to claim: `paper/REVISION.md` §1½ (seven-experiment ledger).
+- `binml.gulls` (new, extras `[roman]`): pinned-revision RMDC26 access, season finding, empirical baseline,
+  `classify_event` (single season or per-season combiner); offline-tested. Example notebooks
+  `examples/00_quickstart_synthetic.ipynb` (offline, executed in CI) and `examples/01_classify_roman_event.ipynb`
+  (network). `validation/gulls/floor_sensitivity.py` (label-side floor sweep on GULLS) and
+  `validation/gulls/cascade_gulls.py` (half-day cascade on GULLS: timing, alert burden, purity at stated prevalence).
+- Results and what NOT to claim: `paper/REVISION.md` §1½ (experiment ledger).
 
 ## Unreleased — full-codebase audit fixes (2026-09-09)
 Nine-agent audit of every Python file (record: `docs/AUDIT_2026-09-09.md`): 0 critical, 13 major,
