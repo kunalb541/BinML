@@ -34,6 +34,8 @@ FROZEN = 0.9042405486106873
 BINS = [(0, 0.03), (0.03, 0.1), (0.1, 0.3), (0.3, 1), (1, 3), (3, float("inf"))]
 BUDGETS = (0.02, 0.031, 0.052, 0.117, 0.20)
 L1, L2, L3 = "RMDC26_1S1L_ML", "RMDC26_1S2L_ML", "RMDC26_2S2L_ML"
+_trapz = getattr(np, "trapezoid", None) or np.trapz          # NumPy < 2.0 has only trapz
+SCHEDULE = os.path.join(HERE, "rmdc26_schedule.json")
 
 
 def load_rows(path):
@@ -43,11 +45,20 @@ def load_rows(path):
             for r in json.load(open(path)) if r.get("dense") and "pred" in r}
 
 
-def load_meta(ids):
+def load_meta(ids, with_season=False):
     import pyarrow.parquet as pq
-    m = pq.read_table(META, columns=["event_id", "rho", "u0lens1"]).to_pydict()
-    d = {int(e): (float(r), abs(float(u))) for e, r, u in zip(m["event_id"], m["rho"], m["u0lens1"])}
-    return np.array([d[i][0] / max(d[i][1], 1e-6) for i in ids])
+    m = pq.read_table(META, columns=["event_id", "rho", "u0lens1", "t0lens1"]).to_pydict()
+    d = {int(e): (float(r), abs(float(u)), float(t)) for e, r, u, t in zip(m["event_id"], m["rho"], m["u0lens1"], m["t0lens1"])}
+    ratio = np.array([d[i][0] / max(d[i][1], 1e-6) for i in ids])
+    if not with_season:
+        return ratio
+    S = json.load(open(SCHEDULE))["seasons"]
+    def season_of(t):
+        for x in S:
+            if x["start_bjd"] <= t <= x["end_bjd"]:
+                return x["index"]
+        return -1
+    return ratio, np.array([season_of(d[i][2]) for i in ids])
 
 
 def summarise(p, lab, ratio):
@@ -57,20 +68,26 @@ def summarise(p, lab, ratio):
     r2 = np.array([(p[s2] >= t).mean() for t in ths])
     r3 = np.array([(p[s3] >= t).mean() for t in ths])
     o = np.argsort(fa); k = fa[o] <= 0.3
+    kk = lambda sel: [int((p[sel] >= FROZEN).sum()), int(sel.sum())]
     out = {"frozen_threshold": {"fa_1S1L": round(float((p[s1] >= FROZEN).mean()), 4),
                                 "recall_1S2L": round(float((p[s2] >= FROZEN).mean()), 4),
-                                "recall_2S2L": round(float((p[s3] >= FROZEN).mean()), 4)},
+                                "recall_2S2L": round(float((p[s3] >= FROZEN).mean()), 4),
+                                "fa_1S1L_k_n": kk(s1), "recall_1S2L_k_n": kk(s2), "recall_2S2L_k_n": kk(s3)},
            "fa_1S1L_by_rho_over_u0": [], "recall_at_matched_fa": [],
-           "mean_recall_1S2L_fa_le_0p3": round(float(np.trapezoid(r2[o][k], fa[o][k]) / 0.3), 4),
-           "mean_recall_2S2L_fa_le_0p3": round(float(np.trapezoid(r3[o][k], fa[o][k]) / 0.3), 4)}
+           "mean_recall_1S2L_fa_le_0p3": round(float(_trapz(r2[o][k], fa[o][k]) / 0.3), 4),
+           "mean_recall_2S2L_fa_le_0p3": round(float(_trapz(r3[o][k], fa[o][k]) / 0.3), 4)}
     for lo, hi in BINS:
         sel = s1 & (ratio >= lo) & (ratio < hi)
         out["fa_1S1L_by_rho_over_u0"].append({"bin": [lo, None if hi == float("inf") else hi], "n": int(sel.sum()),
+                                              "k": int((p[sel] >= FROZEN).sum()),
                                               "fa": round(float((p[sel] >= FROZEN).mean()), 4) if sel.sum() else None})
     for tgt in BUDGETS:
         i = int(np.argmin(np.abs(fa - tgt)))
         out["recall_at_matched_fa"].append({"fa_target": tgt, "threshold": float(ths[i]), "fa": round(float(fa[i]), 4),
-                                            "recall_1S2L": round(float(r2[i]), 4), "recall_2S2L": round(float(r3[i]), 4)})
+                                            "fa_achieved_exact": float(fa[i]),
+                                            "recall_1S2L": round(float(r2[i]), 4), "recall_2S2L": round(float(r3[i]), 4),
+                                            "recall_1S2L_k_n": [int((p[s2] >= ths[i]).sum()), int(s2.sum())],
+                                            "recall_2S2L_k_n": [int((p[s3] >= ths[i]).sum()), int(s3.sum())]})
     return out
 
 
@@ -86,17 +103,26 @@ def main(argv=None):
     ap.add_argument("--models", nargs="+", required=True, help="name=rows.json (three-band runs)")
     ap.add_argument("--f146", nargs="*", default=[], help="name=rows.json (F146-only runs of the same checkpoints)")
     ap.add_argument("--out-dir", default=HERE)
+    ap.add_argument("--by-season", action="store_true", help="also summarise each high-cadence season separately "
+                    "(RMDC26 pause phases differ between seasons; validation/gulls/rmdc26_schedule.json)")
     args = ap.parse_args(argv)
     models = {k: load_rows(v) for k, v in parse_pairs(args.models).items()}
     f146 = {k: load_rows(v) for k, v in parse_pairs(args.f146).items()}
     common = sorted(set.intersection(*[set(v) for v in list(models.values()) + list(f146.values())]))
     lab = np.array([next(iter(models.values()))[i][0] for i in common])
-    ratio = load_meta(common)
+    ratio, season = load_meta(common, with_season=True)
     trade = {"_doc": __doc__.split("\n")[0], "n_matched_dense": len(common), "frozen_threshold": FROZEN,
              "budgets": list(BUDGETS), "models": {}}
     for name, d in models.items():
         p = np.array([d[i][1] for i in common])
         trade["models"][name] = summarise(p, lab, ratio)
+        if args.by_season:
+            trade["models"][name]["by_season"] = {}
+            for si in sorted(set(season.tolist())):
+                sel = season == si
+                if (lab[sel] == L1).sum() >= 200 and (lab[sel] == L2).sum() >= 100:
+                    trade["models"][name]["by_season"][str(si)] = {"n": int(sel.sum()), **summarise(p[sel], lab[sel], ratio[sel])}
+    trade["command"] = " ".join(sys.argv)
     json.dump(trade, open(os.path.join(args.out_dir, "transfer_tradeoff_all.json"), "w"), indent=1)
     print(f"matched dense events: {len(common)}")
     print(f"{'model':12s} {'FA@frozen':>9} {'rec 1S2L':>9} {'rec 2S2L':>9} {'rec@5.2%FA':>11} {'mean rec<=0.3':>13}   FA by rho/|u0| bins")
@@ -104,6 +130,9 @@ def main(argv=None):
         f = m["frozen_threshold"]; at = next(a for a in m["recall_at_matched_fa"] if a["fa_target"] == 0.052)
         bins = " ".join(f"{b['fa']:.3f}" if b["fa"] is not None else "  -  " for b in m["fa_1S1L_by_rho_over_u0"])
         print(f"{name:12s} {f['fa_1S1L']:9.4f} {f['recall_1S2L']:9.4f} {f['recall_2S2L']:9.4f} {at['recall_1S2L']:11.3f} {m['mean_recall_1S2L_fa_le_0p3']:13.3f}   {bins}")
+        for si, b in m.get("by_season", {}).items():
+            a5 = next(a for a in b["recall_at_matched_fa"] if a["fa_target"] == 0.052)
+            print(f"   season {si}: n={b['n']:6d} FA@frozen {b['frozen_threshold']['fa_1S1L']:.4f} rec@5.2%FA {a5['recall_1S2L']:.3f} (achieved FA {a5['fa']:.4f})")
     if f146:
         col = {"_doc": "Colour ablation on GULLS: three-band vs F146-only inputs for the same checkpoint on identical events.",
                "n_matched_dense": len(common), "models": {}}

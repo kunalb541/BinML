@@ -77,13 +77,16 @@ class SurveyConfig:
     # ones). Both 1.0 = the released photometry, bit-for-bit.
     noise_mult: float = 1.0
     bkg_mult: float = 1.0
-    # Resolution of the recorded anomaly onset `t_anom` (days). The released checkpoints were
-    # generated with the 10-cut coarse scan only, i.e. an onset rounded UP to a multiple of 7.2 d
-    # (paper Sec. training; audit 2026-09-09 finding 9). Under a FIXED gap schedule two of those ten
-    # grid values fall inside the blanked bins and the caustic-in-gap relabel then fires on 20% of
-    # all binaries (validation/schedule_finetune_local.py). 0.5 d matches the grid the cascade
-    # evaluation uses (validation/cascade_reduce.py). Set 7.2 to reproduce the legacy grid exactly.
-    onset_resolution_days: float = 0.5
+    # Resolution of the recorded anomaly onset `t_anom` (days). DEFAULT 7.2 = the legacy grid every
+    # released checkpoint and frozen artifact was generated with (10 cuts over 72 d, onset rounded UP
+    # to the end of the first detectable interval), so the released pipeline and the paper's
+    # coarse-onset sensitivity (validation/cascade_trace.py) reproduce bit-for-bit. Opt in to a finer
+    # grid with pipeline.run_shard --onset-resolution-days 0.5: t_anom is then the first cut on the
+    # absolute res-grid at which the anomaly is detectable -- the definition the cascade evaluation
+    # uses (validation/cascade_reduce.py). NOTE this fixes only the onset's resolution; the gap/cadence
+    # relabel that consumes it (pipeline/train.py) remains approximate, because t_anom is when the
+    # anomaly first becomes detectable, not where the caustic is (audit 2026-09-09 finding 9, open).
+    onset_resolution_days: float = 7.2
     # OBSERVED F146 baseline magnitude range (AB). This is the magnitude AFTER extinction --
     # sampling it before extinction (as an earlier version did) pushed sources to 27+ mag,
     # far below the detection limit, and made every light curve noise-dominated.
@@ -205,14 +208,16 @@ def _anomaly_onset_day(ref_truth, params, cfg, n_cuts: int = 10,
 
     The real-time analogue of the anomaly label: before this day the light curve is a smooth
     Paczynski rise indistinguishable from PSPL, so a truncation-aware label must read PSPL, not
-    NonPSPL. Two stages: a coarse scan of ``n_cuts`` cuts finds the first coarse interval in which
-    the anomaly is detectable (this alone was the released behaviour: an onset rounded UP to a
-    multiple of window/n_cuts = 7.2 d); a fine scan then walks that one interval at
-    ``resolution_days`` (default ``cfg.onset_resolution_days``) and returns the first fine cut
-    that is detectable. Walking, not bisecting: the anomaly statistic is not monotone in revealed
-    time (a longer baseline can let the PSPL refit absorb an early deviation), and "first crossing
-    on a grid" is the definition the cascade evaluation uses. Cost: at most n_cuts + 7.2/res
-    refits per detectable-anomaly event, once, at generation time.
+    NonPSPL. Two modes, chosen by ``resolution_days`` (default ``cfg.onset_resolution_days``):
+
+    * legacy (resolution >= window/n_cuts, the default 7.2 d): scan ``n_cuts`` cuts and return the
+      first detectable one -- the onset rounded UP to a multiple of 7.2 d. Bit-for-bit the released
+      behaviour.
+    * fine (e.g. 0.5 d): return the first cut k*res (k = 1, 2, ...) at which the anomaly is
+      detectable, scanning the WHOLE grid from the start. The statistic is not monotone in revealed
+      time (a longer baseline can let the refit absorb an early deviation), so a coarse-then-fine
+      search can miss the first crossing; the full scan cannot, and equals the cascade evaluation's
+      first-detectable onset. Cost: up to window/res refits per detectable-anomaly event.
     """
     t, mag, sig, mb, fs = ref_truth
     if t.size < 10:
@@ -227,18 +232,14 @@ def _anomaly_onset_day(ref_truth, params, cfg, n_cuts: int = 10,
         d, amp = _pspl_refit_dchi2(t[m], mag[m], sig[m], mb, fs, params)
         return d >= cfg.dchi2_anomaly and amp >= cfg.min_amplitude_mag
 
-    for tc in np.linspace(step, cfg.window_days, n_cuts):
+    if res >= step - 1e-12:
+        for tc in np.linspace(step, cfg.window_days, n_cuts):
+            if detectable(tc):
+                return float(tc)
+        return float("inf")
+    for k in range(1, int(np.floor(cfg.window_days / res + 1e-9)) + 1):
+        tc = k * res
         if detectable(tc):
-            if res >= step:
-                return float(tc)                       # legacy 7.2 d grid, bit-for-bit
-            # fine cuts on the ABSOLUTE res-grid (k * res), the same grid cascade_reduce uses,
-            # not one anchored to the coarse boundaries
-            k0 = int(np.ceil((tc - step) / res - 1e-9)) + 1
-            for tf in np.arange(k0, int(np.floor(tc / res + 1e-9))) * res:
-                if tf < tc - step + 1e-9 or tf >= tc - 1e-9:
-                    continue
-                if detectable(tf):
-                    return float(tf)
             return float(tc)
     return float("inf")
 

@@ -1,12 +1,15 @@
-"""The recorded anomaly onset is resolved to 0.5 d by default; 7.2 d reproduces the legacy grid.
+"""Anomaly-onset resolution: the default is the legacy 7.2-d grid (released data, bit-for-bit); the
+opt-in fine grid returns the first detectable cut on the absolute grid, as the cascade evaluation does.
 
-Audit 2026-09-09 finding 9: the released generator rounded t_anom UP to a multiple of 7.2 d, which the
-gap/cadence augmentations then used as if exact. Under a fixed gap schedule that mislabelled 20% of all
-binaries (validation/schedule_finetune_local.py). These tests pin the fix.
+Audit 2026-09-09 finding 9 (still open for the relabel rule itself): the released generator rounds
+t_anom UP to a multiple of 7.2 d. The first attempt at a fine grid (2026-09-11) searched only inside the
+first detectable coarse interval and skipped the two grid points next to each coarse cut; these tests
+pin the full-grid replacement at exactly those points.
 """
 import dataclasses
 
 import numpy as np
+import pytest
 
 from pipeline.assemble import SurveyConfig, _anomaly_onset_day, _epochs
 from pipeline.generators import pspl_magnification
@@ -24,25 +27,22 @@ def _ref_truth_with_step(t_on, amp=0.15):
     return (t, mag, sig, mb, fs), params
 
 
-def test_default_resolution_is_half_day_and_brackets_the_true_onset():
-    cfg = SurveyConfig()
-    assert cfg.onset_resolution_days == 0.5
-    for t_on in (30.3, 9.1, 61.7):
-        rt, p = _ref_truth_with_step(t_on)
-        onset = _anomaly_onset_day(rt, p, cfg)
-        assert np.isfinite(onset)
-        assert t_on <= onset <= t_on + 0.5 + 1e-9, (t_on, onset)      # first fine cut at/after the step
-        assert abs(onset / 0.5 - round(onset / 0.5)) < 1e-9             # on the 0.5 d grid
-
-
-def test_legacy_grid_is_reproduced_exactly():
-    cfg = dataclasses.replace(SurveyConfig(), onset_resolution_days=7.2)
+def test_default_is_the_legacy_grid():
+    assert SurveyConfig().onset_resolution_days == 7.2
     rt, p = _ref_truth_with_step(30.3)
+    assert _anomaly_onset_day(rt, p, SurveyConfig()) == 36.0          # rounded UP to the 7.2-d grid
+
+
+@pytest.mark.parametrize("t_on,expected", [(6.8, 7.0), (7.3, 7.5), (13.8, 14.0), (21.3, 21.5),
+                                           (30.3, 30.5), (43.3, 43.5), (64.9, 65.0), (9.1, 9.5)])
+def test_fine_grid_returns_the_first_half_day_cut_after_the_onset(t_on, expected):
+    cfg = dataclasses.replace(SurveyConfig(), onset_resolution_days=0.5)
+    rt, p = _ref_truth_with_step(t_on)
     onset = _anomaly_onset_day(rt, p, cfg)
-    assert onset == 36.0                                                   # rounded UP to the 7.2 d grid
-    assert _anomaly_onset_day(rt, p, SurveyConfig(), resolution_days=7.2) == 36.0
+    assert onset == pytest.approx(expected), (t_on, onset)
 
 
 def test_no_anomaly_is_still_inf():
     rt, p = _ref_truth_with_step(30.3, amp=0.0)
     assert _anomaly_onset_day(rt, p, SurveyConfig()) == float("inf")
+    assert _anomaly_onset_day(rt, p, SurveyConfig(), resolution_days=0.5) == float("inf")

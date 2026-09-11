@@ -70,19 +70,27 @@ def _espl():
     return _ESPL
 
 
-def espl_magnification(t: np.ndarray, t0: float, tE: float, u0: float, rho: float) -> np.ndarray:
-    """Finite-source (uniform disc) single-lens magnification via VBBinaryLensing ESPLMag2.
+def espl_magnification(t: np.ndarray, t0: float, tE: float, u0: float, rho: float,
+                       legacy: bool = False) -> np.ndarray:
+    """Finite-source (uniform disc, no limb darkening) single-lens magnification, VBBinaryLensing ESPLMag.
 
     Reduces to `pspl_magnification` as rho -> 0 (checked in tests/test_fspl.py). Used only when
     priors.PSPL_FINITE_SOURCE is on; the released training set is point-source, which is why the
     shipped model reads a rounded high-magnification peak as a binary (paper/REVISION.md).
+
+    ``legacy=True`` uses ESPLMag2, which every finite-source pool generated before 2026-09-11 used
+    (fspl, fspl5, fspl5s, fspl5s_noisy, fspl5s_v2). ESPLMag2 hands off to the point-source formula
+    abruptly outside the disc (u of about 3-5.5 rho), putting artificial 4-8 mmag steps into the light
+    curve and erring by up to 5e-3 in magnification there; ESPLMag matches direct integration over
+    the disc to ~1e-5 outside it (2026-09-11 check). See priors.PSPL_ESPL_LEGACY.
     """
     u = np.sqrt(u0 ** 2 + ((np.asarray(t, dtype=float) - t0) / tE) ** 2)
     u = np.maximum(u, 1e-8)
     v = _espl()
+    f = v.ESPLMag2 if legacy else v.ESPLMag
     out = np.empty(u.shape, dtype=float)
     for i in range(u.size):
-        out[i] = v.ESPLMag2(float(u[i]), float(rho))
+        out[i] = f(float(u[i]), float(rho))
     return out
 
 
@@ -189,6 +197,8 @@ class PSPLGen(Generator):
                   "tE": p.sample_tE(rng), "u0": p.sample_u0(rng)}
         if getattr(p, "PSPL_FINITE_SOURCE", False):
             params["rho"] = p.sample_pspl_rho(rng)     # finite-source single lens (opt-in)
+            if getattr(p, "PSPL_ESPL_LEGACY", False):
+                params["_espl_legacy"] = True           # reproduce pre-2026-09-11 pools (ESPLMag2)
         return params
 
     def delta(self, t, params, band):
@@ -198,7 +208,7 @@ class PSPLGen(Generator):
             return self._achromatic_cached(
                 t, params,
                 lambda: espl_magnification(t, params["t0"], params["tE"], params["u0"],
-                                           params["rho"]) - 1.0)
+                                           params["rho"], legacy=bool(params.get("_espl_legacy", False))) - 1.0)
         return self._achromatic_cached(
             t, params,
             lambda: pspl_magnification(t, params["t0"], params["tE"], params["u0"]) - 1.0)

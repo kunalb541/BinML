@@ -7,7 +7,14 @@ GULLS labels by GENERATOR: every 1S2L event is "planetary" whether or not the pl
 trace. The transfer numbers so far therefore count undetectable planets as misses ("recall 0.46").
 
 RMDC26 ships the noise-free curve (`true_flux_uJy`) and the per-epoch error (`flux_err_uJy`), so
-the same policy can be applied to GULLS events, with GULLS' own noise model as sigma:
+the same policy can be applied to GULLS events, with GULLS' own noise model as sigma. Caveats, all
+disclosed with the numbers: RMDC26's planetary classes are themselves detection-selected by GULLS
+(ObsGroup_0_chi2 >= 60 for every 1S2L/2S2L event); GULLS F146 has ~7,700 epochs per season against
+6,912 on the training grid, so a fixed delta-chi^2 cut is ~11% easier here (the reducer reports the
+labels with delta-chi^2 rescaled by 6912/n as a sensitivity); the refit is a static point-source
+single lens, so parallax and finite-source deviations in GULLS also register as misfit; and the
+single-start refit is numerically fragile for rare borderline events (a 1e-14 mag perturbation
+flips one of 1,000 in-house binaries).
 
   1. for each event already scored from the curve cache, fetch true_flux and flux_err for the
      SAME season window BinML saw (same season logic as gulls_transfer.py, saturation_flag = 0);
@@ -17,7 +24,11 @@ the same policy can be applied to GULLS events, with GULLS' own noise model as s
   3. dchi2_event = sum over bands of ((mag_true - m_base_band)/sigma)^2, max_amp = max |mag_true -
      m_base_band|; anomaly statistics from pipeline.assemble._pspl_refit_dchi2 on F146 (the same
      function that labels the training data), seeded from the catalogue (t0, tE, u0, fs);
-  4. label_detect = Flat / PSPL / NonPSPL by exactly the rule in simulate_event.
+  4. label_detect = Flat / PSPL / NonPSPL by the rule in simulate_event: single lenses (1S1L) are
+     never NonPSPL (the training rule refits only binaries); pspl_refit_anomaly records what the
+     point-source refit says about every event. When the host's peak lies outside the window (the
+     seasons adjacent to an inter-season gap, validation/gulls/multi_season.py) the refit is also
+     started at the in-window maximum and the best fit is kept.
 
 --extract fills a resumable per-block cache (one JSON per contiguous id block; rerun to resume).
 --reduce joins it with any number of rows files and writes transfer_detectability_relabel.json:
@@ -26,7 +37,7 @@ detectable, single-lens false alarms on detectable-event 1S1L, and matched-budge
 relabelled ontology, per checkpoint.
 
 Usage:
-  python validation/gulls/detectability_relabel.py --extract --cap-1s1l 1000 --cap-binary 2500
+  python validation/gulls/detectability_relabel.py --extract --cap-1s1l 1600 --cap-binary 2500
   python validation/gulls/detectability_relabel.py --reduce \
       --models shipped=rows_full_shipped_v2.json ft_g08e12=rows_full_ft_g08e12_v2.json \
               fspl_g08=rows_full_fspl_g08.json fspl5s_g08=rows_full_fspl5s_g08.json
@@ -72,7 +83,7 @@ def _stats(ev):
         r = (mag - mbase) / sig
         dchi2_event += float(np.sum(r ** 2))
         max_amp = max(max_amp, float(np.max(np.abs(mag - mbase))))
-    out.update(dchi2_event=round(dchi2_event, 2), max_amp_mag=round(max_amp, 4), m_base_true=mb,
+    out.update(dchi2_event=float(dchi2_event), max_amp_mag=float(max_amp), m_base_true=mb,
                n_f146=int(ev["bands"]["F146"][0].size) if "F146" in ev["bands"] else 0)
     if "F146" in ev["bands"]:
         # GULLS' own per-epoch noise at the quiescent brightness (window epochs within 0.05 mag of
@@ -81,19 +92,35 @@ def _stats(ev):
         q = np.abs(mag - mbase) < 0.05
         out["sigma_f146_quiescent_median"] = round(float(np.median(sig[q])), 5) if q.sum() >= 20 else None
         out["sigma_f146_window_median"] = round(float(np.median(sig)), 5)
-    d_an, a_an = 0.0, 0.0
+    d_an, a_an, multistart = 0.0, 0.0, False
     if "F146" in ev["bands"] and ev["bands"]["F146"][0].size >= 10:
         t, mag, sig, mbase = ev["bands"]["F146"]
         params = {"t0": ev["t0_win"], "tE": ev["tE"], "u0": ev["u0"]}
         d_an, a_an = _pspl_refit_dchi2(t, mag, sig, mbase, ev["fs"], params)
-    out.update(dchi2_anomaly=round(float(d_an), 2), anomaly_amp_mag=round(float(a_an), 4))
+        if not (0.0 <= ev["t0_win"] <= float(t.max()) + 1e-9):
+            # The host's peak is OUTSIDE this window (a season adjacent to an inter-season gap).
+            # A modeller seeing only this season would also try a single lens centred on what IS in
+            # the window; seeding at the catalogue t0 alone leaves an isolated bump labelled as an
+            # anomaly (2026-09-11 verification). Keep the best of several starts (lowest residual).
+            imax = int(np.argmin(mag))
+            for tE_s in (ev["tE"], 0.3, 1.0, 3.0, 10.0):
+                for u0_s in (0.05, 0.3, 1.0):
+                    d2, a2 = _pspl_refit_dchi2(t, mag, sig, mbase, ev["fs"], {"t0": float(t[imax]), "tE": tE_s, "u0": u0_s})
+                    if d2 < d_an:
+                        d_an, a_an = d2, a2
+            multistart = True
+    out.update(dchi2_anomaly=float(d_an), anomaly_amp_mag=float(a_an), refit_multistart=multistart)
+    # The training rule (pipeline.assemble.simulate_event) runs the anomaly refit only for binaries:
+    # a single lens -- point or finite source -- is PSPL or Flat, never NonPSPL. 1S1L events follow
+    # that rule; what the point-source refit says about them is kept as a separate diagnostic.
     if dchi2_event < CFG.dchi2_event or max_amp < CFG.min_amplitude_mag:
         lab = "Flat"
-    elif d_an >= CFG.dchi2_anomaly and a_an >= CFG.min_amplitude_mag:
+    elif ev["sim_label"] != L1 and d_an >= CFG.dchi2_anomaly and a_an >= CFG.min_amplitude_mag:
         lab = "NonPSPL"
     else:
         lab = "PSPL"
     out["label_detect"] = lab
+    out["pspl_refit_anomaly"] = bool(lab != "Flat" and d_an >= CFG.dchi2_anomaly and a_an >= CFG.min_amplitude_mag)
     out["generator_label"] = "PSPL" if ev["sim_label"] == L1 else "NonPSPL"
     return out
 
@@ -217,82 +244,170 @@ def _rate(p, thr):
     return round(float((p >= thr).mean()), 4) if p.size else None
 
 
+def wilson(k, n, z=1.96):
+    if n == 0:
+        return [None, None]
+    ph = k / n; d = 1 + z * z / n; c = (ph + z * z / (2 * n)) / d
+    h = z * np.sqrt(ph * (1 - ph) / n + z * z / (4 * n * n)) / d
+    return [round(max(0.0, c - h), 4), round(min(1.0, c + h), 4)]
+
+
+def _kn(p, sel, thr):
+    k, n = int((p[sel] >= thr).sum()), int(sel.sum())
+    return {"k": k, "n": n, "rate": round(k / n, 4) if n else None, "wilson95": wilson(k, n)}
+
+
+def selected_ids(ref_rows, cap_1s1l, cap_binary):
+    """The documented selection: the first N scored (dense) event ids of each class, in id order."""
+    ref = json.load(open(os.path.join(CURVES, ref_rows) if not os.path.isabs(ref_rows) else ref_rows))
+    by = {}
+    for r in ref:
+        if r.get("dense") and "pred" in r:
+            by.setdefault(r["sim_label"], []).append(r["event_id"])
+    out = {}
+    for lab in (L1, L2, L3):
+        ids = sorted(by.get(lab, []))
+        cap = cap_1s1l if lab == L1 else cap_binary
+        out[lab] = ids[:cap] if cap else ids
+    return out
+
+
 def reduce(args):
     truth = _load_truth(args.truth_cache)
-    models = {}
+    sel = selected_ids(args.ref_rows, args.cap_1s1l, args.cap_binary)
+    want = set(x for v in sel.values() for x in v)
+    extra = sorted(set(truth) - want)                   # cached by other runs: excluded, and said so
+    models, f146 = {}, {}
     for it in args.models:
         k, v = it.split("=", 1)
         v = v if os.path.isabs(v) else os.path.join(CURVES, v)
         models[k] = {r["event_id"]: float(r["p_nonpspl"]) for r in json.load(open(v)) if r.get("dense") and "pred" in r}
-    common = sorted(set(truth) & set.intersection(*[set(v) for v in models.values()]))
+    for it in args.f146 or []:
+        k, v = it.split("=", 1)
+        v = v if os.path.isabs(v) else os.path.join(CURVES, v)
+        f146[k] = {r["event_id"]: float(r["p_nonpspl"]) for r in json.load(open(v)) if r.get("dense") and "pred" in r}
+    common = sorted(want & set(truth) & set.intersection(*[set(v) for v in list(models.values()) + list(f146.values())]))
+    missing = sorted(want - set(truth))
     T = [truth[i] for i in common]
     lab = np.array([t["sim_label"] for t in T]); det = np.array([t["label_detect"] for t in T])
     w = np.array([t["weight"] for t in T])
-    out = {"_doc": __doc__.split("\n")[0], "n_events": len(common), "policy": {
-        "dchi2_event": CFG.dchi2_event, "dchi2_anomaly": CFG.dchi2_anomaly, "min_amplitude_mag": CFG.min_amplitude_mag,
-        "sigma": "GULLS flux_err_uJy converted to magnitudes at the true flux", "snr_min": SNR_MIN,
-        "baseline": "median true-flux magnitude at |t-t0| > 5 tE over the full mission, per band",
-        "anomaly_statistic": "pipeline.assemble._pspl_refit_dchi2 on F146 (the training-label function)"},
-        "relabelling": {}, "models": {}}
+    d2 = np.array([t["dchi2_anomaly"] for t in T]); amp = np.array([t["anomaly_amp_mag"] for t in T])
+    d2e = np.array([t["dchi2_event"] for t in T]); ampe = np.array([t["max_amp_mag"] for t in T])
+    nf = np.array([max(t.get("n_f146", 6912), 1) for t in T])
+    refit_anom = np.array([bool(t.get("pspl_refit_anomaly", False)) for t in T])
+    tE = np.array([t["tE"] for t in T]); u0 = np.abs(np.array([t["u0"] for t in T])); rho = np.array([t["rho"] for t in T])
+    s1, s2, s3 = lab == L1, lab == L2, lab == L3
+    binr = s2 | s3
+    out = {"_doc": __doc__.split("\n")[0], "n_events": len(common),
+           "selection": {"rule": f"first {args.cap_1s1l} scored 1S1L and first {args.cap_binary} scored 1S2L / 2S2L event ids "
+                                 f"(dense, in id order) of {args.ref_rows}",
+                         "ids": {L: [v[0], v[-1]] if v else None for L, v in sel.items()},
+                         "n_selected": {L: len(v) for L, v in sel.items()},
+                         "n_missing_from_cache": len(missing), "n_cached_but_excluded": len(extra)},
+           "policy": {"dchi2_event": CFG.dchi2_event, "dchi2_anomaly": CFG.dchi2_anomaly, "min_amplitude_mag": CFG.min_amplitude_mag,
+                      "sigma": "GULLS flux_err_uJy converted to magnitudes at the true flux", "snr_min": SNR_MIN,
+                      "baseline": "median true-flux magnitude at |t-t0| > 5 tE over the full mission, per band",
+                      "anomaly_statistic": "pipeline.assemble._pspl_refit_dchi2 on F146 (the training-label function)",
+                      "single_lenses": "never NonPSPL (training rule); pspl_refit_anomaly kept as a diagnostic"},
+           "relabelling": {}, "models": {}}
     for L in (L1, L2, L3):
-        s = lab == L
-        out["relabelling"][L] = {"n": int(s.sum()), **{f"frac_{k}": round(float((det[s] == k).mean()), 4) for k in ("Flat", "PSPL", "NonPSPL")},
-                                 **{f"wfrac_{k}": round(float(w[s & (det == k)].sum() / w[s].sum()), 4) for k in ("Flat", "PSPL", "NonPSPL")},
-                                 "median_dchi2_anomaly": round(float(np.median([t["dchi2_anomaly"] for t in T if t["sim_label"] == L])), 1),
-                                 "median_anomaly_amp_mag": round(float(np.median([t["anomaly_amp_mag"] for t in T if t["sim_label"] == L])), 4)}
+        m = lab == L
+        blk = {"n": int(m.sum()), **{f"frac_{k}": round(float((det[m] == k).mean()), 4) for k in ("Flat", "PSPL", "NonPSPL")},
+               **{f"wfrac_{k}": round(float(w[m & (det == k)].sum() / w[m].sum()), 4) for k in ("Flat", "PSPL", "NonPSPL")},
+               "median_dchi2_anomaly": round(float(np.median(d2[m])), 1), "median_anomaly_amp_mag": round(float(np.median(amp[m])), 4)}
+        if L != L1:
+            ev_ok = (d2e >= CFG.dchi2_event) & (ampe >= CFG.min_amplitude_mag)
+            blk["decomposition"] = {
+                "fail_dchi2_anomaly": round(float((m & ev_ok & (d2 < CFG.dchi2_anomaly)).sum() / m.sum()), 4),
+                "floor_vetoed": round(float((m & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp < CFG.min_amplitude_mag)).sum() / m.sum()), 4),
+                "flat_event": round(float((m & ~ev_ok).sum() / m.sum()), 4)}
+            resc = (d2 * 6912.0 / nf >= CFG.dchi2_anomaly) & (amp >= CFG.min_amplitude_mag) & ev_ok
+            blk["frac_NonPSPL_dchi2_rescaled_to_6912_epochs"] = round(float((m & resc).sum() / m.sum()), 4)
+        else:
+            blk["pspl_refit_anomaly_frac"] = round(float(refit_anom[m].mean()), 4)
+            blk["pspl_refit_anomaly_median_rho_over_u0"] = round(float(np.median((rho / np.maximum(u0, 1e-6))[m & refit_anom])), 3) if (m & refit_anom).any() else None
+        out["relabelling"][L] = blk
+    pool = {"binaries": binr}
+    ev_ok = (d2e >= CFG.dchi2_event) & (ampe >= CFG.min_amplitude_mag)
+    floor_vet = binr & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp < CFG.min_amplitude_mag)
+    fail_chi = binr & ev_ok & (d2 < CFG.dchi2_anomaly)
+    bin_det = binr & (det == "NonPSPL"); bin_undet = binr & (det != "NonPSPL")
+    out["relabelling"]["binaries_pooled"] = {"n": int(binr.sum()), "frac_fail_dchi2_anomaly": round(float(fail_chi.sum() / binr.sum()), 4),
+                                             "frac_floor_vetoed": round(float(floor_vet.sum() / binr.sum()), 4),
+                                             "frac_detectable": round(float(bin_det.sum() / binr.sum()), 4)}
     calib = {}
     for name in models:
-        f = os.path.join(HERE, f"gapped_threshold_{name}.json")
-        if os.path.exists(f):
-            calib[name] = float(json.load(open(f))["arms"]["rmdc26_gapped"]["threshold_at_target_purity"])
-    s1, s2, s3 = lab == L1, lab == L2, lab == L3
-    bin_det = (s2 | s3) & (det == "NonPSPL"); bin_undet = (s2 | s3) & (det != "NonPSPL")
+        for suffix, key in (("_seasons", "calibrated_seasons"), ("", "calibrated_legacy")):
+            f = os.path.join(HERE, f"gapped_threshold_{name}{suffix}.json")
+            if os.path.exists(f):
+                calib.setdefault(name, {})[key] = float(json.load(open(f))["arms"]["rmdc26_gapped"]["threshold_at_target_purity"])
+    MIX = {L1: 33353, L2: 11388, L3: 12234}                # scored-set class mix, for prevalence-fixed precision
+    cw = np.where(s1, MIX[L1] / max(s1.sum(), 1), np.where(s2, MIX[L2] / max(s2.sum(), 1), MIX[L3] / max(s3.sum(), 1)))
+    single_subfloor = s1 & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp < CFG.min_amplitude_mag)   # static-refit misfit, no planet
     for name, d in models.items():
         p = np.array([d[i] for i in common])
-        thrs = {"frozen": FROZEN}
-        if name in calib:
-            thrs["calibrated_gapped"] = calib[name]
+        thrs = {"frozen": FROZEN, **calib.get(name, {})}
         blk = {"thresholds": thrs, "at_threshold": {}}
         for tn, thr in thrs.items():
+            flag = p >= thr
             blk["at_threshold"][tn] = {
-                "fa_1S1L_all": _rate(p[s1], thr), "fa_1S1L_detectable_event": _rate(p[s1 & (det != "Flat")], thr),
-                "fa_1S1L_flat_by_policy": _rate(p[s1 & (det == "Flat")], thr),
-                "recall_1S2L_generator": _rate(p[s2], thr), "recall_1S2L_detectable": _rate(p[s2 & (det == "NonPSPL")], thr),
-                "recall_2S2L_generator": _rate(p[s3], thr), "recall_2S2L_detectable": _rate(p[s3 & (det == "NonPSPL")], thr),
-                "flag_rate_on_binaries_with_UNdetectable_anomaly": _rate(p[bin_undet], thr),
-                "n_binaries_detectable": int(bin_det.sum()), "n_binaries_undetectable": int(bin_undet.sum()),
-                # ontology-consistent: positives = label_detect NonPSPL; negatives = everything else
-                "ontology_precision": round(float((p[det == "NonPSPL"] >= thr).sum() / max((p >= thr).sum(), 1)), 4),
-                "ontology_recall": _rate(p[det == "NonPSPL"], thr),
-                "ontology_fa_on_nonanomalous": _rate(p[det != "NonPSPL"], thr)}
-        # matched budgets, FA on 1S1L as before, recall on DETECTABLE binaries
+                "fa_1S1L": _kn(p, s1, thr), "recall_1S2L_generator": _kn(p, s2, thr), "recall_2S2L_generator": _kn(p, s3, thr),
+                "recall_1S2L_detectable": _kn(p, s2 & bin_det, thr), "recall_2S2L_detectable": _kn(p, s3 & bin_det, thr),
+                "flag_binaries_undetectable": _kn(p, bin_undet, thr), "flag_binaries_floor_vetoed": _kn(p, floor_vet, thr),
+                "flag_binaries_floor_vetoed_lt_5mmag": _kn(p, floor_vet & (amp < 0.005), thr),
+                "flag_binaries_fail_dchi2": _kn(p, fail_chi, thr),
+                "flag_1S1L_pspl_refit_anomaly": _kn(p, s1 & refit_anom, thr),
+                "flag_1S1L_other": _kn(p, s1 & ~refit_anom, thr),
+                "flag_1S1L_significant_subfloor_misfit": _kn(p, single_subfloor, thr),
+                "ontology_precision_sample_mix": round(float((flag & (det == "NonPSPL")).sum() / max(flag.sum(), 1)), 4),
+                "ontology_precision_scored_mix": round(float((cw * (flag & (det == "NonPSPL"))).sum() / max((cw * flag).sum(), 1e-12)), 4)}
         ths = np.unique(np.round(p, 4))[::-1]
         fa = np.array([(p[s1] >= t).mean() for t in ths])
-        r2g = np.array([(p[s2] >= t).mean() for t in ths]); r2d = np.array([(p[s2 & bin_det] >= t).mean() for t in ths])
-        r3g = np.array([(p[s3] >= t).mean() for t in ths]); r3d = np.array([(p[s3 & bin_det] >= t).mean() for t in ths])
         blk["recall_at_matched_fa"] = []
         for tgt in (0.02, 0.031, 0.052, 0.117):
             i = int(np.argmin(np.abs(fa - tgt)))
             blk["recall_at_matched_fa"].append({"fa_target": tgt, "fa": round(float(fa[i]), 4), "threshold": float(ths[i]),
-                                                "recall_1S2L_generator": round(float(r2g[i]), 4), "recall_1S2L_detectable": round(float(r2d[i]), 4),
-                                                "recall_2S2L_generator": round(float(r3g[i]), 4), "recall_2S2L_detectable": round(float(r3d[i]), 4)})
-        # where the misses live: detectable binaries below the frozen threshold, by anomaly amplitude
-        amp = np.array([t["anomaly_amp_mag"] for t in T])
-        edges = [0.02, 0.05, 0.1, 0.2, 0.5, np.inf]
+                                                "recall_1S2L_generator": round(float((p[s2] >= ths[i]).mean()), 4),
+                                                "recall_1S2L_detectable": round(float((p[s2 & bin_det] >= ths[i]).mean()), 4),
+                                                "recall_2S2L_generator": round(float((p[s3] >= ths[i]).mean()), 4),
+                                                "recall_2S2L_detectable": round(float((p[s3 & bin_det] >= ths[i]).mean()), 4)})
         blk["recall_detectable_by_anomaly_amp_frozen"] = []
-        for lo, hi in zip(edges[:-1], edges[1:]):
-            sel = bin_det & (amp >= lo) & (amp < hi)
-            blk["recall_detectable_by_anomaly_amp_frozen"].append({"amp_bin": [lo, None if hi == np.inf else hi], "n": int(sel.sum()),
-                                                                   "recall": _rate(p[sel], FROZEN)})
+        for lo, hi in zip([0.02, 0.05, 0.1, 0.2, 0.5], [0.05, 0.1, 0.2, 0.5, np.inf]):
+            m_ = bin_det & (amp >= lo) & (amp < hi)
+            blk["recall_detectable_by_anomaly_amp_frozen"].append({"amp_bin": [lo, None if hi == np.inf else hi], **_kn(p, m_, FROZEN),
+                                                                   "median_dchi2_anomaly": round(float(np.median(d2[m_])), 1) if m_.any() else None})
+        blk["recall_detectable_by_dchi2_frozen"] = []
+        for lo, hi in zip([160, 500, 1e3, 1e4, 1e5], [500, 1e3, 1e4, 1e5, np.inf]):
+            m_ = bin_det & (d2 >= lo) & (d2 < hi)
+            blk["recall_detectable_by_dchi2_frozen"].append({"dchi2_bin": [lo, None if hi == np.inf else hi], **_kn(p, m_, FROZEN)})
+        blk["flag_floor_vetoed_by_amp_frozen"] = []
+        for lo, hi in zip([0, 0.005, 0.01, 0.02], [0.005, 0.01, 0.02, 0.05]):
+            m_ = binr & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp >= lo) & (amp < hi)
+            blk["flag_floor_vetoed_by_amp_frozen"].append({"amp_bin": [lo, hi], **_kn(p, m_, FROZEN)})
+        if name in f146:
+            q = np.array([f146[name][i] for i in common])
+            blk["colour_ablation"] = {}
+            for tgt in (0.02, 0.052):
+                ia = int(np.argmin(np.abs(fa - tgt)))
+                thsb = np.unique(np.round(q, 4))[::-1]; fab = np.array([(q[s1] >= t).mean() for t in thsb]); ib = int(np.argmin(np.abs(fab - tgt)))
+                blk["colour_ablation"][f"budget_{tgt}"] = {
+                    "three_band": {"detectable": round(float((p[bin_det] >= ths[ia]).mean()), 4), "undetectable": round(float((p[bin_undet] >= ths[ia]).mean()), 4)},
+                    "f146_only": {"detectable": round(float((q[bin_det] >= thsb[ib]).mean()), 4), "undetectable": round(float((q[bin_undet] >= thsb[ib]).mean()), 4)},
+                    "n_detectable": int(bin_det.sum()), "n_undetectable": int(bin_undet.sum())}
+            blk["colour_ablation"]["flag_floor_vetoed_by_amp_frozen_f146only"] = [
+                {"amp_bin": [lo, hi], **_kn(q, binr & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp >= lo) & (amp < hi), FROZEN)}
+                for lo, hi in zip([0, 0.005, 0.01, 0.02], [0.005, 0.01, 0.02, 0.05])]
         out["models"][name] = blk
+    out["command"] = " ".join(sys.argv)
     json.dump(out, open(args.out, "w"), indent=1)
-    print(f"n={len(common)}"); print(json.dumps(out["relabelling"], indent=1))
-    print(f"{'model':12s} {'thr':>8} {'FA all':>7} {'FA det':>7} {'r1S2L gen':>9} {'r1S2L det':>9} {'r2S2L gen':>9} {'r2S2L det':>9} {'flag undet':>10}")
+    print(f"n={len(common)} (missing {len(missing)}, cached-but-excluded {len(extra)})")
+    for L, b in out["relabelling"].items():
+        print(L, {k: v for k, v in b.items() if not isinstance(v, dict)}, b.get("decomposition", ""))
     for name, b in out["models"].items():
         for tn, a in b["at_threshold"].items():
-            print(f"{name:12s} {tn[:8]:>8} {a['fa_1S1L_all']:7.4f} {a['fa_1S1L_detectable_event']:7.4f} {a['recall_1S2L_generator']:9.4f} "
-                  f"{a['recall_1S2L_detectable']:9.4f} {a['recall_2S2L_generator']:9.4f} {a['recall_2S2L_detectable']:9.4f} "
-                  f"{a['flag_rate_on_binaries_with_UNdetectable_anomaly']:10.4f}")
+            print(f"{name:12s} {tn[:12]:>12} FA {a['fa_1S1L']['rate']} rec gen {a['recall_1S2L_generator']['rate']}/{a['recall_2S2L_generator']['rate']} "
+                  f"det {a['recall_1S2L_detectable']['rate']}/{a['recall_2S2L_detectable']['rate']} floor-vetoed {a['flag_binaries_floor_vetoed']['rate']} "
+                  f"1S1L subfloor-misfit {a['flag_1S1L_significant_subfloor_misfit']}")
     print("->", args.out)
 
 
@@ -300,7 +415,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--extract", action="store_true"); ap.add_argument("--reduce", action="store_true")
     ap.add_argument("--ref-rows", default="rows_full_fspl5s_g08.json", help="rows file defining the scored dense set")
-    ap.add_argument("--cap-1s1l", type=int, default=1000, help="first N dense 1S1L ids (0 = all)")
+    ap.add_argument("--cap-1s1l", type=int, default=1600, help="first N dense 1S1L ids (0 = all)")
     ap.add_argument("--cap-binary", type=int, default=2500, help="first N dense ids per binary class (0 = all)")
     ap.add_argument("--chunk", type=int, default=200); ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--max-blocks", type=int, default=0, help="stop after this many NEW blocks (smoke test)")
@@ -308,6 +423,7 @@ def main(argv=None):
     ap.add_argument("--truth-cache", default=TRUTH)
     ap.add_argument("--meta-cache", default="/tmp/rmdc26_meta.parquet"); ap.add_argument("--epoch-cache", default="/tmp/rmdc26_epoch.parquet")
     ap.add_argument("--models", nargs="*", default=[], help="name=rows.json for --reduce")
+    ap.add_argument("--f146", nargs="*", default=[], help="name=rows.json F146-only runs (colour decomposition)")
     ap.add_argument("--out", default=os.path.join(HERE, "transfer_detectability_relabel.json"))
     args = ap.parse_args(argv)
     if args.extract:

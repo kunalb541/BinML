@@ -88,6 +88,10 @@ class EventPriors:
     PSPL_FINITE_SOURCE: bool = False
     PSPL_RHO_MIN: float = 1e-3
     PSPL_RHO_MAX: float = 1.0
+    # Pools generated before 2026-09-11 used VBBinaryLensing ESPLMag2, which has artificial 4-8 mmag
+    # steps where it hands off to the point-source formula; True reproduces them, False (default) uses
+    # the smooth ESPLMag table (pipeline/generators.espl_magnification).
+    PSPL_ESPL_LEGACY: bool = False
 
     # --- source flux fraction (blending) ----------------------------------------
     # f_s = F_source / (F_source + F_blend). Roman's bulge fields are crowded; a typical

@@ -59,14 +59,19 @@ def run(cmd, extra_env=None):
     subprocess.run(cmd, check=True, cwd=REPO, env=env)
 
 
-def gen_one(raw_dir, regime, shard):
+ONSET_RES = None      # set from --onset-resolution-days in main(); None = generator default (legacy 7.2 d)
+
+
+def gen_one(raw_dir, regime, shard, onset_res=None):
     out = os.path.join(raw_dir, f"shard_{shard:05d}.h5")
     if os.path.exists(out):
         return shard, 0.0
     t0 = time.time()
-    run([sys.executable, "-m", "pipeline.run_shard", "--shard", str(shard), "--n-shards",
-         str(N_SHARDS_TOTAL), "--out", raw_dir, "--regime", regime, "--seed-base", str(SEED_GEN)],
-        extra_env={"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"})
+    cmd = [sys.executable, "-m", "pipeline.run_shard", "--shard", str(shard), "--n-shards",
+           str(N_SHARDS_TOTAL), "--out", raw_dir, "--regime", regime, "--seed-base", str(SEED_GEN)]
+    if onset_res is not None:
+        cmd += ["--onset-resolution-days", str(onset_res)]
+    run(cmd, extra_env={"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"})
     assert os.path.exists(out), out
     return shard, time.time() - t0
 
@@ -84,7 +89,7 @@ def build(work, name, spec, workers):
     todo = [j for j in jobs if not os.path.exists(os.path.join(j[0], f"shard_{j[2]:05d}.h5"))]
     log(f"  {name}: {len(jobs) - len(todo)} shards cached, generating {len(todo)} with {workers} workers")
     with cf.ProcessPoolExecutor(max_workers=workers) as ex:
-        for (shard, dt), j in zip(ex.map(gen_one, *zip(*todo)) if todo else [], todo):
+        for (shard, dt), j in zip(ex.map(gen_one, *zip(*todo), [ONSET_RES] * len(todo)) if todo else [], todo):
             log(f"    {j[1]} shard {shard:3d} done in {dt/60:.1f} min")
     for raw_dir, regime, s in jobs:
         raw = os.path.join(raw_dir, f"shard_{s:05d}.h5")
@@ -156,22 +161,45 @@ def main(argv=None):
     ap.add_argument("--prefix", default="fspl", help="regime prefix: fspl (rho<=1) or fspl5 (rho<=5, binary rho<=0.1)")
     ap.add_argument("--init", default=INIT, help="warm-start checkpoint")
     ap.add_argument("--skip-gulls", action="store_true")
+    ap.add_argument("--onset-resolution-days", type=float, default=None,
+                    help="passed to pipeline.run_shard (default: the generator's legacy 7.2 d grid)")
+    ap.add_argument("--heldout-mm", default=None,
+                    help="evaluate on this existing held-out memmap instead of generating one (e.g. a control "
+                         "arm trained on point sources, evaluated on the finite-source held-out of the arm it controls)")
+    ap.add_argument("--delete-raw", action="store_true", help="delete raw shards once cached (they are regenerable)")
     args = ap.parse_args(argv)
-    global TRAIN, HELDOUT
+    global TRAIN, HELDOUT, ONSET_RES
     TRAIN, HELDOUT = specs(args.prefix)
+    ONSET_RES = args.onset_resolution_days
     if args.work == os.path.expanduser("~/Desktop/Research/microlensing/fspl_local_work") and args.prefix != "fspl":
         args.work = os.path.expanduser(f"~/Desktop/Research/microlensing/{args.prefix}_local_work")
     W = args.work; os.makedirs(W, exist_ok=True)
-    commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=REPO,
+    # provenance at DATA-GENERATION time, with the dirty flag (2026-09-11 verification: artifacts recorded
+    # the commit of the last invocation, not the code that generated their data)
+    commit = subprocess.run(["git", "describe", "--always", "--dirty", "--abbrev=12"], cwd=REPO,
                             capture_output=True, text=True).stdout.strip()
+    prov = os.path.join(W, "provenance.json")
+    if not os.path.exists(prov):
+        json.dump({"code_at_generation": commit, "onset_resolution_days": ONSET_RES, "prefix": args.prefix,
+                   "espl_function": "ESPLMag (smooth table; pools before 2026-09-11 used ESPLMag2)"}, open(prov, "w"), indent=1)
 
     log("=== data ===")
     mm_tr, n_tr = build(W, "train", TRAIN, args.workers)
-    mm_ev, n_ev = build(W, "heldout", HELDOUT, args.workers)
+    if args.heldout_mm:
+        mm_ev = args.heldout_mm; n_ev = json.load(open(os.path.join(mm_ev, "meta.json")))["n_events"]
+        log(f"  heldout: using existing memmap {mm_ev} ({n_ev:,} events)")
+    else:
+        mm_ev, n_ev = build(W, "heldout", HELDOUT, args.workers)
+    if args.delete_raw:
+        import shutil
+        for d in os.listdir(W):
+            if d.startswith("raw_"):
+                shutil.rmtree(os.path.join(W, d), ignore_errors=True)
 
     log("=== fine-tune from ft_g08e12 ===")
     ckpt = os.path.join(W, f"{args.tag}.pt")
-    stamp = f"init={os.path.basename(args.init)} prefix={args.prefix} epochs={args.epochs} lr={args.lr} gap_aug={args.gap_aug} truncate_aug=0.5 seed={SEED_TRAIN}"
+    stamp = (f"init={os.path.basename(args.init)} prefix={args.prefix} epochs={args.epochs} lr={args.lr} gap_aug={args.gap_aug} "
+             f"truncate_aug=0.5 seed={SEED_TRAIN} onset_res={ONSET_RES} data={json.load(open(prov))['code_at_generation']}")
     if not (os.path.exists(ckpt + ".done") and open(ckpt + ".done").read().strip() == stamp):
         for stale in (ckpt, ckpt + ".last", ckpt + ".done"):
             if os.path.exists(stale):
@@ -185,8 +213,10 @@ def main(argv=None):
         log(f"  trained in {(time.time()-t0)/60:.1f} min")
 
     log("=== held-out evaluation: new checkpoint vs ft_g08e12 vs shipped ===")
-    res = {"_doc": __doc__.split("\n")[0], "code_commit": commit, "train": {"n_events": n_tr, "spec": TRAIN},
-           "heldout": {"n_events": n_ev, "spec": HELDOUT}, "recipe": stamp, "models": {}}
+    res = {"_doc": __doc__.split("\n")[0], "code_commit": commit, "provenance": json.load(open(prov)),
+           "train": {"n_events": n_tr, "spec": TRAIN},
+           "heldout": {"n_events": n_ev, "spec": HELDOUT if not args.heldout_mm else f"existing memmap {args.heldout_mm}"},
+           "recipe": stamp, "models": {}}
     for name, path in ((args.tag, ckpt), ("ft_g08e12", INIT),
                        ("shipped", os.path.join(REPO, "binml", "weights", "binml.pt"))):
         ev = os.path.join(W, f"eval_{name}")

@@ -131,3 +131,29 @@ def test_relabel_anomaly_off_keeps_a_binary_whose_anomaly_is_blanked():
     inside = [t for t in np.arange(1, 11) * 7.2
               if m[max(0, int(np.clip(t / 72 * nb, 0, nb - 1)) - 1):int(np.clip(t / 72 * nb, 0, nb - 1)) + 2].all()]
     assert sorted(inside) == [21.6, 72.0]
+
+
+def test_rmdc26_season_templates_match_the_measured_schedule():
+    from pipeline.train import load_rmdc26_templates, _apply_schedule_template
+    T = load_rmdc26_templates()
+    assert len(T) == 6                                              # six high-cadence seasons
+    n_empty = [int(t["F146"][0].sum()) for t in T]
+    assert all(28 <= n <= 40 for n in n_empty), n_empty            # pauses + season end, 2-h bins
+    assert len({tuple(np.flatnonzero(t["F146"][0])) for t in T}) == 6   # every season differs
+    for t in T:
+        assert t["F087"][0].sum() <= 2 and t["F213"][0].sum() <= 2  # colour bins are almost never empty
+        fr = t["F146"][1]
+        assert ((fr > 0) & (fr < 1)).sum() > 200                   # colour visits displace F146 epochs
+    # applying a template: empty bins blanked in every band, occupancy capped, label kept
+    out = {b: np.concatenate([np.full((L, 3), 0.5, np.float32), np.ones((L, 2), np.float32)], 1)
+           for b, L in BAND_BINS.items()}
+    lab = _apply_schedule_template(out, I_NON, T[1])
+    assert lab == I_NON
+    for b in BAND_BINS:
+        empty, fr = T[1][b]
+        assert np.all(out[b][empty, 4] == 0) and np.all(out[b][~empty, 3] == 1.0)   # occupancy untouched by default
+    out2 = {b: np.concatenate([np.full((L, 3), 0.5, np.float32), np.ones((L, 2), np.float32)], 1) for b, L in BAND_BINS.items()}
+    _apply_schedule_template(out2, I_NON, T[1], cap_occupancy=True)
+    for b in BAND_BINS:
+        empty, fr = T[1][b]
+        assert np.all(out2[b][~empty, 3] <= fr[~empty] + 1e-6)

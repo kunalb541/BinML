@@ -1,0 +1,293 @@
+{
+ "_doc": "Every RMDC26 dataset fact the revision quotes, computed from the pinned tables -> rmdc26_dataset_facts.json.",
+ "dataset_revision": "a338d5bab441b5caf551d2fea9469aadfdc81ec1",
+ "catalogue": {
+  "n_events": 377999,
+  "n_unique_event_id": 377999,
+  "by_class": {
+   "RMDC26_1S1L_ML": {
+    "n": 299466,
+    "id_min": 3000,
+    "id_max": 306454
+   },
+   "RMDC26_1S2L_ML": {
+    "n": 35647,
+    "id_min": 306455,
+    "id_max": 342101
+   },
+   "RMDC26_2S2L_ML": {
+    "n": 42886,
+    "id_min": 342102,
+    "id_max": 385006
+   }
+  }
+ },
+ "selection_inputs": {
+  "RMDC26_1S1L_ML": {
+   "median_host_peak_amp_mag": 0.06348961557584791,
+   "frac_host_peak_amp_ge_0.1": 0.4078,
+   "frac_subday_tE_all": 0.3339,
+   "frac_subday_tE_among_amp_ge_0.1": 0.407,
+   "n_eligible_amp_and_tE": 72254
+  },
+  "RMDC26_1S2L_ML": {
+   "median_host_peak_amp_mag": 0.01774947830867305,
+   "frac_host_peak_amp_ge_0.1": 0.375,
+   "frac_subday_tE_all": 0.0031,
+   "frac_subday_tE_among_amp_ge_0.1": 0.0032,
+   "n_eligible_amp_and_tE": 13276
+  },
+  "RMDC26_2S2L_ML": {
+   "median_host_peak_amp_mag": 0.02139671778386127,
+   "frac_host_peak_amp_ge_0.1": 0.3616,
+   "frac_subday_tE_all": 0.0015,
+   "frac_subday_tE_among_amp_ge_0.1": 0.0013,
+   "n_eligible_amp_and_tE": 15405
+  }
+ },
+ "selection_outcome": {
+  "n_eligible": 100935,
+  "by_class": {
+   "RMDC26_1S1L_ML": {
+    "scored, low-cadence season": 16286,
+    "peak between seasons": 19421,
+    "scored, high-cadence season": 33353,
+    "peak before first season": 1145,
+    "peak after last season": 2015,
+    "no usable baseline or F146": 34
+   },
+   "RMDC26_1S2L_ML": {
+    "peak between seasons": 1173,
+    "scored, high-cadence season": 11388,
+    "scored, low-cadence season": 486,
+    "peak after last season": 110,
+    "peak before first season": 101,
+    "no usable baseline or F146": 18
+   },
+   "RMDC26_2S2L_ML": {
+    "scored, high-cadence season": 12234,
+    "peak between seasons": 1576,
+    "scored, low-cadence season": 1317,
+    "peak before first season": 131,
+    "no usable baseline or F146": 32,
+    "peak after last season": 115
+   }
+  },
+  "total": {
+   "scored, low-cadence season": 18089,
+   "peak between seasons": 22170,
+   "scored, high-cadence season": 56975,
+   "peak before first season": 1377,
+   "peak after last season": 2240,
+   "no usable baseline or F146": 84
+  },
+  "fractions_of_eligible": {
+   "scored, low-cadence season": 0.1792,
+   "peak between seasons": 0.2196,
+   "scored, high-cadence season": 0.5645,
+   "peak before first season": 0.0136,
+   "peak after last season": 0.0222,
+   "no usable baseline or F146": 0.0008
+  }
+ },
+ "scored_set": {
+  "n": 56975,
+  "by_class": {
+   "RMDC26_1S1L_ML": 33353,
+   "RMDC26_1S2L_ML": 11388,
+   "RMDC26_2S2L_ML": 12234
+  },
+  "rate_weighted_class_mix": {
+   "RMDC26_1S1L_ML": 0.7793,
+   "RMDC26_1S2L_ML": 0.1069,
+   "RMDC26_2S2L_ML": 0.1138
+  },
+  "rate_weighted_planetary_fraction": 0.2207
+ },
+ "planets": {
+  "median_Planet_q_scored": {
+   "RMDC26_1S2L_ML": 0.00014319254720255,
+   "RMDC26_2S2L_ML": 0.00011932191620999999
+  },
+  "median_Planet_q_all": {
+   "RMDC26_1S2L_ML": 0.0001416242094796,
+   "RMDC26_2S2L_ML": 0.000123477800657
+  },
+  "ks_log_q_1S2L_vs_2S2L_scored": {
+   "D": 0.059311463001157805,
+   "p": 1.772880432435673e-18
+  },
+  "frac_2S2L_binary_source": {
+   "scored": 0.5491,
+   "all": 0.5949
+  },
+  "gulls_detection_cut_ObsGroup_0_chi2_min": {
+   "RMDC26_1S1L_ML": -7.249030038266,
+   "RMDC26_1S2L_ML": 60.01361950735,
+   "RMDC26_2S2L_ML": 60.00124774502
+  },
+  "frac_1S1L_ObsGroup_0_chi2_lt_60": 0.0029,
+  "host_amplitude_cut_by_s": {
+   "RMDC26_1S2L_ML|s[0,0.5)": {
+    "frac_of_class": 0.0169,
+    "frac_passing_amp_cut": 0.4576
+   },
+   "RMDC26_1S2L_ML|s[0.5,2)": {
+    "frac_of_class": 0.3551,
+    "frac_passing_amp_cut": 0.8541
+   },
+   "RMDC26_1S2L_ML|s[2,5)": {
+    "frac_of_class": 0.2365,
+    "frac_passing_amp_cut": 0.1778
+   },
+   "RMDC26_1S2L_ML|s[5,inf)": {
+    "frac_of_class": 0.3916,
+    "frac_passing_amp_cut": 0.0559
+   },
+   "RMDC26_2S2L_ML|s[0,0.5)": {
+    "frac_of_class": 0.0446,
+    "frac_passing_amp_cut": 0.2497
+   },
+   "RMDC26_2S2L_ML|s[0.5,2)": {
+    "frac_of_class": 0.3929,
+    "frac_passing_amp_cut": 0.7343
+   },
+   "RMDC26_2S2L_ML|s[2,5)": {
+    "frac_of_class": 0.2425,
+    "frac_passing_amp_cut": 0.1762
+   },
+   "RMDC26_2S2L_ML|s[5,inf)": {
+    "frac_of_class": 0.3199,
+    "frac_passing_amp_cut": 0.0601
+   }
+  }
+ },
+ "vs_training_priors": {
+  "priors": {
+   "m_base_range": [
+    20.0,
+    25.0
+   ],
+   "fs_min": 0.1,
+   "s_range": [
+    0.2,
+    5.0
+   ],
+   "q_range": [
+    1e-06,
+    1.0
+   ],
+   "binary_rho_max": 0.01,
+   "tE_range": [
+    1.0,
+    300.0
+   ],
+   "u0_max": 2.0
+  },
+  "by_class": {
+   "RMDC26_1S1L_ML": {
+    "frac_m_base_lt_prior_min": 0.0955,
+    "frac_fs_lt_prior_min": 0.2065,
+    "median_tE": 4.31018461841,
+    "frac_tE_lt_3d": 0.3789,
+    "median_abs_u0": 0.4001623392105,
+    "rho": {
+     "p50": 0.008731558587228,
+     "p90": 0.04623008283890799,
+     "p99": 0.2866191964452004,
+     "n_gt_1": 43,
+     "n_gt_5": 1
+    }
+   },
+   "RMDC26_1S2L_ML": {
+    "frac_m_base_lt_prior_min": 0.2278,
+    "frac_fs_lt_prior_min": 0.3013,
+    "median_tE": 13.511926040005001,
+    "frac_tE_lt_3d": 0.034,
+    "median_abs_u0": 0.1355302957951,
+    "frac_s_outside_prior": 0.0199,
+    "frac_q_lt_prior_min": 0.0099,
+    "frac_rho_gt_binary_prior_max": 0.0903
+   },
+   "RMDC26_2S2L_ML": {
+    "frac_m_base_lt_prior_min": 0.2089,
+    "frac_fs_lt_prior_min": 0.3537,
+    "median_tE": 16.580135246365,
+    "frac_tE_lt_3d": 0.0188,
+    "median_abs_u0": 0.13640164674025002,
+    "frac_s_outside_prior": 0.0218,
+    "frac_q_lt_prior_min": 0.0223,
+    "frac_rho_gt_binary_prior_max": 0.0521
+   }
+  }
+ },
+ "residual_fa_fspl5s_by_support": {
+  "m_base_lt_20": {
+   "n": 3186,
+   "fa": 0.118
+  },
+  "m_base_20_25": {
+   "n": 30160,
+   "fa": 0.0411
+  },
+  "note": "single-lens false-alarm rate at the frozen threshold for rows_full_fspl5s_g08.json"
+ },
+ "our_nonpspl_q": {
+  "pool": "cadence_local_work/work15/mm_eval (natural prior, shards 100-103)",
+  "n": 3443,
+  "median_q": 0.11990659683942795,
+  "frac_q_gt_1e-2": 0.8217,
+  "median_q_planetary_lt_1e-2": 0.002263961359858513
+ },
+ "survey_geometry": {
+  "n_seasons": 10,
+  "n_high_cadence": 6,
+  "n_low_cadence": 4,
+  "high_cadence_length_days": [
+   70.734,
+   70.743
+  ],
+  "low_cadence_length_days": [
+   65.051
+  ],
+  "inter_season_gaps_days": [
+   114.26,
+   109.26,
+   118.0,
+   114.95,
+   119.95,
+   114.95,
+   117.2,
+   109.26,
+   114.26
+  ],
+  "observed_days": 684.7,
+  "mission_span_days": 1716.7,
+  "f146_pause_hours_per_season": [
+   43.69,
+   43.49,
+   42.89,
+   43.89,
+   42.89,
+   43.69
+  ],
+  "f146_pauses_per_season": [
+   7,
+   6,
+   6,
+   7,
+   6,
+   7
+  ],
+  "pause_days_common_to_all_seasons": "about 0.99, 35.24 and 69.49 d (validation/gulls/rmdc26_schedule.json)",
+  "f146_bins_with_frac_lt_1": [
+   299,
+   303,
+   302,
+   305,
+   302,
+   298
+  ]
+ },
+ "command": "validation/gulls/rmdc26_dataset_facts.py"
+}

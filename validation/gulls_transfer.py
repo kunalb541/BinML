@@ -53,6 +53,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
 import warnings
@@ -422,8 +423,13 @@ def main(argv=None):
 
     ok = [r for r in rows if "pred" in r]
     summary = {"_doc": __doc__.split("\n")[0],
-               "status": "NOT A TRANSFER MEASUREMENT for the shipped checkpoint: the input contract "
-                         "(continuous F146) is violated by Roman's real schedule; see module docstring",
+               "status": ("NOT A TRANSFER MEASUREMENT for the shipped checkpoint: the input contract "
+                          "(continuous F146) is violated by Roman's real schedule; see module docstring")
+                         if not args.weights or os.path.basename(args.weights) in ("binml.pt",) else
+                         "transfer measurement for a gap-augmented checkpoint (see paper/REVISION.md section 1.5)",
+               "command": " ".join(sys.argv),
+               "code": subprocess.run(["git", "describe", "--always", "--dirty", "--abbrev=12"], cwd=REPO,
+                                      capture_output=True, text=True).stdout.strip(),
                "dataset": "RGES-PIT/MachineLearning (RMDC26, GULLS simulator)",
                "checkpoint": args.weights or "binml/weights/binml.pt (shipped)",
                "bands_used": sorted(use_bands),

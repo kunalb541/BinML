@@ -43,10 +43,15 @@ import gulls_transfer as gt                                        # noqa: E402
 from detectability_relabel import L1, L2, L3, CURVES, FROZEN, CFG  # noqa: E402
 from pipeline.assemble import _pspl_refit_dchi2                    # noqa: E402
 
-CACHE = os.path.expanduser("~/Desktop/Research/microlensing/gulls_cascade_cache")
+CACHE = os.path.expanduser("~/Desktop/Research/microlensing/gulls_cascade_cache")   # truth_*.npz reused; scan_v2_*.npz rescanned
 STEP, N_CUTS = 0.5, 144
 CKPT = {"fspl5s_g08": os.path.join(REPO, "validation/gulls/weights/ft_fspl5s_g08.pt")}
 PREVALENCES = (0.01, 0.05)
+# final_weight planetary fraction of the 56,975 scored (dense, in-season) RMDC26 events; recomputed from
+# rows_full_fspl5s_g08.json in 2026-09-11's verification (22.07%). Not the eligible set (10.8%) and not the
+# 3,000:3,000 scan sample (30.7%, the value the first version of this reducer used).
+SCORED_PLANET_FRAC_WEIGHTED = 0.2207
+INHOUSE = os.path.join(os.path.dirname(HERE), "cascade_reproduce_result.json")
 
 
 def wilson(k, n, z=1.96):
@@ -189,7 +194,7 @@ def _scan_one(job):
             feats = {b: [] for b in BAND_BINS}; fracs = {b: [] for b in BAND_BINS}; valid = []
             for c in cuts:
                 rev = {b: (t[t <= c], m[t <= c]) for b, (t, m) in bands.items()}
-                if rev["F146"][0].size == 0:
+                if rev["F146"][0].size < 10:                  # as the in-house scan: a cut needs >= 10 F146 points
                     valid.append(False); continue
                 tok = to_tokens(rev, m_base_ref=curves["mb"], t_start=0.0)
                 for b in BAND_BINS:
@@ -199,7 +204,7 @@ def _scan_one(job):
             if any(valid):
                 probs = clf._forward({b: np.stack(feats[b]) for b in BAND_BINS}, {b: np.stack(fracs[b]) for b in BAND_BINS})
                 p[np.array(valid)] = probs[:, clf.class_names.index("NonPSPL")]
-            out[f"p|{name}|{variant}"] = np.round(p, 4).astype(np.float32)
+            out[f"p|{name}|{variant}"] = p.astype(np.float64)          # unrounded: compared with a 16-digit threshold
     if truth is not None:
         t, mag, sig, (mb, t0w, tE, u0, fs) = truth
         params = {"t0": t0w, "tE": tE, "u0": u0}
@@ -222,7 +227,7 @@ def scan(args):
     idx = curve_index(ids)
     print(f"[scan] {len(ids)} events, {sum(1 for e in ids if e in idx)} in the curve cache, {sum(1 for e in ids if e in truth)} with true curves", flush=True)
     done = set()
-    for f in glob.glob(os.path.join(args.cache, "scan_*.npz")):
+    for f in glob.glob(os.path.join(args.cache, "scan_v2_*.npz")):
         done |= {int(k.split("|")[1]) for k in np.load(f, allow_pickle=False).files if k.startswith("id|")}
     todo = [e for e in ids if e in idx and e not in done]
     print(f"[scan] {len(done)} already scanned, {len(todo)} to do", flush=True)
@@ -241,7 +246,7 @@ def scan(args):
                 for k, v in r.items():
                     if k != "event_id":
                         payload[f"{k}|{e}"] = v
-            outf = os.path.join(args.cache, f"scan_{os.path.basename(chunk)[2:-4]}.npz")
+            outf = os.path.join(args.cache, f"scan_v2_{os.path.basename(chunk)[2:-4]}.npz")
             np.savez_compressed(outf + ".tmp.npz", **payload); os.replace(outf + ".tmp.npz", outf)
             n += len(jobs); print(f"  {n}/{len(todo)}  ({time.time() - t0_:.0f}s)", flush=True)
     print("[scan] done", flush=True)
@@ -251,7 +256,7 @@ def scan(args):
 def reduce(args):
     import pyarrow.parquet as pq
     rows = {}
-    for f in glob.glob(os.path.join(args.cache, "scan_*.npz")):
+    for f in glob.glob(os.path.join(args.cache, "scan_v2_*.npz")):
         z = np.load(f, allow_pickle=False)
         for k in z.files:
             if k.startswith("id|"):
@@ -292,19 +297,43 @@ def reduce(args):
                     burden[L] = {"n": len(rs), "alert_frac_per_season": round(float(al.mean()), 4), "alert_frac_weighted": round(float(ww[al].sum() / ww.sum()), 4),
                                  "alerts_per_1000_events_per_day": round(float(al.mean() / gt.WINDOW_D * 1000), 3)}
                 res["burden"] = burden
-                # streaming purity at stated planetary prevalence (alerts from detectable-anomaly binaries / all alerts)
+                # streaming purity at a stated planetary prevalence: alerts from detectable-anomaly binaries / all alerts.
+                # RMDC26 contains no Flat or variable-star contaminants, so this counts single-lens contamination only;
+                # a real stream would be less pure. Alert rates are unrounded; the third prevalence is RMDC26's own
+                # rate-weighted planetary fraction of the SCORED set (not of this deliberately balanced sample).
                 rb = [r for r in rows.values() if str(r["lab"]) in (L2, L3) and "onset_detectable" in r]
-                a_det = np.mean([np.any(r[f"p|{name}|{variant}"] >= thr) for r in rb if r["onset_detectable"][-1]]) if rb else np.nan
-                a_bin = np.mean([np.any(r[f"p|{name}|{variant}"] >= thr) for r in rb]) if rb else np.nan
-                f_det = np.mean([bool(r["onset_detectable"][-1]) for r in rb]) if rb else np.nan
-                a_1 = burden[L1]["alert_frac_per_season"] if L1 in burden else np.nan
+                alert = lambda r: bool(np.any(r[f"p|{name}|{variant}"] >= thr))
+                a_det = float(np.mean([alert(r) for r in rb if r["onset_detectable"][-1]])) if rb else np.nan
+                a_bin = float(np.mean([alert(r) for r in rb])) if rb else np.nan
+                f_det = float(np.mean([bool(r["onset_detectable"][-1]) for r in rb])) if rb else np.nan
+                s1 = [r for r in rows.values() if str(r["lab"]) == L1]
+                a_1 = float(np.mean([alert(r) for r in s1])) if s1 else np.nan
+                w1 = np.array([w[int(r["id"][0])] for r in s1]); a_1w = float(w1[[alert(r) for r in s1]].sum() / w1.sum()) if s1 else np.nan
+                wb = np.array([w[int(r["id"][0])] for r in rb]); a_binw = float(wb[[alert(r) for r in rb]].sum() / wb.sum()) if rb else np.nan
+                rbd = [r for r in rb if r["onset_detectable"][-1]]
+                wd = np.array([w[int(r["id"][0])] for r in rbd]); a_detw = float(wd[[alert(r) for r in rbd]].sum() / wd.sum()) if rbd else np.nan
+                f_detw = float(wd.sum() / wb.sum()) if rb else np.nan
                 res["streaming_purity"] = {}
-                for prev in PREVALENCES + (round(float(sum(w[int(r["id"][0])] for r in rows.values() if str(r["lab"]) != L1) / sum(w[int(r["id"][0])] for r in rows.values())), 4),):
-                    tp = prev * f_det * a_det; allal = prev * a_bin + (1 - prev) * a_1
-                    res["streaming_purity"][f"planetary_prevalence_{prev}"] = {"purity_detectable_anomaly_alerts": round(float(tp / allal), 4) if allal > 0 else None,
-                                                                              "purity_any_binary_alerts": round(float(prev * a_bin / allal), 4) if allal > 0 else None,
-                                                                              "alerts_per_1000_events_per_season": round(float(allal * 1000), 1)}
+                for prev, weighted in [(x, False) for x in PREVALENCES] + [(SCORED_PLANET_FRAC_WEIGHTED, True)]:
+                    ad, ab, a1, fd = (a_detw, a_binw, a_1w, f_detw) if weighted else (a_det, a_bin, a_1, f_det)
+                    tp = prev * fd * ad; allal = prev * ab + (1 - prev) * a1
+                    tag = f"planetary_prevalence_{prev}" + ("_rmdc26_scored_rate_weighted" if weighted else "")
+                    res["streaming_purity"][tag] = {"purity_detectable_anomaly_alerts": round(tp / allal, 4) if allal > 0 else None,
+                                                    "purity_any_binary_alerts": round(prev * ab / allal, 4) if allal > 0 else None,
+                                                    "alerts_per_1000_events_per_season": round(allal * 1000, 1),
+                                                    "rates": "final_weight-weighted" if weighted else "unweighted"}
                 out["results"][key] = res
+    if os.path.exists(INHOUSE):
+        ih = json.load(open(INHOUSE))
+        out["inhouse_reference"] = {"model": ih.get("model"), "n_eligible": ih.get("n_eligible"),
+                                    "premature_rate_of_eligible": ih.get("premature_rate_of_eligible"),
+                                    "premature_ci_of_eligible": ih.get("premature_ci_of_eligible"),
+                                    "detection_fraction": ih.get("detection_fraction"),
+                                    "median_lag_non_premature_days": ih.get("median_lag_non_premature_days"),
+                                    "by_mass_ratio": ih.get("stratified", {}).get("by_mass_ratio"),
+                                    "note": ("in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; "
+                                             "RMDC26 anomalies are all planetary, so compare with the giant/neptune strata")}
+    out["command"] = " ".join(sys.argv)
     json.dump(out, open(args.out, "w"), indent=1)
     print("scanned", out["n_scanned"])
     for key, res in out["results"].items():

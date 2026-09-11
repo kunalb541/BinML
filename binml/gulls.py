@@ -11,11 +11,13 @@ of ``validation/gulls_transfer.py`` so that a notebook can do it in a few lines:
 * one event is fetched **remotely by id** with DuckDB (the table is clustered by event_id; a query
   on the id alone costs a few seconds, a time-window query reads the whole file);
 * the input is **one contiguous season** found from the epoch table, not a window centred on the
-  peak (that would straddle the 110-day inter-season gaps), and only the six high-cadence seasons
-  are inside the model's support;
+  peak (that would straddle the ~115-day inter-season gaps), and only the six high-cadence seasons
+  are inside the model's support (their F146 pause pattern differs from season to season:
+  validation/gulls/rmdc26_schedule.json);
 * the baseline is **measured from the data** (median F146 magnitude more than 5 t_E from the
-  peak over the full mission), because the catalogue baseline in this release is offset from the
-  observed quiescent flux by ~0.47 mag.
+  peak over the full mission, using the catalogue t0 and t_E to exclude the event), because the
+  catalogue baseline in this release is offset from the observed quiescent flux by ~0.47 mag. A
+  real-time pipeline would not have the catalogue t0/t_E or post-event data.
 
 Network access is needed for :func:`fetch_event` and :func:`load_tables`. Everything else is pure
 numpy and is unit-tested offline. See ``examples/01_classify_roman_event.ipynb``.
@@ -41,7 +43,7 @@ CLASS_MEANING = {"RMDC26_1S1L_ML": "single lens (-> PSPL)",
                  "RMDC26_2S2L_ML": "planetary lens with a binary source (-> NonPSPL)"}
 
 __all__ = ["REVISION", "flux_to_ab", "Season", "seasons_from_epochs", "season_of", "empirical_baseline",
-           "to_bands", "load_tables", "fetch_event", "classify_event"]
+           "to_bands", "load_tables", "fetch_event", "classify_observations", "classify_event"]
 
 
 def flux_to_ab(flux_ujy) -> np.ndarray:
@@ -120,7 +122,11 @@ def to_bands(bjd: np.ndarray, filt: np.ndarray, mag: np.ndarray, window: Tuple[f
 
 # ----------------------------------------------------------------------------- network
 def load_tables(cache_dir: str = "~/.cache/binml/rmdc26"):
-    """Download (once) and load the epoch and metadata tables. Returns (seasons, meta_dict)."""
+    """Download (once) and load the epoch and metadata tables.
+
+    Returns ``(seasons, epoch_map, meta)``: the list of :class:`Season`, a dict epoch_id -> BJD, and the
+    metadata as a pandas DataFrame indexed by event_id.
+    """
     import urllib.request
     import pyarrow.parquet as pq
     d = os.path.expanduser(cache_dir); os.makedirs(d, exist_ok=True)
@@ -150,33 +156,76 @@ def fetch_event(event_id: int, epoch_map: Dict[int, float], columns: Tuple[str, 
     return out
 
 
-def classify_event(clf, event_id: int, seasons: List[Season], epoch_map, meta, con=None,
-                   all_seasons: bool = False) -> Dict:
-    """Fetch one RMDC26 event and classify its season(s) under BinML's input contract.
+def _adjacent(t0: float, seasons: List[Season]) -> List[Season]:
+    """The seasons bordering t0: the season containing it, or the last one before and first one after."""
+    inside = season_of(t0, seasons)
+    if inside is not None:
+        return [inside]
+    before = [x for x in seasons if x.end < t0]
+    after = [x for x in seasons if x.start > t0]
+    return ([before[-1]] if before else []) + ([after[0]] if after else [])
 
-    Returns the metadata used, the baseline, and per-season predictions. By default only the
-    season containing the peak is scored; ``all_seasons=True`` scores every dense season (the
-    per-season combiner of paper/REVISION.md §1½ row 9: take the max anomaly probability).
+
+def classify_observations(clf, obs: Dict[str, np.ndarray], row, seasons: List[Season], mode: str = "peak") -> Dict:
+    """Classify one RMDC26 event's observations under BinML's input contract (no network).
+
+    ``obs``: arrays ``bjd``, ``filt``, ``flux_uJy`` (as returned by :func:`fetch_event`); ``row``: the
+    event's metadata (t0lens1, tE_ref, Source_F146, fs_F146, sim_label). ``mode``:
+
+    * ``"peak"``: the season containing the peak, if it is a high-cadence season (the scored set of
+      the transfer tables). A low-cadence peak season is outside BinML's support and is not scored.
+    * ``"adjacent"``: the high-cadence season(s) bordering the peak. For a peak between seasons these
+      are the seasons before and after the gap -- the per-season combiner measured in
+      paper/REVISION.md section 1.5 row 9; for a peak inside a season, that season.
+    * ``"all"``: every high-cadence season of the mission (not validated as a combiner).
+
+    ``p_nonpspl_max`` is the maximum anomaly probability over the scored seasons.
     """
-    row = meta.loc[int(event_id)]
+    if mode not in ("peak", "adjacent", "all"):
+        raise ValueError(f"mode must be 'peak', 'adjacent' or 'all', not {mode!r}")
     t0, tE = float(row["t0lens1"]), float(row["tE_ref"])
-    obs = fetch_event(event_id, epoch_map, con=con)
     mag = flux_to_ab(obs["flux_uJy"])
-    f146 = obs["filt"] == "F146"
+    f146 = np.asarray(obs["filt"]) == "F146"
     m_base = empirical_baseline(obs["bjd"][f146], mag[f146], t0, tE)
     peak = season_of(t0, seasons)
-    targets = [s for s in seasons if s.dense] if all_seasons else ([peak] if peak is not None else [])
-    out = {"event_id": int(event_id), "sim_label": str(row["sim_label"]), "meaning": CLASS_MEANING.get(str(row["sim_label"])),
+    if mode == "peak":
+        targets = [peak] if peak is not None else []
+    elif mode == "adjacent":
+        targets = _adjacent(t0, seasons)
+    else:
+        targets = [x for x in seasons if x.dense]
+    out = {"sim_label": str(row["sim_label"]), "meaning": CLASS_MEANING.get(str(row["sim_label"])),
            "t0_bjd": t0, "tE_days": tE, "m_base_empirical": round(m_base, 3),
            "m_base_catalogue": round(float(row["Source_F146"] + 2.5 * np.log10(max(float(row["fs_F146"]), 1e-6))), 3),
            "peak_season": None if peak is None else peak.index, "peak_in_dense_season": bool(peak is not None and peak.dense),
-           "seasons": []}
-    for s in targets:
-        bands = to_bands(obs["bjd"], obs["filt"], mag, s.window)
+           "mode": mode, "seasons": [], "p_nonpspl_max": None}
+    if not targets:
+        out["note"] = "peak falls outside every season; use mode='adjacent' to score the seasons around it"
+    for x in targets:
+        if not x.dense:
+            out["seasons"].append({"season": x.index, "skipped": "low-cadence season: outside BinML's support"}); continue
+        bands = to_bands(obs["bjd"], obs["filt"], mag, x.window)
         if "F146" not in bands:
-            out["seasons"].append({"season": s.index, "skipped": "no usable F146"}); continue
+            out["seasons"].append({"season": x.index, "skipped": "no usable F146"}); continue
         p = clf.predict(bands, m_base_ref=m_base, t_start=0.0)
-        out["seasons"].append({"season": s.index, "dense": s.dense, "n_f146": int(bands["F146"][0].size),
+        n146 = int(bands["F146"][0].size)
+        out["seasons"].append({"season": x.index, "dense": x.dense, "n_f146": n146, "dense_event": n146 >= DENSE_MIN_F146,
                                "bands": sorted(bands), "label": p.label,
                                "probabilities": {k: round(v, 4) for k, v in p.probabilities.items()}, "_bands": bands})
+    scored = [x["probabilities"]["NonPSPL"] for x in out["seasons"] if "probabilities" in x]
+    out["p_nonpspl_max"] = max(scored) if scored else None
+    return out
+
+
+def classify_event(clf, event_id: int, seasons: List[Season], epoch_map, meta, con=None,
+                   mode: str = "peak", all_seasons: Optional[bool] = None) -> Dict:
+    """Fetch one RMDC26 event (network, a few seconds) and classify it; see :func:`classify_observations`.
+
+    ``all_seasons=True`` is the pre-2026-09-11 spelling of ``mode="all"``.
+    """
+    if all_seasons:
+        mode = "all"
+    obs = fetch_event(event_id, epoch_map, con=con)
+    out = classify_observations(clf, obs, meta.loc[int(event_id)], seasons, mode=mode)
+    out["event_id"] = int(event_id)
     return out

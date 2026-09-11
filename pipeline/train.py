@@ -74,17 +74,85 @@ I_NON = CLASS_NAMES.index("NonPSPL")
 # revealed span so a truncated window is judged by the rule that produced the labels.
 TRUNC_MIN_AMP_MAG = 0.02
 
-# Roman's GBTDS F146 schedule as implemented in the RMDC26 (GULLS) release: seven ~6.2 h pauses
-# per 70.7-day season, at fixed season phases (validation/gulls/gap_sensitivity.py measured them
-# on season 1). `--gap-schedule rmdc26` blanks EXACTLY these, plus the 1.3 days past the season
-# end, instead of the random 1-12 h runs of `--gap-aug`; the relabelling is identical.
+# LEGACY (season 0 only). These are the seven F146 pauses of the FIRST high-cadence RMDC26 season.
+# They were first described as "the" schedule at "fixed season phases"; the 2026-09-11 verification
+# showed the phases differ between the six high-cadence seasons (only ~1.0, ~35.2 and ~69.5 d
+# recur; three seasons merge two pauses into one ~12 h pause), so this mask matches only the first
+# season (16% of scored RMDC26 events). `--gap-schedule rmdc26` keeps it for reproducing the
+# 2026-09-10 schedule arms; `--gap-schedule rmdc26_seasons` uses the measured per-season templates
+# in validation/gulls/rmdc26_schedule.json (see load_rmdc26_templates).
 RMDC26_GAPS_D = (0.98, 2.48, 21.49, 31.48, 35.23, 62.23, 69.48)
 RMDC26_GAP_H = 6.2
 RMDC26_SEASON_D = 70.7
 
 
+RMDC26_SCHEDULE_JSON = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                    "validation", "gulls", "rmdc26_schedule.json")
+
+
+def load_rmdc26_templates(path: str = RMDC26_SCHEDULE_JSON) -> list:
+    """Per-season schedule templates on BinML's grid, from rmdc26_schedule.json.
+
+    Returns one dict per high-cadence season: {band: (empty_mask[L] bool, frac_template[L] float32)}.
+    The empty mask marks bins with no observation in that season (pauses and the season end); the
+    frac template is the per-bin occupancy RMDC26 actually delivers (0.875 where a colour visit
+    displaced one of eight F146 epochs; see _apply_schedule_template for why it is not applied by
+    default). Colour bins are blanked only where RMDC26 has no colour data, not wherever an F146
+    pause overlaps them.
+    """
+    d = json.load(open(path))
+    out = []
+    for s in d["seasons"]:
+        if not s.get("dense"):
+            continue
+        t = {}
+        for b in BAND_BINS:
+            fr = np.asarray(s["frac_template"][b], np.float32)
+            t[b] = (fr == 0, fr)
+        out.append(t)
+    return out
+
+
+def _apply_schedule_template(out: Dict[str, np.ndarray], label: int, template: dict,
+                             params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
+                             relabel_anomaly: bool = False, cap_occupancy: bool = False) -> int:
+    """Impose one measured RMDC26 season on a training event: blank its empty bins in every band;
+    re-label as _apply_gaps does.
+
+    cap_occupancy=True also caps each bin's frac at the season's template (F146 7/8 where a colour
+    visit displaced an epoch, colour 2/3). That is NOT faithful on binned data: the bin's mean/min/max
+    still come from all its epochs, a combination real data never has (RMDC26 bins at 7/8 were binned
+    from 7 epochs). On our held-out it alone drops AP 0.93 -> 0.51, while removing the occupancy from
+    real RMDC26 inputs changes single-lens false alarms only 5.4% -> 4.4% (2026-09-11). Kept for the
+    diagnostic only; faithful occupancy needs epoch-level augmentation before binning."""
+    for b, x in out.items():
+        empty, fr = template[b]
+        x[empty, :3] = 0.0; x[empty, 3] = 0.0; x[empty, 4] = 0.0
+        if cap_occupancy:
+            keep = ~empty
+            x[keep, 3] = np.minimum(x[keep, 3], fr[keep])
+    if label == I_FLAT:
+        return label
+    ref = out["F146"]
+    surv = ref[ref[:, 4] > 0]
+    peak = float(np.abs(surv[:, :3]).max()) * MAG_SCALE if surv.size else 0.0
+    if peak < TRUNC_MIN_AMP_MAG:
+        return I_FLAT
+    if (relabel_anomaly and label == I_NON and params is not None and pf_idx is not None
+            and "t_anom" in pf_idx):
+        ta = params[pf_idx["t_anom"]]
+        if np.isfinite(ta):
+            nb = ref.shape[0]
+            anom_bin = int(np.clip(ta / 72.0 * nb, 0, nb - 1))
+            lo, hi = max(0, anom_bin - 1), min(nb, anom_bin + 2)
+            if ref[lo:hi, 4].sum() == 0:
+                return I_PSPL
+    return label
+
+
 def rmdc26_schedule_mask(nb: int = 864, window_d: float = 72.0) -> np.ndarray:
-    """Reference-band bins blanked by the RMDC26 schedule: centre inside a pause, or past season end."""
+    """LEGACY season-0 mask: reference-band bins whose centre is inside a first-season pause, or past
+    the season end. Kept for reproducing the 2026-09-10 schedule arms; see load_rmdc26_templates."""
     centres = (np.arange(nb) + 0.5) * window_d / nb
     m = centres > RMDC26_SEASON_D
     for g in RMDC26_GAPS_D:
@@ -105,6 +173,13 @@ def _visible_amplitude(params: np.ndarray, pf_idx: dict, f_s: float, t_cut: floa
     if np.isfinite(t0) and np.isfinite(tE) and np.isfinite(u0) and tE > 0:
         # microlensing: evaluate the PSPL curve on the revealed span only
         t = np.linspace(0.0, max(t_cut, 1e-3), 128)
+        rho = params[pf_idx["rho"]] if "rho" in pf_idx else np.nan
+        if np.isfinite(rho) and rho > 0.01:
+            # finite-source single lens (fspl* pools; binaries' rho <= 0.01, so released pools are
+            # unaffected): the point-source peak overstates the visible amplitude for rho >~ |u0|
+            from .generators import espl_magnification
+            A = espl_magnification(t, t0, tE, u0, rho)
+            return float(np.max(np.abs(2.5 * np.log10(np.maximum(1.0 + f_s * (A - 1.0), 1e-8)))))
         u = np.sqrt(u0 ** 2 + ((t - t0) / tE) ** 2)
         A = (u ** 2 + 2.0) / (np.maximum(u, 1e-8) * np.sqrt(u ** 2 + 4.0))
         return float(np.max(np.abs(2.5 * np.log10(np.maximum(1.0 + f_s * (A - 1.0), 1e-8)))))
@@ -311,10 +386,13 @@ class CacheDataset(Dataset):
                  params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
                  f_s_ref: Optional[np.ndarray] = None, cadence_aug: float = 0.0,
                  gap_aug: float = 0.0, gap_schedule: Optional[np.ndarray] = None,
-                 gap_relabel_anomaly: bool = True):
+                 gap_relabel_anomaly: bool = True, gap_templates: Optional[list] = None,
+                 gap_cap_occupancy: bool = False):
         self.a = arrays
         self.gap_schedule = gap_schedule
         self.gap_relabel_anomaly = gap_relabel_anomaly
+        self.gap_templates = gap_templates
+        self.gap_cap_occupancy = gap_cap_occupancy
         self.labels = labels
         self.weights = weights
         self.dchi2_anom = dchi2_anom
@@ -356,8 +434,14 @@ class CacheDataset(Dataset):
             lab = _apply_cadence(out, lab, self._rng, pj, self.pf_idx)
         if self.gap_aug > 0 and self._rng.random() < self.gap_aug:
             pj = self.params[j] if self.params is not None else None
-            lab = _apply_gaps(out, lab, self._rng, pj, self.pf_idx, schedule=self.gap_schedule,
-                              relabel_anomaly=self.gap_relabel_anomaly)
+            if self.gap_templates:
+                tmpl = self.gap_templates[int(self._rng.integers(len(self.gap_templates)))]
+                lab = _apply_schedule_template(out, lab, tmpl, pj, self.pf_idx,
+                                               relabel_anomaly=self.gap_relabel_anomaly,
+                                               cap_occupancy=self.gap_cap_occupancy)
+            else:
+                lab = _apply_gaps(out, lab, self._rng, pj, self.pf_idx, schedule=self.gap_schedule,
+                                  relabel_anomaly=self.gap_relabel_anomaly)
         return (out, lab, float(self.weights[j]), float(self.dchi2_anom[j]))
 
 
@@ -488,16 +572,20 @@ def main(argv=None) -> int:
                          "schedule pauses F146 for ~6 h seven times a season; the base model, "
                          "trained on a continuous grid, reads such a gap as evidence against a "
                          "single lens (validation/gulls/gap_sensitivity.py).")
-    ap.add_argument("--gap-schedule", choices=["none", "rmdc26"], default="none",
-                    help="with --gap-aug: blank the EXACT RMDC26 schedule (seven ~6.2 h pauses at "
-                         "fixed season phases + the 1.3 d past the 70.7 d season end) instead of "
-                         "random 1-12 h runs. Same relabelling. Schedule-matched vs distribution-"
-                         "matched augmentation is the comparison in validation/schedule_finetune_local.py.")
+    ap.add_argument("--gap-schedule", choices=["none", "rmdc26", "rmdc26_seasons", "rmdc26_seasons_occ"], default="none",
+                    help="with --gap-aug: 'rmdc26' = LEGACY first-season mask (seven pauses of RMDC26 "
+                         "season 0 + the 1.3 d past its end; matches 16%% of scored RMDC26 events); "
+                         "'rmdc26_seasons' = a measured RMDC26 season drawn at random per presentation "
+                         "(validation/gulls/rmdc26_schedule.json: its empty bins in every band); "
+                         "'rmdc26_seasons_occ' = same plus the occupancy cap (diagnostic only, not faithful "
+                         "on binned data). 'none' = random 1-12 h runs.")
     ap.add_argument("--gap-relabel-anomaly", choices=["on", "off"], default="on",
-                    help="with --gap-aug: relabel a binary PSPL when its (7.2-d-quantised) anomaly "
-                         "onset falls in a blanked run. 'off' keeps the generator label; needed with "
-                         "--gap-schedule rmdc26, where two of the ten t_anom grid values sit inside "
-                         "the fixed mask and the relabel would fire on 20% of all binaries.")
+                    help="with --gap-aug: relabel a binary PSPL when the bins around its recorded "
+                         "onset t_anom are blanked. The rule is approximate: t_anom is the first time "
+                         "the anomaly is detectable, not where the caustic is, so it misfires in both "
+                         "directions (audit finding 9); with the legacy 7.2-d onset grid and the "
+                         "season-0 mask it fires on 20%% of NonPSPL-labelled training events. 'off' "
+                         "keeps the label.")
     ap.add_argument("--num-workers", type=int, default=0,
                     help="dataloader workers; safe with a memmap (workers share file pages, "
                          "so there is no per-worker copy of the dataset)")
@@ -567,7 +655,10 @@ def main(argv=None) -> int:
                      gap_aug=args.gap_aug if shuf else 0.0,
                      gap_schedule=(rmdc26_schedule_mask(BAND_BINS["F146"])
                                    if (shuf and args.gap_schedule == "rmdc26") else None),
-                     gap_relabel_anomaly=(args.gap_relabel_anomaly == "on")),
+                     gap_relabel_anomaly=(args.gap_relabel_anomaly == "on"),
+                     gap_templates=(load_rmdc26_templates()
+                                    if (shuf and args.gap_schedule in ("rmdc26_seasons", "rmdc26_seasons_occ")) else None),
+                     gap_cap_occupancy=(args.gap_schedule == "rmdc26_seasons_occ")),
         batch_size=args.batch_size, shuffle=shuf, collate_fn=collate,
         num_workers=args.num_workers, pin_memory=False,
         worker_init_fn=_seed_worker,          # else forked workers share one RNG -> correlated truncation

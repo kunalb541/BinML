@@ -20,6 +20,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -86,6 +87,11 @@ HARD_REGIMES = {
     # measured in validation/gulls/gulls_noise_vs_ours.py: GULLS' F146 errors equal ours for
     # m_base < 20 and rise to 2.5x ours at m_base 24-25; a 7x background variance reproduces that
     # run, a global multiplier does not). Config half lives in CONFIG_REGIMES under the same names.
+    # Continued-training CONTROL for round 3 (2026-09-11): the fspl5s pool shape (same shard indices,
+    # same PSPL-heavy highmag companion) with POINT-SOURCE single lenses. fspl5s minus pspl5s_ctrl is the
+    # effect of the finite-source physics with the extra 12 epochs and the pool held fixed.
+    "pspl5s_ctrl":          dict(),
+    "pspl5s_ctrl_highmag":  dict(U0_MAX=0.2),
     "fspl5s_noisy":         dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0),
     "fspl5s_noisy_highmag": dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, U0_MAX=0.2),
 }
@@ -97,6 +103,7 @@ CONFIG_REGIMES = {
     "fspl_highmag": dict(mix="highmag"),
     "fspl5_highmag": dict(mix="highmag"),
     "fspl5s_highmag": dict(mix="highmag"),
+    "pspl5s_ctrl_highmag":  dict(mix="highmag"),
     "fspl5s_noisy":         dict(cfg=dict(bkg_mult=7.0)),
     "fspl5s_noisy_highmag": dict(cfg=dict(bkg_mult=7.0), mix="highmag"),
     # Variables scaled to straddle the 0.02 mag floor: the model must learn where Flat ends.
@@ -314,6 +321,10 @@ def main(argv=None) -> int:
                          "20260720 (shards 0-399). Use a far-off base (e.g. 900000000) to "
                          "generate a provably-unseen evaluation set: different base => "
                          "different PCG64 streams => parameter tuples the model never saw.")
+    ap.add_argument("--onset-resolution-days", type=float, default=None,
+                    help="resolution of the recorded anomaly onset t_anom. Default: SurveyConfig's legacy "
+                         "7.2 d grid (every released shard). 0.5 = the cascade evaluation's first-"
+                         "detectable half-day cut (slower: up to 144 refits per anomalous event).")
     args = ap.parse_args(argv)
 
     # HARD GATE. _binary_magnification falls back to PSPL when VBBinaryLensing is missing,
@@ -326,6 +337,9 @@ def main(argv=None) -> int:
         return 2
 
     cfg = SurveyConfig()
+    if args.onset_resolution_days is not None:
+        import dataclasses
+        cfg = dataclasses.replace(cfg, onset_resolution_days=float(args.onset_resolution_days))
     shards = [s for s in range(args.n_shards) if s % args.workers == args.worker] \
         if args.workers > 1 else [args.shard]
 
@@ -355,6 +369,13 @@ def main(argv=None) -> int:
             w.set_run_attrs(shard=s, byproduct_keep_prob=BYPRODUCT_KEEP,
                             gen_counts=gen_counts, dropped=dropped)
             w._h5.attrs["regime"] = args.regime or "none"
+            # generation settings that change labels or photometry, so shards made under different
+            # settings are distinguishable (2026-09-11 verification: they were not)
+            cfg_eff, _, _ = _config_for(args.regime, cfg)
+            w._h5.attrs["onset_resolution_days"] = float(cfg_eff.onset_resolution_days)
+            w._h5.attrs["noise_mult"] = float(cfg_eff.noise_mult)
+            w._h5.attrs["bkg_mult"] = float(cfg_eff.bkg_mult)
+            w._h5.attrs["regime_priors"] = json.dumps(HARD_REGIMES.get(args.regime or "", {}))
         gen_s = time.time() - t0
 
         mb = os.path.getsize(path) / 1e6

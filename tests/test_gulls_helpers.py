@@ -41,3 +41,41 @@ def test_to_bands_windows_and_sorts():
 def test_flux_to_ab():
     assert flux_to_ab([3631e6])[0] == pytest.approx(0.0, abs=1e-3)   # 23.9 zeropoint vs 3631 Jy
     assert np.isnan(flux_to_ab([0.0, -1.0])).all()
+
+
+class _FakeClf:
+    def predict(self, bands, m_base_ref=None, t_start=None):
+        import types
+        pn = 0.9 if bands["F146"][0].size > 500 else 0.1
+        return types.SimpleNamespace(label="NonPSPL" if pn > 0.5 else "PSPL",
+                                     probabilities={"Flat": 0.0, "PSPL": 1 - pn, "NonPSPL": pn,
+                                                    "PeriodicVar": 0.0, "LongPeriodVar": 0.0, "Eruptive": 0.0})
+
+
+def _obs_and_row(t0):
+    from binml.gulls import seasons_from_epochs
+    t = _mission()
+    S = seasons_from_epochs(t)
+    obs = {"bjd": t, "filt": np.array(["F146"] * t.size), "flux_uJy": np.full(t.size, 10 ** (-0.4 * (21.0 - 23.9)))}
+    row = {"t0lens1": t0, "tE_ref": 3.0, "Source_F146": 21.0, "fs_F146": 1.0, "sim_label": "RMDC26_1S2L_ML"}
+    return obs, row, S
+
+
+def test_classify_observations_modes():
+    from binml.gulls import classify_observations
+    obs, row, S = _obs_and_row(30.0)                           # peak inside dense season 0
+    r = classify_observations(_FakeClf(), obs, row, S, mode="peak")
+    assert [x["season"] for x in r["seasons"]] == [0] and r["p_nonpspl_max"] == 0.9
+    obs, row, S = _obs_and_row(120.0)                          # peak between season 0 and (sparse) season 1
+    r = classify_observations(_FakeClf(), obs, row, S, mode="peak")
+    assert r["seasons"] == [] and r["p_nonpspl_max"] is None and "adjacent" in r["note"]
+    r = classify_observations(_FakeClf(), obs, row, S, mode="adjacent")
+    assert [x["season"] for x in r["seasons"]] == [0, 1]
+    assert "low-cadence" in r["seasons"][1]["skipped"] and r["p_nonpspl_max"] == 0.9
+    obs, row, S = _obs_and_row(200.0)                          # peak inside the low-cadence season
+    r = classify_observations(_FakeClf(), obs, row, S, mode="peak")
+    assert "low-cadence" in r["seasons"][0]["skipped"] and r["p_nonpspl_max"] is None
+    r = classify_observations(_FakeClf(), obs, row, S, mode="all")
+    assert [x["season"] for x in r["seasons"] if "probabilities" in x] == [0, 2]
+    with pytest.raises(ValueError):
+        classify_observations(_FakeClf(), obs, row, S, mode="everything")

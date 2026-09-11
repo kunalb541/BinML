@@ -1,6 +1,30 @@
 {
  "_doc": "Detectability-conditioned relabelling of GULLS/RMDC26 with BinML's OWN label policy.",
  "n_events": 6600,
+ "selection": {
+  "rule": "first 1600 scored 1S1L and first 2500 scored 1S2L / 2S2L event ids (dense, in id order) of rows_full_fspl5s_g08.json",
+  "ids": {
+   "RMDC26_1S1L_ML": [
+    3022,
+    17870
+   ],
+   "RMDC26_1S2L_ML": [
+    306458,
+    314227
+   ],
+   "RMDC26_2S2L_ML": [
+    342104,
+    350937
+   ]
+  },
+  "n_selected": {
+   "RMDC26_1S1L_ML": 1600,
+   "RMDC26_1S2L_ML": 2500,
+   "RMDC26_2S2L_ML": 2500
+  },
+  "n_missing_from_cache": 0,
+  "n_cached_but_excluded": 0
+ },
  "policy": {
   "dchi2_event": 500.0,
   "dchi2_anomaly": 160.0,
@@ -8,19 +32,22 @@
   "sigma": "GULLS flux_err_uJy converted to magnitudes at the true flux",
   "snr_min": 3.0,
   "baseline": "median true-flux magnitude at |t-t0| > 5 tE over the full mission, per band",
-  "anomaly_statistic": "pipeline.assemble._pspl_refit_dchi2 on F146 (the training-label function)"
+  "anomaly_statistic": "pipeline.assemble._pspl_refit_dchi2 on F146 (the training-label function)",
+  "single_lenses": "never NonPSPL (training rule); pspl_refit_anomaly kept as a diagnostic"
  },
  "relabelling": {
   "RMDC26_1S1L_ML": {
    "n": 1600,
-   "frac_Flat": 0.0219,
-   "frac_PSPL": 0.9556,
-   "frac_NonPSPL": 0.0225,
-   "wfrac_Flat": 0.0043,
-   "wfrac_PSPL": 0.9897,
-   "wfrac_NonPSPL": 0.0059,
+   "frac_Flat": 0.0163,
+   "frac_PSPL": 0.9838,
+   "frac_NonPSPL": 0.0,
+   "wfrac_Flat": 0.0023,
+   "wfrac_PSPL": 0.9977,
+   "wfrac_NonPSPL": 0.0,
    "median_dchi2_anomaly": 0.0,
-   "median_anomaly_amp_mag": 0.0
+   "median_anomaly_amp_mag": 0.0,
+   "pspl_refit_anomaly_frac": 0.0206,
+   "pspl_refit_anomaly_median_rho_over_u0": 2.233
   },
   "RMDC26_1S2L_ML": {
    "n": 2500,
@@ -31,7 +58,13 @@
    "wfrac_PSPL": 0.4133,
    "wfrac_NonPSPL": 0.5867,
    "median_dchi2_anomaly": 676.5,
-   "median_anomaly_amp_mag": 0.0347
+   "median_anomaly_amp_mag": 0.0347,
+   "decomposition": {
+    "fail_dchi2_anomaly": 0.2624,
+    "floor_vetoed": 0.178,
+    "flat_event": 0.0004
+   },
+   "frac_NonPSPL_dchi2_rescaled_to_6912_epochs": 0.552
   },
   "RMDC26_2S2L_ML": {
    "n": 2500,
@@ -42,7 +75,19 @@
    "wfrac_PSPL": 0.401,
    "wfrac_NonPSPL": 0.599,
    "median_dchi2_anomaly": 826.3,
-   "median_anomaly_amp_mag": 0.0302
+   "median_anomaly_amp_mag": 0.0302,
+   "decomposition": {
+    "fail_dchi2_anomaly": 0.256,
+    "floor_vetoed": 0.2072,
+    "flat_event": 0.0
+   },
+   "frac_NonPSPL_dchi2_rescaled_to_6912_epochs": 0.5292
+  },
+  "binaries_pooled": {
+   "n": 5000,
+   "frac_fail_dchi2_anomaly": 0.2592,
+   "frac_floor_vetoed": 0.1926,
+   "frac_detectable": 0.548
   }
  },
  "models": {
@@ -52,25 +97,122 @@
    },
    "at_threshold": {
     "frozen": {
-     "fa_1S1L_all": 0.3456,
-     "fa_1S1L_detectable_event": 0.3527,
-     "fa_1S1L_flat_by_policy": 0.0286,
-     "recall_1S2L_generator": 0.4964,
-     "recall_1S2L_detectable": 0.4778,
-     "recall_2S2L_generator": 0.5896,
-     "recall_2S2L_detectable": 0.5797,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.5615,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.4461,
-     "ontology_recall": 0.5252,
-     "ontology_fa_on_nonanomalous": 0.4733
+     "fa_1S1L": {
+      "k": 558,
+      "n": 1600,
+      "rate": 0.3488,
+      "wilson95": [
+       0.3258,
+       0.3724
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 1241,
+      "n": 2500,
+      "rate": 0.4964,
+      "wilson95": [
+       0.4768,
+       0.516
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 1474,
+      "n": 2500,
+      "rate": 0.5896,
+      "wilson95": [
+       0.5702,
+       0.6087
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 668,
+      "n": 1398,
+      "rate": 0.4778,
+      "wilson95": [
+       0.4517,
+       0.504
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 778,
+      "n": 1342,
+      "rate": 0.5797,
+      "wilson95": [
+       0.5531,
+       0.6059
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 1269,
+      "n": 2260,
+      "rate": 0.5615,
+      "wilson95": [
+       0.541,
+       0.5818
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 677,
+      "n": 963,
+      "rate": 0.703,
+      "wilson95": [
+       0.6734,
+       0.731
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 174,
+      "n": 215,
+      "rate": 0.8093,
+      "wilson95": [
+       0.7515,
+       0.8562
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 592,
+      "n": 1296,
+      "rate": 0.4568,
+      "wilson95": [
+       0.4298,
+       0.484
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 9,
+      "n": 33,
+      "rate": 0.2727,
+      "wilson95": [
+       0.1507,
+       0.4422
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 549,
+      "n": 1567,
+      "rate": 0.3504,
+      "wilson95": [
+       0.3271,
+       0.3743
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 14,
+      "n": 20,
+      "rate": 0.7,
+      "wilson95": [
+       0.481,
+       0.8545
+      ]
+     },
+     "ontology_precision_sample_mix": 0.4418,
+     "ontology_precision_scored_mix": 0.2796
     }
    },
    "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
-     "fa": 0.0194,
+     "fa": 0.02,
      "threshold": 0.9979,
      "recall_1S2L_generator": 0.1328,
      "recall_1S2L_detectable": 0.123,
@@ -89,20 +231,20 @@
     {
      "fa_target": 0.052,
      "fa": 0.0525,
-     "threshold": 0.9959,
-     "recall_1S2L_generator": 0.2188,
-     "recall_1S2L_detectable": 0.2096,
-     "recall_2S2L_generator": 0.2652,
-     "recall_2S2L_detectable": 0.2712
+     "threshold": 0.9963,
+     "recall_1S2L_generator": 0.2072,
+     "recall_1S2L_detectable": 0.1989,
+     "recall_2S2L_generator": 0.2496,
+     "recall_2S2L_detectable": 0.2563
     },
     {
      "fa_target": 0.117,
-     "fa": 0.1163,
-     "threshold": 0.991,
-     "recall_1S2L_generator": 0.306,
-     "recall_1S2L_detectable": 0.2926,
-     "recall_2S2L_generator": 0.3768,
-     "recall_2S2L_detectable": 0.3867
+     "fa": 0.1169,
+     "threshold": 0.9912,
+     "recall_1S2L_generator": 0.3048,
+     "recall_1S2L_detectable": 0.2904,
+     "recall_2S2L_generator": 0.3736,
+     "recall_2S2L_detectable": 0.3845
     }
    ],
    "recall_detectable_by_anomaly_amp_frozen": [
@@ -111,116 +253,461 @@
       0.02,
       0.05
      ],
-     "n": 796,
-     "recall": 0.5452
+     "k": 435,
+     "n": 797,
+     "rate": 0.5458,
+     "wilson95": [
+      0.5111,
+      0.5801
+     ],
+     "median_dchi2_anomaly": 920.0
     },
     {
      "amp_bin": [
       0.05,
       0.1
      ],
+     "k": 303,
      "n": 606,
-     "recall": 0.5017
+     "rate": 0.5,
+     "wilson95": [
+      0.4603,
+      0.5397
+     ],
+     "median_dchi2_anomaly": 2251.7
     },
     {
      "amp_bin": [
       0.1,
       0.2
      ],
+     "k": 262,
      "n": 561,
-     "recall": 0.4652
+     "rate": 0.467,
+     "wilson95": [
+      0.4261,
+      0.5084
+     ],
+     "median_dchi2_anomaly": 5675.3
     },
     {
      "amp_bin": [
       0.2,
       0.5
      ],
-     "n": 543,
-     "recall": 0.5543
+     "k": 300,
+     "n": 542,
+     "rate": 0.5535,
+     "wilson95": [
+      0.5114,
+      0.5948
+     ],
+     "median_dchi2_anomaly": 25861.6
     },
     {
      "amp_bin": [
       0.5,
       null
      ],
+     "k": 146,
      "n": 234,
-     "recall": 0.6239
+     "rate": 0.6239,
+     "wilson95": [
+      0.5603,
+      0.6835
+     ],
+     "median_dchi2_anomaly": 328285.4
+    }
+   ],
+   "recall_detectable_by_dchi2_frozen": [
+    {
+     "dchi2_bin": [
+      160,
+      500
+     ],
+     "k": 212,
+     "n": 442,
+     "rate": 0.4796,
+     "wilson95": [
+      0.4334,
+      0.5262
+     ]
+    },
+    {
+     "dchi2_bin": [
+      500,
+      1000.0
+     ],
+     "k": 162,
+     "n": 316,
+     "rate": 0.5127,
+     "wilson95": [
+      0.4577,
+      0.5673
+     ]
+    },
+    {
+     "dchi2_bin": [
+      1000.0,
+      10000.0
+     ],
+     "k": 485,
+     "n": 968,
+     "rate": 0.501,
+     "wilson95": [
+      0.4696,
+      0.5325
+     ]
+    },
+    {
+     "dchi2_bin": [
+      10000.0,
+      100000.0
+     ],
+     "k": 347,
+     "n": 632,
+     "rate": 0.5491,
+     "wilson95": [
+      0.5101,
+      0.5874
+     ]
+    },
+    {
+     "dchi2_bin": [
+      100000.0,
+      null
+     ],
+     "k": 240,
+     "n": 382,
+     "rate": 0.6283,
+     "wilson95": [
+      0.5788,
+      0.6752
+     ]
+    }
+   ],
+   "flag_floor_vetoed_by_amp_frozen": [
+    {
+     "amp_bin": [
+      0,
+      0.005
+     ],
+     "k": 174,
+     "n": 215,
+     "rate": 0.8093,
+     "wilson95": [
+      0.7515,
+      0.8562
+     ]
+    },
+    {
+     "amp_bin": [
+      0.005,
+      0.01
+     ],
+     "k": 227,
+     "n": 309,
+     "rate": 0.7346,
+     "wilson95": [
+      0.6827,
+      0.7808
+     ]
+    },
+    {
+     "amp_bin": [
+      0.01,
+      0.02
+     ],
+     "k": 276,
+     "n": 439,
+     "rate": 0.6287,
+     "wilson95": [
+      0.5826,
+      0.6726
+     ]
+    },
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "k": 435,
+     "n": 797,
+     "rate": 0.5458,
+     "wilson95": [
+      0.5111,
+      0.5801
+     ]
     }
    ]
   },
   "ft_g08e12": {
    "thresholds": {
     "frozen": 0.9042405486106873,
-    "calibrated_gapped": 0.9991753697395325
+    "calibrated_legacy": 0.9991753697395325
    },
    "at_threshold": {
     "frozen": {
-     "fa_1S1L_all": 0.1081,
-     "fa_1S1L_detectable_event": 0.1105,
-     "fa_1S1L_flat_by_policy": 0.0,
-     "recall_1S2L_generator": 0.4584,
-     "recall_1S2L_detectable": 0.568,
-     "recall_2S2L_generator": 0.4648,
-     "recall_2S2L_detectable": 0.6267,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.2978,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.6671,
-     "ontology_recall": 0.5962,
-     "ontology_fa_on_nonanomalous": 0.216
+     "fa_1S1L": {
+      "k": 161,
+      "n": 1600,
+      "rate": 0.1006,
+      "wilson95": [
+       0.0868,
+       0.1163
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 1146,
+      "n": 2500,
+      "rate": 0.4584,
+      "wilson95": [
+       0.4389,
+       0.478
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 1162,
+      "n": 2500,
+      "rate": 0.4648,
+      "wilson95": [
+       0.4453,
+       0.4844
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 794,
+      "n": 1398,
+      "rate": 0.568,
+      "wilson95": [
+       0.5418,
+       0.5937
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 841,
+      "n": 1342,
+      "rate": 0.6267,
+      "wilson95": [
+       0.6005,
+       0.6522
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 673,
+      "n": 2260,
+      "rate": 0.2978,
+      "wilson95": [
+       0.2793,
+       0.317
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 403,
+      "n": 963,
+      "rate": 0.4185,
+      "wilson95": [
+       0.3877,
+       0.4499
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 92,
+      "n": 215,
+      "rate": 0.4279,
+      "wilson95": [
+       0.3636,
+       0.4947
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 270,
+      "n": 1296,
+      "rate": 0.2083,
+      "wilson95": [
+       0.1871,
+       0.2313
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 20,
+      "n": 33,
+      "rate": 0.6061,
+      "wilson95": [
+       0.4368,
+       0.7532
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 141,
+      "n": 1567,
+      "rate": 0.09,
+      "wilson95": [
+       0.0768,
+       0.1052
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 8,
+      "n": 20,
+      "rate": 0.4,
+      "wilson95": [
+       0.2188,
+       0.6134
+      ]
+     },
+     "ontology_precision_sample_mix": 0.6622,
+     "ontology_precision_scored_mix": 0.5421
     },
-    "calibrated_gapped": {
-     "fa_1S1L_all": 0.0,
-     "fa_1S1L_detectable_event": 0.0,
-     "fa_1S1L_flat_by_policy": 0.0,
-     "recall_1S2L_generator": 0.0,
-     "recall_1S2L_detectable": 0.0,
-     "recall_2S2L_generator": 0.0,
-     "recall_2S2L_detectable": 0.0,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.0,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.0,
-     "ontology_recall": 0.0,
-     "ontology_fa_on_nonanomalous": 0.0
+    "calibrated_legacy": {
+     "fa_1S1L": {
+      "k": 0,
+      "n": 1600,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0024
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 0,
+      "n": 2500,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0015
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 0,
+      "n": 2500,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0015
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 0,
+      "n": 1398,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0027
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 0,
+      "n": 1342,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0029
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 0,
+      "n": 2260,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0017
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 0,
+      "n": 963,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.004
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 0,
+      "n": 215,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0176
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 0,
+      "n": 1296,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.003
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 0,
+      "n": 33,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.1043
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 0,
+      "n": 1567,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0024
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 0,
+      "n": 20,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.1611
+      ]
+     },
+     "ontology_precision_sample_mix": 0.0,
+     "ontology_precision_scored_mix": 0.0
     }
    },
    "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
      "fa": 0.02,
-     "threshold": 0.9736,
-     "recall_1S2L_generator": 0.1956,
+     "threshold": 0.9735,
+     "recall_1S2L_generator": 0.196,
      "recall_1S2L_detectable": 0.2861,
      "recall_2S2L_generator": 0.2024,
      "recall_2S2L_detectable": 0.3308
     },
     {
      "fa_target": 0.031,
-     "fa": 0.0312,
-     "threshold": 0.9645,
-     "recall_1S2L_generator": 0.2448,
-     "recall_1S2L_detectable": 0.3391,
-     "recall_2S2L_generator": 0.2536,
-     "recall_2S2L_detectable": 0.3994
+     "fa": 0.0306,
+     "threshold": 0.9616,
+     "recall_1S2L_generator": 0.2604,
+     "recall_1S2L_detectable": 0.3584,
+     "recall_2S2L_generator": 0.2688,
+     "recall_2S2L_detectable": 0.4173
     },
     {
      "fa_target": 0.052,
      "fa": 0.0519,
-     "threshold": 0.9473,
-     "recall_1S2L_generator": 0.3308,
-     "recall_1S2L_detectable": 0.432,
-     "recall_2S2L_generator": 0.3324,
-     "recall_2S2L_detectable": 0.4851
+     "threshold": 0.9476,
+     "recall_1S2L_generator": 0.3304,
+     "recall_1S2L_detectable": 0.4313,
+     "recall_2S2L_generator": 0.3312,
+     "recall_2S2L_detectable": 0.4836
     },
     {
      "fa_target": 0.117,
-     "fa": 0.1175,
-     "threshold": 0.8964,
-     "recall_1S2L_generator": 0.4776,
-     "recall_1S2L_detectable": 0.5887,
-     "recall_2S2L_generator": 0.4804,
-     "recall_2S2L_detectable": 0.6431
+     "fa": 0.1169,
+     "threshold": 0.8876,
+     "recall_1S2L_generator": 0.5008,
+     "recall_1S2L_detectable": 0.6152,
+     "recall_2S2L_generator": 0.4924,
+     "recall_2S2L_detectable": 0.6557
     }
    ],
    "recall_detectable_by_anomaly_amp_frozen": [
@@ -229,116 +716,461 @@
       0.02,
       0.05
      ],
-     "n": 796,
-     "recall": 0.4673
+     "k": 372,
+     "n": 797,
+     "rate": 0.4668,
+     "wilson95": [
+      0.4324,
+      0.5015
+     ],
+     "median_dchi2_anomaly": 920.0
     },
     {
      "amp_bin": [
       0.05,
       0.1
      ],
+     "k": 325,
      "n": 606,
-     "recall": 0.5347
+     "rate": 0.5363,
+     "wilson95": [
+      0.4965,
+      0.5757
+     ],
+     "median_dchi2_anomaly": 2251.7
     },
     {
      "amp_bin": [
       0.1,
       0.2
      ],
+     "k": 337,
      "n": 561,
-     "recall": 0.6007
+     "rate": 0.6007,
+     "wilson95": [
+      0.5596,
+      0.6404
+     ],
+     "median_dchi2_anomaly": 5675.3
     },
     {
      "amp_bin": [
       0.2,
       0.5
      ],
-     "n": 543,
-     "recall": 0.7366
+     "k": 399,
+     "n": 542,
+     "rate": 0.7362,
+     "wilson95": [
+      0.6975,
+      0.7715
+     ],
+     "median_dchi2_anomaly": 25861.6
     },
     {
      "amp_bin": [
       0.5,
       null
      ],
+     "k": 202,
      "n": 234,
-     "recall": 0.8632
+     "rate": 0.8632,
+     "wilson95": [
+      0.8133,
+      0.9014
+     ],
+     "median_dchi2_anomaly": 328285.4
+    }
+   ],
+   "recall_detectable_by_dchi2_frozen": [
+    {
+     "dchi2_bin": [
+      160,
+      500
+     ],
+     "k": 109,
+     "n": 442,
+     "rate": 0.2466,
+     "wilson95": [
+      0.2087,
+      0.2889
+     ]
+    },
+    {
+     "dchi2_bin": [
+      500,
+      1000.0
+     ],
+     "k": 132,
+     "n": 316,
+     "rate": 0.4177,
+     "wilson95": [
+      0.3647,
+      0.4728
+     ]
+    },
+    {
+     "dchi2_bin": [
+      1000.0,
+      10000.0
+     ],
+     "k": 539,
+     "n": 968,
+     "rate": 0.5568,
+     "wilson95": [
+      0.5254,
+      0.5878
+     ]
+    },
+    {
+     "dchi2_bin": [
+      10000.0,
+      100000.0
+     ],
+     "k": 508,
+     "n": 632,
+     "rate": 0.8038,
+     "wilson95": [
+      0.771,
+      0.8329
+     ]
+    },
+    {
+     "dchi2_bin": [
+      100000.0,
+      null
+     ],
+     "k": 347,
+     "n": 382,
+     "rate": 0.9084,
+     "wilson95": [
+      0.8752,
+      0.9334
+     ]
+    }
+   ],
+   "flag_floor_vetoed_by_amp_frozen": [
+    {
+     "amp_bin": [
+      0,
+      0.005
+     ],
+     "k": 92,
+     "n": 215,
+     "rate": 0.4279,
+     "wilson95": [
+      0.3636,
+      0.4947
+     ]
+    },
+    {
+     "amp_bin": [
+      0.005,
+      0.01
+     ],
+     "k": 115,
+     "n": 309,
+     "rate": 0.3722,
+     "wilson95": [
+      0.3201,
+      0.4273
+     ]
+    },
+    {
+     "amp_bin": [
+      0.01,
+      0.02
+     ],
+     "k": 196,
+     "n": 439,
+     "rate": 0.4465,
+     "wilson95": [
+      0.4006,
+      0.4932
+     ]
+    },
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "k": 372,
+     "n": 797,
+     "rate": 0.4668,
+     "wilson95": [
+      0.4324,
+      0.5015
+     ]
     }
    ]
   },
   "fspl_g08": {
    "thresholds": {
     "frozen": 0.9042405486106873,
-    "calibrated_gapped": 0.9353199601173401
+    "calibrated_legacy": 0.9353199601173401
    },
    "at_threshold": {
     "frozen": {
-     "fa_1S1L_all": 0.05,
-     "fa_1S1L_detectable_event": 0.0511,
-     "fa_1S1L_flat_by_policy": 0.0,
-     "recall_1S2L_generator": 0.372,
-     "recall_1S2L_detectable": 0.4642,
-     "recall_2S2L_generator": 0.3968,
-     "recall_2S2L_detectable": 0.5455,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.2394,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.6943,
-     "ontology_recall": 0.5007,
-     "ontology_fa_on_nonanomalous": 0.16
+     "fa_1S1L": {
+      "k": 77,
+      "n": 1600,
+      "rate": 0.0481,
+      "wilson95": [
+       0.0387,
+       0.0597
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 930,
+      "n": 2500,
+      "rate": 0.372,
+      "wilson95": [
+       0.3533,
+       0.3911
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 992,
+      "n": 2500,
+      "rate": 0.3968,
+      "wilson95": [
+       0.3778,
+       0.4161
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 649,
+      "n": 1398,
+      "rate": 0.4642,
+      "wilson95": [
+       0.4382,
+       0.4904
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 732,
+      "n": 1342,
+      "rate": 0.5455,
+      "wilson95": [
+       0.5187,
+       0.5719
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 541,
+      "n": 2260,
+      "rate": 0.2394,
+      "wilson95": [
+       0.2222,
+       0.2574
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 377,
+      "n": 963,
+      "rate": 0.3915,
+      "wilson95": [
+       0.3611,
+       0.4227
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 96,
+      "n": 215,
+      "rate": 0.4465,
+      "wilson95": [
+       0.3816,
+       0.5133
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 164,
+      "n": 1296,
+      "rate": 0.1265,
+      "wilson95": [
+       0.1095,
+       0.1458
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 13,
+      "n": 33,
+      "rate": 0.3939,
+      "wilson95": [
+       0.2468,
+       0.5632
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 64,
+      "n": 1567,
+      "rate": 0.0408,
+      "wilson95": [
+       0.0321,
+       0.0518
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 11,
+      "n": 20,
+      "rate": 0.55,
+      "wilson95": [
+       0.3421,
+       0.7418
+      ]
+     },
+     "ontology_precision_sample_mix": 0.6908,
+     "ontology_precision_scored_mix": 0.6113
     },
-    "calibrated_gapped": {
-     "fa_1S1L_all": 0.03,
-     "fa_1S1L_detectable_event": 0.0307,
-     "fa_1S1L_flat_by_policy": 0.0,
-     "recall_1S2L_generator": 0.3,
-     "recall_1S2L_detectable": 0.3856,
-     "recall_2S2L_generator": 0.3224,
-     "recall_2S2L_detectable": 0.4627,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.1752,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.7263,
-     "ontology_recall": 0.4197,
-     "ontology_fa_on_nonanomalous": 0.1148
+    "calibrated_legacy": {
+     "fa_1S1L": {
+      "k": 51,
+      "n": 1600,
+      "rate": 0.0319,
+      "wilson95": [
+       0.0243,
+       0.0417
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 750,
+      "n": 2500,
+      "rate": 0.3,
+      "wilson95": [
+       0.2824,
+       0.3183
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 806,
+      "n": 2500,
+      "rate": 0.3224,
+      "wilson95": [
+       0.3044,
+       0.341
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 539,
+      "n": 1398,
+      "rate": 0.3856,
+      "wilson95": [
+       0.3604,
+       0.4113
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 621,
+      "n": 1342,
+      "rate": 0.4627,
+      "wilson95": [
+       0.4362,
+       0.4895
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 396,
+      "n": 2260,
+      "rate": 0.1752,
+      "wilson95": [
+       0.1601,
+       0.1914
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 276,
+      "n": 963,
+      "rate": 0.2866,
+      "wilson95": [
+       0.2589,
+       0.316
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 79,
+      "n": 215,
+      "rate": 0.3674,
+      "wilson95": [
+       0.3059,
+       0.4337
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 120,
+      "n": 1296,
+      "rate": 0.0926,
+      "wilson95": [
+       0.078,
+       0.1096
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 9,
+      "n": 33,
+      "rate": 0.2727,
+      "wilson95": [
+       0.1507,
+       0.4422
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 42,
+      "n": 1567,
+      "rate": 0.0268,
+      "wilson95": [
+       0.0199,
+       0.036
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 5,
+      "n": 20,
+      "rate": 0.25,
+      "wilson95": [
+       0.1119,
+       0.4687
+      ]
+     },
+     "ontology_precision_sample_mix": 0.7218,
+     "ontology_precision_scored_mix": 0.6522
     }
    },
    "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
      "fa": 0.02,
-     "threshold": 0.9489,
+     "threshold": 0.9488,
      "recall_1S2L_generator": 0.262,
      "recall_1S2L_detectable": 0.3412,
-     "recall_2S2L_generator": 0.2852,
+     "recall_2S2L_generator": 0.2856,
      "recall_2S2L_detectable": 0.4195
     },
     {
      "fa_target": 0.031,
-     "fa": 0.0312,
-     "threshold": 0.9345,
-     "recall_1S2L_generator": 0.3036,
-     "recall_1S2L_detectable": 0.3913,
-     "recall_2S2L_generator": 0.326,
-     "recall_2S2L_detectable": 0.4687
+     "fa": 0.0306,
+     "threshold": 0.9358,
+     "recall_1S2L_generator": 0.2992,
+     "recall_1S2L_detectable": 0.3848,
+     "recall_2S2L_generator": 0.3216,
+     "recall_2S2L_detectable": 0.462
     },
     {
      "fa_target": 0.052,
      "fa": 0.0519,
-     "threshold": 0.9033,
-     "recall_1S2L_generator": 0.3728,
-     "recall_1S2L_detectable": 0.4649,
-     "recall_2S2L_generator": 0.398,
-     "recall_2S2L_detectable": 0.5462
+     "threshold": 0.8995,
+     "recall_1S2L_generator": 0.3792,
+     "recall_1S2L_detectable": 0.4742,
+     "recall_2S2L_generator": 0.4088,
+     "recall_2S2L_detectable": 0.5589
     },
     {
      "fa_target": 0.117,
      "fa": 0.1169,
-     "threshold": 0.7945,
-     "recall_1S2L_generator": 0.52,
-     "recall_1S2L_detectable": 0.618,
-     "recall_2S2L_generator": 0.554,
-     "recall_2S2L_detectable": 0.6885
+     "threshold": 0.7866,
+     "recall_1S2L_generator": 0.5308,
+     "recall_1S2L_detectable": 0.6273,
+     "recall_2S2L_generator": 0.5644,
+     "recall_2S2L_detectable": 0.7012
     }
    ],
    "recall_detectable_by_anomaly_amp_frozen": [
@@ -347,40 +1179,191 @@
       0.02,
       0.05
      ],
-     "n": 796,
-     "recall": 0.3819
+     "k": 305,
+     "n": 797,
+     "rate": 0.3827,
+     "wilson95": [
+      0.3496,
+      0.4169
+     ],
+     "median_dchi2_anomaly": 920.0
     },
     {
      "amp_bin": [
       0.05,
       0.1
      ],
+     "k": 254,
      "n": 606,
-     "recall": 0.4208
+     "rate": 0.4191,
+     "wilson95": [
+      0.3805,
+      0.4588
+     ],
+     "median_dchi2_anomaly": 2251.7
     },
     {
      "amp_bin": [
       0.1,
       0.2
      ],
+     "k": 282,
      "n": 561,
-     "recall": 0.5009
+     "rate": 0.5027,
+     "wilson95": [
+      0.4614,
+      0.5439
+     ],
+     "median_dchi2_anomaly": 5675.3
     },
     {
      "amp_bin": [
       0.2,
       0.5
      ],
-     "n": 543,
-     "recall": 0.6317
+     "k": 342,
+     "n": 542,
+     "rate": 0.631,
+     "wilson95": [
+      0.5896,
+      0.6706
+     ],
+     "median_dchi2_anomaly": 25861.6
     },
     {
      "amp_bin": [
       0.5,
       null
      ],
+     "k": 198,
      "n": 234,
-     "recall": 0.8462
+     "rate": 0.8462,
+     "wilson95": [
+      0.7944,
+      0.8868
+     ],
+     "median_dchi2_anomaly": 328285.4
+    }
+   ],
+   "recall_detectable_by_dchi2_frozen": [
+    {
+     "dchi2_bin": [
+      160,
+      500
+     ],
+     "k": 70,
+     "n": 442,
+     "rate": 0.1584,
+     "wilson95": [
+      0.1273,
+      0.1953
+     ]
+    },
+    {
+     "dchi2_bin": [
+      500,
+      1000.0
+     ],
+     "k": 85,
+     "n": 316,
+     "rate": 0.269,
+     "wilson95": [
+      0.2231,
+      0.3204
+     ]
+    },
+    {
+     "dchi2_bin": [
+      1000.0,
+      10000.0
+     ],
+     "k": 459,
+     "n": 968,
+     "rate": 0.4742,
+     "wilson95": [
+      0.4429,
+      0.5057
+     ]
+    },
+    {
+     "dchi2_bin": [
+      10000.0,
+      100000.0
+     ],
+     "k": 443,
+     "n": 632,
+     "rate": 0.7009,
+     "wilson95": [
+      0.6641,
+      0.7353
+     ]
+    },
+    {
+     "dchi2_bin": [
+      100000.0,
+      null
+     ],
+     "k": 324,
+     "n": 382,
+     "rate": 0.8482,
+     "wilson95": [
+      0.8087,
+      0.8807
+     ]
+    }
+   ],
+   "flag_floor_vetoed_by_amp_frozen": [
+    {
+     "amp_bin": [
+      0,
+      0.005
+     ],
+     "k": 96,
+     "n": 215,
+     "rate": 0.4465,
+     "wilson95": [
+      0.3816,
+      0.5133
+     ]
+    },
+    {
+     "amp_bin": [
+      0.005,
+      0.01
+     ],
+     "k": 118,
+     "n": 309,
+     "rate": 0.3819,
+     "wilson95": [
+      0.3295,
+      0.4372
+     ]
+    },
+    {
+     "amp_bin": [
+      0.01,
+      0.02
+     ],
+     "k": 163,
+     "n": 439,
+     "rate": 0.3713,
+     "wilson95": [
+      0.3274,
+      0.4174
+     ]
+    },
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "k": 305,
+     "n": 797,
+     "rate": 0.3827,
+     "wilson95": [
+      0.3496,
+      0.4169
+     ]
     }
    ]
   },
@@ -390,19 +1373,116 @@
    },
    "at_threshold": {
     "frozen": {
-     "fa_1S1L_all": 0.0856,
-     "fa_1S1L_detectable_event": 0.0875,
-     "fa_1S1L_flat_by_policy": 0.0,
-     "recall_1S2L_generator": 0.4504,
-     "recall_1S2L_detectable": 0.5501,
-     "recall_2S2L_generator": 0.4692,
-     "recall_2S2L_detectable": 0.6192,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.3093,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.6626,
-     "ontology_recall": 0.5814,
-     "ontology_fa_on_nonanomalous": 0.215
+     "fa_1S1L": {
+      "k": 135,
+      "n": 1600,
+      "rate": 0.0844,
+      "wilson95": [
+       0.0717,
+       0.099
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 1126,
+      "n": 2500,
+      "rate": 0.4504,
+      "wilson95": [
+       0.431,
+       0.47
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 1173,
+      "n": 2500,
+      "rate": 0.4692,
+      "wilson95": [
+       0.4497,
+       0.4888
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 769,
+      "n": 1398,
+      "rate": 0.5501,
+      "wilson95": [
+       0.5239,
+       0.576
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 831,
+      "n": 1342,
+      "rate": 0.6192,
+      "wilson95": [
+       0.5929,
+       0.6448
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 699,
+      "n": 2260,
+      "rate": 0.3093,
+      "wilson95": [
+       0.2906,
+       0.3287
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 458,
+      "n": 963,
+      "rate": 0.4756,
+      "wilson95": [
+       0.4442,
+       0.5072
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 116,
+      "n": 215,
+      "rate": 0.5395,
+      "wilson95": [
+       0.4728,
+       0.6049
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 241,
+      "n": 1296,
+      "rate": 0.186,
+      "wilson95": [
+       0.1657,
+       0.2081
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 16,
+      "n": 33,
+      "rate": 0.4848,
+      "wilson95": [
+       0.325,
+       0.6478
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 119,
+      "n": 1567,
+      "rate": 0.0759,
+      "wilson95": [
+       0.0638,
+       0.0901
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 11,
+      "n": 20,
+      "rate": 0.55,
+      "wilson95": [
+       0.3421,
+       0.7418
+      ]
+     },
+     "ontology_precision_sample_mix": 0.6574,
+     "ontology_precision_scored_mix": 0.5532
     }
    },
    "recall_at_matched_fa": [
@@ -418,29 +1498,29 @@
     {
      "fa_target": 0.031,
      "fa": 0.0312,
-     "threshold": 0.9541,
-     "recall_1S2L_generator": 0.2852,
-     "recall_1S2L_detectable": 0.3691,
-     "recall_2S2L_generator": 0.3116,
-     "recall_2S2L_detectable": 0.4508
+     "threshold": 0.9509,
+     "recall_1S2L_generator": 0.3,
+     "recall_1S2L_detectable": 0.3863,
+     "recall_2S2L_generator": 0.326,
+     "recall_2S2L_detectable": 0.4665
     },
     {
      "fa_target": 0.052,
      "fa": 0.0519,
-     "threshold": 0.9358,
-     "recall_1S2L_generator": 0.3604,
-     "recall_1S2L_detectable": 0.4514,
-     "recall_2S2L_generator": 0.3844,
-     "recall_2S2L_detectable": 0.5335
+     "threshold": 0.9345,
+     "recall_1S2L_generator": 0.3644,
+     "recall_1S2L_detectable": 0.4571,
+     "recall_2S2L_generator": 0.3908,
+     "recall_2S2L_detectable": 0.541
     },
     {
      "fa_target": 0.117,
      "fa": 0.1169,
-     "threshold": 0.87,
-     "recall_1S2L_generator": 0.5224,
-     "recall_1S2L_detectable": 0.6223,
-     "recall_2S2L_generator": 0.5276,
-     "recall_2S2L_detectable": 0.6699
+     "threshold": 0.8657,
+     "recall_1S2L_generator": 0.5272,
+     "recall_1S2L_detectable": 0.6266,
+     "recall_2S2L_generator": 0.5348,
+     "recall_2S2L_detectable": 0.6759
     }
    ],
    "recall_detectable_by_anomaly_amp_frozen": [
@@ -449,116 +1529,574 @@
       0.02,
       0.05
      ],
-     "n": 796,
-     "recall": 0.4862
+     "k": 388,
+     "n": 797,
+     "rate": 0.4868,
+     "wilson95": [
+      0.4523,
+      0.5215
+     ],
+     "median_dchi2_anomaly": 920.0
     },
     {
      "amp_bin": [
       0.05,
       0.1
      ],
+     "k": 309,
      "n": 606,
-     "recall": 0.5116
+     "rate": 0.5099,
+     "wilson95": [
+      0.4702,
+      0.5495
+     ],
+     "median_dchi2_anomaly": 2251.7
     },
     {
      "amp_bin": [
       0.1,
       0.2
      ],
+     "k": 322,
      "n": 561,
-     "recall": 0.5722
+     "rate": 0.574,
+     "wilson95": [
+      0.5327,
+      0.6143
+     ],
+     "median_dchi2_anomaly": 5675.3
     },
     {
      "amp_bin": [
       0.2,
       0.5
      ],
-     "n": 543,
-     "recall": 0.6943
+     "k": 376,
+     "n": 542,
+     "rate": 0.6937,
+     "wilson95": [
+      0.6537,
+      0.7311
+     ],
+     "median_dchi2_anomaly": 25861.6
     },
     {
      "amp_bin": [
       0.5,
       null
      ],
+     "k": 205,
      "n": 234,
-     "recall": 0.8761
+     "rate": 0.8761,
+     "wilson95": [
+      0.8277,
+      0.9123
+     ],
+     "median_dchi2_anomaly": 328285.4
+    }
+   ],
+   "recall_detectable_by_dchi2_frozen": [
+    {
+     "dchi2_bin": [
+      160,
+      500
+     ],
+     "k": 98,
+     "n": 442,
+     "rate": 0.2217,
+     "wilson95": [
+      0.1855,
+      0.2628
+     ]
+    },
+    {
+     "dchi2_bin": [
+      500,
+      1000.0
+     ],
+     "k": 116,
+     "n": 316,
+     "rate": 0.3671,
+     "wilson95": [
+      0.3158,
+      0.4215
+     ]
+    },
+    {
+     "dchi2_bin": [
+      1000.0,
+      10000.0
+     ],
+     "k": 548,
+     "n": 968,
+     "rate": 0.5661,
+     "wilson95": [
+      0.5347,
+      0.597
+     ]
+    },
+    {
+     "dchi2_bin": [
+      10000.0,
+      100000.0
+     ],
+     "k": 489,
+     "n": 632,
+     "rate": 0.7737,
+     "wilson95": [
+      0.7395,
+      0.8046
+     ]
+    },
+    {
+     "dchi2_bin": [
+      100000.0,
+      null
+     ],
+     "k": 349,
+     "n": 382,
+     "rate": 0.9136,
+     "wilson95": [
+      0.8812,
+      0.9378
+     ]
+    }
+   ],
+   "flag_floor_vetoed_by_amp_frozen": [
+    {
+     "amp_bin": [
+      0,
+      0.005
+     ],
+     "k": 116,
+     "n": 215,
+     "rate": 0.5395,
+     "wilson95": [
+      0.4728,
+      0.6049
+     ]
+    },
+    {
+     "amp_bin": [
+      0.005,
+      0.01
+     ],
+     "k": 139,
+     "n": 309,
+     "rate": 0.4498,
+     "wilson95": [
+      0.3953,
+      0.5056
+     ]
+    },
+    {
+     "amp_bin": [
+      0.01,
+      0.02
+     ],
+     "k": 203,
+     "n": 439,
+     "rate": 0.4624,
+     "wilson95": [
+      0.4163,
+      0.5092
+     ]
+    },
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "k": 388,
+     "n": 797,
+     "rate": 0.4868,
+     "wilson95": [
+      0.4523,
+      0.5215
+     ]
     }
    ]
   },
   "fspl5s_g08": {
    "thresholds": {
     "frozen": 0.9042405486106873,
-    "calibrated_gapped": 0.9491875171661377
+    "calibrated_seasons": 0.931399405002594,
+    "calibrated_legacy": 0.9491875171661377
    },
    "at_threshold": {
     "frozen": {
-     "fa_1S1L_all": 0.0488,
-     "fa_1S1L_detectable_event": 0.0498,
-     "fa_1S1L_flat_by_policy": 0.0,
-     "recall_1S2L_generator": 0.3796,
-     "recall_1S2L_detectable": 0.4735,
-     "recall_2S2L_generator": 0.404,
-     "recall_2S2L_detectable": 0.5574,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.2429,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.6961,
-     "ontology_recall": 0.5108,
-     "ontology_fa_on_nonanomalous": 0.1619
+     "fa_1S1L": {
+      "k": 74,
+      "n": 1600,
+      "rate": 0.0462,
+      "wilson95": [
+       0.037,
+       0.0577
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 949,
+      "n": 2500,
+      "rate": 0.3796,
+      "wilson95": [
+       0.3608,
+       0.3988
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 1010,
+      "n": 2500,
+      "rate": 0.404,
+      "wilson95": [
+       0.3849,
+       0.4234
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 662,
+      "n": 1398,
+      "rate": 0.4735,
+      "wilson95": [
+       0.4475,
+       0.4997
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 748,
+      "n": 1342,
+      "rate": 0.5574,
+      "wilson95": [
+       0.5307,
+       0.5838
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 549,
+      "n": 2260,
+      "rate": 0.2429,
+      "wilson95": [
+       0.2257,
+       0.261
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 384,
+      "n": 963,
+      "rate": 0.3988,
+      "wilson95": [
+       0.3683,
+       0.43
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 100,
+      "n": 215,
+      "rate": 0.4651,
+      "wilson95": [
+       0.3996,
+       0.5318
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 165,
+      "n": 1296,
+      "rate": 0.1273,
+      "wilson95": [
+       0.1103,
+       0.1466
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 12,
+      "n": 33,
+      "rate": 0.3636,
+      "wilson95": [
+       0.2219,
+       0.5338
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 62,
+      "n": 1567,
+      "rate": 0.0396,
+      "wilson95": [
+       0.031,
+       0.0504
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 10,
+      "n": 20,
+      "rate": 0.5,
+      "wilson95": [
+       0.2993,
+       0.7007
+      ]
+     },
+     "ontology_precision_sample_mix": 0.6936,
+     "ontology_precision_scored_mix": 0.6177
     },
-    "calibrated_gapped": {
-     "fa_1S1L_all": 0.0163,
-     "fa_1S1L_detectable_event": 0.0166,
-     "fa_1S1L_flat_by_policy": 0.0,
-     "recall_1S2L_generator": 0.27,
-     "recall_1S2L_detectable": 0.3484,
-     "recall_2S2L_generator": 0.2924,
-     "recall_2S2L_detectable": 0.427,
-     "flag_rate_on_binaries_with_UNdetectable_anomaly": 0.1531,
-     "n_binaries_detectable": 2740,
-     "n_binaries_undetectable": 2260,
-     "ontology_precision": 0.7416,
-     "ontology_recall": 0.3826,
-     "ontology_fa_on_nonanomalous": 0.0968
+    "calibrated_seasons": {
+     "fa_1S1L": {
+      "k": 48,
+      "n": 1600,
+      "rate": 0.03,
+      "wilson95": [
+       0.0227,
+       0.0396
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 799,
+      "n": 2500,
+      "rate": 0.3196,
+      "wilson95": [
+       0.3016,
+       0.3381
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 879,
+      "n": 2500,
+      "rate": 0.3516,
+      "wilson95": [
+       0.3331,
+       0.3705
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 567,
+      "n": 1398,
+      "rate": 0.4056,
+      "wilson95": [
+       0.3801,
+       0.4315
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 674,
+      "n": 1342,
+      "rate": 0.5022,
+      "wilson95": [
+       0.4755,
+       0.5289
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 437,
+      "n": 2260,
+      "rate": 0.1934,
+      "wilson95": [
+       0.1776,
+       0.2102
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 313,
+      "n": 963,
+      "rate": 0.325,
+      "wilson95": [
+       0.2962,
+       0.3553
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 84,
+      "n": 215,
+      "rate": 0.3907,
+      "wilson95": [
+       0.3279,
+       0.4573
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 124,
+      "n": 1296,
+      "rate": 0.0957,
+      "wilson95": [
+       0.0808,
+       0.1129
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 9,
+      "n": 33,
+      "rate": 0.2727,
+      "wilson95": [
+       0.1507,
+       0.4422
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 39,
+      "n": 1567,
+      "rate": 0.0249,
+      "wilson95": [
+       0.0183,
+       0.0338
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 5,
+      "n": 20,
+      "rate": 0.25,
+      "wilson95": [
+       0.1119,
+       0.4687
+      ]
+     },
+     "ontology_precision_sample_mix": 0.719,
+     "ontology_precision_scored_mix": 0.6577
+    },
+    "calibrated_legacy": {
+     "fa_1S1L": {
+      "k": 30,
+      "n": 1600,
+      "rate": 0.0187,
+      "wilson95": [
+       0.0132,
+       0.0266
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 675,
+      "n": 2500,
+      "rate": 0.27,
+      "wilson95": [
+       0.253,
+       0.2877
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 731,
+      "n": 2500,
+      "rate": 0.2924,
+      "wilson95": [
+       0.2749,
+       0.3105
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 487,
+      "n": 1398,
+      "rate": 0.3484,
+      "wilson95": [
+       0.3238,
+       0.3737
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 573,
+      "n": 1342,
+      "rate": 0.427,
+      "wilson95": [
+       0.4008,
+       0.4536
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 346,
+      "n": 2260,
+      "rate": 0.1531,
+      "wilson95": [
+       0.1388,
+       0.1685
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 255,
+      "n": 963,
+      "rate": 0.2648,
+      "wilson95": [
+       0.2379,
+       0.2936
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 67,
+      "n": 215,
+      "rate": 0.3116,
+      "wilson95": [
+       0.2535,
+       0.3764
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 91,
+      "n": 1296,
+      "rate": 0.0702,
+      "wilson95": [
+       0.0575,
+       0.0854
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 6,
+      "n": 33,
+      "rate": 0.1818,
+      "wilson95": [
+       0.0861,
+       0.3439
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 24,
+      "n": 1567,
+      "rate": 0.0153,
+      "wilson95": [
+       0.0103,
+       0.0227
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 4,
+      "n": 20,
+      "rate": 0.2,
+      "wilson95": [
+       0.0807,
+       0.416
+      ]
+     },
+     "ontology_precision_sample_mix": 0.7382,
+     "ontology_precision_scored_mix": 0.6901
     }
    },
    "recall_at_matched_fa": [
     {
      "fa_target": 0.02,
      "fa": 0.02,
-     "threshold": 0.9466,
-     "recall_1S2L_generator": 0.2752,
-     "recall_1S2L_detectable": 0.3541,
-     "recall_2S2L_generator": 0.3004,
-     "recall_2S2L_detectable": 0.4367
+     "threshold": 0.9483,
+     "recall_1S2L_generator": 0.2724,
+     "recall_1S2L_detectable": 0.3519,
+     "recall_2S2L_generator": 0.2948,
+     "recall_2S2L_detectable": 0.4307
     },
     {
      "fa_target": 0.031,
      "fa": 0.0312,
-     "threshold": 0.9302,
-     "recall_1S2L_generator": 0.3216,
-     "recall_1S2L_detectable": 0.4077,
-     "recall_2S2L_generator": 0.3536,
-     "recall_2S2L_detectable": 0.5045
+     "threshold": 0.9292,
+     "recall_1S2L_generator": 0.3236,
+     "recall_1S2L_detectable": 0.4099,
+     "recall_2S2L_generator": 0.3564,
+     "recall_2S2L_detectable": 0.5075
     },
     {
      "fa_target": 0.052,
-     "fa": 0.0519,
-     "threshold": 0.8976,
-     "recall_1S2L_generator": 0.3884,
-     "recall_1S2L_detectable": 0.4835,
-     "recall_2S2L_generator": 0.4188,
-     "recall_2S2L_detectable": 0.57
+     "fa": 0.0525,
+     "threshold": 0.8886,
+     "recall_1S2L_generator": 0.402,
+     "recall_1S2L_detectable": 0.5,
+     "recall_2S2L_generator": 0.4332,
+     "recall_2S2L_detectable": 0.5805
     },
     {
      "fa_target": 0.117,
      "fa": 0.1169,
-     "threshold": 0.7863,
-     "recall_1S2L_generator": 0.542,
-     "recall_1S2L_detectable": 0.6423,
-     "recall_2S2L_generator": 0.5696,
-     "recall_2S2L_detectable": 0.7086
+     "threshold": 0.7778,
+     "recall_1S2L_generator": 0.5504,
+     "recall_1S2L_detectable": 0.6524,
+     "recall_2S2L_generator": 0.576,
+     "recall_2S2L_detectable": 0.7131
     }
    ],
    "recall_detectable_by_anomaly_amp_frozen": [
@@ -567,42 +2105,274 @@
       0.02,
       0.05
      ],
-     "n": 796,
-     "recall": 0.3957
+     "k": 316,
+     "n": 797,
+     "rate": 0.3965,
+     "wilson95": [
+      0.3631,
+      0.4309
+     ],
+     "median_dchi2_anomaly": 920.0
     },
     {
      "amp_bin": [
       0.05,
       0.1
      ],
+     "k": 257,
      "n": 606,
-     "recall": 0.4257
+     "rate": 0.4241,
+     "wilson95": [
+      0.3853,
+      0.4638
+     ],
+     "median_dchi2_anomaly": 2251.7
     },
     {
      "amp_bin": [
       0.1,
       0.2
      ],
+     "k": 286,
      "n": 561,
-     "recall": 0.508
+     "rate": 0.5098,
+     "wilson95": [
+      0.4685,
+      0.551
+     ],
+     "median_dchi2_anomaly": 5675.3
     },
     {
      "amp_bin": [
       0.2,
       0.5
      ],
-     "n": 543,
-     "recall": 0.6519
+     "k": 353,
+     "n": 542,
+     "rate": 0.6513,
+     "wilson95": [
+      0.6102,
+      0.6902
+     ],
+     "median_dchi2_anomaly": 25861.6
     },
     {
      "amp_bin": [
       0.5,
       null
      ],
+     "k": 198,
      "n": 234,
-     "recall": 0.8462
+     "rate": 0.8462,
+     "wilson95": [
+      0.7944,
+      0.8868
+     ],
+     "median_dchi2_anomaly": 328285.4
     }
-   ]
+   ],
+   "recall_detectable_by_dchi2_frozen": [
+    {
+     "dchi2_bin": [
+      160,
+      500
+     ],
+     "k": 76,
+     "n": 442,
+     "rate": 0.1719,
+     "wilson95": [
+      0.1396,
+      0.2099
+     ]
+    },
+    {
+     "dchi2_bin": [
+      500,
+      1000.0
+     ],
+     "k": 90,
+     "n": 316,
+     "rate": 0.2848,
+     "wilson95": [
+      0.2379,
+      0.3369
+     ]
+    },
+    {
+     "dchi2_bin": [
+      1000.0,
+      10000.0
+     ],
+     "k": 460,
+     "n": 968,
+     "rate": 0.4752,
+     "wilson95": [
+      0.4439,
+      0.5067
+     ]
+    },
+    {
+     "dchi2_bin": [
+      10000.0,
+      100000.0
+     ],
+     "k": 453,
+     "n": 632,
+     "rate": 0.7168,
+     "wilson95": [
+      0.6804,
+      0.7505
+     ]
+    },
+    {
+     "dchi2_bin": [
+      100000.0,
+      null
+     ],
+     "k": 331,
+     "n": 382,
+     "rate": 0.8665,
+     "wilson95": [
+      0.8287,
+      0.897
+     ]
+    }
+   ],
+   "flag_floor_vetoed_by_amp_frozen": [
+    {
+     "amp_bin": [
+      0,
+      0.005
+     ],
+     "k": 100,
+     "n": 215,
+     "rate": 0.4651,
+     "wilson95": [
+      0.3996,
+      0.5318
+     ]
+    },
+    {
+     "amp_bin": [
+      0.005,
+      0.01
+     ],
+     "k": 118,
+     "n": 309,
+     "rate": 0.3819,
+     "wilson95": [
+      0.3295,
+      0.4372
+     ]
+    },
+    {
+     "amp_bin": [
+      0.01,
+      0.02
+     ],
+     "k": 166,
+     "n": 439,
+     "rate": 0.3781,
+     "wilson95": [
+      0.334,
+      0.4244
+     ]
+    },
+    {
+     "amp_bin": [
+      0.02,
+      0.05
+     ],
+     "k": 316,
+     "n": 797,
+     "rate": 0.3965,
+     "wilson95": [
+      0.3631,
+      0.4309
+     ]
+    }
+   ],
+   "colour_ablation": {
+    "budget_0.02": {
+     "three_band": {
+      "detectable": 0.3905,
+      "undetectable": 0.154
+     },
+     "f146_only": {
+      "detectable": 0.3901,
+      "undetectable": 0.0765
+     },
+     "n_detectable": 2740,
+     "n_undetectable": 2260
+    },
+    "budget_0.052": {
+     "three_band": {
+      "detectable": 0.5394,
+      "undetectable": 0.2699
+     },
+     "f146_only": {
+      "detectable": 0.5336,
+      "undetectable": 0.1695
+     },
+     "n_detectable": 2740,
+     "n_undetectable": 2260
+    },
+    "flag_floor_vetoed_by_amp_frozen_f146only": [
+     {
+      "amp_bin": [
+       0,
+       0.005
+      ],
+      "k": 34,
+      "n": 215,
+      "rate": 0.1581,
+      "wilson95": [
+       0.1154,
+       0.2129
+      ]
+     },
+     {
+      "amp_bin": [
+       0.005,
+       0.01
+      ],
+      "k": 57,
+      "n": 309,
+      "rate": 0.1845,
+      "wilson95": [
+       0.1452,
+       0.2315
+      ]
+     },
+     {
+      "amp_bin": [
+       0.01,
+       0.02
+      ],
+      "k": 87,
+      "n": 439,
+      "rate": 0.1982,
+      "wilson95": [
+       0.1636,
+       0.238
+      ]
+     },
+     {
+      "amp_bin": [
+       0.02,
+       0.05
+      ],
+      "k": 255,
+      "n": 797,
+      "rate": 0.3199,
+      "wilson95": [
+       0.2885,
+       0.3531
+      ]
+     }
+    ]
+   }
   }
- }
+ },
+ "command": "validation/gulls/detectability_relabel.py --reduce --cap-1s1l 1600 --cap-binary 2500 --truth-cache /Users/kunalbhatia/Desktop/Research/microlensing/gulls_truth_cache_v2 --models shipped=rows_full_shipped_v2.json ft_g08e12=rows_full_ft_g08e12_v2.json fspl_g08=rows_full_fspl_g08.json fspl5_g08=rows_full_fspl5_g08.json fspl5s_g08=rows_full_fspl5s_g08.json --f146 fspl5s_g08=rows_full_fspl5s_g08_f146only.json"
 }
