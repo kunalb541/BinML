@@ -153,7 +153,7 @@ $0.35$ to $0.26$: the model reads partial occupancy as mild evidence of an anoma
 (The pattern cannot be imposed faithfully on our binned simulations, because a bin's features would
 still come from all its epochs; teaching it would need augmentation before binning.)
 
-\subsection{Results}
+\subsection{Results}\label{sec:gulls:results}
 
 Table~\ref{tab:gulls} gives the single-lens false-alarm rate at the frozen operating threshold and
 planetary recall at matched single-lens false-alarm budgets, on the identical $56,975$ events for
@@ -206,7 +206,8 @@ $0.014$--$0.023$ by which two runs of one recipe differ, and at the frozen
 threshold it flags more single lenses ($6.3\%$ against $4.8\%$), mostly in the
 largest-ratio bins. On our own held-out events with the measured pauses imposed it is better (average
 precision $0.893$ against $0.874$), and at its own recalibrated threshold it trades
-more false alarms for more recall ($2.4\%$ and $0.29$). We keep the finite-source
+more false alarms for more recall ($2.4\%$ and $0.29$, against $1.6\%$ and
+$0.24$), a different point on the same trade-off. We keep the finite-source
 checkpoint, on which \S\S\ref{sec:gulls:seasons}--\ref{sec:gulls:cascade} were run.
 %% PENDING (smooth-magnification control fspl5s_espl_g08, training 2026-09-11 21:32): one sentence isolating the
 %% magnification function; and name ESPLMag2 / its 4-8 mmag steps in the finite-source sentence of this subsection.
@@ -237,11 +238,13 @@ $11,388$ 1S2L, $12,234$ 2S2L), identical inputs for every row. ``FA'' is the
 percentage of single lenses over the frozen threshold $0.904$. ``Recall at'' columns give 1S2L
 recall at the threshold that yields the stated single-lens false-alarm rate on this population (achieved
 within $0.05$ points); the $5.2\%$ and $11.7\%$ budgets are
-the frozen-threshold false-alarm rates of two of the checkpoints and $2.0\%$ is a low-budget
+close to the frozen-threshold false-alarm rates of two earlier checkpoints (the first finite-source round,
+$5.2\%$, and gap augmentation, $11.6\%$) and $2.0\%$ is a low-budget
 reference, all chosen after seeing the results. The last four columns are the single-lens false-alarm
 rate at the frozen threshold in bins of $\rho/|u_0|$. Fine-tunes are 12-epoch warm starts on our
 simulations, one seed each: gap augmentation starts from the shipped weights, every other row from the
-gap-augmented checkpoint. Generated from
+gap-augmented checkpoint. The last row also has the caustic-in-gap relabel off and a finite-source
+magnification without hand-off steps (\S\ref{sec:gulls:results}). Generated from
 \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:gulls}}
 \tablehead{\colhead{checkpoint} & \colhead{FA (\%)} & \colhead{recall at $2.0\%$} &
            \colhead{at $5.2\%$} & \colhead{at $11.7\%$} &
@@ -338,15 +341,17 @@ GULLS' noise-free light curve with GULLS' errors, so it comes from a simulator w
 $1,667$ eligible events are the binaries whose anomaly is claimable over the whole season; nothing is
 selected on the model's output.
 
-Timing transfers. $2.2\%$ of the eligible events are flagged before the onset (95\% interval
-$1.6$--$3.0\%$), and the other alerts come a median $+6.5$~d after it. The in-house
-scan, with the shipped model on our simulator, gives $1.4\%$ and $4.2\%$
-premature and a median lag of $+4.5$~d for its giant-planet and Neptune strata, the only strata
-comparable with RMDC26's planetary anomalies. Detection does not transfer: $57\%$
-($55$--$59\%$) of the eligible events are flagged by the end of the season, against
-$89\%$ and $73\%$ in-house, the same shortfall as in the full-season recall.
-Revealing all three bands lowers premature alerts to $1.4\%$ and detection to
-$53\%$, and lengthens the lag to $+11.2$~d, as in-house.
+Premature alerts stay rare: $2.2\%$ of the eligible events are flagged before the onset (95\%
+interval $1.6$--$3.0\%$), against $1.4\%$ and $4.2\%$ for the
+giant-planet and Neptune strata of the in-house scan ($138$ and $48$ events; shipped
+model, our simulator), the only strata comparable with RMDC26's planetary anomalies. Alerts come later: the
+median lag of the others is $+6.5$~d, against $+4.5$~d in-house. Detection does not
+transfer: $57\%$ ($55$--$59\%$) of the eligible events are flagged by the end of the
+season, against $89\%$ and $73\%$ in-house, in line with the full-season recall on
+claimable anomalies ($0.474$ and $0.557$, \S\ref{sec:gulls:labels}).
+Revealing all three bands lowers premature alerts to $1.4\%$ and lengthens the lag to
+$+11.2$~d, as it does in-house, but it also lowers detection, to $53\%$, where
+in-house it rose slightly ($89.0\%$ to $91.0\%$).
 
 Scanning single lenses measures what the in-house scan could not: the alert burden. $5.7\%$
 of single lenses raise an alert at some point in the season ($0.80$ alerts per 1,000 events
@@ -356,9 +361,9 @@ over-represents planets, the figure is $51\%$. These count single-lens contamina
 RMDC26 contains no variable stars or flat sources, so a real stream would be less pure. At the recalibrated
 threshold single-lens alerts fall to $2.2\%$ and purity at 1\% rises to
 $10\%$, but detection falls to $42\%$, premature alerts to $0.9\%$, and the
-lag grows to $+8.8$~d. The cascade's timing is therefore usable on another simulator, but its alerts
-are not a follow-up list by themselves: at realistic prevalence they need a second stage that removes
-single-lens contaminants.
+lag grows to $+8.8$~d. The cascade's low premature-alert rate therefore holds on another simulator,
+but its alerts are not a follow-up list by themselves: at realistic prevalence they need a second stage that
+removes single-lens contaminants.
 
 \subsection{What this test does and does not establish}
 
