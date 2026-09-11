@@ -53,10 +53,11 @@ confirmatory population-level inference.
 The prefix scan contains only already-eligible binaries and uses the complete-season operating
 threshold. It does not measure repeated-score false alerts, streaming purity, or alert burden on
 Flat, PSPL, demoted-binary, and variable-star prefixes. A repeat on RMDC26 with single lenses included
-(`validation/gulls/cascade_gulls.json`; gap-aware checkpoint, F146 only) measures the single-lens part:
-5.7% of single lenses raise an alert at some point in the season at the frozen threshold (2.2% at 0.957),
-so if 1% of events were planetary about one alert in twenty would come from a claimable anomaly (one in
-ten at 0.957). RMDC26 contains no variable stars or flat sources, so a real stream would be less pure.
+(`validation/gulls/cascade_gulls.json`; recommended gap-aware checkpoint, F146 only) measures the
+single-lens part: 6.2% of single lenses raise an alert at some point in the season at the frozen threshold
+(3.2% at 0.956), so if 1% of events were planetary about one alert in twenty would come from a claimable
+anomaly (about one in thirteen at 0.956). RMDC26 contains no variable stars or flat sources, so a real
+stream would be less pure.
 
 The 14.9-million-event stress suite contains a 4.5-million-event same-prior subset, on which
 macro-F1 is 0.927, and 10.4 million targeted out-of-distribution cases that expose failures. Full
@@ -70,17 +71,23 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   F146 for 43-44 h per season in six or seven pauses whose phases differ between seasons, and the
   shipped checkpoint reads such gaps as evidence against a single lens (single-lens and Flat recall
   collapse; the eruptive and long-period variables and NonPSPL also degrade;
-  `validation/gulls/schedule_finetune.json`). One gap of 0.5 h costs nothing; one of 1-2 h costs about
-  7 points of single-lens recall (`gap_sensitivity.json`, n = 100 per class). **Input contract:**
-  continuous F146 within one 72-day season. For a gapped schedule use the gap-aware, finite-source
-  checkpoint `validation/gulls/weights/ft_fspl5s_g08.pt` at threshold 0.957 (chosen at 90% purity on
-  our own simulations with the measured RMDC26 pauses; 68% slice range 0.942-0.962); the shipped
-  threshold does not apply to it. On RMDC26 it flags 1.6% of single lenses at that threshold. See
-  `paper/REVISION.md` §1½ and `docs/VERIFICATION_2026-09-11.md`.
+  `validation/gulls/schedule_finetune.json`). One gap of 0.5 h costs nothing; one of 1-2 h at mid-season (day 43) costs
+  about 7 points of single-lens recall (`gap_sensitivity.json`, n = 100 per class; the cost depends on the gap's position). **Input contract:**
+  continuous F146 within one 72-day season. For a gapped schedule use the recommended gap-aware
+  checkpoint `validation/gulls/weights/ft_fspl5s_seasons_g08.pt` (finite-source single lenses and the
+  measured RMDC26 pauses in training) at threshold 0.956 (chosen at 90% purity on our own simulations with
+  the measured RMDC26 pauses; 68% slice range 0.947-0.965); the shipped threshold does not apply to it. On
+  RMDC26 it flags 2.4% of single lenses at that threshold (3.5% weighted by event rate), with planetary
+  recall 0.29 / 0.33. See `paper/REVISION.md` §1½ and `docs/VERIFICATION_2026-09-1{1,2}.md`.
 - **Partial bin occupancy.** Survey schedules in which colour visits displace F146 exposures leave
   bins partly filled (RMDC26: one of eight epochs in about 35% of bins), which training never
-  contains; on RMDC26 the gap-aware checkpoint reads it as mild evidence of an anomaly
-  (`validation/gulls/occupancy_sensitivity.json`).
+  contains; on RMDC26 the recommended gap-aware checkpoint reads it as mild evidence of an anomaly
+  (setting it to full lowers its single-lens false alarms from 6.8% to 5.9% and planetary recall from
+  0.42 to 0.33 on 6,024 inputs; `validation/gulls/occupancy_sensitivity.json`).
+- **Short single lenses.** RMDC26's scored single lenses are much shorter than our training prior
+  (38% have t_E < 3 d, 16% weighted by event rate, against 1.8% of our prior's mass), and the gap-aware
+  checkpoints' false-alarm rate rises with timescale, so per-event and rate-weighted rates differ
+  (`validation/gulls/transfer_tradeoff_all.json`, `weighted` blocks).
 - **Faint sources (m > 25):** noise-dominated; risk of noise excursions read as anomalies
   (NonPSPL precision collapses). The single most operationally relevant weak spot.
 - **Wide caustics (s > 5):** the caustic is rarely crossed, so many are unrecoverable.

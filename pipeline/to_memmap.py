@@ -33,6 +33,19 @@ SCALARS = ("label", "true_class", "keep_prob", "dchi2_event", "dchi2_anomaly",
 PERBAND = ("f_s", "n_kept")
 
 
+def _gen_settings(paths) -> dict:
+    """Union of the caches' generation settings (pipeline.cache writes them from the shards' attrs), so a
+    memmap records how its events were generated; caches built before 2026-09-12 say so."""
+    out = {}
+    for p in paths:
+        with h5py.File(p, "r") as f:
+            g = f.attrs.get("gen_settings")
+        d = json.loads(g) if g is not None else {"note": ["cache written before gen_settings existed (2026-09-12)"]}
+        for k, v in d.items():
+            out.setdefault(k, set()).update(v)
+    return {k: sorted(v) for k, v in out.items()}
+
+
 def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720) -> dict:
     os.makedirs(out_dir, exist_ok=True)
     paths = sorted(cache_paths)
@@ -103,7 +116,7 @@ def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720
     for b in BAND_BINS:
         for k in PERBAND:
             np.save(os.path.join(out_dir, f"{k}_{b}.npy"), sc[f"{k}_{b}"].astype(np.float32))
-    meta = {"n_events": int(n_out), "n_source_events": int(total),
+    meta = {"gen_settings": _gen_settings(paths), "n_events": int(n_out), "n_source_events": int(total),
             "param_fields": param_fields,
             "bands": {b: BAND_BINS[b] for b in BAND_BINS}, "dtype": "float16",
             "shuffled": True, "seed": seed}
@@ -211,7 +224,7 @@ def convert_selected(cache_paths, keep_masks, out_dir: str, seed: int = 20260721
         for kk in PERBAND:
             np.save(os.path.join(out_dir, f"{kk}_{b}.npy"), sc[f"{kk}_{b}"].astype(np.float32))
     np.save(os.path.join(out_dir, "src_regime.npy"), src_regime)
-    meta = {"n_events": int(n_out), "param_fields": param_fields,
+    meta = {"gen_settings": _gen_settings(paths), "n_events": int(n_out), "param_fields": param_fields,
             "bands": {b: BAND_BINS[b] for b in BAND_BINS}, "dtype": "float16",
             "shuffled": True, "seed": seed, "regimes": regimes, "stratified": True}
     json.dump(meta, open(os.path.join(out_dir, "meta.json"), "w"), indent=2)

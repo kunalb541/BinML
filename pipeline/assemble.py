@@ -237,8 +237,11 @@ def _anomaly_onset_day(ref_truth, params, cfg, n_cuts: int = 10,
             if detectable(tc):
                 return float(tc)
         return float("inf")
-    for k in range(1, int(np.floor(cfg.window_days / res + 1e-9)) + 1):
-        tc = k * res
+    n = int(np.floor(cfg.window_days / res + 1e-9))
+    cuts = [k * res for k in range(1, n + 1)]
+    if cfg.window_days - n * res > 1e-9:          # res does not divide the window: the full window is the last cut,
+        cuts.append(cfg.window_days)              # as in the legacy grid, so an anomaly detectable only at the end is found
+    for tc in cuts:
         if detectable(tc):
             return float(tc)
     return float("inf")

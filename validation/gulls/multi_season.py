@@ -10,10 +10,14 @@ false alarms and planetary recall on this population next to the in-season numbe
 policy (detectability_relabel._stats) is applied per season too, so recall can be quoted on
 binaries whose anomaly is detectable in at least one adjacent season.
 
-Adjacent low-cadence seasons (65 d, 3 epochs/day) are out of BinML's support and are counted, not
+Adjacent low-cadence seasons (65 d, ~1.5 epochs per day per event) are out of BinML's support and are counted, not
 scored. Events with no dense adjacent season are reported as unscorable.
 
-Resumable per block. Usage:
+Resumable per block. Each block also stores the scored seasons' light curves (ms_*_curves.npz, caches
+from 2026-09-12 on), so another checkpoint can be added later WITHOUT the network: rerun --extract with
+--ckpt; blocks that lack a model are rescored from the stored curves. Scores are keyed by model name,
+and <out-cache>/models.json binds each name to its weights (a name bound to other weights is refused).
+Usage:
   python validation/gulls/multi_season.py --extract --cap 1000
   python validation/gulls/multi_season.py --reduce
 """
@@ -90,6 +94,7 @@ def extract(args):
         if after.size: out.append(("after", int(after[0])))
         return out
 
+    check_manifest(args.out_cache)
     clfs = {k: binml.Classifier(weights=os.path.join(REPO, v)) for k, v in MODELS.items()}
     con = duckdb.connect(); con.execute("INSTALL httpfs; LOAD httpfs;")
     pool = ProcessPoolExecutor(max_workers=args.workers)
@@ -99,6 +104,7 @@ def extract(args):
         outf = os.path.join(args.out_cache, f"ms_{ids[0]}_{ids[-1]}_{len(ids)}.json")
         n_done += len(ids)
         if os.path.exists(outf):
+            rescore_block(outf, clfs)                  # adds any model the block lacks, from its stored curves
             continue
         if args.max_blocks and n_new >= args.max_blocks:
             break
@@ -114,7 +120,7 @@ def extract(args):
         q_ep = np.asarray(q["epoch_id"], np.int64)[srt]; q_ft = np.asarray(q["filt"])[srt]
         q_fl = np.asarray(q["flux_uJy"], float)[srt]; q_tf = np.asarray(q["true_flux_uJy"], float)[srt]; q_er = np.asarray(q["flux_err_uJy"], float)[srt]
         lo_i = np.searchsorted(qe, ids, "left"); hi_i = np.searchsorted(qe, ids, "right")
-        rows, truth_jobs = [], []
+        rows, truth_jobs, curves = [], [], {}
         for k, eid in enumerate(ids):
             j = pos[eid]; t0 = float(m["t0lens1"][j]); tE = float(m["tE_ref"][j])
             a, b_ = int(lo_i[k]), int(hi_i[k])
@@ -151,6 +157,9 @@ def extract(args):
                     sd["skipped"] = "no usable F146 in season"; row["seasons"][side] = sd; continue
                 mo = off_all & (ft == "F146"); mall = gt.flux_to_ab(fl[mo]); mb = float(np.median(mall[np.isfinite(mall)]))
                 sd["m_base"] = round(mb, 3); sd["n_f146"] = int(bands["F146"][0].size)
+                curves[f"{eid}|{side}|mb"] = np.array([mb])
+                for bd, (tt, mm) in bands.items():
+                    curves[f"{eid}|{side}|{bd}|t"] = tt; curves[f"{eid}|{side}|{bd}|m"] = mm
                 for name, clf in clfs.items():
                     p = clf.predict(bands, m_base_ref=mb, t_start=0.0)
                     sd[name] = {"pred": p.label, "p_nonpspl": round(p.probabilities["NonPSPL"], 6)}
@@ -165,9 +174,58 @@ def extract(args):
         for (eid, side, _), st in zip(truth_jobs, res):
             by_id[eid]["seasons"][side]["truth"] = {k: st[k] for k in ("dchi2_event", "max_amp_mag", "dchi2_anomaly", "anomaly_amp_mag",
                                                                          "label_detect", "pspl_refit_anomaly", "refit_multistart", "n_f146")}
+        cf = outf[:-5] + "_curves.npz"
+        np.savez_compressed(cf + ".tmp.npz", **curves); os.replace(cf + ".tmp.npz", cf)
         json.dump(rows, open(outf + ".tmp", "w")); os.replace(outf + ".tmp", outf)
         print(f"  {n_done}/{len(picks)}  ({time.time() - t_start:.0f}s)", flush=True)
     pool.shutdown(); print("[extract] done", flush=True)
+
+
+def _sha(path):
+    import hashlib
+    return hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
+
+
+def check_manifest(cache):
+    """Scores are stored under the model NAME; refuse a name that the cache already binds to other weights."""
+    f = os.path.join(cache, "models.json")
+    man = json.load(open(f)) if os.path.exists(f) else {}
+    if not man and any(n.startswith("ms_") for n in os.listdir(cache)):
+        # caches written before the manifest existed (v2) hold the two default models
+        man = {"fspl5s_g08": _sha(os.path.join(REPO, "validation/gulls/weights/ft_fspl5s_g08.pt")),
+               "ft_g08e12": _sha(os.path.join(REPO, "validation/gulls/weights/ft_g08e12.pt"))}
+    for name, path in MODELS.items():
+        h = _sha(os.path.join(REPO, path))
+        if man.setdefault(name, h) != h:
+            raise SystemExit(f"model name {name!r} is bound to other weights in {f}; choose a new name")
+    json.dump(man, open(f, "w"), indent=1)
+
+
+def rescore_block(outf, clfs):
+    """Score the models a finished block lacks, from its stored curves; refuse if the curves were not stored."""
+    rows = json.load(open(outf))
+    need = [n for n in clfs if any(sd.get("m_base") is not None and n not in sd
+                                   for r in rows for sd in r["seasons"].values())]
+    if not need:
+        return
+    cf = outf[:-5] + "_curves.npz"
+    if not os.path.exists(cf):
+        raise SystemExit(f"{os.path.basename(outf)} lacks {need} and has no stored curves (cache written before "
+                         "2026-09-12): extract into a new --out-cache")
+    z = np.load(cf, allow_pickle=False)
+    for r in rows:
+        for side, sd in r["seasons"].items():
+            if sd.get("m_base") is None:
+                continue
+            e = r["event_id"]
+            bands = {bd: (np.asarray(z[f"{e}|{side}|{bd}|t"], float), np.asarray(z[f"{e}|{side}|{bd}|m"], float))
+                     for bd in ("F146", "F087", "F213") if f"{e}|{side}|{bd}|t" in z.files}
+            mb = float(z[f"{e}|{side}|mb"][0])
+            for name in need:
+                p = clfs[name].predict(bands, m_base_ref=mb, t_start=0.0)
+                sd[name] = {"pred": p.label, "p_nonpspl": round(p.probabilities["NonPSPL"], 6)}
+    json.dump(rows, open(outf + ".tmp", "w")); os.replace(outf + ".tmp", outf)
+    print(f"  rescored {os.path.basename(outf)} for {need} from stored curves", flush=True)
 
 
 def _wilson(k, n, z=1.96):
@@ -201,7 +259,7 @@ def _population_counts(args):
             b = np.flatnonzero(ends < t); a = np.flatnonzero(starts > t)
             adj.append(bool((b.size and dense[b[-1]]) or (a.size and dense[a[0]])))
         out["by_class"][L] = {"n_skipped": len(ids), "n_before_first_season": int(before.sum()), "n_after_last_season": int(after.sum()),
-                              "n_between_seasons": int(betw.sum()),
+                              "n_between_seasons": int(betw.sum()), "n_between_with_dense_adjacent_season": int(np.sum(adj)),
                               "frac_between_with_dense_adjacent_season": round(float(np.mean(adj)), 4) if adj else None}
     tot_b = sum(v["n_between_seasons"] for v in out["by_class"].values())
     out["frac_eligible_between_seasons"] = round(tot_b / elig, 4)
@@ -253,7 +311,8 @@ def reduce(args):
                               "frac_detectable_event_in_adjacent_season": round(len(ev) / max(len(sc), 1), 4),
                               "n_detectable_anomaly": len(d), "frac_detectable_anomaly_of_scorable": round(len(d) / max(len(sc), 1), 4),
                               "frac_detectable_anomaly_of_all": round(len(d) / max(len(rs), 1), 4),
-                              "n_host_visible": len(hv), "frac_detectable_anomaly_of_host_visible": round(len(dhv) / max(len(hv), 1), 4),
+                              "n_host_visible": len(hv), "n_detectable_anomaly_host_visible": len(dhv),
+                              "frac_detectable_anomaly_of_host_visible": round(len(dhv) / max(len(hv), 1), 4),
                               "median_gap_days_to_t0": round(float(np.median([min(x["gap_days_to_t0"] for x in scored(r)) for r in sc])), 1) if sc else None}
     for name in MODELS:
         pm = lambda r: max(x[name]["p_nonpspl"] for x in scored(r))

@@ -87,11 +87,17 @@ HARD_REGIMES = {
     # measured in validation/gulls/gulls_noise_vs_ours.py: GULLS' F146 errors equal ours for
     # m_base < 20 and rise to 2.5x ours at m_base 24-25; a 7x background variance reproduces that
     # run, a global multiplier does not). Config half lives in CONFIG_REGIMES under the same names.
-    # Continued-training CONTROL for round 3 (2026-09-11): the fspl5s pool shape (same shard indices,
-    # same PSPL-heavy highmag companion) with POINT-SOURCE single lenses. fspl5s minus pspl5s_ctrl is the
-    # effect of the finite-source physics with the extra 12 epochs and the pool held fixed.
+    # Continued-training CONTROL for round 3 (2026-09-11): the fspl5s pool shape (same shard indices and
+    # priors, same PSPL-heavy highmag companion) with POINT-SOURCE single lenses. The rho draw shifts each
+    # shard's RNG stream, so the events are a different random realisation, not the same events without
+    # finite size; fspl5s minus pspl5s_ctrl is the physics plus realisation noise, recipe and epochs fixed.
     "pspl5s_ctrl":          dict(),
     "pspl5s_ctrl_highmag":  dict(U0_MAX=0.2),
+    # Round 3 as it was generated (2026-09-10, before the smooth-magnification switch): the fspl5s
+    # priors with VBBinaryLensing ESPLMag2. The regime name is not part of the RNG seed, so these
+    # regenerate the fspl5s events exactly, with the legacy function; ft_fspl5s_g08.pt was trained on them.
+    "fspl5s_legacy":         dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, PSPL_ESPL_LEGACY=True),
+    "fspl5s_legacy_highmag": dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, U0_MAX=0.2, PSPL_ESPL_LEGACY=True),
     "fspl5s_noisy":         dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0),
     "fspl5s_noisy_highmag": dict(PSPL_FINITE_SOURCE=True, PSPL_RHO_MAX=5.0, U0_MAX=0.2),
 }
@@ -103,6 +109,7 @@ CONFIG_REGIMES = {
     "fspl_highmag": dict(mix="highmag"),
     "fspl5_highmag": dict(mix="highmag"),
     "fspl5s_highmag": dict(mix="highmag"),
+    "fspl5s_legacy_highmag": dict(mix="highmag"),
     "pspl5s_ctrl_highmag":  dict(mix="highmag"),
     "fspl5s_noisy":         dict(cfg=dict(bkg_mult=7.0)),
     "fspl5s_noisy_highmag": dict(cfg=dict(bkg_mult=7.0), mix="highmag"),
@@ -376,6 +383,9 @@ def main(argv=None) -> int:
             w._h5.attrs["noise_mult"] = float(cfg_eff.noise_mult)
             w._h5.attrs["bkg_mult"] = float(cfg_eff.bkg_mult)
             w._h5.attrs["regime_priors"] = json.dumps(HARD_REGIMES.get(args.regime or "", {}))
+            rp = HARD_REGIMES.get(args.regime or "", {})
+            w._h5.attrs["espl_function"] = ("none (point-source single lenses)" if not rp.get("PSPL_FINITE_SOURCE")
+                                            else "ESPLMag2 (legacy)" if rp.get("PSPL_ESPL_LEGACY") else "ESPLMag")
         gen_s = time.time() - t0
 
         mb = os.path.getsize(path) / 1e6

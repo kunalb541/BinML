@@ -123,7 +123,8 @@ def _apply_schedule_template(out: Dict[str, np.ndarray], label: int, template: d
     visit displaced an epoch, colour 2/3). That is NOT faithful on binned data: the bin's mean/min/max
     still come from all its epochs, a combination real data never has (RMDC26 bins at 7/8 were binned
     from 7 epochs). On our held-out it alone drops AP 0.93 -> 0.51, while removing the occupancy from
-    real RMDC26 inputs changes single-lens false alarms only 5.4% -> 4.4% (2026-09-11). Kept for the
+    real RMDC26 inputs changes the finite-source checkpoint's single-lens false alarms only 4.9% -> 3.6%
+    (validation/gulls/occupancy_sensitivity.json, 2026-09-11). Kept for the
     diagnostic only; faithful occupancy needs epoch-level augmentation before binning."""
     for b, x in out.items():
         empty, fr = template[b]
@@ -175,8 +176,9 @@ def _visible_amplitude(params: np.ndarray, pf_idx: dict, f_s: float, t_cut: floa
         t = np.linspace(0.0, max(t_cut, 1e-3), 128)
         rho = params[pf_idx["rho"]] if "rho" in pf_idx else np.nan
         if np.isfinite(rho) and rho > 0.01:
-            # finite-source single lens (fspl* pools; binaries' rho <= 0.01, so released pools are
-            # unaffected): the point-source peak overstates the visible amplitude for rho >~ |u0|
+            # finite source (fspl* pools' single lenses, and binaries with rho > 0.01 in the fspl5 regimes; the
+            # released pools' binaries have rho <= 0.01, so released training is unaffected): the point-source
+            # peak overstates the visible amplitude for rho >~ |u0|
             from .generators import espl_magnification
             A = espl_magnification(t, t0, tE, u0, rho)
             return float(np.max(np.abs(2.5 * np.log10(np.maximum(1.0 + f_s * (A - 1.0), 1e-8)))))
@@ -320,7 +322,8 @@ def _apply_gaps(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator
     random gaps the same quantisation error is diluted across positions. Off = keep the label.
 
     Roman's F146 sampling is not continuous: the GBTDS schedule as implemented in the RMDC26
-    (GULLS) release pauses F146 for ~6 h seven times per 70.7-day season.  BinML's training grid
+    (GULLS) release pauses F146 for 43-44 h per 70.7-day high-cadence season, in six or seven pauses whose
+    phases differ between seasons (validation/gulls/rmdc26_schedule.json).  BinML's training grid
     (`pipeline.assemble._epochs`) is continuous, and 0/1800 sampled training events across all
     classes contain an empty F146 bin, so the model's only prior for an empty mid-season token is
     the unrevealed future of a truncated season.  Inserting RMDC26's seven gaps into in-
@@ -568,8 +571,9 @@ def main(argv=None) -> int:
                          "variable star (see validation/cadence_robustness.py).")
     ap.add_argument("--gap-aug", type=float, default=0.0,
                     help="probability of blanking 1-8 contiguous runs of 1-12 h in every band "
-                         "and relabelling by what survives (see _apply_gaps). Roman's real "
-                         "schedule pauses F146 for ~6 h seven times a season; the base model, "
+                         "and relabelling by what survives (see _apply_gaps). RMDC26 pauses F146 "
+                         "for 43-44 h per season in six or seven pauses whose phases differ between "
+                         "seasons (--gap-schedule rmdc26_seasons imposes them); the base model, "
                          "trained on a continuous grid, reads such a gap as evidence against a "
                          "single lens (validation/gulls/gap_sensitivity.py).")
     ap.add_argument("--gap-schedule", choices=["none", "rmdc26", "rmdc26_seasons", "rmdc26_seasons_occ"], default="none",

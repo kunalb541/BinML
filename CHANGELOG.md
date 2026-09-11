@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased — second verification pass and the recommended checkpoint (2026-09-12)
+
+A second pass (five verifiers, five adversarial checkers, a completeness critic) on the corrected state found
+74 issues, none refuted; record in `docs/VERIFICATION_2026-09-12.md`. Changes that alter conclusions:
+- **Rate weighting.** RMDC26 numbers had been per simulated event without saying so; the sample over-represents
+  short single lenses (38% with t_E < 3 d, 16% weighted). `gulls_summary_tables.py` now writes rate-weighted
+  blocks, each checkpoint at its own threshold, and paired bootstrap differences; the draft gives both weightings.
+- **Recommended gap-aware checkpoint: `ft_fspl5s_seasons_g08.pt` at 0.956** (finite-source single lenses +
+  measured-season pauses). It matches or beats `ft_fspl5s_g08.pt` at every matched budget per event and leads it
+  rate-weighted (+0.017 to +0.024 in 1S2L recall), and is better on our own held-out. Operating point, labels,
+  floor, sub-day, occupancy, between-season and cascade analyses rerun for it (earlier results reproduced exactly).
+- Withdrawn: "the combined arm's extra false alarms are in the largest-ratio bins" (they are in every bin) and
+  "the finite-source physics accounted for a large part of the residual" (the extra training did most of it).
+- `paper/make_gulls_macros.py` fail-closed for real (tested), single rounding from counts, every scored
+  checkpoint counted; draft typed numbers limited to method constants.
+- Code: cascade/between-season caches bound to weight hashes, between-season curves stored for local rescoring,
+  onset scan tests the window end, generation settings carried into cache and memmap metadata, legacy
+  ESPLMag2 regimes (`fspl5s_legacy`), fine-tune runner no longer reuses outputs of a replaced checkpoint,
+  `gulls_summary_tables.py --scores` covers weights and t_E at full precision.
+
 ## Unreleased — verification of the revision work (2026-09-11)
 
 A workflow of eight independent verifiers and two adversarial checkers re-derived every number,
@@ -21,10 +41,11 @@ dispositions in `docs/VERIFICATION_2026-09-11.md`. Changes that alter conclusion
 - New artifacts: `rmdc26_dataset_facts.json`, `occupancy_sensitivity.json`, per-event
   `rmdc26_scores.csv.gz`; `validation/gulls/PROVENANCE.md` for artifacts made before generation-time
   provenance was recorded. Controls: `pspl5s_ctrl` (point-source continued training: most of the
-  gain over g08e12 is the extra training, the physics adds the rest in the largest rho/|u0| bins), the combined
-  arm `fspl5s_seasons_g08` (smooth magnification + measured-season pauses; ties `fspl5s` at matched budgets, so
-  `fspl5s` stays recommended) and the `fspl5s` recipe with the smooth magnification alone (`fspl5s_espl_g08`: indistinguishable from
-  `fspl5s`, so ESPLMag2's steps did not shape the finite-source result).
+  gain over g08e12 is the extra training; the physics lowers false alarms further in every rho/|u0| bin, most in
+  rate in the largest ones, and its recall gain is not resolved when events are weighted by rate), the combined
+  arm `fspl5s_seasons_g08` (smooth magnification + measured-season pauses; the recommended checkpoint since the
+  2026-09-12 entry above) and the `fspl5s` recipe with the smooth magnification alone (`fspl5s_espl_g08`:
+  indistinguishable from `fspl5s`, so ESPLMag2's steps did not shape the finite-source result).
 - `binml.gulls.classify_event(mode=...)`; notebooks and `ft_g08e12.pt` committed; manuscript numbers
   only through `paper/make_gulls_macros.py` (fail-closed).
 
@@ -35,9 +56,10 @@ Generator / training (all opt-in or version-flagged; the released checkpoints an
   cascade evaluation uses. *Corrected by the 2026-09-11 verification (section above):* this entry first made 0.5 the
   default and its fine scan skipped grid points; the default is the legacy 7.2 d grid again and 0.5 is an opt-in
   full-grid first-detectable scan. Audit finding 9 measured: under a FIXED gap schedule the old grid put 2 of 10 onset
-  values inside the blanked bins and the caustic-in-gap relabel fired on 20% of all binaries
-  (`validation/schedule_finetune_local.py`). Released checkpoints were trained on the legacy grid (paper says so).
-- `pipeline.train --gap-schedule rmdc26` (exact seven-pause schedule + 70.7 d season end) and
+  values inside the blanked bins, making 20.1% of NonPSPL-labelled pool events (7.4% of generated binaries) eligible
+  for the caustic-in-gap relabel (`validation/schedule_finetune_local.py`; corrected wording, 2026-09-11 verification). Released checkpoints were trained on the legacy grid (paper says so).
+- `pipeline.train --gap-schedule rmdc26` (the FIRST season's seven pauses + 70.7 d season end; the other seasons differ,
+  see `--gap-schedule rmdc26_seasons` in the entry above) and
   `--gap-relabel-anomaly off`; `SurveyConfig.noise_mult` / `bkg_mult` (defaults bit-identical); regimes
   `fspl5s_noisy{,_highmag}` (bkg_mult 7, measured on GULLS).
 - Finite-source single lenses (`PSPL_FINITE_SOURCE`, VBBinaryLensing ESPL), regimes `fspl*`; round 3 `fspl5s`
@@ -46,7 +68,8 @@ Generator / training (all opt-in or version-flagged; the released checkpoints an
 
 Validation (new scripts and artifacts under `validation/gulls/`):
 - `detectability_relabel.py`: BinML's own label policy applied to GULLS from `true_flux_uJy`/`flux_err_uJy`
-  (44-46% of GULLS planetary events have no detectable anomaly; recall on detectable binaries reported).
+  (44-46% of GULLS planetary events carry no anomaly our policy would claim within one season; recall on those with
+  one reported).
 - `gulls_summary_tables.py` (matched-budget table, colour ablation), `calibrate_gapped_threshold.py`,
   `subday_summary.py` (sub-day t_E out-of-support row), `gulls_noise_vs_ours.py` (noise-model comparison),
   `validation/schedule_finetune_local.py`, `validation/fspl_finetune_local.py`.

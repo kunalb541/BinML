@@ -62,6 +62,7 @@ def main(argv=None):
                                            "fa": round(float((p[sel] >= FROZEN).mean()), 4) if sel.sum() else None,
                                            "frac_argmax_pspl": round(float((pred[sel] == "PSPL").mean()), 4) if sel.sum() else None})
         out["models"][m] = blk
+    out["command"] = " ".join(sys.argv)
     json.dump(out, open(args.out, "w"), indent=1)
     print(f"n={len(common)} sub-day 1S1L, tE median {out['te_days']['median']} d")
     print(f"{'model':12s} {'FA frozen':>9} {'FA calib':>9}  argmax")

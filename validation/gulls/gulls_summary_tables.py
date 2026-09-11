@@ -46,7 +46,7 @@ SCHEDULE = os.path.join(HERE, "rmdc26_schedule.json")
 def load_rows(path):
     if not os.path.isabs(path):
         path = os.path.join(CACHE, path)
-    return {r["event_id"]: (r["sim_label"], float(r["p_nonpspl"]))
+    return {r["event_id"]: (r["sim_label"], float(r["p_nonpspl"]), float(r["weight"]), float(r["tE"]))
             for r in json.load(open(path)) if r.get("dense") and "pred" in r}
 
 
@@ -57,7 +57,7 @@ def load_scores(path):
     with gzip.open(path, "rt", newline="") as fh:
         rows = list(csv.DictReader(fh))
     fixed = {"event_id", "sim_label", "season", "tE", "u0", "rho", "planet_q", "source_is_binary", "m_base", "weight"}
-    cols = {c: {int(r["event_id"]): (r["sim_label"], float(r[c])) for r in rows if r[c] != ""}
+    cols = {c: {int(r["event_id"]): (r["sim_label"], float(r[c]), float(r["weight"]), float(r["tE"])) for r in rows if r[c] != ""}
             for c in rows[0] if c not in fixed}
     meta = {int(r["event_id"]): (float(r["rho"]), abs(float(r["u0"])), int(r["season"])) for r in rows}
     return cols, meta
@@ -97,7 +97,8 @@ def summarise(p, lab, ratio):
                                 "fa_1S1L_k_n": kk(s1), "recall_1S2L_k_n": kk(s2), "recall_2S2L_k_n": kk(s3)},
            "fa_1S1L_by_rho_over_u0": [], "recall_at_matched_fa": [],
            "mean_recall_1S2L_fa_le_0p3": round(float(_trapz(r2[o][k], fa[o][k]) / 0.3), 4),
-           "mean_recall_2S2L_fa_le_0p3": round(float(_trapz(r3[o][k], fa[o][k]) / 0.3), 4)}
+           "mean_recall_2S2L_fa_le_0p3": round(float(_trapz(r3[o][k], fa[o][k]) / 0.3), 4),
+           "mean_recall_1S2L_fa_le_0p3_exact": float(_trapz(r2[o][k], fa[o][k]) / 0.3)}
     for lo, hi in BINS:
         sel = s1 & (ratio >= lo) & (ratio < hi)
         out["fa_1S1L_by_rho_over_u0"].append({"bin": [lo, None if hi == float("inf") else hi], "n": int(sel.sum()),
@@ -110,6 +111,77 @@ def summarise(p, lab, ratio):
                                             "recall_1S2L": round(float(r2[i]), 4), "recall_2S2L": round(float(r3[i]), 4),
                                             "recall_1S2L_k_n": [int((p[s2] >= ths[i]).sum()), int(s2.sum())],
                                             "recall_2S2L_k_n": [int((p[s3] >= ths[i]).sum()), int(s3.sum())]})
+    return out
+
+
+TE_BINS = [(1, 3), (3, 10), (10, 30), (30, 300)]
+
+
+def _curve(p, sel, w, ths):
+    """Weighted exceedance fraction of p[sel] at each threshold in ths (descending), by sorting once."""
+    q = np.sort(p[sel])[::-1]; ww = w[sel][np.argsort(p[sel])[::-1]]
+    cw = np.r_[0.0, np.cumsum(ww)] / ww.sum()
+    return cw[np.searchsorted(-q, -ths, side="right")]
+
+
+def summarise_weighted(p, lab, ratio, w, te):
+    """The unweighted summary's quantities with RMDC26's event-rate weights (final_weight): budgets are
+    weighted single-lens false-alarm rates, recall is weighted recall. Unrounded."""
+    s1, s2, s3 = lab == L1, lab == L2, lab == L3
+    ths = np.unique(np.round(p, 4))[::-1]
+    fa, r2, r3 = _curve(p, s1, w, ths), _curve(p, s2, w, ths), _curve(p, s3, w, ths)
+    o = np.argsort(fa); k = fa[o] <= 0.3
+    wf = lambda sel, t: float(w[sel][p[sel] >= t].sum() / w[sel].sum()) if sel.any() else None
+    out = {"frozen_threshold": {"fa_1S1L": wf(s1, FROZEN), "recall_1S2L": wf(s2, FROZEN), "recall_2S2L": wf(s3, FROZEN)},
+           "fa_1S1L_by_rho_over_u0": [{"bin": [lo, None if hi == float("inf") else hi],
+                                       "fa": wf(s1 & (ratio >= lo) & (ratio < hi), FROZEN)} for lo, hi in BINS],
+           "recall_at_matched_fa": [], "mean_recall_1S2L_fa_le_0p3": float(_trapz(r2[o][k], fa[o][k]) / 0.3),
+           "mean_recall_2S2L_fa_le_0p3": float(_trapz(r3[o][k], fa[o][k]) / 0.3)}
+    for tgt in BUDGETS:
+        i = int(np.argmin(np.abs(fa - tgt)))
+        out["recall_at_matched_fa"].append({"fa_target": tgt, "threshold": float(ths[i]), "fa": float(fa[i]),
+                                            "recall_1S2L": float(r2[i]), "recall_2S2L": float(r3[i])})
+    out["fa_1S1L_by_tE"] = []
+    for lo, hi in TE_BINS:
+        sel = s1 & (te >= lo) & (te < hi)
+        out["fa_1S1L_by_tE"].append({"tE_days": [lo, hi], "n": int(sel.sum()), "fa_weighted": wf(sel, FROZEN),
+                                     "fa_unweighted": float((p[sel] >= FROZEN).mean()) if sel.any() else None})
+    return out
+
+
+def _point(p, lab, w, budgets=(0.02, 0.052, 0.117)):
+    """FA at the frozen threshold and 1S2L/2S2L recall at matched single-lens budgets (grid argmin, as summarise)."""
+    s1, s2, s3 = lab == L1, lab == L2, lab == L3
+    ths = np.unique(np.round(p, 4))[::-1]
+    fa, r2, r3 = _curve(p, s1, w, ths), _curve(p, s2, w, ths), _curve(p, s3, w, ths)
+    out = [float(w[s1][p[s1] >= FROZEN].sum() / w[s1].sum())]
+    for tgt in budgets:
+        i = int(np.argmin(np.abs(fa - tgt))); out += [float(r2[i]), float(r3[i])]
+    return np.array(out)
+
+
+def paired_bootstrap(P, lab, w, pairs, reps, seed):
+    """Differences a - b on the SAME events, unweighted and rate-weighted, with 95% percentile intervals from a
+    class-stratified bootstrap over events. Evaluation-sample noise only: training-seed variance is not in it."""
+    rng = np.random.default_rng(seed)
+    idx_by = [np.flatnonzero(lab == L) for L in (L1, L2, L3)]
+    names = ["fa_frozen"] + [f"recall_{c}_at_{t}" for t in (0.02, 0.052, 0.117) for c in ("1S2L", "2S2L")]
+    out = {"_doc": paired_bootstrap.__doc__, "reps": reps, "seed": seed, "pairs": {}}
+    for wt_name, ww in (("unweighted", np.ones_like(w)), ("weighted", w)):
+        pts = {(a, b): _point(P[a], lab, ww) - _point(P[b], lab, ww) for a, b in pairs}
+        draws = {pr: [] for pr in pairs}
+        for _ in range(reps):
+            ix = np.concatenate([rng.choice(v, v.size) for v in idx_by])
+            cache = {}
+            for a, b in pairs:
+                for m in (a, b):
+                    if m not in cache:
+                        cache[m] = _point(P[m][ix], lab[ix], ww[ix])
+                draws[(a, b)].append(cache[a] - cache[b])
+        for pr in pairs:
+            d = np.array(draws[pr]); lo, hi = np.percentile(d, [2.5, 97.5], axis=0)
+            out["pairs"].setdefault(f"{pr[0]}-{pr[1]}", {})[wt_name] = {
+                n: {"diff": float(pts[pr][i]), "ci95": [float(lo[i]), float(hi[i])]} for i, n in enumerate(names)}
     return out
 
 
@@ -129,6 +201,8 @@ def main(argv=None):
                     "(RMDC26 pause phases differ between seasons; validation/gulls/rmdc26_schedule.json)")
     ap.add_argument("--scores", default=None, help="read everything from the committed rmdc26_scores.csv.gz; "
                     "name=value pairs of --models/--f146 then name its columns")
+    ap.add_argument("--pairs", nargs="*", default=[], help="a:b model pairs for paired bootstrap differences")
+    ap.add_argument("--boot", type=int, default=400, help="bootstrap replicates for --pairs")
     args = ap.parse_args(argv)
     if args.scores:
         cols, meta = load_scores(args.scores)
@@ -141,17 +215,39 @@ def main(argv=None):
     common = sorted(set.intersection(*[set(v) for v in list(models.values()) + list(f146.values())]))
     lab = np.array([next(iter(models.values()))[i][0] for i in common])
     ratio, season = load_meta(common, with_season=True, meta=meta)
+    ref = next(iter(models.values()))
+    w = np.array([ref[i][2] for i in common]); te = np.array([ref[i][3] for i in common])
+    s1 = lab == L1
     trade = {"_doc": __doc__.split("\n")[0], "n_matched_dense": len(common), "frozen_threshold": FROZEN,
-             "budgets": list(BUDGETS), "models": {}}
+             "budgets": list(BUDGETS), "models": {},
+             "sample": {"weights": "RMDC26 final_weight (event rate); 'weighted' blocks use it, every other number is per simulated event",
+                        "kish_n_eff": {L: float(w[lab == L].sum() ** 2 / (w[lab == L] ** 2).sum()) for L in (L1, L2, L3)},
+                        "n": {L: int((lab == L).sum()) for L in (L1, L2, L3)},
+                        "frac_1S1L_tE_lt_3d": {"unweighted": float((te[s1] < 3).mean()), "weighted": float(w[s1][te[s1] < 3].sum() / w[s1].sum())},
+                        "median_tE_days": {L: float(np.median(te[lab == L])) for L in (L1, L2, L3)}}}
     for name, d in models.items():
         p = np.array([d[i][1] for i in common])
         trade["models"][name] = summarise(p, lab, ratio)
+        trade["models"][name]["weighted"] = summarise_weighted(p, lab, ratio, w, te)
+        cal = os.path.join(HERE, f"gapped_threshold_{name}_seasons.json")
+        if os.path.exists(cal):                     # each checkpoint at ITS OWN threshold (chosen on our simulations)
+            fp = json.load(open(cal))["arms"]["rmdc26_gapped"]["pool"]["full_pool"]
+            if fp.get("achievable"):
+                t = float(fp["threshold"]); blk = {"threshold": t, "source": os.path.basename(cal)}
+                for L, key in ((L1, "fa_1S1L"), (L2, "recall_1S2L"), (L3, "recall_2S2L")):
+                    sel = lab == L
+                    blk[key] = {"k": int((p[sel] >= t).sum()), "n": int(sel.sum()),
+                                "weighted": float(w[sel][p[sel] >= t].sum() / w[sel].sum())}
+                trade["models"][name]["at_own_calibrated_threshold"] = blk
         if args.by_season:
             trade["models"][name]["by_season"] = {}
             for si in sorted(set(season.tolist())):
                 sel = season == si
                 if (lab[sel] == L1).sum() >= 200 and (lab[sel] == L2).sum() >= 100:
                     trade["models"][name]["by_season"][str(si)] = {"n": int(sel.sum()), **summarise(p[sel], lab[sel], ratio[sel])}
+    if args.pairs:
+        P = {name: np.array([d[i][1] for i in common]) for name, d in models.items()}
+        trade["paired_differences"] = paired_bootstrap(P, lab, w, [tuple(x.split(":", 1)) for x in args.pairs], args.boot, 20260912)
     trade["command"] = " ".join(sys.argv)
     json.dump(trade, open(os.path.join(args.out_dir, "transfer_tradeoff_all.json"), "w"), indent=1)
     print(f"matched dense events: {len(common)}")

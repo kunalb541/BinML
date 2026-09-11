@@ -7,6 +7,10 @@ import re
 HERE = os.path.dirname(os.path.abspath(__file__))
 vals = {}
 for f in ("paper_macros.tex", "gulls_macros.tex"):
+    if not os.path.exists(os.path.join(HERE, f)):
+        raise SystemExit(f"paper/{f} is missing (paper_macros.tex is generated and not committed). Build order from a clean "
+                         "clone: python paper/make_figures.py; python paper/make_macros.py; python paper/make_gulls_macros.py; "
+                         "then this script.")
     for m in re.finditer(r"\\newcommand\{\\(\w+)\}\{(.*)\}\s*$", open(os.path.join(HERE, f)).read(), re.M):
         vals[m.group(1)] = m.group(2).replace("{,}", ",")
 s = open(os.path.join(HERE, "draft_gulls_section.tex")).read()

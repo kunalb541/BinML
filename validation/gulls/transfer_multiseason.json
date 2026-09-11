@@ -13,6 +13,7 @@
     "n_before_first_season": 1145,
     "n_after_last_season": 2015,
     "n_between_seasons": 19421,
+    "n_between_with_dense_adjacent_season": 14766,
     "frac_between_with_dense_adjacent_season": 0.7603
    },
    "RMDC26_1S2L_ML": {
@@ -20,6 +21,7 @@
     "n_before_first_season": 101,
     "n_after_last_season": 110,
     "n_between_seasons": 1173,
+    "n_between_with_dense_adjacent_season": 1063,
     "frac_between_with_dense_adjacent_season": 0.9062
    },
    "RMDC26_2S2L_ML": {
@@ -27,6 +29,7 @@
     "n_before_first_season": 131,
     "n_after_last_season": 115,
     "n_between_seasons": 1576,
+    "n_between_with_dense_adjacent_season": 1360,
     "frac_between_with_dense_adjacent_season": 0.8629
    }
   },
@@ -44,6 +47,7 @@
    "frac_detectable_anomaly_of_scorable": 0.0,
    "frac_detectable_anomaly_of_all": 0.0,
    "n_host_visible": 503,
+   "n_detectable_anomaly_host_visible": 0,
    "frac_detectable_anomaly_of_host_visible": 0.0,
    "median_gap_days_to_t0": 16.0
   },
@@ -57,6 +61,7 @@
    "frac_detectable_anomaly_of_scorable": 0.4374,
    "frac_detectable_anomaly_of_all": 0.395,
    "n_host_visible": 598,
+   "n_detectable_anomaly_host_visible": 302,
    "frac_detectable_anomaly_of_host_visible": 0.505,
    "median_gap_days_to_t0": 14.7
   },
@@ -70,11 +75,245 @@
    "frac_detectable_anomaly_of_scorable": 0.3368,
    "frac_detectable_anomaly_of_all": 0.293,
    "n_host_visible": 624,
+   "n_detectable_anomaly_host_visible": 230,
    "frac_detectable_anomaly_of_host_visible": 0.3686,
    "median_gap_days_to_t0": 16.0
   }
  },
  "models": {
+  "fspl5s_seasons_g08": {
+   "thresholds": {
+    "frozen": 0.9042405486106873,
+    "calibrated_seasons": 0.9457952380180359,
+    "calibrated_seasons_fullpool": 0.9563422799110413
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L": {
+      "k": 5,
+      "n": 739,
+      "rate": 0.0068,
+      "wilson95": [
+       0.0029,
+       0.0157
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 183,
+      "n": 903,
+      "rate": 0.2027,
+      "wilson95": [
+       0.1777,
+       0.2301
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 170,
+      "n": 395,
+      "rate": 0.4304,
+      "wilson95": [
+       0.3825,
+       0.4796
+      ]
+     },
+     "recall_1S2L_detectable_host_visible": {
+      "k": 169,
+      "n": 302,
+      "rate": 0.5596,
+      "wilson95": [
+       0.5032,
+       0.6145
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 162,
+      "n": 870,
+      "rate": 0.1862,
+      "wilson95": [
+       0.1617,
+       0.2134
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 137,
+      "n": 293,
+      "rate": 0.4676,
+      "wilson95": [
+       0.4112,
+       0.5248
+      ]
+     },
+     "recall_2S2L_detectable_host_visible": {
+      "k": 135,
+      "n": 230,
+      "rate": 0.587,
+      "wilson95": [
+       0.5224,
+       0.6487
+      ]
+     }
+    },
+    "calibrated_seasons": {
+     "fa_1S1L": {
+      "k": 3,
+      "n": 739,
+      "rate": 0.0041,
+      "wilson95": [
+       0.0014,
+       0.0119
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 150,
+      "n": 903,
+      "rate": 0.1661,
+      "wilson95": [
+       0.1433,
+       0.1918
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 143,
+      "n": 395,
+      "rate": 0.362,
+      "wilson95": [
+       0.3162,
+       0.4105
+      ]
+     },
+     "recall_1S2L_detectable_host_visible": {
+      "k": 143,
+      "n": 302,
+      "rate": 0.4735,
+      "wilson95": [
+       0.4179,
+       0.5298
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 133,
+      "n": 870,
+      "rate": 0.1529,
+      "wilson95": [
+       0.1305,
+       0.1783
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 123,
+      "n": 293,
+      "rate": 0.4198,
+      "wilson95": [
+       0.3647,
+       0.477
+      ]
+     },
+     "recall_2S2L_detectable_host_visible": {
+      "k": 122,
+      "n": 230,
+      "rate": 0.5304,
+      "wilson95": [
+       0.466,
+       0.5939
+      ]
+     }
+    },
+    "calibrated_seasons_fullpool": {
+     "fa_1S1L": {
+      "k": 3,
+      "n": 739,
+      "rate": 0.0041,
+      "wilson95": [
+       0.0014,
+       0.0119
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 135,
+      "n": 903,
+      "rate": 0.1495,
+      "wilson95": [
+       0.1277,
+       0.1742
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 131,
+      "n": 395,
+      "rate": 0.3316,
+      "wilson95": [
+       0.287,
+       0.3795
+      ]
+     },
+     "recall_1S2L_detectable_host_visible": {
+      "k": 131,
+      "n": 302,
+      "rate": 0.4338,
+      "wilson95": [
+       0.3791,
+       0.4902
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 117,
+      "n": 870,
+      "rate": 0.1345,
+      "wilson95": [
+       0.1134,
+       0.1588
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 109,
+      "n": 293,
+      "rate": 0.372,
+      "wilson95": [
+       0.3187,
+       0.4287
+      ]
+     },
+     "recall_2S2L_detectable_host_visible": {
+      "k": 108,
+      "n": 230,
+      "rate": 0.4696,
+      "wilson95": [
+       0.4061,
+       0.534
+      ]
+     }
+    }
+   },
+   "recall_at_matched_fa": {
+    "0.02": {
+     "fa": 0.0203,
+     "n_1S1L_exceedances": 15,
+     "threshold": 0.818074,
+     "recall_1S2L_generator": 0.2525,
+     "recall_1S2L_detectable": 0.4987,
+     "recall_2S2L_generator": 0.2437,
+     "recall_2S2L_detectable": 0.5358
+    },
+    "0.052": {
+     "fa": 0.0514,
+     "n_1S1L_exceedances": 38,
+     "threshold": 0.690193,
+     "recall_1S2L_generator": 0.3145,
+     "recall_1S2L_detectable": 0.5418,
+     "recall_2S2L_generator": 0.331,
+     "recall_2S2L_detectable": 0.6109
+    },
+    "0.117": {
+     "fa": 0.1164,
+     "n_1S1L_exceedances": 86,
+     "threshold": 0.548809,
+     "recall_1S2L_generator": 0.3821,
+     "recall_1S2L_detectable": 0.5975,
+     "recall_2S2L_generator": 0.4126,
+     "recall_2S2L_detectable": 0.6587
+    }
+   }
+  },
   "fspl5s_g08": {
    "thresholds": {
     "frozen": 0.9042405486106873,
@@ -674,5 +913,5 @@
    }
   }
  },
- "command": "validation/gulls/multi_season.py --reduce --cap 1000"
+ "command": "validation/gulls/multi_season.py --reduce --cap 1000 --out-cache /Users/kunalbhatia/Desktop/Research/microlensing/gulls_multiseason_cache_v3 --ckpt fspl5s_seasons_g08=validation/gulls/weights/ft_fspl5s_seasons_g08.pt fspl5s_g08=validation/gulls/weights/ft_fspl5s_g08.pt ft_g08e12=validation/gulls/weights/ft_g08e12.pt"
 }

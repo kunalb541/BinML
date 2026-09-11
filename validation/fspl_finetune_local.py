@@ -5,7 +5,9 @@ that residual is not noise: the false-alarm rate rises monotonically with rho/|u
 0.67 (paper/REVISION.md, 2026-09-09) while parallax has no effect.  The cause is a training-set
 physics gap -- PSPLGen was point-source while NonPSPLGen sampled rho, so a rounded peak only ever
 belonged to a binary.  This runner adds finite-source single lenses (priors.PSPL_FINITE_SOURCE via
-the `fspl` regimes in run_shard.py, magnification from VBBinaryLensing ESPLMag2), warm-starts from
+the `fspl` regimes in run_shard.py; magnification from VBBinaryLensing ESPLMag since 2026-09-11, ESPLMag2
+before -- rounds 1-3 were generated with ESPLMag2, and `--prefix fspl5s_legacy` regenerates round 3's pool
+with it), warm-starts from
 ft_g08e12 with the same gap augmentation, and measures three things:
 
   1. held-out clean performance on our own finite-source population (no regression?),
@@ -185,8 +187,11 @@ def main(argv=None):
                             capture_output=True, text=True).stdout.strip()
     prov = os.path.join(W, "provenance.json")
     if not os.path.exists(prov):
+        espl = ("none: point-source single lenses" if args.prefix.startswith("pspl")
+                else "ESPLMag2 (legacy regimes)" if "legacy" in args.prefix
+                else "ESPLMag (smooth; pools generated before 2026-09-11 used ESPLMag2)")
         json.dump({"code_at_generation": commit, "onset_resolution_days": ONSET_RES, "prefix": args.prefix,
-                   "espl_function": "ESPLMag (smooth table; pools before 2026-09-11 used ESPLMag2)"}, open(prov, "w"), indent=1)
+                   "espl_function": espl}, open(prov, "w"), indent=1)
 
     log("=== data ===")
     mm_tr, n_tr = build(W, "train", TRAIN, args.workers)
@@ -207,9 +212,17 @@ def main(argv=None):
              f"truncate_aug=0.5 seed={SEED_TRAIN} onset_res={ONSET_RES} data={json.load(open(prov))['code_at_generation']}"
              + (f" extra={args.train_extra}" if args.train_extra else ""))
     if not (os.path.exists(ckpt + ".done") and open(ckpt + ".done").read().strip() == stamp):
-        for stale in (ckpt, ckpt + ".last", ckpt + ".done"):
+        # a retrain invalidates everything computed from the old checkpoint: its held-out evaluation and its
+        # RMDC26 rows/summaries would otherwise be reused and reported for the new weights
+        import shutil
+        for stale in (ckpt, ckpt + ".last", ckpt + ".done",
+                      os.path.join(CACHE_CURVES, f"rows_full_{args.tag}.json"),
+                      os.path.join(HERE, "gulls", f"transfer_full_{args.tag}.json"),
+                      os.path.join(HERE, "gulls", f"transfer_full_reduced_{args.tag}.json"),
+                      os.path.join(HERE, "gulls", f"transfer_full_reduced_{args.tag}_vs_fspl_g08.json")):
             if os.path.exists(stale):
                 os.remove(stale)
+        shutil.rmtree(os.path.join(W, f"eval_{args.tag}"), ignore_errors=True)
         t0 = time.time()
         run([sys.executable, "-m", "pipeline.train", "--cache", mm_tr, "--out", ckpt,
              "--init-weights", args.init, "--epochs", str(args.epochs), "--lr", str(args.lr),

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import glob
+import json
 import os
 import sys
 from typing import Dict, Tuple
@@ -64,6 +65,9 @@ def bin_curve(mag: np.ndarray, factor: int) -> Tuple[np.ndarray, np.ndarray]:
     return feat, (cnt / factor).astype(np.float32)
 
 
+GEN_ATTRS = ("regime", "onset_resolution_days", "noise_mult", "bkg_mult", "regime_priors", "espl_function")
+
+
 def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:
     """Bin every shard into one compact cache file."""
     bands = list(BIN_FACTORS)
@@ -81,8 +85,12 @@ def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:
     perband: Dict[str, list] = {f"{k}/{b}": [] for b in BIN_FACTORS for k in ("f_s", "n_kept")}
     param_fields = None
     n_total = 0
+    gen = {}                                   # generation settings of the input shards (run_shard attrs)
     for i, p in enumerate(sorted(shard_paths)):
         with h5py.File(p, "r") as f:
+            for a in GEN_ATTRS:
+                v = f.attrs.get(a, "absent (shard written before 2026-09-11)")
+                gen.setdefault(a, set()).add(v.decode() if isinstance(v, bytes) else str(v))
             n = int(f.attrs["n_events"])
             if n == 0:
                 continue
@@ -134,6 +142,7 @@ def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:
         o.create_dataset("params", data=np.concatenate(params).astype(np.float32))
         if param_fields:
             o.attrs["param_fields"] = [x.encode() for x in param_fields]
+        o.attrs["gen_settings"] = json.dumps({a: sorted(v) for a, v in gen.items()})
         for k, v in perband.items():
             o.create_dataset(k, data=np.concatenate(v))
     return {"n_events": n_total, "bytes": os.path.getsize(out_path)}

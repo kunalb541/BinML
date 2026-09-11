@@ -36,7 +36,7 @@ OBS_URL = BASE + "RMDC26_ML_Data_obs.parquet"
 EPOCH_URL = BASE + "RMDC26_ML_Data_epoch.parquet"
 META_URL = BASE + "RMDC26_ML_Data_meta.parquet"
 WINDOW_DAYS = 72.0
-SEASON_GAP_DAYS = 5.0         # inter-season gaps are ~110 d; intra-season gaps are < 1 d
+SEASON_GAP_DAYS = 5.0         # inter-season gaps are 109-120 d; intra-season gaps are < 1 d
 DENSE_MIN_F146 = 1000         # F146 epochs per season below which the season is low-cadence
 CLASS_MEANING = {"RMDC26_1S1L_ML": "single lens (-> PSPL)",
                  "RMDC26_1S2L_ML": "planetary lens (-> NonPSPL)",

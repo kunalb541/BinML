@@ -120,6 +120,8 @@ def relabel_exposure(pool):
 
 
 def main(argv=None):
+    global CODE_AT_START
+    CODE_AT_START = git_describe()          # the code that runs; the artifact also records the code at write time
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--epochs", default="12"); ap.add_argument("--device", default="mps")
     ap.add_argument("--skip-gulls", action="store_true")
@@ -143,7 +145,7 @@ def main(argv=None):
     make_gapped(HELD, gapped, mask=rmdc26_schedule_mask(), note="RMDC26 first-season pauses + 70.7 d season end")
     seasons_mm = f"{WORK}/mm_heldout_seasons"
     make_gapped_seasons(HELD, seasons_mm)
-    res = {"_doc": __doc__.split("\n")[0], "code": git_describe(), "pool": POOL, "heldout": HELD,
+    res = {"_doc": __doc__.split("\n")[0], "code_at_start": CODE_AT_START, "code_at_write": git_describe(), "pool": POOL, "heldout": HELD,
            "train_args": {a: common + e for a, e in ARMS.items()},
            "note": ("single-factor contrasts: rand vs rand_norelabel (relabel), rand_norelabel vs sched_norelabel (first-season "
                     "mask), rand_norelabel vs sched_seasons (measured seasons); shipped/ft_g08e12 are reference rows trained on "

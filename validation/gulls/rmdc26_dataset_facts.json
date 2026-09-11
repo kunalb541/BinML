@@ -280,6 +280,12 @@
    7
   ],
   "pause_days_common_to_all_seasons": "about 0.99, 35.24 and 69.49 d (validation/gulls/rmdc26_schedule.json)",
+  "pause_start_days_common_to_all_seasons": [
+   0.987,
+   35.237,
+   69.487
+  ],
+  "season_shortfall_vs_72d_window_days": 1.27,
   "f146_bins_with_frac_lt_1": [
    299,
    303,
@@ -287,7 +293,20 @@
    305,
    302,
    298
-  ]
+  ],
+  "high_cadence_fraction_of_span": 0.2472,
+  "frac_catalogue_t0_in_high_cadence_seasons": {
+   "RMDC26_1S1L_ML": 0.6852,
+   "RMDC26_1S2L_ML": 0.7073,
+   "RMDC26_2S2L_ML": 0.6439
+  }
+ },
+ "catalogue_baseline_offset_mag": {
+  "median": 0.4712,
+  "p5": 0.4706,
+  "p95": 0.4721,
+  "n": 56975,
+  "sign": "empirical minus catalogue; positive = catalogue brighter"
  },
  "command": "validation/gulls/rmdc26_dataset_facts.py"
 }

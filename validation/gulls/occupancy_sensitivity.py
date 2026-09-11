@@ -8,7 +8,7 @@ then compares the scores. (Imposing the pattern on OUR binned held-out instead i
 caps the occupancy without removing an epoch from the bin's features; see pipeline/train.py
 _apply_schedule_template.)
 
-Usage:  python validation/gulls/occupancy_sensitivity.py [--every 8] [--max-events 6000]
+Usage:  python validation/gulls/occupancy_sensitivity.py [--every 8] [--max-events 6000] [--models name=weights.pt:rows.json ...]
 """
 from __future__ import annotations
 
@@ -29,7 +29,8 @@ from binml.preprocess import BAND_BINS, to_tokens  # noqa: E402
 CURVES = os.path.expanduser("~/Desktop/Research/microlensing/gulls_curve_cache")
 FROZEN = 0.9042405486106873
 L1, L2, L3 = "RMDC26_1S1L_ML", "RMDC26_1S2L_ML", "RMDC26_2S2L_ML"
-MODELS = {"fspl5s_g08": ("validation/gulls/weights/ft_fspl5s_g08.pt", "rows_full_fspl5s_g08.json"),
+MODELS = {"fspl5s_seasons_g08": ("validation/gulls/weights/ft_fspl5s_seasons_g08.pt", "rows_full_fspl5s_seasons_g08.json"),
+          "fspl5s_g08": ("validation/gulls/weights/ft_fspl5s_g08.pt", "rows_full_fspl5s_g08.json"),
           "ft_g08e12": ("validation/gulls/weights/ft_g08e12.pt", "rows_full_ft_g08e12_v2.json")}
 
 
@@ -44,7 +45,12 @@ def main(argv=None):
     ap.add_argument("--every", type=int, default=8, help="use every Nth curve-cache chunk")
     ap.add_argument("--max-events", type=int, default=6000)
     ap.add_argument("--out", default=os.path.join(HERE, "occupancy_sensitivity.json"))
+    ap.add_argument("--models", nargs="*", default=[], help="name=weights.pt:rows.json (default: the three in MODELS)")
     args = ap.parse_args(argv)
+    if args.models:
+        MODELS.clear()
+        for it in args.models:
+            k, v = it.split("=", 1); ck, rowsf = v.split(":", 1); MODELS[k] = (ck, rowsf)
     out = {"_doc": __doc__.split("\n")[0], "command": " ".join(sys.argv), "models": {}}
     for name, (ck, rowsf) in MODELS.items():
         rows = {r["event_id"]: r for r in json.load(open(os.path.join(CURVES, rowsf))) if r.get("dense") and "pred" in r}
@@ -75,7 +81,8 @@ def main(argv=None):
                "median_share_partial_bins": {"F146": round(float(np.median(fr146)), 4), "colour": round(float(np.median(frcol)), 4)}}
         for L, key in ((L1, "fa_1S1L"), (L2, "recall_1S2L"), (L3, "recall_2S2L")):
             s = lab == L; k0, k1, n = int((p0[s] >= FROZEN).sum()), int((p1[s] >= FROZEN).sum()), int(s.sum())
-            blk[key] = {"n": n, "as_observed": round(k0 / n, 4), "as_observed_wilson95": wilson(k0, n),
+            blk[key] = {"n": n, "k_as_observed": k0, "k_occupancy_set_to_1": k1,
+                        "as_observed": round(k0 / n, 4), "as_observed_wilson95": wilson(k0, n),
                         "occupancy_set_to_1": round(k1 / n, 4), "occupancy_set_to_1_wilson95": wilson(k1, n),
                         "median_p_as_observed": round(float(np.median(p0[s])), 4), "median_p_occupancy_1": round(float(np.median(p1[s])), 4)}
         out["models"][name] = blk

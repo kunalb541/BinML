@@ -396,8 +396,10 @@ def reduce(args):
                 ia = int(np.argmin(np.abs(fa - tgt)))
                 thsb = np.unique(np.round(q, 4))[::-1]; fab = np.array([(q[s1] >= t).mean() for t in thsb]); ib = int(np.argmin(np.abs(fab - tgt)))
                 blk["colour_ablation"][f"budget_{tgt}"] = {
-                    "three_band": {"detectable": round(float((p[bin_det] >= ths[ia]).mean()), 4), "undetectable": round(float((p[bin_undet] >= ths[ia]).mean()), 4)},
-                    "f146_only": {"detectable": round(float((q[bin_det] >= thsb[ib]).mean()), 4), "undetectable": round(float((q[bin_undet] >= thsb[ib]).mean()), 4)},
+                    "three_band": {"detectable": round(float((p[bin_det] >= ths[ia]).mean()), 4), "undetectable": round(float((p[bin_undet] >= ths[ia]).mean()), 4),
+                                   "k_detectable": int((p[bin_det] >= ths[ia]).sum()), "k_undetectable": int((p[bin_undet] >= ths[ia]).sum())},
+                    "f146_only": {"detectable": round(float((q[bin_det] >= thsb[ib]).mean()), 4), "undetectable": round(float((q[bin_undet] >= thsb[ib]).mean()), 4),
+                                  "k_detectable": int((q[bin_det] >= thsb[ib]).sum()), "k_undetectable": int((q[bin_undet] >= thsb[ib]).sum())},
                     "n_detectable": int(bin_det.sum()), "n_undetectable": int(bin_undet.sum())}
             blk["colour_ablation"]["flag_floor_vetoed_by_amp_frozen_f146only"] = [
                 {"amp_bin": [lo, hi], **_kn(q, binr & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp >= lo) & (amp < hi), FROZEN)}

@@ -1,7 +1,8 @@
 """`pipeline.train._apply_gaps`: contiguous Roman-like gaps, consistent across bands, relabelled.
 
 Background: validation/gulls/gap_sensitivity.py.  The shipped model was trained on a continuous
-F146 grid and collapses on Roman's real schedule (seven ~6 h pauses per season).  This
+F146 grid and collapses on RMDC26's schedule (43-44 h of F146 pauses per season, in six or seven
+pauses whose phases differ between seasons).  This
 augmentation is the remedy; these tests pin its contract.
 """
 import numpy as np

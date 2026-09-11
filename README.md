@@ -218,20 +218,26 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   the model reads an empty mid-season bin as evidence against a single lens: imposing the pauses on
   our own held-out seasons collapses single-lens and Flat recall and also degrades the eruptive and
   long-period variables and NonPSPL (`validation/gulls/schedule_finetune.json`). A single gap of
-  0.5 h costs nothing; one gap of 1-2 h already costs about 7 points of single-lens recall.
-  **For a gapped schedule use the gap-aware, finite-source checkpoint**
-  `validation/gulls/weights/ft_fspl5s_g08.pt` at its own threshold, 0.957, chosen at 90% purity on
-  our own simulated seasons with the measured pauses imposed (68% of validation slices: 0.942-0.962).
-  On 56,975 RMDC26 events it flags 1.6% of single lenses at that threshold (1.3-2.4% across the
-  slice spread) with planetary recall 0.24 / 0.27; at the shipped threshold it flags 4.8% against the
-  shipped weights' 35.6%. RMDC26 also guided the diagnosis and the choice of this checkpoint, so these
+  0.5 h costs nothing; one gap of 1-2 h at mid-season (day 43) already costs about 7 points of single-lens recall
+  (the cost depends on where the gap falls).
+  **For a gapped schedule use the recommended gap-aware checkpoint**
+  `validation/gulls/weights/ft_fspl5s_seasons_g08.pt` (finite-source single lenses and the measured RMDC26
+  season pauses in training) at its own threshold, 0.956, chosen at 90% purity on our own simulated
+  seasons with the measured pauses imposed (68% of validation slices: 0.947-0.965). On 56,975 RMDC26 events
+  it flags 2.4% of single lenses at that threshold (1.8-3.1% across the slice spread; 3.5% weighted by
+  RMDC26's event rates) with planetary recall 0.29 / 0.33 (1S2L / 2S2L); at the shipped threshold it
+  flags 6.3% against the shipped weights' 35.6%. It replaced the earlier finite-source checkpoint
+  `ft_fspl5s_g08.pt` (threshold 0.957, 1.6%, recall 0.24 / 0.27) on 2026-09-12: the two tie at matched
+  false-alarm budgets per simulated event, and the new one is ahead when events are weighted by rate and
+  on our own held-out seasons. RMDC26 also guided the diagnosis and the choice of this checkpoint, so these
   numbers are optimistic for it. Under our own label policy 44-46% of the selected RMDC26 planetary
-  events carry no anomaly the policy would claim within one season; on those with one, recall at 0.957
-  is 0.33 / 0.40. The shipped weights are unchanged so that the submitted numbers stay exact. Full
-  account, including what did not work and what a 2026-09-11 verification corrected, in
-  [`paper/REVISION.md`](paper/REVISION.md) §1½ and
-  [`docs/VERIFICATION_2026-09-11.md`](docs/VERIFICATION_2026-09-11.md); every number regenerates
-  from the scripts under `validation/gulls/`.
+  events carry no anomaly the policy would claim within one season; on those with one, recall at 0.956
+  is 0.41 / 0.48. The shipped weights are unchanged so that the submitted numbers stay exact. Full
+  account, including what did not work and what two verification passes corrected, in
+  [`paper/REVISION.md`](paper/REVISION.md) §1½, [`docs/VERIFICATION_2026-09-11.md`](docs/VERIFICATION_2026-09-11.md)
+  and [`docs/VERIFICATION_2026-09-12.md`](docs/VERIFICATION_2026-09-12.md); every number regenerates
+  from the scripts under `validation/gulls/` (from a clone: `gulls_summary_tables.py --scores
+  validation/gulls/rmdc26_scores.csv.gz`).
 - **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
   faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
   sub-day tE (few epochs on the peak).

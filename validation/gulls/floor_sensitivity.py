@@ -81,12 +81,13 @@ def main(argv=None):
             p = np.array([d[i] for i in ids]); thrs = {"frozen": FROZEN, **({"calibrated_seasons_fullpool": calib[name]} if name in calib else {})}
             row["models"][name] = {}
             for tn, thr in thrs.items():
-                row["models"][name][tn] = {"recall_detectable_binaries": round(float((p[bin_det] >= thr).mean()), 4) if bin_det.sum() else None,
+                row["models"][name][tn] = {"threshold": float(thr), "recall_detectable_binaries": round(float((p[bin_det] >= thr).mean()), 4) if bin_det.sum() else None,
                                            "n_detectable": int(bin_det.sum()),
                                            "flag_rate_undetectable_binaries": round(float((p[bin_undet] >= thr).mean()), 4) if bin_undet.sum() else None,
                                            "fa_1S1L_policy_pspl": round(float((p[(lab == L1) & (det == "PSPL")] >= thr).mean()), 4),
                                            "ontology_precision_sample_mix": round(float((p[det == "NonPSPL"] >= thr).sum() / max((p >= thr).sum(), 1)), 4)}
         out["by_floor"].append(row)
+    out["command"] = " ".join(sys.argv)
     json.dump(out, open(args.out, "w"), indent=1)
     print(f"n={len(ids)}  (adopted floor {CFG.min_amplitude_mag})")
     print(f"{'floor':>6} {'1S2L det':>9} {'2S2L det':>9} | " + " | ".join(f"{m}: rec det / flag undet / precision" for m in models))

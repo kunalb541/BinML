@@ -158,7 +158,25 @@ def main(argv=None):
                               "f146_pause_hours_per_season": [x["summary"]["pause_hours_total"] for x in dense],
                               "f146_pauses_per_season": [x["summary"]["n_pauses"] for x in dense],
                               "pause_days_common_to_all_seasons": "about 0.99, 35.24 and 69.49 d (validation/gulls/rmdc26_schedule.json)",
-                              "f146_bins_with_frac_lt_1": [x["summary"]["f146_bins_frac_lt_1"] for x in dense]}
+                              "pause_start_days_common_to_all_seasons": [
+                                  p0["start_day"] for p0 in dense[0]["pauses"]
+                                  if all(any(abs(p0["start_day"] - p1["start_day"]) < 0.1 for p1 in x["pauses"]) for x in dense[1:])],
+                              "season_shortfall_vs_72d_window_days": round(72.0 - min(x["length_days"] for x in dense), 2),
+                              "f146_bins_with_frac_lt_1": [x["summary"]["f146_bins_frac_lt_1"] for x in dense],
+                              "high_cadence_fraction_of_span": round(sum(x["length_days"] for x in dense) / (S[-1]["end_bjd"] - S[0]["start_bjd"]), 4)}
+    # where the catalogue puts the peaks: RMDC26 concentrates t0 in the high-cadence seasons
+    t0c = m["t0lens1"].values
+    in_dense = np.zeros(len(t0c), bool)
+    for x in dense:
+        in_dense |= (t0c >= x["start_bjd"]) & (t0c <= x["end_bjd"])
+    out["survey_geometry"]["frac_catalogue_t0_in_high_cadence_seasons"] = {L: round(float(in_dense[(lab == L).values].mean()), 4) for L in (L1, L2, L3)}
+    # the catalogue baseline (Source_F146 + 2.5 log10 fs_F146) against the empirical quiescent baseline of the scored events
+    sc = [e for e, r in rows.items() if r.get("dense") and "pred" in r and np.isfinite(r.get("m_base", np.nan))]
+    cat = (m.loc[sc, "Source_F146"] + 2.5 * np.log10(m.loc[sc, "fs_F146"])).values
+    off = np.array([rows[e]["m_base"] for e in sc]) - cat
+    out["catalogue_baseline_offset_mag"] = {"median": round(float(np.median(off)), 4), "p5": round(float(np.percentile(off, 5)), 4),
+                                            "p95": round(float(np.percentile(off, 95)), 4), "n": int(off.size),
+                                            "sign": "empirical minus catalogue; positive = catalogue brighter"}
     out["command"] = " ".join(sys.argv)
     json.dump(out, open(args.out, "w"), indent=1)
     print(json.dumps({k: v for k, v in out.items() if k in ("catalogue", "selection_outcome", "scored_set", "survey_geometry")}, indent=1)[:3500])

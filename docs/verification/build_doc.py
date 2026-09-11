@@ -47,7 +47,7 @@ had checked. Raw output: `docs/verification/2026-09-11_findings.json`.
 * **The finite-source magnification function had artificial 4-8 mmag steps**; replaced, and the recommended
   checkpoint's recipe rerun with the smooth function.
 * **The finite-source gain had no continued-training control**; one was run.
-* **RMDC26 served as a development set** (diagnosis, a prior bound, checkpoint choice among seven); disclosed.
+* **RMDC26 served as a development set** (diagnosis, a prior bound, checkpoint choice among the scored fine-tunes: seven at the time, 14 by the second pass); disclosed.
 * Plus the count error (385,004 was an event id; the release has 377,999 events), an impossible argmax
   statement, uncommitted notebooks and weights, numbers with no artifact, double rounding, and stale text.
 

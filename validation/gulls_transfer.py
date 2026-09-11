@@ -1,12 +1,12 @@
 """Cross-simulator transfer of BinML onto RMDC26 (GULLS) light curves.
 
 RESULT (2026-08-23, population-scale rerun 2026-09-09): as shipped, BinML cannot be scored on this
-data.  RMDC26 implements the real GBTDS schedule, in which the observing sequence pauses ~6 h seven
-times per season; BinML was trained on a continuous grid and reads a gap as evidence against a
+data.  RMDC26 pauses F146 for 43-44 h per high-cadence season, in six or seven pauses whose phases
+differ between seasons (validation/gulls/rmdc26_schedule.json); BinML was trained on a continuous grid and reads a gap as evidence against a
 single lens.  On all 33,353 dense, amplitude- and t_E-matched 1S1L (single-lens) events the shipped
 model exceeds the anomaly threshold on 35.6% [35.1, 36.1] and returns argmax PSPL on only 2.5%
 (validation/gulls/transfer_full_reduced.json); the gap-aware fine-tune cuts the false-alarm rate to
-11.7% [11.3, 12.0] while keeping planetary recall at threshold (0.50 -> 0.46).  These are with
+11.6% [11.3, 12.0] (3,885 of 33,353) while keeping planetary recall at threshold (0.50 -> 0.46).  These are with
 binml.preprocess pooling one value per Roman epoch; the same rows binned by raw observation
 (*_rawpool.json) give 45.6% -> 9.7%, so the operating point moves ~10 points with the pooling
 rule -- the min/max channels carry the noise footprint.  validation/gulls/gap_sensitivity.py
@@ -76,15 +76,15 @@ EPOCH = BASE + "RMDC26_ML_Data_epoch.parquet"
 META = BASE + "RMDC26_ML_Data_meta.parquet"
 WINDOW_D = 72.0          # BinML's input is one 72-day season
 DENSE_MIN = 1000         # F146 epochs below which the season is low-cadence
-SEASON_GAP_D = 5.0       # inter-season gaps are ~110 d; intra-season gaps are < 1 d
+SEASON_GAP_D = 5.0       # inter-season gaps are 109-120 d; intra-season gaps are < 1 d
 LABELS = {"RMDC26_1S1L_ML": "single lens (-> PSPL)",
           "RMDC26_1S2L_ML": "planetary lens (-> NonPSPL)",
           "RMDC26_2S2L_ML": "planetary lens AND binary source (-> NonPSPL)"}
 
 # A correction worth recording, because the obvious reading of the class name is wrong.  2S2L is
-# NOT the 1L2S contaminant: its Planet_q distribution is the same as 1S2L's (median 1.25e-4), so
+# NOT the 1L2S contaminant: its Planet_q distribution is similar to 1S2L's (scored medians 1.2e-4 for 2S2L, 1.4e-4 for 1S2L), so
 # every 2S2L event carries a genuine planetary lens and the binary source is an ADDITIONAL
-# complication in 56% of them.  A NonPSPL call on 2S2L is therefore substantially correct, not a
+# complication in about 55% of them.  A NonPSPL call on 2S2L is therefore substantially correct, not a
 # false positive.  RMDC26 ships no 2S1L class, so the pure binary-source degeneracy this test was
 # meant to probe is simply not present in the dataset; the false-positive quantity this test can
 # measure is the 1S1L -> NonPSPL rate.
@@ -179,8 +179,9 @@ def main(argv=None):
     # boundaries: one test event returned 5,499 epochs spanning only 50 of 72 days, another 89
     # epochs spanning 0.8 days, because most of the window fell in the inter-season gap.  BinML's
     # input contract is ONE CONTIGUOUS SEASON, so we find the season containing t0 and use that.
-    # The RMDC26 baseline holds 10 seasons: six high-cadence (70.7 d, ~231 epochs/day across the
-    # three bands) and four low-cadence (65.1 d, 3/day), matching the current GBTDS design.  Only
+    # The RMDC26 baseline holds 10 seasons: six high-cadence (70.7 d, ~122 epochs per day per event across
+    # the three bands; the epoch table lists about twice as many rows) and four low-cadence (65.1 d,
+    # ~1.5 per day per event).  Only
     # the high-cadence seasons are the regime BinML claims to serve.
     _gaps = np.flatnonzero(np.diff(ep_bjd) > SEASON_GAP_D)
     SEASONS = list(zip(np.r_[ep_bjd[0], ep_bjd[_gaps + 1]], np.r_[ep_bjd[_gaps], ep_bjd[-1]]))
@@ -214,7 +215,7 @@ def main(argv=None):
     # TIMESCALE SUPPORT.  The first run of this test returned 63% PeriodicVar on the single-lens
     # class and only 1.8% PSPL, which is not a transfer result but a population mismatch: RMDC26's
     # 1S1L class is 33.4% sub-day events (median t_E 3.2 d), an FFP-like population, while its two
-    # binary classes are 0.2% sub-day (median t_E 12-15 d).  Comparing them without a timescale cut
+    # binary classes are 0.2% sub-day (median t_E 12-16 d).  Comparing them without a timescale cut
     # conflates lens multiplicity with timescale.  BinML's t_E prior is truncated to [1, 300] d, so
     # sub-day events are outside its support entirely -- a t_E of 0.16 d spans two of the 864 F146
     # bins and is a spike, not a profile.  The cut below is applied identically to all classes.
@@ -463,7 +464,7 @@ def main(argv=None):
                  "median_p_nonpspl": round(float(np.median(pn)), 4),
                  "argmax_distribution": {c: round(
                      float(np.mean([r["pred"] == c for r in sub])), 4) for c in CLASSES}}
-        # Split 2S2L on whether the source is genuinely binary (56% of the class).  Both halves
+        # Split 2S2L on whether the source is genuinely binary (55% of the scored class, 59% of all).  Both halves
         # carry a planetary lens, so this contrasts planet-plus-binary-source against plain
         # planet; it does NOT isolate a binary-source false positive.
         if lab == "RMDC26_2S2L_ML":

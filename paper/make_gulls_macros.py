@@ -4,9 +4,15 @@
 Every number in paper/draft_gulls_section.tex is a \\bmlGulls* / \\bmlGap* / \\bmlSidecar* macro defined
 here from a committed artifact, rounded ONCE from exact counts where the artifact has them, so the text
 cannot drift from the data (the 2026-09-11 verification found typed numbers double-rounded, one table
-cell taken from the wrong run, and a count that was an event id). FAIL CLOSED: a missing artifact or
-key is fatal. --allow-missing exists only for development while artifacts are being produced; the
-build never uses it.   Usage:  python paper/make_gulls_macros.py
+cell taken from the wrong run, and a count that was an event id). FAIL CLOSED: a missing artifact, key
+or block is fatal, and nothing is written unless every input passed (the 2026-09-12 re-verification
+found tables written before later inputs were checked, and four silent fallbacks). --allow-missing
+exists only for development while artifacts are being produced; the build never uses it.
+
+REC names the recommended gap-aware checkpoint: every checkpoint-specific macro that the text attributes
+to "the recommended checkpoint" (operating point, labels, floor, sub-day, occupancy, between seasons,
+cascade) is read from REC's blocks. R3 is the finite-source round-3 checkpoint used in comparisons.
+Usage:  python paper/make_gulls_macros.py
 """
 import argparse
 import json
@@ -17,8 +23,19 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 G = os.path.join(REPO, "validation", "gulls")
-L, MISSING = [], []
+L, MISSING, TABLES = [], [], {}
 ALLOW = "--allow-missing" in sys.argv
+REC, R3 = "fspl5s_seasons_g08", "fspl5s_g08"
+
+
+def need(ok, msg):
+    """Fail closed on a missing block or key (dev mode records it instead)."""
+    if not ok:
+        if ALLOW:
+            MISSING.append(msg)
+        else:
+            raise SystemExit(f"FATAL: {msg}")
+    return ok
 
 
 def load(name):
@@ -34,7 +51,7 @@ def cmd(name, value):
     assert name.isalpha(), f"macro {name}: TeX control words are letters only"
     if isinstance(value, float) and not math.isfinite(value):
         raise SystemExit(f"FATAL: macro {name} is {value!r}")
-    if isinstance(value, str) and value.strip().lower() in ("nan", "inf", "-inf", "none", ""):
+    if isinstance(value, str) and value.strip().lower() in ("nan", "inf", "-inf", "none", "", "fatal"):
         raise SystemExit(f"FATAL: macro {name} formatted as {value!r}")
     L.append(r"\newcommand{\%s}{%s}" % (name, str(value).replace(",", "{,}")))
 
@@ -104,6 +121,22 @@ if F:
     for k, nm in CLS.items():
         cmd(f"bmlGullsBright{nm}", pct0(vt[k]["frac_m_base_lt_prior_min"]))
         cmd(f"bmlGullsFsLow{nm}", pct0(vt[k]["frac_fs_lt_prior_min"]))
+    bp_ = [vt[k]["frac_m_base_lt_prior_min"] for k in ("RMDC26_1S2L_ML", "RMDC26_2S2L_ML")]
+    cmd("bmlGullsBrightPlanetLo", pct0(min(bp_))); cmd("bmlGullsBrightPlanetHi", pct0(max(bp_)))
+    fl_ = [vt[k]["frac_fs_lt_prior_min"] for k in CLS]
+    cmd("bmlGullsFsLowLo", pct0(min(fl_))); cmd("bmlGullsFsLowHi", pct0(max(fl_)))
+    bc_ = F["selection_outcome"]["by_class"]
+    def share(k, key):
+        return bc_[k][key] / sum(v for kk, v in bc_[k].items())
+    cmd("bmlGullsBetweenSingle", pct0(share("RMDC26_1S1L_ML", "peak between seasons")))
+    bpl = [share(k, "peak between seasons") for k in ("RMDC26_1S2L_ML", "RMDC26_2S2L_ML")]
+    cmd("bmlGullsBetweenPlanetLo", pct0(min(bpl))); cmd("bmlGullsBetweenPlanetHi", pct0(max(bpl)))
+    lpl = [share(k, "scored, low-cadence season") for k in ("RMDC26_1S2L_ML", "RMDC26_2S2L_ML")]
+    cmd("bmlGullsLowcadSingle", pct0(share("RMDC26_1S1L_ML", "scored, low-cadence season")))
+    cmd("bmlGullsLowcadPlanetLo", pct0(min(lpl))); cmd("bmlGullsLowcadPlanetHi", pct0(max(lpl)))
+    need("catalogue_baseline_offset_mag" in F, "rmdc26_dataset_facts.json lacks catalogue_baseline_offset_mag (rerun it)")
+    if "catalogue_baseline_offset_mag" in F:
+        cmd("bmlGullsBaselineOffset", two(F["catalogue_baseline_offset_mag"]["median"]))
     cmd("bmlGullsRhoPnn", two(vt["RMDC26_1S1L_ML"]["rho"]["p99"]))
     cmd("bmlGullsNrhoGtOne", str(vt["RMDC26_1S1L_ML"]["rho"]["n_gt_1"]))
     rf = F["residual_fa_fspl5s_by_support"]
@@ -116,14 +149,35 @@ if F:
     cmd("bmlGullsPauseHoursHi", f"{max(sg['f146_pause_hours_per_season']):.0f}")
     cmd("bmlGullsGapLo", f"{min(sg['inter_season_gaps_days']):.0f}"); cmd("bmlGullsGapHi", f"{max(sg['inter_season_gaps_days']):.0f}")
     cmd("bmlGullsObservedDays", f"{sg['observed_days']:.0f}"); cmd("bmlGullsSpanDays", f"{sg['mission_span_days']:,.0f}")
-    cmd("bmlGullsPartialBinsPct", pct0(min(sg["f146_bins_with_frac_lt_1"]) / 864))
+    pb_ = sorted(sg["f146_bins_with_frac_lt_1"]); cmd("bmlGullsPartialBinsPct", pct0(pb_[len(pb_) // 2] / 864))   # median season
+    need("pause_start_days_common_to_all_seasons" in sg, "rmdc26_dataset_facts.json lacks the schedule facts (rerun it)")
+    if "pause_start_days_common_to_all_seasons" in sg:
+        for d_, nm in zip(sg["pause_start_days_common_to_all_seasons"], ("A", "B", "C")):
+            cmd(f"bmlGullsCommonPause{nm}", f"{d_:.1f}")
+        cmd("bmlGullsSeasonShort", f"{sg['season_shortfall_vs_72d_window_days']:.1f}")
+        cmd("bmlGullsDenseSpanPct", pct0(sg["high_cadence_fraction_of_span"]))
+        tz = sg["frac_catalogue_t0_in_high_cadence_seasons"].values()
+        cmd("bmlGullsTzeroDenseLo", pct0(min(tz))); cmd("bmlGullsTzeroDenseHi", pct0(max(tz)))
+# our own prior's share of short events (truncated log-normal tE prior, pipeline/priors.py)
+sys.path.insert(0, REPO)
+from pipeline.priors import EventPriors as _P  # noqa: E402
+_p = _P(); _mu, _sd = math.log10(_p.TE_MEDIAN_DAYS), _p.TE_SIGMA_DEX
+_cdf = lambda x: 0.5 * (1 + math.erf((math.log10(x) - _mu) / (_sd * math.sqrt(2))))
+cmd("bmlPriorShortPct", f"{100 * (_cdf(3.0) - _cdf(_p.TE_MIN_DAYS)) / (_cdf(_p.TE_MAX_DAYS) - _cdf(_p.TE_MIN_DAYS)):.1f}")
+
+# ------------------------------------------------------------------ preprocessing sensitivity (epoch- vs raw-pooled binning)
+RP0, RP1 = load("transfer_full_reduced.json"), load("transfer_full_reduced_rawpool.json")
+if RP0 and RP1:
+    sh0 = RP0["by_class"]["RMDC26_1S1L_ML"]["per_model"]["shipped"]["over_thr"]["rate"]
+    sh1 = RP1["by_class"]["RMDC26_1S1L_ML"]["per_model"]["shipped"]["over_thr"]["rate"]
+    cmd("bmlGullsRawpoolFa", pct(sh1)); cmd("bmlGullsRawpoolShift", pct0(sh1 - sh0))
 
 # ------------------------------------------------------------------ transfer table + text numbers
 T = load("transfer_tradeoff_all.json")
 ROWS = [("shipped", "shipped"), ("ft_g08e12", "gap augmentation (g08e12)"),
         ("pspl5s_ctrl_g08", "\\quad + 12 epochs, point-source single lenses (control)"),
         ("fspl5s_g08", "\\quad + 12 epochs, finite-source single lenses"),
-        ("fspl5s_seasons_g08", "\\quad + 12 epochs, finite source, measured-season pauses")]
+        ("fspl5s_seasons_g08", "\\quad + 12 epochs, finite source, measured-season pauses (recommended)")]
 if T:
     M = T["models"]
     def fa(m):
@@ -148,8 +202,49 @@ if T:
         bins = M[m]["fa_1S1L_by_rho_over_u0"]
         cmd(f"bmlGullsRhoLo{nm}", three(bins[0]["k"] / bins[0]["n"])); cmd(f"bmlGullsRhoHi{nm}", three(bins[-1]["k"] / bins[-1]["n"]))
         cmd(f"bmlGullsRhoMid{nm}", three(bins[-2]["k"] / bins[-2]["n"]))
-        cmd(f"bmlGullsMeanRec{nm}", three(M[m]["mean_recall_1S2L_fa_le_0p3"]))
-    cmd("bmlGullsNcheckpoints", str(len([k for k in M if k != "shipped" and not k.startswith("sched_")])))
+        need("mean_recall_1S2L_fa_le_0p3_exact" in M[m], f"{m}: no unrounded mean recall (rerun gulls_summary_tables.py)")
+        cmd(f"bmlGullsMeanRec{nm}", three(M[m].get("mean_recall_1S2L_fa_le_0p3_exact", M[m]["mean_recall_1S2L_fa_le_0p3"])))
+        if need("weighted" in M[m], f"{m}: no weighted block (rerun gulls_summary_tables.py)"):
+            W_ = M[m]["weighted"]; wat = next(a for a in W_["recall_at_matched_fa"] if abs(a["fa_target"] - mid) < 1e-9)
+            cmd(f"bmlGullsFaW{nm}", pct(W_["frozen_threshold"]["fa_1S1L"]))
+            cmd(f"bmlGullsRecW{nm}", three(wat["recall_1S2L"])); cmd(f"bmlGullsRecBinW{nm}", three(wat["recall_2S2L"]))
+    # every fine-tuned checkpoint scored on RMDC26 (the multiplicity behind "optimistic")
+    cmd("bmlGullsNcheckpoints", str(len([k for k in M if k != "shipped"])))
+    need("sample" in T, "transfer_tradeoff_all.json lacks the sample block (rerun gulls_summary_tables.py)")
+    if "sample" in T:
+        cmd("bmlGullsShortSingle", pct0(T["sample"]["frac_1S1L_tE_lt_3d"]["unweighted"]))
+        cmd("bmlGullsShortSingleW", pct0(T["sample"]["frac_1S1L_tE_lt_3d"]["weighted"]))
+        cmd("bmlGullsTeMedSingle", f"{T['sample']['median_tE_days']['RMDC26_1S1L_ML']:.1f}")
+        cmd("bmlGullsTeMedPlanet", f"{T['sample']['median_tE_days']['RMDC26_1S2L_ML']:.1f}")
+        ke = T["sample"]["kish_n_eff"]
+        cmd("bmlGullsNeffSingle", f"{ke['RMDC26_1S1L_ML']:,.0f}"); cmd("bmlGullsNeffPlanet", f"{ke['RMDC26_1S2L_ML']:,.0f}")
+    for m, nm in ((REC, "Rec"), (R3, "Fspl")):                  # false alarms by timescale, weighted
+        te_ = M[m]["weighted"]["fa_1S1L_by_tE"]
+        cmd(f"bmlGullsFaTeLo{nm}", pct(te_[0]["fa_unweighted"])); cmd(f"bmlGullsFaTeHi{nm}", pct(te_[-1]["fa_unweighted"]))
+    # paired differences on the same events (class-stratified bootstrap over events; not training-seed variance)
+    need("paired_differences" in T, "transfer_tradeoff_all.json lacks paired_differences (rerun with --pairs)")
+    PD = T.get("paired_differences", {}).get("pairs", {})
+    def pdm(pair, nm):
+        if not need(pair in PD, f"paired difference {pair} missing"):
+            return
+        for wt, suf in (("unweighted", ""), ("weighted", "W")):
+            for key, knm in (("recall_1S2L_at_0.052", "Rec"), ("recall_2S2L_at_0.052", "RecBin"), ("fa_frozen", "Fa")):
+                d_ = PD[pair][wt][key]; f_ = pct if knm == "Fa" else three
+                cmd(f"bmlDiff{nm}{knm}{suf}", ("+" if d_["diff"] >= 0 else "") + f_(d_["diff"]))
+                cmd(f"bmlDiff{nm}{knm}{suf}Lo", f_(d_["ci95"][0])); cmd(f"bmlDiff{nm}{knm}{suf}Hi", f_(d_["ci95"][1]))
+        dd = [PD[pair]["weighted"][f"recall_1S2L_at_{t}"]["diff"] for t in ("0.02", "0.052", "0.117")]
+        cmd(f"bmlDiff{nm}RecWMin", three(min(dd))); cmd(f"bmlDiff{nm}RecWMax", three(max(dd)))
+        lo_ = [PD[pair]["weighted"][f"recall_1S2L_at_{t}"]["ci95"][0] for t in ("0.02", "0.052", "0.117")]
+        cmd(f"bmlDiff{nm}RecWLoMin", three(min(lo_)))
+        if nm == "Comb" and not min(lo_) > 0:          # the draft says every weighted interval is above zero
+            raise SystemExit(f"FATAL: the combined-arm weighted recall intervals no longer all exclude zero ({lo_}); revise the text")
+    for pair, nm in ((f"{REC}-{R3}", "Comb"), ("fspl5s_g08-pspl5s_ctrl_g08", "Phys"), ("pspl5s_ctrl_g08-ft_g08e12", "Train"),
+                     ("sched_sched_seasons-sched_rand_norelabel", "Sched"), ("fspl5s_espl_g08-fspl5s_g08", "Espl")):
+        pdm(pair, nm)
+    if "sched_rand-ft_g08e12" in PD:                  # two runs of one recipe on different pools, weighted
+        cmd("bmlPoolSpreadW", three(max(abs(PD["sched_rand-ft_g08e12"]["weighted"][f"recall_1S2L_at_{t}"]["diff"]) for t in ("0.02", "0.052", "0.117"))))
+    need("sched_sched_seasons" in M and "by_season" in M["sched_sched_seasons"] and "by_season" in M.get("sched_rand_norelabel", {}),
+         "per-season blocks missing (rerun gulls_summary_tables.py --by-season)")
     if "sched_sched_seasons" in M and "sched_rand_norelabel" in M:
         wins = sum(1 for si, b in M["sched_sched_seasons"].get("by_season", {}).items()
                    if next(a["recall_1S2L"] for a in b["recall_at_matched_fa"] if a["fa_target"] == mid)
@@ -168,15 +263,16 @@ if T:
         raise SystemExit("FATAL: sched_rand missing from transfer_tradeoff_all.json (seed-spread estimate)")
     lines = []
     for m, label in ROWS:
-        if m not in M:
+        if not need(m in M, f"table row {m} missing"):
             continue
-        b = M[m]["fa_1S1L_by_rho_over_u0"]
-        cells = [pct(fa(m))] + [three(rec(m, t)) for t in (budgets[0], mid, budgets[3])] + [three(x["k"] / x["n"]) for x in (b[0], b[3], b[4], b[5])]
+        b = M[m]["fa_1S1L_by_rho_over_u0"]; W_ = M[m]["weighted"]
+        wat = next(a for a in W_["recall_at_matched_fa"] if abs(a["fa_target"] - mid) < 1e-9)
+        cells = ([pct(fa(m)), pct(W_["frozen_threshold"]["fa_1S1L"])] + [three(rec(m, t)) for t in (budgets[0], mid, budgets[3])]
+                 + [three(wat["recall_1S2L"])] + [three(x["k"] / x["n"]) for x in (b[0], b[3], b[4], b[5])])
         lines.append(label + " & " + " & ".join(cells) + " \\\\")
     ach = {t: max(abs(at(m, t)["fa_achieved_exact"] - t) for m, _ in ROWS if m in M) for t in (budgets[0], mid, budgets[3])}
     lines.append(f"% achieved single-lens false-alarm rate within {100 * max(ach.values()):.2f} points of each budget")
-    os.makedirs(os.path.join(HERE, "outputs"), exist_ok=True)
-    open(os.path.join(HERE, "outputs", "gulls_transfer_table.tex"), "w").write("\n".join(lines) + "\n")
+    TABLES["gulls_transfer_table.tex"] = "\n".join(lines) + "\n"
     cmd("bmlGullsBudgetSlack", f"{100 * max(ach.values()):.2f}")
 
 C = load("transfer_colour_ablation.json")
@@ -184,6 +280,8 @@ if C:
     gains = [next(a for a in c["three_band"]["recall_at_matched_fa"] if a["fa_target"] == 0.052)["recall_1S2L"]
              - next(a for a in c["f146_only"]["recall_at_matched_fa"] if a["fa_target"] == 0.052)["recall_1S2L"] for c in C["models"].values()]
     cmd("bmlGullsColourGainLo", three(min(gains))); cmd("bmlGullsColourGainHi", three(max(gains)))
+    cmd("bmlGullsNcolour", str(len(C["models"])))
+    need(REC in C["models"], f"colour ablation lacks {REC} (score it with --bands F146)")
 
 # ------------------------------------------------------------------ relabelling, floor, sub-day, noise
 D = load("transfer_detectability_relabel.json")
@@ -204,7 +302,8 @@ if D:
     cmd("bmlGullsFailChi", pct0(bp["frac_fail_dchi2_anomaly"])); cmd("bmlGullsFloorVeto", pct0(bp["frac_floor_vetoed"]))
     cmd("bmlGullsDetRescaled", pct0(rl["RMDC26_1S2L_ML"]["frac_NonPSPL_dchi2_rescaled_to_6912_epochs"]))
     cmd("bmlGullsSinglePsplRefitPct", pct(rl["RMDC26_1S1L_ML"]["pspl_refit_anomaly_frac"]))
-    b = D["models"]["fspl5s_g08"]; a = b["at_threshold"]["frozen"]
+    need(REC in D["models"], f"relabel artifact lacks {REC} (rerun its reduce with it)")
+    b = D["models"][REC] if REC in D["models"] else D["models"][R3]; a = b["at_threshold"]["frozen"]
     r = lambda d: d["k"] / d["n"]
     cmd("bmlGullsRecDetPlanet", three(r(a["recall_1S2L_detectable"]))); cmd("bmlGullsRecDetPlanetBin", three(r(a["recall_2S2L_detectable"])))
     cmd("bmlGullsRecGenPlanet", three(r(a["recall_1S2L_generator"]))); cmd("bmlGullsRecGenPlanetBin", three(r(a["recall_2S2L_generator"])))
@@ -220,28 +319,32 @@ if D:
     dc = b["recall_detectable_by_dchi2_frozen"]
     cmd("bmlGullsRecChiLo", two(dc[0]["k"] / dc[0]["n"])); cmd("bmlGullsRecChiHi", two(dc[-1]["k"] / dc[-1]["n"]))
     ca = b["colour_ablation"]["budget_0.052"]
-    cmd("bmlGullsColDetOne", three(ca["f146_only"]["detectable"])); cmd("bmlGullsColDetThree", three(ca["three_band"]["detectable"]))
-    cmd("bmlGullsColUndetOne", three(ca["f146_only"]["undetectable"])); cmd("bmlGullsColUndetThree", three(ca["three_band"]["undetectable"]))
+    need("k_undetectable" in ca["f146_only"], "relabel colour block lacks counts (rerun its reduce)")
+    kn_ = lambda blk, key, n: blk.get(f"k_{key}", blk[key] * n) / n            # counts where stored: rounded once
+    cmd("bmlGullsColDetOne", three(kn_(ca["f146_only"], "detectable", ca["n_detectable"])))
+    cmd("bmlGullsColDetThree", three(kn_(ca["three_band"], "detectable", ca["n_detectable"])))
+    cmd("bmlGullsColUndetOne", three(kn_(ca["f146_only"], "undetectable", ca["n_undetectable"])))
+    cmd("bmlGullsColUndetThree", three(kn_(ca["three_band"], "undetectable", ca["n_undetectable"])))
     cmd("bmlGullsPrecSample", three(a["ontology_precision_sample_mix"])); cmd("bmlGullsPrecScored", three(a["ontology_precision_scored_mix"]))
     bm_ = next(x for x in b["recall_at_matched_fa"] if abs(x["fa_target"] - 0.052) < 1e-9)
     cmd("bmlGullsRecDetBudgetPlanet", two(bm_["recall_1S2L_detectable"])); cmd("bmlGullsRecDetBudgetPlanetBin", two(bm_["recall_2S2L_detectable"]))
-    if "calibrated_seasons_fullpool" in b["at_threshold"]:
+    if need("calibrated_seasons_fullpool" in b["at_threshold"], "relabel artifact lacks the recommended operating point (rerun its reduce)"):
         s_ = b["at_threshold"]["calibrated_seasons_fullpool"]
         cmd("bmlSidecarRecDetPlanet", three(r(s_["recall_1S2L_detectable"]))); cmd("bmlSidecarRecDetPlanetBin", three(r(s_["recall_2S2L_detectable"])))
-    elif not ALLOW:
-        raise SystemExit("FATAL: relabel artifact lacks the recommended operating point (rerun its reduce)")
 FS = load("floor_sensitivity.json")
 if FS:
     byf = {round(x["floor_mag"], 3): x for x in FS["by_floor"]}
     cmd("bmlGullsFloorDetLo", pct0(byf[0.005]["relabelling"]["RMDC26_1S2L_ML"]["NonPSPL"]))
     cmd("bmlGullsFloorDetHi", pct0(byf[0.05]["relabelling"]["RMDC26_1S2L_ML"]["NonPSPL"]))
 SD = load("transfer_subday.json")
-if SD:
-    m5 = SD["models"]["fspl5s_g08"]
+if SD and need(REC in SD["models"], f"transfer_subday.json lacks {REC}"):
+    m5 = SD["models"][REC]
     cmd("bmlGullsSubdayN", f"{SD['n_matched_dense_1S1L_subday']:,}"); cmd("bmlGullsSubdayTe", two(SD["te_days"]["median"]))
     cmd("bmlGullsSubdayFa", pct(m5["fa_at"]["frozen"]["fa"])); cmd("bmlGullsSubdayFaW", pct(m5["fa_at"]["frozen"]["fa_weighted"]))
+    need(all("PeriodicVar" in SD["models"][k]["argmax_distribution"] for k in SD["models"]), "sub-day argmax lacks PeriodicVar")
     pv = [SD["models"][k]["argmax_distribution"].get("PeriodicVar", 0) for k in SD["models"]]
     cmd("bmlGullsSubdayPerLo", pct0(min(pv))); cmd("bmlGullsSubdayPerHi", pct0(max(pv)))
+    ad_ = m5["argmax_distribution"]; cmd("bmlGullsSubdayMl", pct0(ad_.get("NonPSPL", 0) + ad_.get("PSPL", 0)))
 NM = load("gulls_noise_model.json")
 if NM:
     bm = NM["by_mag"]
@@ -254,7 +357,7 @@ for tag, nm in (("fspl5s_g08", "Fspl"), ("pspl5s_ctrl_g08", "Ctrl")):
     if FT:
         pr_ = FT["models"][tag]["pspl_recall_by_rho_u0"]
         cmd(f"bmlHeldPsplMid{nm}", two(pr_["[1,3)"]["pspl_recall"])); cmd(f"bmlHeldPsplHi{nm}", two(pr_["[3,inf)"]["pspl_recall"]))
-K = load("gapped_threshold_fspl5s_g08_seasons.json")
+K = load(f"gapped_threshold_{REC}_seasons.json")
 if K:
     arm = K["arms"]["rmdc26_gapped"]; pool = arm["pool"]; sl = pool["slice_thresholds"]
     cmd("bmlSidecarThr", three(pool["full_pool"]["threshold"]))
@@ -266,29 +369,37 @@ if K:
     cmd("bmlSidecarFaLo", pct(hi["fa_1S1L_k"] / hi["fa_1S1L_n"])); cmd("bmlSidecarFaHi", pct(lo["fa_1S1L_k"] / lo["fa_1S1L_n"]))
     cmd("bmlSidecarPoolPrev", pct(pool["prevalence_nonpspl_population_weighted"]))
     cmd("bmlSidecarPoolCompl", three(pool["full_pool"]["completeness"]))
-    cmd("bmlSidecarHeldAp", three(arm["our_heldout"]["ap"]))
-# the combined arm (finite source + measured-season pauses), calibrated the same way on the same held-out pool
-KC = load("gapped_threshold_fspl5s_seasons_g08_seasons.json")
-if KC:
-    armc = KC["arms"]["rmdc26_gapped"]; gc = armc["gulls_at_full_pool_threshold"]
-    cmd("bmlCombThr", three(armc["pool"]["full_pool"]["threshold"]))
-    cmd("bmlCombFa", pct(gc["fa_1S1L_k"] / gc["fa_1S1L_n"])); cmd("bmlCombRecPlanet", two(gc["recall_1S2L_k"] / gc["recall_1S2L_n"]))
-    cmd("bmlCombHeldAp", three(armc["our_heldout"]["ap"]))
-elif not ALLOW:
-    raise SystemExit("FATAL: gapped_threshold_fspl5s_seasons_g08_seasons.json missing (calibrate the combined arm)")
+    cmd("bmlSidecarHeldAp", three(arm["our_heldout"]["ap"])); cmd("bmlSidecarHeldApClean", three(K["arms"]["clean"]["our_heldout"]["ap"]))
+    # the paper's own procedure (one 20% validation slice) and why the full pool is used instead
+    gs_ = arm["gulls_at_this_threshold"]
+    cmd("bmlSidecarSliceThr", three(arm["threshold_at_target_purity"]))
+    cmd("bmlSidecarSliceFa", pct(gs_["fa_1S1L_k"] / gs_["fa_1S1L_n"])); cmd("bmlSidecarSliceRec", two(gs_["recall_1S2L_k"] / gs_["recall_1S2L_n"]))
+    if T and need("at_own_calibrated_threshold" in T["models"].get(REC, {}), f"{REC}: no weighted operating point (rerun gulls_summary_tables.py)"):
+        oc = T["models"][REC]["at_own_calibrated_threshold"]
+        assert abs(oc["threshold"] - pool["full_pool"]["threshold"]) < 1e-12, "summary and calibration disagree on the threshold"
+        cmd("bmlSidecarFaW", pct(oc["fa_1S1L"]["weighted"])); cmd("bmlSidecarRecPlanetW", two(oc["recall_1S2L"]["weighted"]))
+# round 3 (finite source, random gaps), calibrated the same way on the same held-out pool: the comparison row
+K3 = load(f"gapped_threshold_{R3}_seasons.json")
+if K3:
+    a3 = K3["arms"]["rmdc26_gapped"]; g3 = a3["gulls_at_full_pool_threshold"]
+    cmd("bmlFsplCalThr", three(a3["pool"]["full_pool"]["threshold"]))
+    cmd("bmlFsplCalFa", pct(g3["fa_1S1L_k"] / g3["fa_1S1L_n"])); cmd("bmlFsplCalRec", two(g3["recall_1S2L_k"] / g3["recall_1S2L_n"]))
+    cmd("bmlFsplHeldAp", three(a3["our_heldout"]["ap"])); cmd("bmlFsplHeldApClean", three(K3["arms"]["clean"]["our_heldout"]["ap"]))
 O = load("occupancy_sensitivity.json")
-if O:
-    o = O["models"]["fspl5s_g08"]
+if O and need(REC in O["models"] and "k_as_observed" in O["models"][REC]["fa_1S1L"], f"occupancy artifact lacks {REC} or counts (rerun it)"):
+    o = O["models"][REC]
     cmd("bmlOccN", f"{o['n']:,}")
-    cmd("bmlOccFaObs", pct(o["fa_1S1L"]["as_observed"])); cmd("bmlOccFaOne", pct(o["fa_1S1L"]["occupancy_set_to_1"]))
-    cmd("bmlOccRecObs", two(o["recall_1S2L"]["as_observed"])); cmd("bmlOccRecOne", two(o["recall_1S2L"]["occupancy_set_to_1"]))
+    kk = lambda blk, key: blk[f"k_{key}"] / blk["n"]
+    cmd("bmlOccFaObs", pct(kk(o["fa_1S1L"], "as_observed"))); cmd("bmlOccFaOne", pct(kk(o["fa_1S1L"], "occupancy_set_to_1")))
+    cmd("bmlOccRecObs", two(kk(o["recall_1S2L"], "as_observed"))); cmd("bmlOccRecOne", two(kk(o["recall_1S2L"], "occupancy_set_to_1")))
 S = load("schedule_finetune.json")
 if S and ALLOW and "n_pool" not in next(iter(S["heldout_eval"].values()))["clean"]:
     MISSING.append("schedule_finetune.json (pre-rerun version)"); S = None
 if S:
     H = S["heldout_eval"]
     first = next(iter(H.values()))
-    cmd("bmlGapHeldN", f"{first['clean']['n_scored_test']:,}" if first["clean"].get("n_scored_test") else "FATAL")
+    need(bool(first["clean"].get("n_scored_test")), "schedule_finetune.json lacks n_scored_test")
+    cmd("bmlGapHeldN", f"{first['clean'].get('n_scored_test') or 0:,}")
     cmd("bmlGapPoolN", f"{first['clean']['n_pool']:,}")
     rows = [("shipped", "shipped"), ("ft_g08e12", "gap augmentation, g08e12 (other pool)"),
             ("rand", "random gaps"), ("rand_norelabel", "random gaps, relabel off"),
@@ -298,7 +409,7 @@ if S:
         e = H[k]; ms = e["rmdc26_seasons"]; rc = ms["argmax_population"]["recall"]
         lines.append(label + " & " + " & ".join([three(e["clean"]["ap"]), three(ms["ap"]), two(rc["PSPL"]), two(rc["Flat"]), two(rc["NonPSPL"]),
                                                  three(ms["argmax_population"]["macro_f1"])]) + " \\\\")
-    open(os.path.join(HERE, "outputs", "gulls_gap_table.tex"), "w").write("\n".join(lines) + "\n")
+    TABLES["gulls_gap_table.tex"] = "\n".join(lines) + "\n"
     sh = H["shipped"]
     for k, nm in (("PSPL", "Pspl"), ("Flat", "Flat"), ("NonPSPL", "Nonpspl"), ("Eruptive", "Eruptive"), ("LongPeriodVar", "Lpv")):
         cmd(f"bmlGapShipped{nm}Clean", two(sh["clean"]["argmax_population"]["recall"][k]))
@@ -320,26 +431,34 @@ if MS:
     cmd("bmlMsN", f"{bc['RMDC26_1S2L_ML']['n']:,}")
     for k, nm in CLS.items():
         cmd(f"bmlMsScorable{nm}", pct0(pc[k]["frac_between_with_dense_adjacent_season"]))
+    need(all("n_detectable_anomaly_host_visible" in bc[k] for k in bc), "transfer_multiseason.json lacks counts (rerun its reduce)")
     for k, nm in (("RMDC26_1S2L_ML", "Planet"), ("RMDC26_2S2L_ML", "PlanetBin")):
-        cmd(f"bmlMsDet{nm}", pct0(bc[k]["frac_detectable_anomaly_of_scorable"]))
-        cmd(f"bmlMsDetHost{nm}", pct0(bc[k]["frac_detectable_anomaly_of_host_visible"]))
+        fd = bc[k]["n_detectable_anomaly"] / bc[k]["n_scorable"]                      # from counts: rounded once
+        cmd(f"bmlMsDet{nm}", pct0(fd))
+        if "n_detectable_anomaly_host_visible" in bc[k]:
+            cmd(f"bmlMsDetHost{nm}", pct0(bc[k]["n_detectable_anomaly_host_visible"] / bc[k]["n_host_visible"]))
         if D:
-            cmd(f"bmlMsDetLoss{nm}", pct0(D["relabelling"][k]["frac_NonPSPL"] - bc[k]["frac_detectable_anomaly_of_scorable"]))
-    mm = MS["models"]["fspl5s_g08"]; fz = mm["at_threshold"]["frozen"]
+            cmd(f"bmlMsDetLoss{nm}", pct0(D["relabelling"][k]["frac_NonPSPL"] - fd))
+    need(REC in MS["models"], f"transfer_multiseason.json lacks {REC} (re-extract with it)")
+    mm = MS["models"][REC] if REC in MS["models"] else MS["models"][R3]; fz = mm["at_threshold"]["frozen"]
     cmd("bmlMsFa", pct(fz["fa_1S1L"]["rate"])); cmd("bmlMsFaHi", pct(fz["fa_1S1L"]["wilson95"][1]))
     cmd("bmlMsRecDetPlanet", two(fz["recall_1S2L_detectable"]["rate"])); cmd("bmlMsRecDetPlanetBin", two(fz["recall_2S2L_detectable"]["rate"]))
-    cmd("bmlMsRecGenPlanet", two(fz["recall_1S2L_generator"]["rate"]))
+    cmd("bmlMsRecGenPlanet", pct0(fz["recall_1S2L_generator"]["k"] / fz["recall_1S2L_generator"]["n"]))
+    cmd("bmlMsRecGenPlanetBin", pct0(fz["recall_2S2L_generator"]["k"] / fz["recall_2S2L_generator"]["n"]))
     b5 = mm["recall_at_matched_fa"]["0.052"]
     cmd("bmlMsRecBudgetPlanet", two(b5["recall_1S2L_detectable"])); cmd("bmlMsRecBudgetPlanetBin", two(b5["recall_2S2L_detectable"]))
     cmd("bmlMsBudgetThr", two(b5["threshold"])); cmd("bmlMsBudgetExceed", str(b5["n_1S1L_exceedances"]))
-    if "calibrated_seasons_fullpool" in mm["at_threshold"]:
+    if need("calibrated_seasons_fullpool" in mm["at_threshold"], "between-season block lacks the recommended threshold"):
         cs = mm["at_threshold"]["calibrated_seasons_fullpool"]
-        cmd("bmlMsSidecarFa", pct(cs["fa_1S1L"]["rate"])); cmd("bmlMsSidecarRecDetPlanet", two(cs["recall_1S2L_detectable"]["rate"]))
+        cmd("bmlMsSidecarFa", pct(cs["fa_1S1L"]["k"] / cs["fa_1S1L"]["n"])); cmd("bmlMsSidecarRecDetPlanet", two(cs["recall_1S2L_detectable"]["k"] / cs["recall_1S2L_detectable"]["n"]))
 CG = load("cascade_gulls.json")
 if CG and ALLOW and "inhouse_reference" not in CG:
     MISSING.append("cascade_gulls.json (pre-rescan version)"); CG = None
 if CG:
-    R_ = CG["results"]; pr = R_["fspl5s_g08|f146|frozen"]; t_ = pr["timing"]
+    R_ = CG["results"]
+    need(f"{REC}|f146|frozen" in R_, f"cascade_gulls.json lacks {REC} (scan it with --ckpt, then --reduce)")
+    CM = REC if f"{REC}|f146|frozen" in R_ else R3
+    pr = R_[f"{CM}|f146|frozen"]; t_ = pr["timing"]
     cmd("bmlCgScanN", f"{sum(CG['n_scanned'].values()):,}"); cmd("bmlCgElig", f"{t_['n_eligible']:,}")
     cmd("bmlCgPrem", pct(t_["premature_frac"])); cmd("bmlCgPremLo", pct(t_["premature_ci95"][0])); cmd("bmlCgPremHi", pct(t_["premature_ci95"][1]))
     cmd("bmlCgLag", f"{t_['median_lag_nonpremature_days']:+.1f}"); cmd("bmlCgDet", pct0(t_["detected_frac"]))
@@ -350,8 +469,8 @@ if CG:
     cmd("bmlCgPurFive", pct0(sp["planetary_prevalence_0.05"]["purity_detectable_anomaly_alerts"]))
     kw = [k for k in sp if k.endswith("_rmdc26_scored_rate_weighted")][0]
     cmd("bmlCgPurRmdc", pct0(sp[kw]["purity_detectable_anomaly_alerts"]))
-    k_cal = "fspl5s_g08|f146|calibrated_seasons_fullpool"
-    if k_cal in R_:
+    k_cal = f"{CM}|f146|calibrated_seasons_fullpool"
+    if need(k_cal in R_, f"cascade_gulls.json lacks {k_cal}"):
         tc_ = R_[k_cal]["timing"]
         cmd("bmlCgPremCal", pct(tc_["premature_frac"])); cmd("bmlCgDetCal", pct0(tc_["detected_frac"])); cmd("bmlCgLagCal", f"{tc_['median_lag_nonpremature_days']:+.1f}")
         cmd("bmlCgSingleAlertCal", pct(R_[k_cal]["burden"]["RMDC26_1S1L_ML"]["alert_frac_per_season"]))
@@ -364,10 +483,20 @@ if CG:
     cmd("bmlCgNsingle", f"{CG['n_scanned']['RMDC26_1S1L_ML']:,}")
     cmd("bmlCgNbinary", f"{CG['n_scanned']['RMDC26_1S2L_ML'] + CG['n_scanned']['RMDC26_2S2L_ML']:,}")
     cmd("bmlCgDetLo", pct0(t_["detected_ci95"][0])); cmd("bmlCgDetHi", pct0(t_["detected_ci95"][1]))
-    t3 = R_["fspl5s_g08|threeband|frozen"]
+    t3 = R_[f"{CM}|threeband|frozen"]
     cmd("bmlCgPremThree", pct(t3["timing"]["premature_frac"])); cmd("bmlCgDetThree", pct0(t3["timing"]["detected_frac"]))
     cmd("bmlCgLagThree", f"{t3['timing']['median_lag_nonpremature_days']:+.1f}")
     cmd("bmlCgSingleAlertThree", pct(t3["burden"]["RMDC26_1S1L_ML"]["alert_frac_per_season"]))
+# ------------------------------------------------------------------ write everything at once, only now
+names = [x.split("}")[0].split("\\")[-1] for x in L]
+dup = sorted({n for n in names if names.count(n) > 1})
+if dup:
+    raise SystemExit(f"FATAL: macros defined twice: {dup}")
+if MISSING and not ALLOW:
+    raise SystemExit(f"FATAL: {MISSING}")
+os.makedirs(os.path.join(HERE, "outputs"), exist_ok=True)
+for name, text in TABLES.items():
+    open(os.path.join(HERE, "outputs", name), "w").write(text)
 OUT = os.path.join(HERE, "gulls_macros.tex")
 open(OUT, "w").write("% AUTO-GENERATED by make_gulls_macros.py -- do not edit.\n" + "\n".join(L) + "\n")
-print(f"wrote {OUT} ({len(L)} macros)" + (f"; MISSING (dev only): {MISSING}" if MISSING else ""))
+print(f"wrote {OUT} ({len(L)} macros) and {sorted(TABLES)}" + (f"; MISSING (dev only): {MISSING}" if MISSING else ""))

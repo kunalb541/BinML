@@ -68,6 +68,11 @@
      "threshold": 0.9042,
      "fa": 0.0303,
      "fa_weighted": 0.1069
+    },
+    "calibrated_seasons_fullpool": {
+     "threshold": 0.9994,
+     "fa": 0.0,
+     "fa_weighted": 0.0
     }
    },
    "argmax_distribution": {
@@ -123,6 +128,11 @@
      "threshold": 0.9042,
      "fa": 0.0152,
      "fa_weighted": 0.0458
+    },
+    "calibrated_seasons_fullpool": {
+     "threshold": 0.945,
+     "fa": 0.0036,
+     "fa_weighted": 0.0061
     }
    },
    "argmax_distribution": {
@@ -178,6 +188,11 @@
      "threshold": 0.9042,
      "fa": 0.0332,
      "fa_weighted": 0.1302
+    },
+    "calibrated_seasons_fullpool": {
+     "threshold": 0.9702,
+     "fa": 0.0029,
+     "fa_weighted": 0.0075
     }
    },
    "argmax_distribution": {
@@ -286,6 +301,67 @@
     }
    ],
    "sample": "a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 --min-te 0 --max-te 1); dense in-season single lenses only"
+  },
+  "fspl5s_seasons_g08": {
+   "fa_at": {
+    "frozen": {
+     "threshold": 0.9042,
+     "fa": 0.0159,
+     "fa_weighted": 0.057
+    },
+    "calibrated_seasons_fullpool": {
+     "threshold": 0.9563,
+     "fa": 0.0036,
+     "fa_weighted": 0.0075
+    }
+   },
+   "argmax_distribution": {
+    "Eruptive": 0.0224,
+    "Flat": 0.0845,
+    "NonPSPL": 0.1314,
+    "PSPL": 0.0181,
+    "PeriodicVar": 0.7437
+   },
+   "fa_frozen_by_te": [
+    {
+     "te_bin": [
+      0,
+      0.1
+     ],
+     "n": 600,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0
+    },
+    {
+     "te_bin": [
+      0.1,
+      0.25
+     ],
+     "n": 318,
+     "fa": 0.0,
+     "frac_argmax_pspl": 0.0
+    },
+    {
+     "te_bin": [
+      0.25,
+      0.5
+     ],
+     "n": 222,
+     "fa": 0.0225,
+     "frac_argmax_pspl": 0.009
+    },
+    {
+     "te_bin": [
+      0.5,
+      1.0
+     ],
+     "n": 245,
+     "fa": 0.0694,
+     "frac_argmax_pspl": 0.0939
+    }
+   ],
+   "sample": "a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 --min-te 0 --max-te 1); dense in-season single lenses only"
   }
- }
+ },
+ "command": "validation/gulls/subday_summary.py --models shipped ft_g08e12 fspl_g08 fspl5_g08 fspl5s_g08 fspl5s_seasons_g08"
 }

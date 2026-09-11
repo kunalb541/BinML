@@ -2,6 +2,65 @@
  "_doc": "How much of the RMDC26 transfer result is due to partial bin occupancy -> occupancy_sensitivity.json.",
  "command": "validation/gulls/occupancy_sensitivity.py --every 8 --max-events 6000",
  "models": {
+  "fspl5s_seasons_g08": {
+   "n": 6024,
+   "max_abs_dev_from_committed_rows": 5e-05,
+   "median_share_partial_bins": {
+    "F146": 0.3634,
+    "colour": 0.4632
+   },
+   "fa_1S1L": {
+    "n": 3148,
+    "k_as_observed": 215,
+    "k_occupancy_set_to_1": 185,
+    "as_observed": 0.0683,
+    "as_observed_wilson95": [
+     0.06,
+     0.0776
+    ],
+    "occupancy_set_to_1": 0.0588,
+    "occupancy_set_to_1_wilson95": [
+     0.0511,
+     0.0675
+    ],
+    "median_p_as_observed": 0.425,
+    "median_p_occupancy_1": 0.2811
+   },
+   "recall_1S2L": {
+    "n": 1509,
+    "k_as_observed": 641,
+    "k_occupancy_set_to_1": 491,
+    "as_observed": 0.4248,
+    "as_observed_wilson95": [
+     0.4001,
+     0.4499
+    ],
+    "occupancy_set_to_1": 0.3254,
+    "occupancy_set_to_1_wilson95": [
+     0.3022,
+     0.3494
+    ],
+    "median_p_as_observed": 0.856,
+    "median_p_occupancy_1": 0.7237
+   },
+   "recall_2S2L": {
+    "n": 1367,
+    "k_as_observed": 633,
+    "k_occupancy_set_to_1": 501,
+    "as_observed": 0.4631,
+    "as_observed_wilson95": [
+     0.4368,
+     0.4896
+    ],
+    "occupancy_set_to_1": 0.3665,
+    "occupancy_set_to_1_wilson95": [
+     0.3414,
+     0.3924
+    ],
+    "median_p_as_observed": 0.8828,
+    "median_p_occupancy_1": 0.7158
+   }
+  },
   "fspl5s_g08": {
    "n": 6024,
    "max_abs_dev_from_committed_rows": 5e-05,
@@ -11,6 +70,8 @@
    },
    "fa_1S1L": {
     "n": 3148,
+    "k_as_observed": 153,
+    "k_occupancy_set_to_1": 113,
     "as_observed": 0.0486,
     "as_observed_wilson95": [
      0.0416,
@@ -26,6 +87,8 @@
    },
    "recall_1S2L": {
     "n": 1509,
+    "k_as_observed": 530,
+    "k_occupancy_set_to_1": 396,
     "as_observed": 0.3512,
     "as_observed_wilson95": [
      0.3275,
@@ -41,6 +104,8 @@
    },
    "recall_2S2L": {
     "n": 1367,
+    "k_as_observed": 562,
+    "k_occupancy_set_to_1": 418,
     "as_observed": 0.4111,
     "as_observed_wilson95": [
      0.3853,
@@ -64,6 +129,8 @@
    },
    "fa_1S1L": {
     "n": 3148,
+    "k_as_observed": 386,
+    "k_occupancy_set_to_1": 394,
     "as_observed": 0.1226,
     "as_observed_wilson95": [
      0.1116,
@@ -79,6 +146,8 @@
    },
    "recall_1S2L": {
     "n": 1509,
+    "k_as_observed": 674,
+    "k_occupancy_set_to_1": 569,
     "as_observed": 0.4467,
     "as_observed_wilson95": [
      0.4217,
@@ -94,6 +163,8 @@
    },
    "recall_2S2L": {
     "n": 1367,
+    "k_as_observed": 652,
+    "k_occupancy_set_to_1": 541,
     "as_observed": 0.477,
     "as_observed_wilson95": [
      0.4506,

@@ -13,6 +13,238 @@
   "RMDC26_2S2L_ML": 1500
  },
  "results": {
+  "fspl5s_seasons_g08|f146|frozen": {
+   "threshold": 0.9042405486106873,
+   "timing": {
+    "n_eligible": 1667,
+    "detected_frac": 0.6131,
+    "detected_ci95": [
+     0.5895,
+     0.6362
+    ],
+    "premature_frac": 0.0222,
+    "premature_ci95": [
+     0.0161,
+     0.0304
+    ],
+    "median_lag_nonpremature_days": 6.5,
+    "median_onset_day": 35.0
+   },
+   "burden": {
+    "RMDC26_1S1L_ML": {
+     "n": 3000,
+     "alert_frac_per_season": 0.0617,
+     "alert_frac_weighted": 0.0891,
+     "alerts_per_1000_events_per_day": 0.856
+    },
+    "RMDC26_1S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.434,
+     "alert_frac_weighted": 0.5215,
+     "alerts_per_1000_events_per_day": 6.028
+    },
+    "RMDC26_2S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.4793,
+     "alert_frac_weighted": 0.5063,
+     "alerts_per_1000_events_per_day": 6.657
+    }
+   },
+   "streaming_purity": {
+    "planetary_prevalence_0.01": {
+     "purity_detectable_anomaly_alerts": 0.0519,
+     "purity_any_binary_alerts": 0.0696,
+     "alerts_per_1000_events_per_season": 65.6,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.05": {
+     "purity_detectable_anomaly_alerts": 0.2092,
+     "purity_any_binary_alerts": 0.2805,
+     "alerts_per_1000_events_per_season": 81.4,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.4931,
+     "purity_any_binary_alerts": 0.6205,
+     "alerts_per_1000_events_per_season": 183.0,
+     "rates": "final_weight-weighted"
+    }
+   }
+  },
+  "fspl5s_seasons_g08|f146|calibrated_seasons_fullpool": {
+   "threshold": 0.9563422799110413,
+   "timing": {
+    "n_eligible": 1667,
+    "detected_frac": 0.4955,
+    "detected_ci95": [
+     0.4715,
+     0.5195
+    ],
+    "premature_frac": 0.0132,
+    "premature_ci95": [
+     0.0087,
+     0.0199
+    ],
+    "median_lag_nonpremature_days": 8.0,
+    "median_onset_day": 35.0
+   },
+   "burden": {
+    "RMDC26_1S1L_ML": {
+     "n": 3000,
+     "alert_frac_per_season": 0.0317,
+     "alert_frac_weighted": 0.045,
+     "alerts_per_1000_events_per_day": 0.44
+    },
+    "RMDC26_1S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.3207,
+     "alert_frac_weighted": 0.3918,
+     "alerts_per_1000_events_per_day": 4.454
+    },
+    "RMDC26_2S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.372,
+     "alert_frac_weighted": 0.3999,
+     "alerts_per_1000_events_per_day": 5.167
+    }
+   },
+   "streaming_purity": {
+    "planetary_prevalence_0.01": {
+     "purity_detectable_anomaly_alerts": 0.0791,
+     "purity_any_binary_alerts": 0.0995,
+     "alerts_per_1000_events_per_season": 34.8,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.05": {
+     "purity_detectable_anomaly_alerts": 0.2904,
+     "purity_any_binary_alerts": 0.3653,
+     "alerts_per_1000_events_per_season": 47.4,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.5915,
+     "purity_any_binary_alerts": 0.7133,
+     "alerts_per_1000_events_per_season": 122.4,
+     "rates": "final_weight-weighted"
+    }
+   }
+  },
+  "fspl5s_seasons_g08|threeband|frozen": {
+   "threshold": 0.9042405486106873,
+   "timing": {
+    "n_eligible": 1667,
+    "detected_frac": 0.5885,
+    "detected_ci95": [
+     0.5647,
+     0.6119
+    ],
+    "premature_frac": 0.0108,
+    "premature_ci95": [
+     0.0068,
+     0.017
+    ],
+    "median_lag_nonpremature_days": 11.5,
+    "median_onset_day": 35.0
+   },
+   "burden": {
+    "RMDC26_1S1L_ML": {
+     "n": 3000,
+     "alert_frac_per_season": 0.0613,
+     "alert_frac_weighted": 0.0917,
+     "alerts_per_1000_events_per_day": 0.852
+    },
+    "RMDC26_1S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.4253,
+     "alert_frac_weighted": 0.5372,
+     "alerts_per_1000_events_per_day": 5.907
+    },
+    "RMDC26_2S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.4613,
+     "alert_frac_weighted": 0.5119,
+     "alerts_per_1000_events_per_day": 6.407
+    }
+   },
+   "streaming_purity": {
+    "planetary_prevalence_0.01": {
+     "purity_detectable_anomaly_alerts": 0.0502,
+     "purity_any_binary_alerts": 0.068,
+     "alerts_per_1000_events_per_season": 65.2,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.05": {
+     "purity_detectable_anomaly_alerts": 0.2033,
+     "purity_any_binary_alerts": 0.2756,
+     "alerts_per_1000_events_per_season": 80.4,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.4778,
+     "purity_any_binary_alerts": 0.6188,
+     "alerts_per_1000_events_per_season": 187.5,
+     "rates": "final_weight-weighted"
+    }
+   }
+  },
+  "fspl5s_seasons_g08|threeband|calibrated_seasons_fullpool": {
+   "threshold": 0.9563422799110413,
+   "timing": {
+    "n_eligible": 1667,
+    "detected_frac": 0.4601,
+    "detected_ci95": [
+     0.4363,
+     0.4841
+    ],
+    "premature_frac": 0.003,
+    "premature_ci95": [
+     0.0013,
+     0.007
+    ],
+    "median_lag_nonpremature_days": 15.0,
+    "median_onset_day": 35.0
+   },
+   "burden": {
+    "RMDC26_1S1L_ML": {
+     "n": 3000,
+     "alert_frac_per_season": 0.0247,
+     "alert_frac_weighted": 0.0494,
+     "alerts_per_1000_events_per_day": 0.343
+    },
+    "RMDC26_1S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.314,
+     "alert_frac_weighted": 0.4108,
+     "alerts_per_1000_events_per_day": 4.361
+    },
+    "RMDC26_2S2L_ML": {
+     "n": 1500,
+     "alert_frac_per_season": 0.3327,
+     "alert_frac_weighted": 0.3918,
+     "alerts_per_1000_events_per_day": 4.62
+    }
+   },
+   "streaming_purity": {
+    "planetary_prevalence_0.01": {
+     "purity_detectable_anomaly_alerts": 0.0925,
+     "purity_any_binary_alerts": 0.1169,
+     "alerts_per_1000_events_per_season": 27.7,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.05": {
+     "purity_detectable_anomaly_alerts": 0.3228,
+     "purity_any_binary_alerts": 0.4082,
+     "alerts_per_1000_events_per_season": 39.6,
+     "rates": "unweighted"
+    },
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.5653,
+     "purity_any_binary_alerts": 0.6976,
+     "alerts_per_1000_events_per_season": 127.2,
+     "rates": "final_weight-weighted"
+    }
+   }
+  },
   "fspl5s_g08|f146|frozen": {
    "threshold": 0.9042405486106873,
    "timing": {
@@ -278,5 +510,5 @@
   },
   "note": "in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; RMDC26 anomalies are all planetary, so compare with the giant/neptune strata"
  },
- "command": "validation/gulls/cascade_gulls.py --reduce"
+ "command": "validation/gulls/cascade_gulls.py --reduce --ckpt fspl5s_seasons_g08=validation/gulls/weights/ft_fspl5s_seasons_g08.pt fspl5s_g08=validation/gulls/weights/ft_fspl5s_g08.pt"
 }

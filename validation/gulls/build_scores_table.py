@@ -4,7 +4,7 @@ The transfer tables were computed from ~43 MB per-checkpoint rows files kept OUT
 (the curve cache), so the committed artifacts could not be regenerated from a clone (2026-09-11
 verification). This writes one row per scored (dense, in-season) event with the metadata the tables
 use and P(NonPSPL) for every checkpoint scored so far, rounded as the rows store it (4 d.p.; newer
-rows 6), with rho and u0 at full precision so the rho/|u0| bins are reproduced exactly.
+rows 6), with rho, u0, tE and the event-rate weight at full precision so the bins and the weighted summaries are reproduced exactly.
 `gulls_summary_tables.py --scores validation/gulls/rmdc26_scores.csv.gz` regenerates transfer_tradeoff_all.json and
 transfer_colour_ablation.json from it alone.
 
@@ -32,6 +32,7 @@ CHECKPOINTS = {
     "sched_sched_seasons": "rows_full_sched_sched_seasons.json",
     "fspl_g08_f146only": "rows_full_fspl_g08_f146only.json", "ft_g08e12_f146only": "rows_full_ft_g08e12_f146only.json",
     "fspl5s_g08_f146only": "rows_full_fspl5s_g08_f146only.json",
+    "fspl5s_seasons_g08_f146only": "rows_full_fspl5s_seasons_g08_f146only.json",
 }
 
 
@@ -56,10 +57,10 @@ def main():
         w.writerow(["event_id", "sim_label", "season", "tE", "u0", "rho", "planet_q", "source_is_binary", "m_base", "weight"] + [c for c, _ in cols])
         for e in ids:
             r = base[e]; mm = m.loc[e]
-            w.writerow([e, r["sim_label"], season_of(float(mm["t0lens1"])), round(r["tE"], 5), repr(float(mm["u0lens1"])),
+            w.writerow([e, r["sim_label"], season_of(float(mm["t0lens1"])), repr(float(r["tE"])), repr(float(mm["u0lens1"])),
                         repr(float(mm["rho"])), "" if mm["Planet_q"] != mm["Planet_q"] else f"{float(mm['Planet_q']):.4e}",
                         "" if mm["Source_Is_Binary"] != mm["Source_Is_Binary"] else int(mm["Source_Is_Binary"]),
-                        r["m_base"], f"{r['weight']:.6g}"] + [d.get(e, "") for _, d in cols])
+                        r["m_base"], repr(float(r["weight"]))] + [d.get(e, "") for _, d in cols])
     print(f"wrote {out}: {len(ids)} events x {len(cols)} checkpoints ({os.path.getsize(out) / 1e6:.1f} MB)")
 
 

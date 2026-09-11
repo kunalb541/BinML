@@ -205,7 +205,9 @@ def _scan_one(job):
                 probs = clf._forward({b: np.stack(feats[b]) for b in BAND_BINS}, {b: np.stack(fracs[b]) for b in BAND_BINS})
                 p[np.array(valid)] = probs[:, clf.class_names.index("NonPSPL")]
             out[f"p|{name}|{variant}"] = p.astype(np.float64)          # unrounded: compared with a 16-digit threshold
-    if truth is not None:
+    if isinstance(truth, dict):                       # onset already computed by an earlier scan: model-independent, reuse it
+        out.update(truth)
+    elif truth is not None:
         t, mag, sig, (mb, t0w, tE, u0, fs) = truth
         params = {"t0": t0w, "tE": tE, "u0": u0}
         det = np.zeros(N_CUTS, bool); amp = np.zeros(N_CUTS, np.float32)
@@ -219,11 +221,45 @@ def _scan_one(job):
     return out
 
 
+def _sha(path):
+    import hashlib
+    return hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
+
+
+def check_manifest(cache):
+    """Scan files are keyed by model NAME; refuse a name that is already bound to different weights."""
+    f = os.path.join(cache, "scan_models.json")
+    man = json.load(open(f)) if os.path.exists(f) else {"fspl5s_g08": _sha(os.path.join(REPO, "validation/gulls/weights/ft_fspl5s_g08.pt"))}
+    for name, path in CKPT.items():
+        if not name[:1].isalpha():
+            raise SystemExit(f"model name {name!r} must start with a letter (scan file names are globbed by digit)")
+        h = _sha(path)
+        if man.setdefault(name, h) != h:
+            raise SystemExit(f"model name {name!r} is bound to other weights in {f}; choose a new name")
+    json.dump(man, open(f, "w"), indent=1)
+
+
+def stored_onsets(cache):
+    """event -> {'onset_detectable', 'onset_amp'} from any earlier scan file (the onset does not depend on the model)."""
+    out = {}
+    for f in glob.glob(os.path.join(cache, "scan_v2_*.npz")):
+        z = np.load(f, allow_pickle=False)
+        for k in z.files:
+            if k.startswith("onset_detectable|"):
+                e = int(k.split("|")[1])
+                out.setdefault(e, {"onset_detectable": z[k], "onset_amp": z[f"onset_amp|{e}"]})
+    return out
+
+
 def scan(args):
     os.makedirs(args.cache, exist_ok=True)
+    check_manifest(args.cache)
     sel = sample_ids(args.ref_rows, args.cap_1s1l, args.cap_binary)
     ids = sorted(sel[L1] + sel[L2] + sel[L3]); lab = {e: L for L, v in sel.items() for e in v}
     truth = load_truth(args.cache)
+    known = stored_onsets(args.cache)
+    truth = {e: known.get(e, v) for e, v in truth.items()}
+    print(f"[scan] reusing stored onsets for {sum(1 for v in truth.values() if isinstance(v, dict))} binaries", flush=True)
     idx = curve_index(ids)
     print(f"[scan] {len(ids)} events, {sum(1 for e in ids if e in idx)} in the curve cache, {sum(1 for e in ids if e in truth)} with true curves", flush=True)
     done = set()
@@ -258,12 +294,18 @@ def scan(args):
 def reduce(args):
     import pyarrow.parquet as pq
     rows = {}
-    tagc = "" if list(CKPT) == ["fspl5s_g08"] else "_" + "+".join(sorted(CKPT))
-    for f in glob.glob(os.path.join(args.cache, f"scan_v2{tagc}_[0-9]*.npz")):
+    for f in sorted(glob.glob(os.path.join(args.cache, "scan_v2_*.npz"))):   # canonical and tagged files; keys are per model
         z = np.load(f, allow_pickle=False)
         for k in z.files:
             if k.startswith("id|"):
-                e = int(k.split("|")[1]); rows[e] = {kk.rsplit("|", 1)[0]: z[kk] for kk in z.files if kk.endswith(f"|{e}")}
+                e = int(k.split("|")[1]); d = rows.setdefault(e, {})
+                for kk in z.files:
+                    if kk.endswith(f"|{e}"):
+                        d.setdefault(kk.rsplit("|", 1)[0], z[kk])
+    missing = [n for n in CKPT if not any(f"p|{n}|f146" in r for r in rows.values())]
+    if missing:
+        raise SystemExit(f"no scan for {missing}; run --scan with --ckpt first")
+    rows = {e: r for e, r in rows.items() if all(f"p|{n}|f146" in r for n in CKPT)}
     w = {int(e): float(x) for e, x in zip(*pq.read_table(args.meta_cache, columns=["event_id", "final_weight"]).to_pydict().values())}
     cuts = np.arange(1, N_CUTS + 1) * STEP
     calib = {}

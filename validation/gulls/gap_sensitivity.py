@@ -1,8 +1,9 @@
 """Why BinML fails on RMDC26 single-lens events: the season has gaps, training seasons do not.
 
 Reproduces the GULLS cross-simulator failure with NO GULLS data, using the training pipeline's own
-events.  RMDC26 (GULLS) implements Roman's real schedule, in which F146 pauses for ~6.2 h seven
-times per 70.7-day season (at days 0.98, 2.48, 21.49, 31.48, 35.23, 62.23, 69.48 in season 1).
+events.  RMDC26 (GULLS) pauses F146 for ~6.2 h seven times in its first high-cadence season (index 0;
+at days 0.98, 2.48, 21.49, 31.48, 35.23, 62.23, 69.48); the other seasons' pauses differ in number and
+phase (validation/gulls/rmdc26_schedule.json), so this mask is one season's, not "the" schedule.
 BinML's training grid (`pipeline.assemble._epochs`) is continuous; the only way an epoch drops
 is SNR < 3 or saturation, and across every class 0/1800 sampled training events contain an empty
 F146 bin.  The model's sole prior for an empty-bin token is the unrevealed future of a partial
@@ -11,10 +12,12 @@ season, so a mid-season gap is read as evidence against a clean single lens.
 Inserting those seven gaps into in-distribution events (n = 100 per class, seed 0; the committed
 gap_sensitivity.json) gives PSPL recall 0.11 and Flat recall 0.08, while NonPSPL (0.97) and
 PeriodicVar (1.00) are unaffected.  Single-gap length sweep at a FIXED position (the rng is
-re-seeded each iteration, so only the length varies): gaps of 0.5-2 h cost PSPL <= 7 points; at
+re-seeded each iteration, so only the length varies; the gap sits at day 43.0 for every event, and the
+cost of a 1-2 h gap depends on that position -- a 2026-09-12 check found 0-14 points elsewhere): gaps of
+0.5-2 h cost PSPL <= 7 points here; at
 4 h PSPL is 0.65 and Flat 0.60; at 6 h PSPL is 0.09 and Flat 0.81 -- Flat is NOT monotonic in gap
-length on this matched event set.  The GULLS run gave PSPL 0.04 / NonPSPL 0.65 / PeriodicVar 0.31
-on 1S1L (validation/gulls/transfer_shipped.json).  The two agree; the failure is the schedule.
+length on this matched event set.  The first GULLS run gave argmax PSPL 0.03 / NonPSPL 0.69 / PeriodicVar
+0.27 on 279 dense 1S1L (validation/gulls/transfer_shipped.json).  The two agree; the failure is the schedule.
 
 The remedy is `pipeline/train.py --gap-aug` (contiguous Roman-like blanks with relabelling).
 `--cadence-aug` thins RANDOM bins, which is the sparse ground-survey regime, not this one; the
