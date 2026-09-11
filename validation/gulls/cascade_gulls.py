@@ -265,15 +265,17 @@ def reduce(args):
     cuts = np.arange(1, N_CUTS + 1) * STEP
     calib = {}
     for name in CKPT:
-        f = os.path.join(HERE, f"gapped_threshold_{name}.json")
+        f = os.path.join(HERE, f"gapped_threshold_{name}_seasons.json")
         if os.path.exists(f):
-            calib[name] = float(json.load(open(f))["arms"]["rmdc26_gapped"]["threshold_at_target_purity"])
+            fp = json.load(open(f))["arms"]["rmdc26_gapped"].get("pool", {}).get("full_pool", {})
+            if fp.get("achievable"):
+                calib[name] = float(fp["threshold"])       # recommended: full pool, measured seasons
     out = {"_doc": __doc__.split("\n")[0], "protocol": {"step_days": STEP, "n_cuts": N_CUTS, "alert": "first cut with P(NonPSPL) >= threshold",
            "onset": "first half-day cut at which our label rule (dchi2 >= 160 and >= 0.02 mag vs the best PSPL on the noise-free F146 curve, GULLS errors as sigma) is met",
            "eligible": "binary lens, anomaly detectable at the full window, finite onset; no selection on model output"},
            "n_scanned": {L: sum(1 for r in rows.values() if str(r["lab"]) == L) for L in (L1, L2, L3)}, "results": {}}
     for name in CKPT:
-        thrs = {"frozen": FROZEN, **({"calibrated_gapped": calib[name]} if name in calib else {})}
+        thrs = {"frozen": FROZEN, **({"calibrated_seasons_fullpool": calib[name]} if name in calib else {})}
         for variant in ("f146", "threeband"):
             for tn, thr in thrs.items():
                 key = f"{name}|{variant}|{tn}"; res = {"threshold": thr}

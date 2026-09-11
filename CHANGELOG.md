@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased — verification of the revision work (2026-09-11)
+
+A workflow of eight independent verifiers and two adversarial checkers re-derived every number,
+claim and code path going into the revision: 182 findings in 61 issues, none refuted; record and
+dispositions in `docs/VERIFICATION_2026-09-11.md`. Changes that alter conclusions:
+- RMDC26's pause schedule differs between seasons: `validation/gulls/rmdc26_schedule.py` measures it;
+  `pipeline.train --gap-schedule rmdc26_seasons`; the first-season mask is kept as `rmdc26` and labelled
+  as such; calibration redone under the measured seasons on one pool, with the full-pool threshold and
+  its slice spread (`fspl5s`: 0.957 → RMDC26 FA 1.6%).
+- Colour-band gain and "the schedule hides half the planets" readings withdrawn; "0.56 recall ceiling"
+  and "no anomaly a survey could claim" corrected.
+- Onset: default back to the legacy 7.2-d grid (the 2026-09-11 morning change flipped a released default
+  and had two off-by-one errors); opt-in full-grid scan via `run_shard --onset-resolution-days`; shard
+  attributes record onset / noise / regime settings. Audit finding 9 re-opened.
+- Finite-source magnification: VBBinaryLensing ESPLMag (ESPLMag2 had 4-8 mmag hand-off steps; legacy
+  flag `PSPL_ESPL_LEGACY`); truncation amplitude uses it for finite-source single lenses.
+- Relabelling of RMDC26: full precision, single lenses per the training rule, the documented sample
+  enforced, a multi-start refit when the peak is outside the window, every derived number in the artifact.
+- New artifacts: `rmdc26_dataset_facts.json`, `occupancy_sensitivity.json`, per-event
+  `rmdc26_scores.csv.gz`; `validation/gulls/PROVENANCE.md` for artifacts made before generation-time
+  provenance was recorded. Controls: `pspl5s_ctrl` (point-source continued training) and the `fspl5s`
+  recipe with the smooth magnification.
+- `binml.gulls.classify_event(mode=...)`; notebooks and `ft_g08e12.pt` committed; manuscript numbers
+  only through `paper/make_gulls_macros.py` (fail-closed).
+
 ## Unreleased — follow-up experiments after the GULLS transfer (2026-09-10/11)
 
 Generator / training (all opt-in or version-flagged; the released checkpoints and frozen artifacts are unchanged):

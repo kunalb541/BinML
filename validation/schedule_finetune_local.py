@@ -109,7 +109,9 @@ def relabel_exposure(pool):
     m = rmdc26_schedule_mask(864); fin = np.isfinite(ta)
     b = np.clip((ta[fin] / 72.0 * 864).astype(int), 0, 863)
     hit = np.array([m[max(0, k - 1):min(864, k + 2)].all() for k in b])
-    return {"n_nonpspl_labelled": int(non.sum()), "n_eligible_for_legacy_relabel": int(hit.sum()),
+    tc = np.load(os.path.join(pool, "true_class.npy"))
+    return {"n_nonpspl_labelled": int(non.sum()), "n_true_class_binaries": int((tc == CLASS_NAMES.index("NonPSPL")).sum()),
+            "n_eligible_for_legacy_relabel": int(hit.sum()),
             "frac_of_nonpspl_labelled": round(float(hit.sum() / non.sum()), 4),
             "t_anom_values_inside_mask": sorted({float(x) for x in np.round(ta[fin][hit], 2)}),
             "note": ("eligible = all three bins around the recorded onset are blanked by the first-season mask; the relabel "

@@ -61,13 +61,22 @@ detail: [evaluation.md](evaluation.md).
 ## Limitations / known failure modes
 
 Documented in targeted out-of-distribution tests (their population frequency is not established):
-- **Continuous F146 required; Roman's planned schedule has gaps.** The training grid has no
-  mid-season gaps. The planned GBTDS schedule (RGES-PIT RMDC26 / GULLS release) pauses F146
-  ~6 h seven times per season, and the shipped checkpoint reads such a gap as evidence against
-  a single lens: PSPL recall 0.93 → 0.11, Flat 1.00 → 0.08, NonPSPL/PeriodicVar unaffected
-  (`validation/gulls/gap_sensitivity.json`, n=100/class). Gaps ≤ 2 h are harmless. For gapped
-  input use the gap-aware checkpoint `validation/gulls/weights/ft_g08e12.pt` (held-out macro-F1
-  under that schedule 0.384 → 0.879; −1.3 points on gap-free data). See `paper/REVISION.md`.
+- **Continuous F146 required; a gapped schedule breaks the shipped checkpoint.** The training
+  grid has no mid-season gaps. The RGES-PIT RMDC26 release (a GULLS simulation of the survey) pauses
+  F146 for 43-44 h per season in six or seven pauses whose phases differ between seasons, and the
+  shipped checkpoint reads such gaps as evidence against a single lens (single-lens and Flat recall
+  collapse; the eruptive and long-period variables and NonPSPL also degrade;
+  `validation/gulls/schedule_finetune.json`). One gap of 0.5 h costs nothing; one of 1-2 h costs about
+  7 points of single-lens recall (`gap_sensitivity.json`, n = 100 per class). **Input contract:**
+  continuous F146 within one 72-day season. For a gapped schedule use the gap-aware, finite-source
+  checkpoint `validation/gulls/weights/ft_fspl5s_g08.pt` at threshold 0.957 (chosen at 90% purity on
+  our own simulations with the measured RMDC26 pauses; 68% slice range 0.942-0.962); the shipped
+  threshold does not apply to it. On RMDC26 it flags 1.6% of single lenses at that threshold. See
+  `paper/REVISION.md` §1½ and `docs/VERIFICATION_2026-09-11.md`.
+- **Partial bin occupancy.** Survey schedules in which colour visits displace F146 exposures leave
+  bins partly filled (RMDC26: one of eight epochs in about 35% of bins), which training never
+  contains; on RMDC26 the gap-aware checkpoint reads it as mild evidence of an anomaly
+  (`validation/gulls/occupancy_sensitivity.json`).
 - **Faint sources (m > 25):** noise-dominated; risk of noise excursions read as anomalies
   (NonPSPL precision collapses). The single most operationally relevant weak spot.
 - **Wide caustics (s > 5):** the caustic is rarely crossed, so many are unrecoverable.

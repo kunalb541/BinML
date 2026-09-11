@@ -45,13 +45,17 @@ def main(argv=None):
         p = np.array([rows[m][i]["p_nonpspl"] for i in common])
         pred = np.array([rows[m][i]["pred"] for i in common])
         thrs = {"frozen": FROZEN}
-        f = os.path.join(HERE, f"gapped_threshold_{m}.json")
+        f = os.path.join(HERE, f"gapped_threshold_{m}_seasons.json")
         if os.path.exists(f):
-            thrs["calibrated_gapped"] = float(json.load(open(f))["arms"]["rmdc26_gapped"]["threshold_at_target_purity"])
+            fp = json.load(open(f))["arms"]["rmdc26_gapped"].get("pool", {}).get("full_pool", {})
+            if fp.get("achievable"):
+                thrs["calibrated_seasons_fullpool"] = float(fp["threshold"])
         blk = {"fa_at": {k: {"threshold": round(t, 4), "fa": round(float((p >= t).mean()), 4),
                              "fa_weighted": round(float(w[p >= t].sum() / w.sum()), 4)} for k, t in thrs.items()},
                "argmax_distribution": {c: round(float((pred == c).mean()), 4) for c in sorted(set(pred))},
                "fa_frozen_by_te": []}
+        blk["sample"] = ("a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 "
+                         "--min-te 0 --max-te 1); dense in-season single lenses only")
         for lo, hi in TE_BINS:
             sel = (te >= lo) & (te < hi)
             blk["fa_frozen_by_te"].append({"te_bin": [lo, hi], "n": int(sel.sum()),
@@ -62,7 +66,7 @@ def main(argv=None):
     print(f"n={len(common)} sub-day 1S1L, tE median {out['te_days']['median']} d")
     print(f"{'model':12s} {'FA frozen':>9} {'FA calib':>9}  argmax")
     for m, b in out["models"].items():
-        c = b["fa_at"].get("calibrated_gapped", {}).get("fa")
+        c = b["fa_at"].get("calibrated_seasons_fullpool", {}).get("fa")
         print(f"{m:12s} {b['fa_at']['frozen']['fa']:9.4f} {(c if c is not None else float('nan')):9.4f}  "
               + " ".join(f"{k}={v:.2f}" for k, v in b["argmax_distribution"].items()))
     print("->", args.out)

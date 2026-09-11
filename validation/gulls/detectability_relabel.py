@@ -332,7 +332,8 @@ def reduce(args):
     floor_vet = binr & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp < CFG.min_amplitude_mag)
     fail_chi = binr & ev_ok & (d2 < CFG.dchi2_anomaly)
     bin_det = binr & (det == "NonPSPL"); bin_undet = binr & (det != "NonPSPL")
-    out["relabelling"]["binaries_pooled"] = {"n": int(binr.sum()), "frac_fail_dchi2_anomaly": round(float(fail_chi.sum() / binr.sum()), 4),
+    out["relabelling"]["binaries_pooled"] = {"n": int(binr.sum()), "median_n_f146": int(np.median(nf[binr])),
+                                             "frac_fail_dchi2_anomaly": round(float(fail_chi.sum() / binr.sum()), 4),
                                              "frac_floor_vetoed": round(float(floor_vet.sum() / binr.sum()), 4),
                                              "frac_detectable": round(float(bin_det.sum() / binr.sum()), 4)}
     calib = {}
@@ -340,7 +341,11 @@ def reduce(args):
         for suffix, key in (("_seasons", "calibrated_seasons"), ("", "calibrated_legacy")):
             f = os.path.join(HERE, f"gapped_threshold_{name}{suffix}.json")
             if os.path.exists(f):
-                calib.setdefault(name, {})[key] = float(json.load(open(f))["arms"]["rmdc26_gapped"]["threshold_at_target_purity"])
+                arm = json.load(open(f))["arms"]["rmdc26_gapped"]
+                calib.setdefault(name, {})[key] = float(arm["threshold_at_target_purity"])
+                fp = arm.get("pool", {}).get("full_pool", {})
+                if suffix == "_seasons" and fp.get("achievable"):
+                    calib[name]["calibrated_seasons_fullpool"] = float(fp["threshold"])     # the recommended operating point
     MIX = {L1: 33353, L2: 11388, L3: 12234}                # scored-set class mix, for prevalence-fixed precision
     cw = np.where(s1, MIX[L1] / max(s1.sum(), 1), np.where(s2, MIX[L2] / max(s2.sum(), 1), MIX[L3] / max(s3.sum(), 1)))
     single_subfloor = s1 & ev_ok & (d2 >= CFG.dchi2_anomaly) & (amp < CFG.min_amplitude_mag)   # static-refit misfit, no planet

@@ -1,0 +1,112 @@
+{
+ "_doc": "How much of the RMDC26 transfer result is due to partial bin occupancy -> occupancy_sensitivity.json.",
+ "command": "validation/gulls/occupancy_sensitivity.py --every 8 --max-events 6000",
+ "models": {
+  "fspl5s_g08": {
+   "n": 6024,
+   "max_abs_dev_from_committed_rows": 5e-05,
+   "median_share_partial_bins": {
+    "F146": 0.3634,
+    "colour": 0.4632
+   },
+   "fa_1S1L": {
+    "n": 3148,
+    "as_observed": 0.0486,
+    "as_observed_wilson95": [
+     0.0416,
+     0.0567
+    ],
+    "occupancy_set_to_1": 0.0359,
+    "occupancy_set_to_1_wilson95": [
+     0.0299,
+     0.043
+    ],
+    "median_p_as_observed": 0.3777,
+    "median_p_occupancy_1": 0.2362
+   },
+   "recall_1S2L": {
+    "n": 1509,
+    "as_observed": 0.3512,
+    "as_observed_wilson95": [
+     0.3275,
+     0.3757
+    ],
+    "occupancy_set_to_1": 0.2624,
+    "occupancy_set_to_1_wilson95": [
+     0.2409,
+     0.2852
+    ],
+    "median_p_as_observed": 0.8148,
+    "median_p_occupancy_1": 0.6266
+   },
+   "recall_2S2L": {
+    "n": 1367,
+    "as_observed": 0.4111,
+    "as_observed_wilson95": [
+     0.3853,
+     0.4374
+    ],
+    "occupancy_set_to_1": 0.3058,
+    "occupancy_set_to_1_wilson95": [
+     0.2819,
+     0.3307
+    ],
+    "median_p_as_observed": 0.8518,
+    "median_p_occupancy_1": 0.6477
+   }
+  },
+  "ft_g08e12": {
+   "n": 6024,
+   "max_abs_dev_from_committed_rows": 5e-05,
+   "median_share_partial_bins": {
+    "F146": 0.3634,
+    "colour": 0.4632
+   },
+   "fa_1S1L": {
+    "n": 3148,
+    "as_observed": 0.1226,
+    "as_observed_wilson95": [
+     0.1116,
+     0.1345
+    ],
+    "occupancy_set_to_1": 0.1252,
+    "occupancy_set_to_1_wilson95": [
+     0.1141,
+     0.1372
+    ],
+    "median_p_as_observed": 0.3824,
+    "median_p_occupancy_1": 0.3274
+   },
+   "recall_1S2L": {
+    "n": 1509,
+    "as_observed": 0.4467,
+    "as_observed_wilson95": [
+     0.4217,
+     0.4718
+    ],
+    "occupancy_set_to_1": 0.3771,
+    "occupancy_set_to_1_wilson95": [
+     0.353,
+     0.4018
+    ],
+    "median_p_as_observed": 0.8795,
+    "median_p_occupancy_1": 0.8007
+   },
+   "recall_2S2L": {
+    "n": 1367,
+    "as_observed": 0.477,
+    "as_observed_wilson95": [
+     0.4506,
+     0.5035
+    ],
+    "occupancy_set_to_1": 0.3958,
+    "occupancy_set_to_1_wilson95": [
+     0.3702,
+     0.4219
+    ],
+    "median_p_as_observed": 0.8929,
+    "median_p_occupancy_1": 0.8156
+   }
+  }
+ }
+}

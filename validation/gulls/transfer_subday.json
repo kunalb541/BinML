@@ -59,7 +59,8 @@
      "fa": 0.0612,
      "frac_argmax_pspl": 0.0041
     }
-   ]
+   ],
+   "sample": "a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 --min-te 0 --max-te 1); dense in-season single lenses only"
   },
   "ft_g08e12": {
    "fa_at": {
@@ -67,11 +68,6 @@
      "threshold": 0.9042,
      "fa": 0.0303,
      "fa_weighted": 0.1069
-    },
-    "calibrated_gapped": {
-     "threshold": 0.9992,
-     "fa": 0.0,
-     "fa_weighted": 0.0
     }
    },
    "argmax_distribution": {
@@ -118,7 +114,8 @@
      "fa": 0.1306,
      "frac_argmax_pspl": 0.1184
     }
-   ]
+   ],
+   "sample": "a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 --min-te 0 --max-te 1); dense in-season single lenses only"
   },
   "fspl_g08": {
    "fa_at": {
@@ -126,11 +123,6 @@
      "threshold": 0.9042,
      "fa": 0.0152,
      "fa_weighted": 0.0458
-    },
-    "calibrated_gapped": {
-     "threshold": 0.9353,
-     "fa": 0.0065,
-     "fa_weighted": 0.0214
     }
    },
    "argmax_distribution": {
@@ -177,7 +169,8 @@
      "fa": 0.0408,
      "frac_argmax_pspl": 0.1959
     }
-   ]
+   ],
+   "sample": "a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 --min-te 0 --max-te 1); dense in-season single lenses only"
   },
   "fspl5_g08": {
    "fa_at": {
@@ -231,7 +224,8 @@
      "fa": 0.1265,
      "frac_argmax_pspl": 0.1102
     }
-   ]
+   ],
+   "sample": "a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 --min-te 0 --max-te 1); dense in-season single lenses only"
   },
   "fspl5s_g08": {
    "fa_at": {
@@ -240,8 +234,8 @@
      "fa": 0.0072,
      "fa_weighted": 0.0314
     },
-    "calibrated_gapped": {
-     "threshold": 0.9492,
+    "calibrated_seasons_fullpool": {
+     "threshold": 0.9569,
      "fa": 0.0007,
      "fa_weighted": 0.0033
     }
@@ -290,7 +284,8 @@
      "fa": 0.0286,
      "frac_argmax_pspl": 0.2163
     }
-   ]
+   ],
+   "sample": "a random contiguous id window of eligible events per class (gulls_transfer.py --per-class 1500 --min-te 0 --max-te 1); dense in-season single lenses only"
   }
  }
 }

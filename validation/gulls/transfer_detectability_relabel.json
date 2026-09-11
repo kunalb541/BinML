@@ -85,6 +85,7 @@
   },
   "binaries_pooled": {
    "n": 5000,
+   "median_n_f146": 7701,
    "frac_fail_dchi2_anomaly": 0.2592,
    "frac_floor_vetoed": 0.1926,
    "frac_detectable": 0.548
@@ -444,6 +445,8 @@
   "ft_g08e12": {
    "thresholds": {
     "frozen": 0.9042405486106873,
+    "calibrated_seasons": 0.9994327425956726,
+    "calibrated_seasons_fullpool": 0.999377965927124,
     "calibrated_legacy": 0.9991753697395325
    },
    "at_threshold": {
@@ -558,6 +561,230 @@
      },
      "ontology_precision_sample_mix": 0.6622,
      "ontology_precision_scored_mix": 0.5421
+    },
+    "calibrated_seasons": {
+     "fa_1S1L": {
+      "k": 0,
+      "n": 1600,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0024
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 0,
+      "n": 2500,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0015
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 0,
+      "n": 2500,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0015
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 0,
+      "n": 1398,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0027
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 0,
+      "n": 1342,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0029
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 0,
+      "n": 2260,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0017
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 0,
+      "n": 963,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.004
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 0,
+      "n": 215,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0176
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 0,
+      "n": 1296,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.003
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 0,
+      "n": 33,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.1043
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 0,
+      "n": 1567,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0024
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 0,
+      "n": 20,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.1611
+      ]
+     },
+     "ontology_precision_sample_mix": 0.0,
+     "ontology_precision_scored_mix": 0.0
+    },
+    "calibrated_seasons_fullpool": {
+     "fa_1S1L": {
+      "k": 0,
+      "n": 1600,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0024
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 0,
+      "n": 2500,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0015
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 0,
+      "n": 2500,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0015
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 0,
+      "n": 1398,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0027
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 0,
+      "n": 1342,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0029
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 0,
+      "n": 2260,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0017
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 0,
+      "n": 963,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.004
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 0,
+      "n": 215,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0176
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 0,
+      "n": 1296,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.003
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 0,
+      "n": 33,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.1043
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 0,
+      "n": 1567,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.0024
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 0,
+      "n": 20,
+      "rate": 0.0,
+      "wilson95": [
+       0.0,
+       0.1611
+      ]
+     },
+     "ontology_precision_sample_mix": 0.0,
+     "ontology_precision_scored_mix": 0.0
     },
     "calibrated_legacy": {
      "fa_1S1L": {
@@ -907,6 +1134,8 @@
   "fspl_g08": {
    "thresholds": {
     "frozen": 0.9042405486106873,
+    "calibrated_seasons": 0.9259493947029114,
+    "calibrated_seasons_fullpool": 0.9450188279151917,
     "calibrated_legacy": 0.9353199601173401
    },
    "at_threshold": {
@@ -1021,6 +1250,230 @@
      },
      "ontology_precision_sample_mix": 0.6908,
      "ontology_precision_scored_mix": 0.6113
+    },
+    "calibrated_seasons": {
+     "fa_1S1L": {
+      "k": 58,
+      "n": 1600,
+      "rate": 0.0362,
+      "wilson95": [
+       0.0281,
+       0.0466
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 812,
+      "n": 2500,
+      "rate": 0.3248,
+      "wilson95": [
+       0.3067,
+       0.3434
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 871,
+      "n": 2500,
+      "rate": 0.3484,
+      "wilson95": [
+       0.33,
+       0.3673
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 578,
+      "n": 1398,
+      "rate": 0.4134,
+      "wilson95": [
+       0.3879,
+       0.4395
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 664,
+      "n": 1342,
+      "rate": 0.4948,
+      "wilson95": [
+       0.4681,
+       0.5215
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 441,
+      "n": 2260,
+      "rate": 0.1951,
+      "wilson95": [
+       0.1793,
+       0.212
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 310,
+      "n": 963,
+      "rate": 0.3219,
+      "wilson95": [
+       0.2932,
+       0.3521
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 84,
+      "n": 215,
+      "rate": 0.3907,
+      "wilson95": [
+       0.3279,
+       0.4573
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 131,
+      "n": 1296,
+      "rate": 0.1011,
+      "wilson95": [
+       0.0858,
+       0.1187
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 10,
+      "n": 33,
+      "rate": 0.303,
+      "wilson95": [
+       0.1738,
+       0.4734
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 48,
+      "n": 1567,
+      "rate": 0.0306,
+      "wilson95": [
+       0.0232,
+       0.0404
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 6,
+      "n": 20,
+      "rate": 0.3,
+      "wilson95": [
+       0.1455,
+       0.519
+      ]
+     },
+     "ontology_precision_sample_mix": 0.7134,
+     "ontology_precision_scored_mix": 0.6415
+    },
+    "calibrated_seasons_fullpool": {
+     "fa_1S1L": {
+      "k": 37,
+      "n": 1600,
+      "rate": 0.0231,
+      "wilson95": [
+       0.0168,
+       0.0317
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 684,
+      "n": 2500,
+      "rate": 0.2736,
+      "wilson95": [
+       0.2565,
+       0.2914
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 744,
+      "n": 2500,
+      "rate": 0.2976,
+      "wilson95": [
+       0.28,
+       0.3158
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 493,
+      "n": 1398,
+      "rate": 0.3526,
+      "wilson95": [
+       0.328,
+       0.3781
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 582,
+      "n": 1342,
+      "rate": 0.4337,
+      "wilson95": [
+       0.4074,
+       0.4603
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 353,
+      "n": 2260,
+      "rate": 0.1562,
+      "wilson95": [
+       0.1418,
+       0.1717
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 253,
+      "n": 963,
+      "rate": 0.2627,
+      "wilson95": [
+       0.2359,
+       0.2914
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 66,
+      "n": 215,
+      "rate": 0.307,
+      "wilson95": [
+       0.2492,
+       0.3716
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 100,
+      "n": 1296,
+      "rate": 0.0772,
+      "wilson95": [
+       0.0638,
+       0.093
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 8,
+      "n": 33,
+      "rate": 0.2424,
+      "wilson95": [
+       0.1283,
+       0.4102
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 29,
+      "n": 1567,
+      "rate": 0.0185,
+      "wilson95": [
+       0.0129,
+       0.0265
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 5,
+      "n": 20,
+      "rate": 0.25,
+      "wilson95": [
+       0.1119,
+       0.4687
+      ]
+     },
+     "ontology_precision_sample_mix": 0.7338,
+     "ontology_precision_scored_mix": 0.6767
     },
     "calibrated_legacy": {
      "fa_1S1L": {
@@ -1369,7 +1822,9 @@
   },
   "fspl5_g08": {
    "thresholds": {
-    "frozen": 0.9042405486106873
+    "frozen": 0.9042405486106873,
+    "calibrated_seasons": 0.9627982378005981,
+    "calibrated_seasons_fullpool": 0.970207929611206
    },
    "at_threshold": {
     "frozen": {
@@ -1483,6 +1938,230 @@
      },
      "ontology_precision_sample_mix": 0.6574,
      "ontology_precision_scored_mix": 0.5532
+    },
+    "calibrated_seasons": {
+     "fa_1S1L": {
+      "k": 31,
+      "n": 1600,
+      "rate": 0.0194,
+      "wilson95": [
+       0.0137,
+       0.0274
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 614,
+      "n": 2500,
+      "rate": 0.2456,
+      "wilson95": [
+       0.2291,
+       0.2629
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 673,
+      "n": 2500,
+      "rate": 0.2692,
+      "wilson95": [
+       0.2522,
+       0.2869
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 447,
+      "n": 1398,
+      "rate": 0.3197,
+      "wilson95": [
+       0.2958,
+       0.3447
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 539,
+      "n": 1342,
+      "rate": 0.4016,
+      "wilson95": [
+       0.3757,
+       0.4281
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 301,
+      "n": 2260,
+      "rate": 0.1332,
+      "wilson95": [
+       0.1198,
+       0.1478
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 224,
+      "n": 963,
+      "rate": 0.2326,
+      "wilson95": [
+       0.207,
+       0.2603
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 61,
+      "n": 215,
+      "rate": 0.2837,
+      "wilson95": [
+       0.2277,
+       0.3474
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 77,
+      "n": 1296,
+      "rate": 0.0594,
+      "wilson95": [
+       0.0478,
+       0.0736
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 9,
+      "n": 33,
+      "rate": 0.2727,
+      "wilson95": [
+       0.1507,
+       0.4422
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 22,
+      "n": 1567,
+      "rate": 0.014,
+      "wilson95": [
+       0.0093,
+       0.0212
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 4,
+      "n": 20,
+      "rate": 0.2,
+      "wilson95": [
+       0.0807,
+       0.416
+      ]
+     },
+     "ontology_precision_sample_mix": 0.7481,
+     "ontology_precision_scored_mix": 0.6938
+    },
+    "calibrated_seasons_fullpool": {
+     "fa_1S1L": {
+      "k": 24,
+      "n": 1600,
+      "rate": 0.015,
+      "wilson95": [
+       0.0101,
+       0.0222
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 509,
+      "n": 2500,
+      "rate": 0.2036,
+      "wilson95": [
+       0.1883,
+       0.2198
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 557,
+      "n": 2500,
+      "rate": 0.2228,
+      "wilson95": [
+       0.2069,
+       0.2395
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 378,
+      "n": 1398,
+      "rate": 0.2704,
+      "wilson95": [
+       0.2478,
+       0.2943
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 452,
+      "n": 1342,
+      "rate": 0.3368,
+      "wilson95": [
+       0.312,
+       0.3625
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 236,
+      "n": 2260,
+      "rate": 0.1044,
+      "wilson95": [
+       0.0925,
+       0.1177
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 181,
+      "n": 963,
+      "rate": 0.188,
+      "wilson95": [
+       0.1645,
+       0.2139
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 53,
+      "n": 215,
+      "rate": 0.2465,
+      "wilson95": [
+       0.1937,
+       0.3082
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 55,
+      "n": 1296,
+      "rate": 0.0424,
+      "wilson95": [
+       0.0327,
+       0.0548
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 8,
+      "n": 33,
+      "rate": 0.2424,
+      "wilson95": [
+       0.1283,
+       0.4102
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 16,
+      "n": 1567,
+      "rate": 0.0102,
+      "wilson95": [
+       0.0063,
+       0.0165
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 2,
+      "n": 20,
+      "rate": 0.1,
+      "wilson95": [
+       0.0279,
+       0.301
+      ]
+     },
+     "ontology_precision_sample_mix": 0.7615,
+     "ontology_precision_scored_mix": 0.7095
     }
    },
    "recall_at_matched_fa": [
@@ -1721,6 +2400,7 @@
    "thresholds": {
     "frozen": 0.9042405486106873,
     "calibrated_seasons": 0.931399405002594,
+    "calibrated_seasons_fullpool": 0.9569272398948669,
     "calibrated_legacy": 0.9491875171661377
    },
    "at_threshold": {
@@ -1947,6 +2627,118 @@
      },
      "ontology_precision_sample_mix": 0.719,
      "ontology_precision_scored_mix": 0.6577
+    },
+    "calibrated_seasons_fullpool": {
+     "fa_1S1L": {
+      "k": 21,
+      "n": 1600,
+      "rate": 0.0131,
+      "wilson95": [
+       0.0086,
+       0.02
+      ]
+     },
+     "recall_1S2L_generator": {
+      "k": 611,
+      "n": 2500,
+      "rate": 0.2444,
+      "wilson95": [
+       0.228,
+       0.2616
+      ]
+     },
+     "recall_2S2L_generator": {
+      "k": 668,
+      "n": 2500,
+      "rate": 0.2672,
+      "wilson95": [
+       0.2502,
+       0.2849
+      ]
+     },
+     "recall_1S2L_detectable": {
+      "k": 455,
+      "n": 1398,
+      "rate": 0.3255,
+      "wilson95": [
+       0.3014,
+       0.3505
+      ]
+     },
+     "recall_2S2L_detectable": {
+      "k": 534,
+      "n": 1342,
+      "rate": 0.3979,
+      "wilson95": [
+       0.3721,
+       0.4244
+      ]
+     },
+     "flag_binaries_undetectable": {
+      "k": 290,
+      "n": 2260,
+      "rate": 0.1283,
+      "wilson95": [
+       0.1152,
+       0.1427
+      ]
+     },
+     "flag_binaries_floor_vetoed": {
+      "k": 218,
+      "n": 963,
+      "rate": 0.2264,
+      "wilson95": [
+       0.2011,
+       0.2539
+      ]
+     },
+     "flag_binaries_floor_vetoed_lt_5mmag": {
+      "k": 57,
+      "n": 215,
+      "rate": 0.2651,
+      "wilson95": [
+       0.2106,
+       0.3279
+      ]
+     },
+     "flag_binaries_fail_dchi2": {
+      "k": 72,
+      "n": 1296,
+      "rate": 0.0556,
+      "wilson95": [
+       0.0443,
+       0.0694
+      ]
+     },
+     "flag_1S1L_pspl_refit_anomaly": {
+      "k": 4,
+      "n": 33,
+      "rate": 0.1212,
+      "wilson95": [
+       0.0482,
+       0.2733
+      ]
+     },
+     "flag_1S1L_other": {
+      "k": 17,
+      "n": 1567,
+      "rate": 0.0108,
+      "wilson95": [
+       0.0068,
+       0.0173
+      ]
+     },
+     "flag_1S1L_significant_subfloor_misfit": {
+      "k": 3,
+      "n": 20,
+      "rate": 0.15,
+      "wilson95": [
+       0.0524,
+       0.3604
+      ]
+     },
+     "ontology_precision_sample_mix": 0.7608,
+     "ontology_precision_scored_mix": 0.722
     },
     "calibrated_legacy": {
      "fa_1S1L": {

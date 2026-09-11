@@ -211,23 +211,27 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   structure. Binary *characterization*
   needs that density — the short caustic anomaly must be observed. On sparse ground-survey
   cadence (LSST, multi-day gaps) detection degrades and characterization is not recoverable.
-- **The shipped checkpoint requires a continuous F146 season — Roman's planned schedule is
-  not one.** Found 2026-08-23, after submission. The planned GBTDS schedule (as implemented in
-  the RGES-PIT RMDC26 / GULLS release) pauses F146 for ~6 h seven times per season. The training
-  grid has no such gaps, and the model reads an empty mid-season bin as evidence against a
-  single lens: inserting those seven gaps into in-distribution events drops PSPL recall
-  0.93 → 0.11 and Flat 1.00 → 0.08, with NonPSPL and PeriodicVar unaffected. Gaps ≤ 2 h are
-  harmless. **For the planned schedule use the gap-aware, finite-source checkpoint**
-  `validation/gulls/weights/ft_fspl5s_g08.pt` at threshold 0.949 (calibrated on our own gapped
-  finite-source simulations): on 56,975 RMDC26 events it flags 4.9% of single lenses at the
-  shipped threshold (shipped weights: 35.6%) and 2.0% at its own, with planetary recall at a
-  matched false-alarm budget nearly double the shipped model's. Under our own label policy
-  44–46% of RMDC26's "planetary" events carry no detectable anomaly, so recall against
-  generator labels is bounded near 0.56; on detectable anomalies it is 0.47–0.57. The shipped
-  weights are unchanged so that the submitted numbers stay exact. Full account, including what
-  did not work (schedule-matched and noise-matched training), in
-  [`paper/REVISION.md`](paper/REVISION.md) §1½; reproduce with the scripts under
-  `validation/gulls/`.
+- **The shipped checkpoint requires a continuous F146 season; the survey as simulated in RMDC26
+  is not one.** Found 2026-08-23, after submission. The RGES-PIT RMDC26 release (a GULLS simulation
+  of the survey) pauses F146 for 43-44 h per season, in six or seven pauses whose phases differ from
+  season to season (`validation/gulls/rmdc26_schedule.json`). The training grid has no such gaps, and
+  the model reads an empty mid-season bin as evidence against a single lens: imposing the pauses on
+  our own held-out seasons collapses single-lens and Flat recall and also degrades the eruptive and
+  long-period variables and NonPSPL (`validation/gulls/schedule_finetune.json`). A single gap of
+  0.5 h costs nothing; one gap of 1-2 h already costs about 7 points of single-lens recall.
+  **For a gapped schedule use the gap-aware, finite-source checkpoint**
+  `validation/gulls/weights/ft_fspl5s_g08.pt` at its own threshold, 0.957, chosen at 90% purity on
+  our own simulated seasons with the measured pauses imposed (68% of validation slices: 0.942-0.962).
+  On 56,975 RMDC26 events it flags 1.6% of single lenses at that threshold (1.3-2.4% across the
+  slice spread) with planetary recall 0.24 / 0.27; at the shipped threshold it flags 4.8% against the
+  shipped weights' 35.6%. RMDC26 also guided the diagnosis and the choice of this checkpoint, so these
+  numbers are optimistic for it. Under our own label policy 44-46% of the selected RMDC26 planetary
+  events carry no anomaly the policy would claim within one season; on those with one, recall at 0.957
+  is 0.33 / 0.40. The shipped weights are unchanged so that the submitted numbers stay exact. Full
+  account, including what did not work and what a 2026-09-11 verification corrected, in
+  [`paper/REVISION.md`](paper/REVISION.md) §1½ and
+  [`docs/VERIFICATION_2026-09-11.md`](docs/VERIFICATION_2026-09-11.md); every number regenerates
+  from the scripts under `validation/gulls/`.
 - **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
   faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
   sub-day tE (few epochs on the peak).

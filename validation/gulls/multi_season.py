@@ -219,7 +219,11 @@ def reduce(args):
         for suffix, key in (("_seasons", "calibrated_seasons"), ("", "calibrated_legacy")):
             f = os.path.join(HERE, f"gapped_threshold_{name}{suffix}.json")
             if os.path.exists(f):
-                calib.setdefault(name, {})[key] = float(json.load(open(f))["arms"]["rmdc26_gapped"]["threshold_at_target_purity"])
+                arm = json.load(open(f))["arms"]["rmdc26_gapped"]
+                calib.setdefault(name, {})[key] = float(arm["threshold_at_target_purity"])
+                fp = arm.get("pool", {}).get("full_pool", {})
+                if suffix == "_seasons" and fp.get("achievable"):
+                    calib[name]["calibrated_seasons_fullpool"] = float(fp["threshold"])     # the recommended operating point
     out = {"_doc": __doc__.split("\n")[0], "n_events": len(rows),
            "population": ("amplitude- and t_E-eligible events whose t0 falls BETWEEN two seasons (out-of-mission peaks excluded); "
                           f"sample = first {args.cap} such event ids per class"),

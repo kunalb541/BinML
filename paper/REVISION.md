@@ -50,7 +50,14 @@ must enter through `make_macros.py`, never typed.
 
 ---
 
-## 1. Gap sensitivity and the first cross-simulator validation — COMPLETE, ready to write up
+## 1. Gap sensitivity and the first cross-simulator validation — historical record (2026-08-23 to 09-10)
+
+**Read this first.** This section records the work as it was done. The 2026-09-11 verification
+(`docs/VERIFICATION_2026-09-11.md`: 182 findings, 61 issues) corrected several of its statements;
+the corrections are made in place below where they are numbers, and where this section conflicts
+with section 1½ or the verification record, those win. In particular: RMDC26's pause schedule
+differs between seasons (the "seven pauses" below are the first season's), the calibrations below
+were redone under the measured seasons, and the manuscript text lives in `paper/draft_gulls_section.tex`.
 
 **Status:** all artifacts committed (`9b921c5`, `ecd5178`). Shipped weights unchanged.
 
@@ -63,13 +70,16 @@ shipped model fails on them.
 
 **The finding.** The RMDC26 release from the Roman Galactic Exoplanet Survey PIT (GULLS
 simulator, `huggingface.co/datasets/RGES-PIT/MachineLearning`, revision `a338d5ba`) implements
-the GBTDS schedule as planned, in which F146 pauses for ~6.2 h seven times per 70.7-day season.
+its own implementation of the GBTDS schedule, in which F146 pauses for 43-44 h per 70.7-day
+season, in six or seven pauses whose phases differ between its six high-cadence seasons
+(`validation/gulls/rmdc26_schedule.json`; the seven ~6.2 h pauses used in this section are the first
+season's).
 BinML's training grid (`pipeline/assemble._epochs`) is continuous; the only way an epoch is lost
 is SNR < 3 or saturation, and across 1,800 sampled training events in every class none contains
-an empty F146 bin. The model's sole prior for an empty mid-season token is the unrevealed future
+an empty F146 bin (in a full natural-prior pool, 6 of 89,919). The model's sole prior for an empty mid-season token is the unrevealed future
 of a truncated season, so it reads a gap as evidence against a clean single lens.
 
-Inserting RMDC26's seven gaps into in-distribution events (n = 100 per class,
+Inserting the first RMDC26 season's seven pauses into in-distribution events (n = 100 per class,
 `validation/gulls/gap_sensitivity.json`):
 
 | condition | PSPL | NonPSPL | Flat | PeriodicVar |
@@ -79,10 +89,12 @@ Inserting RMDC26's seven gaps into in-distribution events (n = 100 per class,
 | 1 gap × 2 h | 0.860 | 0.990 | 1.000 | 0.990 |
 | 1 gap × 4 h | 0.650 | 0.990 | 0.600 | 0.990 |
 | 1 gap × 6 h | 0.090 | 1.000 | 0.810 | 0.990 |
-| RMDC26 schedule (7 × 6.2 h) | 0.110 | 0.970 | 0.080 | 1.000 |
+| first RMDC26 season's pauses (7 × 6.2 h) | 0.110 | 0.970 | 0.080 | 1.000 |
 
 Recall, argmax. Gaps ≤ 2 h are nearly harmless (a 0.5 h gap, not shown, costs nothing). The lost
-PSPL and Flat events go to NonPSPL and PeriodicVar; NonPSPL and PeriodicVar recall are unaffected.
+PSPL events go to NonPSPL and PeriodicVar, Flat mostly to PeriodicVar; in this four-class test NonPSPL
+and PeriodicVar recall are unaffected. (On the 30,013-event six-class held-out, Eruptive,
+LongPeriodVar and NonPSPL also degrade and NonPSPL precision collapses; section 1½ row 2.)
 Flat is NOT monotonic in gap length (1.00 → 0.60 at 4 h → 0.81 at 6 h); every condition scores
 the same 100 events per class (the harness re-seeds per condition), so this is model behaviour,
 not sampling noise — do not describe the degradation as monotonic. This is a property of the input
@@ -93,8 +105,8 @@ band and relabels. **Audit correction (2026-09-09) — describe what g08e12 actu
 the intended rule:** the "caustic inside a gap → PSPL" test used `t_anom`, which the simulator
 resolves only to 7.2-day steps (the END of the first 7.2-d interval in which the anomaly became
 detectable), so it tested a 6-hour slot up to 7.2 d after the real caustic — effectively an
-arbitrary slot, relabelling ~1–2% of NonPSPL events to PSPL at random rather than the ones whose
-caustic was hidden. The "nothing detectable left → Flat" branch compares a NOISY max against the
+arbitrary slot, relabelling about 0.4% of NonPSPL training presentations to PSPL essentially at
+random (measured 2026-09-11) rather than the ones whose caustic was hidden. The "nothing detectable left → Flat" branch compares a NOISY max against the
 0.02 mag floor and never fires for m ≳ 21. Neither defect touches any reported metric (both act
 on training labels only), and the g08e12 result stands as measured, but the manuscript must say
 the fine-tune's relabelling was approximate. Fixing the rule (finer onset resolution; noise-aware
@@ -122,30 +134,34 @@ population estimates; the `n` next to them is the raw unweighted support.
 **Cross-simulator transfer (full population, 2026-09-09).** With the fine-tuned checkpoint BinML
 can, for the first time, be scored on an independent simulator. Selection: amplitude ≥ 0.1 mag
 from the metadata (GULLS simulates the whole population; its median 1S1L peak is 0.063 mag), t_E
-in BinML's training support [1, 300] d (RMDC26 1S1L is 33% sub-day, its binary classes 0.2%, so
+in BinML's training support [1, 300] d (33% of all RMDC26 1S1L are sub-day, 0.3% / 0.15% of the planetary classes, so
 an uncut comparison conflates timescale with lens multiplicity), **every** eligible event
-(100,935 requested; 25,871 skipped for t0 in an inter-season gap, no usable F146, or too few
-off-event epochs for a baseline; 18,089 fell in low-cadence seasons and are reported separately),
+(100,935 requested; 25,871 skipped: 22,170 with t0 between seasons, 3,617 before the first or after
+the last season, 84 without usable F146 or enough off-event epochs for a baseline; 18,089 fell in
+low-cadence seasons and are reported separately),
 baseline measured empirically from the off-event flux. **56,975 dense events**, identical set
 and bit-identical inputs for both models (`validation/gulls/transfer_full_*.json`, reduced by
 `validation/gulls/transfer_reduce.py`):
 
 | RMDC26 class | truth | n | PSPL | NonPSPL | PeriodicVar | ≥ 0.9042 | weighted ≥ 0.9042 |
 |---|---|---|---|---|---|---|---|
-| 1S1L single lens | PSPL | 33,353 | 0.03 → 0.54 | 0.53 → 0.43 | 0.44 → 0.01 | **0.356 → 0.117** | 0.383 → 0.135 |
+| 1S1L single lens | PSPL | 33,353 | 0.03 → 0.54 | 0.53 → 0.43 | 0.44 → 0.01 | **0.356 → 0.116** | 0.383 → 0.135 |
 | 1S2L planet | NonPSPL | 11,388 | 0.00 → 0.17 | 0.64 → 0.83 | 0.36 → 0.00 | 0.504 → 0.457 | 0.474 → 0.512 |
 | 2S2L planet + binary source | NonPSPL | 12,234 | 0.00 → 0.16 | 0.71 → 0.83 | 0.29 → 0.00 | 0.582 → 0.469 | 0.505 → 0.523 |
 
 Shipped → fine-tuned, argmax fractions; the two right-hand columns are the fraction over the
-frozen threshold, unweighted and GULLS `final_weight`-weighted (Wilson 95% intervals are ±0.5
-points or better at these n; they are in the reduced JSON). Single-lens false alarms at the
-frozen threshold fall by a factor of three (35.6% → 11.7%) while planetary recall at threshold
-is nearly preserved (0.50 → 0.46; 0.58 → 0.47), and the PeriodicVar contamination disappears.
+frozen threshold, unweighted and GULLS `final_weight`-weighted (Wilson 95% half-widths are
+±0.5 points for single lenses and up to ±1.8 points for the weighted planetary rates; they are in
+the reduced JSON). Single-lens false alarms at the frozen threshold fall by a factor of three
+(35.6% → 11.6%) while planetary recall at that threshold falls (0.50 → 0.46; 0.58 → 0.47; at a
+matched false-alarm budget it rises, section 1½), and the PeriodicVar contamination disappears.
 The fine-tune also lifts argmax anomaly recall on genuine binaries from 0.64/0.71 to 0.83. The
 threshold was calibrated on gap-free data and is open to re-tuning for this regime.
 
 **Preprocessing sensitivity (state it).** RMDC26 samples F146 every 12.1 min against BinML's
-15-min epoch grid, so a quarter of the observations share an epoch. `binml.preprocess` now
+15-min epoch grid, so about a fifth of the used epochs hold two observations (a third of the
+observations share an epoch), and colour visits leave one of eight epochs empty in about a third of
+the 2-h bins (occupancy 7/8, never seen in training; section 1½). `binml.preprocess` now
 reduces to one value per epoch before binning, which reproduces the training-cache
 representation exactly (bit-identical on-grid). Binning the same rows by raw observation
 instead gives 45.6% → 9.7% on 1S1L and 0.36/0.37 planetary recall at threshold
@@ -167,21 +183,22 @@ mechanism for the remaining 11.7%:
 | 1–3 | 539 | 0.646 |
 | > 3 | 267 | 0.674 |
 
-Monotonic over a factor of 15, and it persists at fixed \|u0\| < 0.1 (0.33 → 0.65 across the same
-bins), so it is the source-size effect, not high magnification per se. Parallax is irrelevant:
-at \|u0\| ≥ 0.3 the rate is 0.033–0.043 across all \|piE\| bins. **Cause:** `PSPLGen` is
+Monotonic over a factor of 15, and it persists at fixed \|u0\| < 0.1 (0.23 → 0.67 across the same
+bins), so it is the source-size effect, not high magnification per se. Parallax does not drive it:
+at \|u0\| ≥ 0.3 the rate is 0.033–0.049 across \|piE\| quintiles. **Cause:** `PSPLGen` is
 point-source and has no parallax, while `NonPSPLGen` samples rho ∈ [1e-4, 1e-2] — so in the training
 set a rounded, flattened peak only ever belonged to a binary, and the model learned "finite-source
-rounding ⇒ NonPSPL". GULLS single lenses with rho/\|u0\| ≳ 0.3 (7.6% of the eligible 1S1L
-population, concentrated at high magnification and bright baselines) are then flagged. This is a
+rounding ⇒ NonPSPL". GULLS single lenses with rho/\|u0\| ≳ 0.3 (7.6% of the scored 1S1L, 6.3% of the eligible; median
+\|u0\| 0.05, i.e. high magnification) are then flagged. This is a
 training-set physics gap, fixable by adding finite-source single lenses (VBBinaryLensing `ESPLMag2`
 is available) and fine-tuning; the curve cache re-scores GULLS in ~6 min. For the shipped
 checkpoint the gap effect swamps this (0.40 → 0.26 across the same bins, i.e. no finite-source
 signal visible).
 
 **Finite-source single lenses — RESULT (2026-09-09 night).** `priors.PSPL_FINITE_SOURCE` (opt-in;
-released training set unchanged), `generators.espl_magnification` (VBBinaryLensing ESPLMag2, rho
-log-uniform in [1e-3, 1] to cover GULLS' single-lens rho, median 0.012 / p90 0.60), regimes `fspl`
+released training set unchanged), `generators.espl_magnification` (VBBinaryLensing ESPLMag2 — replaced 2026-09-11 by ESPLMag, see section 1½; rho log-uniform in
+[1e-3, 1]. The rho statistics then quoted, median 0.012 / p90 0.60, describe the WHOLE 1S1L class
+including its sub-day third; the scored single lenses have median 0.0087, p90 0.046, p99 0.29), regimes `fspl`
 and `fspl_highmag` (U0_MAX 0.2, PSPL-heavy mix with substantial NonPSPL so "small u0 ⇒ PSPL" cannot be
 learned as a shortcut), runner `validation/fspl_finetune_local.py`. Warm-start from ft_g08e12, same
 gap augmentation, 12 epochs, 129,683 training events (12 `fspl` + 4 `fspl_highmag` shards), ~35 min on
@@ -206,7 +223,8 @@ vs 0.93) is not a regression figure — the like-for-like test is GULLS.
 
 The rho/|u0| false-alarm bins collapsed as predicted: 0.046 → 0.032, 0.100 → 0.036, 0.229 → 0.066,
 0.429 → 0.184, 0.646 → 0.327, 0.674 → 0.333 — halved everywhere, though the largest-source bins are
-not yet at the floor (GULLS rho reaches 5; the prior stops at 1).
+not yet at the floor. (The then-stated reason, "GULLS rho reaches 5", is a whole-class statistic;
+only 43 of the 33,353 scored single lenses have rho > 1, and the high-ratio bins come from tiny |u0|.)
 
 *Threshold shift or real gain?* Recall at **matched** single-lens false-alarm budgets
 (`transfer_tradeoff_fspl_g08.json`) — the frozen threshold simply lands the new model at a lower
@@ -244,8 +262,9 @@ NonPSPL precision cannot get near 0.90 at any threshold, so the search runs to 0
 collapses. That is the operational meaning of the rho/|u0| table — not "a few extra false alarms" but
 "the paper's operating point does not exist". For the finite-source checkpoint the principled
 threshold is a little stricter than the frozen one and lands GULLS at ~3% single-lens false alarms
-with ~0.30–0.33 planetary recall at threshold; the matched-budget curve above remains the primary
-comparison, this row is the operating point one would actually ship.
+with ~0.30–0.33 planetary recall at threshold. (SUPERSEDED 2026-09-11: these calibrations used the
+first season's pauses only, no season end, colour blanked on any overlap, and a different held-out pool
+per checkpoint; redone under the measured seasons on one pool, section 1½ row 4.)
 
 *Round 2 — GULLS-matched source sizes for both classes (`fspl5`: single-lens rho ≤ 5, binary rho ≤ 0.1;
 same recipe, warm-start from ft_g08e12; checkpoint `ft_fspl5_g08.pt`; `fspl_finetune_fspl5_g08.json`,
@@ -268,11 +287,10 @@ events).* For ft_fspl_g08, removing F087/F213 lowers single-lens false alarms sl
 threshold (0.052 → 0.048) but costs planetary recall everywhere: at a matched 5.2% false-alarm budget
 1S2L recall 0.369 → 0.302 and 2S2L 0.399 → 0.334; mean 1S2L recall over FA ≤ 30% 0.523 → 0.481.
 Per event the colour bands move P(NonPSPL) by a median 0.11 (p90 0.44) and flip 9.5% of threshold
-decisions. So GULLS' colour photometry — with its own blending fractions and zeropoints, none of which
-we corrected — still carries usable anomaly signal for a model trained on our colour model. This is the
-first cross-simulator evidence for the paper's three-band design; state it as such, with the caveat
-that the colour channels were also the ones flagged as mis-calibrated in §limits. (g08e12 half and
-the artifact `transfer_colour_ablation.json` to follow.)
+decisions. WITHDRAWN READING (2026-09-11): the colour gain comes almost entirely from planetary events WITHOUT
+a policy-detectable F146 anomaly (at the 5.2% budget, +0.6 points on detectable, +10 points on
+undetectable binaries), so it is not evidence that colour carries anomaly signal across simulators, and
+not evidence for the three-band design; its mechanism is unidentified (section 1½ row 7).
 
 *Round 3 — attribution (`fspl5s`: single-lens rho ≤ 5, binaries UNCHANGED; `ft_fspl5s_g08.pt`;
 `fspl_finetune_fspl5s_g08.json`, `transfer_full_reduced_fspl5s_g08{,_vs_fspl_g08}.json`,
@@ -290,71 +308,91 @@ entirely the binary-rho widening. On the identical 56,975 GULLS events (`gulls_s
 Own held-out physics check for fspl5s: PSPL recall 0.66 / 0.84 in the 1–3 / >3 bins (g08e12: 0.20 /
 0.16), macro-F1 0.906, no other class regressed. **ft_fspl5s_g08 is the sidecar candidate.** The
 remaining 0.28–0.29 in the largest-source bins is now the floor to chase with something other than the
-prior (limb darkening, or the binary-source population, which we do not simulate at all).
+prior (limb darkening, or the binary-source population, which we do not simulate at all). Caveats found
+2026-09-11: its finite-source training curves carry ESPLMag2's artificial 4-8 mmag hand-off steps, and
+the gain over g08e12 also includes 12 more epochs on a larger PSPL-heavy pool; both were rerun as
+controls (section 1½ rows 13-14).
 
-*Gapped-threshold calibration for fspl5s (`gapped_threshold_fspl5s_g08.json`).* Purity-0.90 threshold on
-our gapped finite-source held-out set: 0.9492 (held-out completeness
-0.693 @ purity 0.897); on GULLS that gives
-2.0% single-lens false alarms with planetary recall
-0.268 / 0.295
-(clean-data threshold 0.9236 → 3.7% /
-0.335). This is the operating point to ship with the sidecar:
-two percent single-lens false alarms on an independent simulator, chosen without looking at it.
+*Gapped-threshold calibration for fspl5s (`gapped_threshold_fspl5s_g08.json`, SUPERSEDED).* Purity-0.90
+threshold on our gapped finite-source held-out set with the first season's pauses: 0.9492 (held-out
+completeness 0.693 @ purity 0.897); on GULLS 2.0% single-lens false alarms with planetary recall
+0.268 / 0.295 (clean-data threshold 0.9236 → 3.7% / 0.334). Under the MEASURED per-season schedule,
+with the threshold chosen on the full gapped pool, the operating point is 0.957 (68% of random
+validation slices 0.942–0.962): 1.6% single-lens false alarms, recall 0.244 / 0.269
+(`gapped_threshold_fspl5s_g08_seasons.json`; section 1½ row 4).
 
 *Colour ablation, both checkpoints (`transfer_colour_ablation.json`).* Removing F087/F213 costs
 planetary recall at matched false-alarm budget for both: fspl_g08 0.369/0.399 → 0.302/0.334 at 5.2%
 FA (mean recall 0.523 → 0.481); g08e12 0.295/0.313 → 0.253/0.271 (0.486 → 0.429). Per event the colour
-bands move P(NonPSPL) by a median 0.11 and flip ~9–10% of threshold decisions. GULLS' colour photometry,
-with its own blending and zeropoints, carries usable anomaly signal for a model trained on our colour
-model: the first cross-simulator evidence for the three-band design.
+bands move P(NonPSPL) by a median 0.09–0.11 and flip 9.1–9.5% of threshold decisions. The reading
+"colour carries anomaly signal across simulators" is withdrawn: see the note above and section 1½ row 7.
 
 **How to present it.** One paragraph plus the matched-budget table in the cross-simulator
 subsection: the residual false alarms were traced to a missing physical effect in the training set,
-the effect was added, the false alarms halved and the recall-at-budget curve moved up. That is the
-cleanest possible demonstration of the paper's thesis that the labels and the training population,
-not the architecture, are the lever. Do not claim the gap is closed (the >1 bins sit at 0.33), and
-state that the fine-tune used the pre-fix `--gap-aug` relabelling semantics like g08e12.
+the effect was added, the false alarms halved and the recall-at-budget curve moved up. (The earlier
+sentence calling this the cleanest demonstration that "the training population, not the architecture,
+is the lever" is withdrawn: the architecture was never varied.) Do not claim the gap is closed (the >1
+bins sit at 0.28-0.29), state that the fine-tune used the pre-fix `--gap-aug` relabelling semantics
+like g08e12, and state that RMDC26 was used for diagnosis and checkpoint choice (section 1½).
 
 ### What NOT to claim
 
-- 2S2L is **not** the binary-source (1L2S) contaminant. Every 2S2L event carries a planetary
-  lens (median q 1.25e-4, same as 1S2L); the binary source is an extra complication in 56%.
-  RMDC26 ships no 2S1L class, so the Gaudi (1998) degeneracy raised in §discussion is still
-  untested. Say so.
-- GULLS planets are harder than ours at matched amplitude (median q 1.25e-4; the amplitude cut
-  keeps faint perturbations). Do not read 0.46 against the in-distribution 0.879.
+- 2S2L is **not** the binary-source (1L2S) contaminant. Every 2S2L lens has a planetary
+  companion (median q 1.2e-4 vs 1.4e-4 for 1S2L on the scored events: similar, not identical, KS
+  p ~ 2e-18); the source is flagged binary in 55% of scored 2S2L. RMDC26 ships no 2S1L class, so
+  the Gaudi (1998) degeneracy raised in §discussion is still untested, and a NonPSPL call on 2S2L
+  may respond to the binary source rather than the planet. Say so.
+- RMDC26's anomalous classes are entirely planetary (median q ~1.3e-4) while 82% of our NonPSPL
+  evaluation events are stellar-mass-ratio binaries (median q 0.12). Do not compare GULLS recall
+  with the in-distribution completeness at purity (0.879). ("Harder at matched amplitude" and "a
+  factor of several below our prior" were unsupported and are withdrawn.)
+- Do not describe the RMDC26 schedule as seven pauses at fixed phases; do not call the first-season
+  mask "the exact schedule".
+- Do not say the colour bands carry anomaly signal across simulators, that the schedule hides half
+  the planets, or that 0.56 bounds generator-label recall (section 1½).
 - The catalogue baseline `Source_F146 + 2.5 log10(fs_F146)` is uniformly 0.471 mag brighter
   than the quiescent flux in this release. We did not use it. Mention in a footnote only if a
   referee asks how the baseline was obtained.
 
-### Where it goes
+### Where it goes (rewritten 2026-09-11; the manuscript text is `paper/draft_gulls_section.tex`)
 
-- **§Validation / limitations:** replace the "legacy-like schedule" paragraph with the gap
-  table and the statement that the shipped checkpoint requires continuous F146.
-- **New short subsection, cross-simulator transfer:** the GULLS table, with the selection
-  stated. This directly answers the standing objection that all validation uses our own
-  simulator.
-- **Abstract:** one sentence. "On an independent simulator (GULLS/RMDC26, 56,975 matched
-  events) a gap-aware fine-tune cuts single-lens false alarms at the operating threshold from
-  36% to 12% while preserving planetary recall at threshold (0.50 → 0.46)."
-- **Model card / README:** input contract now states "continuous F146; for Roman's planned
-  schedule use the gap-aware checkpoint."
-- **Decide:** whether `ft_g08e12.pt` becomes the shipped weights. If yes, every headline number
-  is regenerated from it and the clean-data cost (−1.3 macro-F1) is reported. If no, it ships
-  alongside as `binml-gapaware.pt`. Either is defensible; the second is less work and keeps the
-  submitted numbers exact.
+- **Abstract [A]:** replace the last two sentences with the draft's; the finite-source checkpoint
+  is quoted at a matched false-alarm budget with the development-set caveat, and recall is quoted
+  against both label sets.
+- **§Limits [B]:** replace the "legacy-like schedule" paragraph with the schedule paragraph and the
+  gap table (measured per-season schedule; named arms).
+- **New section [C]:** cross-simulator validation (data and selection, results table, the two label
+  ontologies, events between seasons, the cascade on RMDC26, the floor on the label side, what the
+  test does and does not establish).
+- **Discussion [D]** and **model card / data availability [E]** as in the draft.
+- **Decided:** the shipped weights stay; the gap-aware finite-source checkpoint ships alongside as
+  `binml-gapaware.pt` with its own operating point (which checkpoint and threshold: section 1½,
+  rows 4, 13 and 14). Every number enters through `make_macros.py` from the artifacts named in the
+  draft's macro list; the GULLS artifacts join the manifest at that step.
 
-### Reproduce
+### Reproduce (full population; each writes its own artifact and records its command and code version)
 
 ```
+python validation/gulls/rmdc26_schedule.py                 # measured per-season schedule
+python validation/gulls/rmdc26_dataset_facts.py            # every dataset fact quoted
 python validation/gulls/gap_sensitivity.py --n 100
 modal run --detach validation/modal_gap_finetune.py --epochs 12 --gap-aug 0.8 --lr 1e-4 --tag g08e12
-python validation/gulls_transfer.py --per-class 600 --chunk 250
-python validation/gulls_transfer.py --per-class 600 --chunk 250 --weights validation/gulls/weights/ft_g08e12.pt
+python validation/gulls_transfer.py --per-class 200000 --chunk 250 --curve-cache <cache> --weights <ckpt> --out <summary> --rows-out <rows>
+python validation/fspl_finetune_local.py --prefix fspl5s --init validation/gulls/weights/ft_g08e12.pt --tag <tag> --work <dir>
+python validation/schedule_finetune_local.py
+python validation/gulls/calibrate_gapped_threshold.py --heldout <fspl5s held-out> --ckpt <ckpt> --tag <tag> --rows <rows> --schedule seasons
+python validation/gulls/gulls_summary_tables.py --models <name=rows ...> --f146 <name=rows ...> --by-season
+python validation/gulls/detectability_relabel.py --extract --cap-1s1l 1600 --cap-binary 2500 --truth-cache <dir>
+python validation/gulls/detectability_relabel.py --reduce  --cap-1s1l 1600 --cap-binary 2500 --truth-cache <dir> --models ... --f146 ...
+python validation/gulls/floor_sensitivity.py --models ...
+python validation/gulls/multi_season.py --extract --cap 1000 && python validation/gulls/multi_season.py --reduce
+python validation/gulls/cascade_gulls.py --extract --scan --reduce
+python validation/gulls/occupancy_sensitivity.py
+python validation/gulls/build_scores_table.py
 ```
 
-The transfer runs locally in ~5 min each; the dataset must not be read from Modal (HF
-rate-limits the datacenter IP). Revision is pinned in the script.
+The RMDC26 tables are read locally (the Hugging Face datacenter rate limit blocks Modal); the revision
+is pinned in `validation/gulls_transfer.py` and `binml/gulls.py`.
 
 ---
 

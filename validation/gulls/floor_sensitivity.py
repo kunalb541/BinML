@@ -61,9 +61,11 @@ def main(argv=None):
     T = [truth[i] for i in ids]; lab = np.array([t["sim_label"] for t in T])
     calib = {}
     for name in models:
-        f = os.path.join(HERE, f"gapped_threshold_{name}.json")
+        f = os.path.join(HERE, f"gapped_threshold_{name}_seasons.json")
         if os.path.exists(f):
-            calib[name] = float(json.load(open(f))["arms"]["rmdc26_gapped"]["threshold_at_target_purity"])
+            fp = json.load(open(f))["arms"]["rmdc26_gapped"].get("pool", {}).get("full_pool", {})
+            if fp.get("achievable"):
+                calib[name] = float(fp["threshold"])
     out = {"_doc": __doc__.split("\n")[0], "n_events": len(ids), "adopted_floor": CFG.min_amplitude_mag,
            "precision_note": ("the flagged set is fixed and the NonPSPL label sets are nested as the floor falls, so precision is "
                               "non-increasing in the floor for ANY classifier; it is reported for completeness, not as a test"),
@@ -76,7 +78,7 @@ def main(argv=None):
             row["relabelling"][L] = {k: round(float((det[s] == k).mean()), 4) for k in ("Flat", "PSPL", "NonPSPL")}
         bin_det = ((lab == L2) | (lab == L3)) & (det == "NonPSPL"); bin_undet = ((lab == L2) | (lab == L3)) & (det != "NonPSPL")
         for name, d in models.items():
-            p = np.array([d[i] for i in ids]); thrs = {"frozen": FROZEN, **({"calibrated_gapped": calib[name]} if name in calib else {})}
+            p = np.array([d[i] for i in ids]); thrs = {"frozen": FROZEN, **({"calibrated_seasons_fullpool": calib[name]} if name in calib else {})}
             row["models"][name] = {}
             for tn, thr in thrs.items():
                 row["models"][name][tn] = {"recall_detectable_binaries": round(float((p[bin_det] >= thr).mean()), 4) if bin_det.sum() else None,
