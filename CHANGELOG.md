@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased — follow-up experiments after the GULLS transfer (2026-09-10/11)
+
+Generator / training (all opt-in or version-flagged; the released checkpoints and frozen artifacts are unchanged):
+- `SurveyConfig.onset_resolution_days` (default 0.5): the recorded anomaly onset `t_anom` is now resolved on the
+  0.5 d grid the cascade evaluation uses, by a fine scan inside the first detectable 7.2 d interval; 7.2 reproduces
+  the legacy grid bit-for-bit. Audit finding 9 measured: under a FIXED gap schedule the old grid put 2 of 10 onset
+  values inside the blanked bins and the caustic-in-gap relabel fired on 20% of all binaries
+  (`validation/schedule_finetune_local.py`). Released checkpoints were trained on the legacy grid (paper says so).
+- `pipeline.train --gap-schedule rmdc26` (exact seven-pause schedule + 70.7 d season end) and
+  `--gap-relabel-anomaly off`; `SurveyConfig.noise_mult` / `bkg_mult` (defaults bit-identical); regimes
+  `fspl5s_noisy{,_highmag}` (bkg_mult 7, measured on GULLS).
+- Finite-source single lenses (`PSPL_FINITE_SOURCE`, VBBinaryLensing ESPL), regimes `fspl*`; round 3 `fspl5s`
+  is the sidecar candidate (`validation/gulls/weights/ft_fspl5s_g08.pt`, gapped-calibrated threshold 0.949).
+
+Validation (new scripts and artifacts under `validation/gulls/`):
+- `detectability_relabel.py`: BinML's own label policy applied to GULLS from `true_flux_uJy`/`flux_err_uJy`
+  (44-46% of GULLS planetary events have no detectable anomaly; recall on detectable binaries reported).
+- `gulls_summary_tables.py` (matched-budget table, colour ablation), `calibrate_gapped_threshold.py`,
+  `subday_summary.py` (sub-day t_E out-of-support row), `gulls_noise_vs_ours.py` (noise-model comparison),
+  `validation/schedule_finetune_local.py`, `validation/fspl_finetune_local.py`.
+- Results and what NOT to claim: `paper/REVISION.md` §1½ (seven-experiment ledger).
+
 ## Unreleased — full-codebase audit fixes (2026-09-09)
 Nine-agent audit of every Python file (record: `docs/AUDIT_2026-09-09.md`): 0 critical, 13 major,
 64 minor; no submitted headline number wrong. Changes that touch reported numbers or their meaning:

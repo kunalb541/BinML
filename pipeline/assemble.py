@@ -77,6 +77,13 @@ class SurveyConfig:
     # ones). Both 1.0 = the released photometry, bit-for-bit.
     noise_mult: float = 1.0
     bkg_mult: float = 1.0
+    # Resolution of the recorded anomaly onset `t_anom` (days). The released checkpoints were
+    # generated with the 10-cut coarse scan only, i.e. an onset rounded UP to a multiple of 7.2 d
+    # (paper Sec. training; audit 2026-09-09 finding 9). Under a FIXED gap schedule two of those ten
+    # grid values fall inside the blanked bins and the caustic-in-gap relabel then fires on 20% of
+    # all binaries (validation/schedule_finetune_local.py). 0.5 d matches the grid the cascade
+    # evaluation uses (validation/cascade_reduce.py). Set 7.2 to reproduce the legacy grid exactly.
+    onset_resolution_days: float = 0.5
     # OBSERVED F146 baseline magnitude range (AB). This is the magnitude AFTER extinction --
     # sampling it before extinction (as an earlier version did) pushed sources to 27+ mag,
     # far below the detection limit, and made every light curve noise-dominated.
@@ -192,23 +199,46 @@ def _pspl_refit_dchi2(t: np.ndarray, mag_true: np.ndarray, sigma: np.ndarray,
 
 
 
-def _anomaly_onset_day(ref_truth, params, cfg, n_cuts: int = 10) -> float:
+def _anomaly_onset_day(ref_truth, params, cfg, n_cuts: int = 10,
+                       resolution_days: Optional[float] = None) -> float:
     """First day at which the binary anomaly is DETECTABLE in the revealed window [0, t_cut].
 
     The real-time analogue of the anomaly label: before this day the light curve is a smooth
     Paczynski rise indistinguishable from PSPL, so a truncation-aware label must read PSPL, not
-    NonPSPL. Coarse grid (a PSPL refit per cut) is enough -- we only need the first crossing,
-    and this runs once per detectable-anomaly event at generation time.
+    NonPSPL. Two stages: a coarse scan of ``n_cuts`` cuts finds the first coarse interval in which
+    the anomaly is detectable (this alone was the released behaviour: an onset rounded UP to a
+    multiple of window/n_cuts = 7.2 d); a fine scan then walks that one interval at
+    ``resolution_days`` (default ``cfg.onset_resolution_days``) and returns the first fine cut
+    that is detectable. Walking, not bisecting: the anomaly statistic is not monotone in revealed
+    time (a longer baseline can let the PSPL refit absorb an early deviation), and "first crossing
+    on a grid" is the definition the cascade evaluation uses. Cost: at most n_cuts + 7.2/res
+    refits per detectable-anomaly event, once, at generation time.
     """
     t, mag, sig, mb, fs = ref_truth
     if t.size < 10:
         return float("inf")
-    for tc in np.linspace(cfg.window_days / n_cuts, cfg.window_days, n_cuts):
+    res = cfg.onset_resolution_days if resolution_days is None else resolution_days
+    step = cfg.window_days / n_cuts
+
+    def detectable(tc):
         m = t <= tc
         if int(m.sum()) < 10:
-            continue
+            return False
         d, amp = _pspl_refit_dchi2(t[m], mag[m], sig[m], mb, fs, params)
-        if d >= cfg.dchi2_anomaly and amp >= cfg.min_amplitude_mag:
+        return d >= cfg.dchi2_anomaly and amp >= cfg.min_amplitude_mag
+
+    for tc in np.linspace(step, cfg.window_days, n_cuts):
+        if detectable(tc):
+            if res >= step:
+                return float(tc)                       # legacy 7.2 d grid, bit-for-bit
+            # fine cuts on the ABSOLUTE res-grid (k * res), the same grid cascade_reduce uses,
+            # not one anchored to the coarse boundaries
+            k0 = int(np.ceil((tc - step) / res - 1e-9)) + 1
+            for tf in np.arange(k0, int(np.floor(tc / res + 1e-9))) * res:
+                if tf < tc - step + 1e-9 or tf >= tc - 1e-9:
+                    continue
+                if detectable(tf):
+                    return float(tf)
             return float(tc)
     return float("inf")
 
