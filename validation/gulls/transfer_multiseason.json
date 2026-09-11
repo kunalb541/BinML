@@ -1,0 +1,147 @@
+{
+ "_doc": "Peak-in-gap GULLS events: score the ADJACENT seasons and combine -- the single-season contract's cost, measured.",
+ "n_events": 3000,
+ "population": "amplitude- and t_E-eligible events whose t0 falls in an inter-season gap (25.5% of the eligible set)",
+ "combiner": "max p_nonpspl over dense adjacent seasons; truth = NonPSPL if any adjacent dense season has a detectable anomaly, PSPL if any is a detectable event, else Flat",
+ "by_class": {
+  "RMDC26_1S1L_ML": {
+   "n": 1000,
+   "n_with_dense_adjacent_season": 772,
+   "n_with_two_dense_seasons": 475,
+   "frac_scorable": 0.772,
+   "frac_detectable_event_in_adjacent_season": 0.5972,
+   "frac_detectable_anomaly_in_adjacent_season": 0.0026,
+   "median_gap_days_to_t0": 16.2
+  },
+  "RMDC26_1S2L_ML": {
+   "n": 1000,
+   "n_with_dense_adjacent_season": 919,
+   "n_with_two_dense_seasons": 588,
+   "frac_scorable": 0.919,
+   "frac_detectable_event_in_adjacent_season": 0.8596,
+   "frac_detectable_anomaly_in_adjacent_season": 0.5169,
+   "median_gap_days_to_t0": 14.8
+  },
+  "RMDC26_2S2L_ML": {
+   "n": 1000,
+   "n_with_dense_adjacent_season": 880,
+   "n_with_two_dense_seasons": 592,
+   "frac_scorable": 0.88,
+   "frac_detectable_event_in_adjacent_season": 0.8841,
+   "frac_detectable_anomaly_in_adjacent_season": 0.4375,
+   "median_gap_days_to_t0": 16.1
+  }
+ },
+ "models": {
+  "fspl5s_g08": {
+   "thresholds": {
+    "frozen": 0.9042405486106873,
+    "calibrated_gapped": 0.9491875171661377
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L": 0.0039,
+     "n_1S1L": 772,
+     "recall_1S2L_generator": 0.1458,
+     "recall_1S2L_detectable": 0.2758,
+     "n_1S2L": 919,
+     "n_1S2L_detectable": 475,
+     "recall_2S2L_generator": 0.1557,
+     "recall_2S2L_detectable": 0.3247,
+     "n_2S2L": 880,
+     "n_2S2L_detectable": 385
+    },
+    "calibrated_gapped": {
+     "fa_1S1L": 0.0013,
+     "n_1S1L": 772,
+     "recall_1S2L_generator": 0.1055,
+     "recall_1S2L_detectable": 0.2042,
+     "n_1S2L": 919,
+     "n_1S2L_detectable": 475,
+     "recall_2S2L_generator": 0.1091,
+     "recall_2S2L_detectable": 0.239,
+     "n_2S2L": 880,
+     "n_2S2L_detectable": 385
+    }
+   },
+   "recall_1S2L_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "fa": 0.0194,
+     "threshold": 0.7514,
+     "recall_generator": 0.2416,
+     "recall_detectable": 0.4126
+    },
+    {
+     "fa_target": 0.052,
+     "fa": 0.0518,
+     "threshold": 0.5898,
+     "recall_generator": 0.2894,
+     "recall_detectable": 0.4611
+    },
+    {
+     "fa_target": 0.117,
+     "fa": 0.1166,
+     "threshold": 0.3858,
+     "recall_generator": 0.3754,
+     "recall_detectable": 0.5347
+    }
+   ]
+  },
+  "ft_g08e12": {
+   "thresholds": {
+    "frozen": 0.9042405486106873,
+    "calibrated_gapped": 0.9991753697395325
+   },
+   "at_threshold": {
+    "frozen": {
+     "fa_1S1L": 0.0013,
+     "n_1S1L": 772,
+     "recall_1S2L_generator": 0.1621,
+     "recall_1S2L_detectable": 0.3095,
+     "n_1S2L": 919,
+     "n_1S2L_detectable": 475,
+     "recall_2S2L_generator": 0.1523,
+     "recall_2S2L_detectable": 0.3247,
+     "n_2S2L": 880,
+     "n_2S2L_detectable": 385
+    },
+    "calibrated_gapped": {
+     "fa_1S1L": 0.0,
+     "n_1S1L": 772,
+     "recall_1S2L_generator": 0.0,
+     "recall_1S2L_detectable": 0.0,
+     "n_1S2L": 919,
+     "n_1S2L_detectable": 475,
+     "recall_2S2L_generator": 0.0,
+     "recall_2S2L_detectable": 0.0,
+     "n_2S2L": 880,
+     "n_2S2L_detectable": 385
+    }
+   },
+   "recall_1S2L_at_matched_fa": [
+    {
+     "fa_target": 0.02,
+     "fa": 0.0194,
+     "threshold": 0.666,
+     "recall_generator": 0.2557,
+     "recall_detectable": 0.4442
+    },
+    {
+     "fa_target": 0.052,
+     "fa": 0.0518,
+     "threshold": 0.5084,
+     "recall_generator": 0.3177,
+     "recall_detectable": 0.5011
+    },
+    {
+     "fa_target": 0.117,
+     "fa": 0.1166,
+     "threshold": 0.3255,
+     "recall_generator": 0.3928,
+     "recall_detectable": 0.5432
+    }
+   ]
+  }
+ }
+}
