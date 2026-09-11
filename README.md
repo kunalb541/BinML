@@ -217,12 +217,17 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   grid has no such gaps, and the model reads an empty mid-season bin as evidence against a
   single lens: inserting those seven gaps into in-distribution events drops PSPL recall
   0.93 → 0.11 and Flat 1.00 → 0.08, with NonPSPL and PeriodicVar unaffected. Gaps ≤ 2 h are
-  harmless. A gap-aware fine-tune (`pipeline/train.py --gap-aug`) restores held-out macro-F1
-  under that schedule from 0.384 to 0.879 at a cost of 1.3 points on gap-free data, and on
-  real GULLS light curves cuts single-lens false alarms at the operating threshold from 52% to
-  7%. The checkpoint is at `validation/gulls/weights/ft_g08e12.pt`; the shipped weights are
-  unchanged so that the submitted numbers stay exact. Full account in
-  [`paper/REVISION.md`](paper/REVISION.md); reproduce with `validation/gulls/gap_sensitivity.py`.
+  harmless. **For the planned schedule use the gap-aware, finite-source checkpoint**
+  `validation/gulls/weights/ft_fspl5s_g08.pt` at threshold 0.949 (calibrated on our own gapped
+  finite-source simulations): on 56,975 RMDC26 events it flags 4.9% of single lenses at the
+  shipped threshold (shipped weights: 35.6%) and 2.0% at its own, with planetary recall at a
+  matched false-alarm budget nearly double the shipped model's. Under our own label policy
+  44–46% of RMDC26's "planetary" events carry no detectable anomaly, so recall against
+  generator labels is bounded near 0.56; on detectable anomalies it is 0.47–0.57. The shipped
+  weights are unchanged so that the submitted numbers stay exact. Full account, including what
+  did not work (schedule-matched and noise-matched training), in
+  [`paper/REVISION.md`](paper/REVISION.md) §1½; reproduce with the scripts under
+  `validation/gulls/`.
 - **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
   faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
   sub-day tE (few epochs on the peak).
