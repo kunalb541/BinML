@@ -136,7 +136,7 @@ if T:
     cmd("bmlGullsBudgetLo", pct(budgets[0])); cmd("bmlGullsBudgetMid", pct(mid)); cmd("bmlGullsBudgetHi", pct(budgets[3]))
     for m, nm in (("shipped", "Shipped"), ("ft_g08e12", "Gapaware"), ("fspl5s_g08", "Fspl"), ("fspl_g08", "FsplOne"),
                   ("fspl5_g08", "FsplFive"), ("fspl5s_noisy_g08", "Noisy"), ("fspl5s_v2_g08", "Onset"),
-                  ("pspl5s_ctrl_g08", "Ctrl"), ("fspl5s_seasons_g08", "Combined"),
+                  ("pspl5s_ctrl_g08", "Ctrl"), ("fspl5s_seasons_g08", "Combined"), ("fspl5s_espl_g08", "Espl"),
                   ("sched_rand_norelabel", "RandNorelabel"), ("sched_sched_seasons", "Seasons")):
         if m not in M:
             if ALLOW:
@@ -157,6 +157,10 @@ if T:
         cmd("bmlGullsSeasonWins", str(wins)); cmd("bmlGullsNseasons", str(len(M["sched_sched_seasons"].get("by_season", {}))))
     if "fspl5s_seasons_g08" in M:    # combined arm vs round 3: largest planetary-recall difference over the three budgets
         cmd("bmlGullsCombDiffMax", three(max(abs(rec("fspl5s_seasons_g08", t) - rec("fspl5s_g08", t)) for t in (budgets[0], mid, budgets[3]))))
+    # smooth-magnification-only control vs round 3: recall at every budget, and the rho/|u0| bins
+    cmd("bmlGullsEsplDiffMax", three(max(abs(rec("fspl5s_espl_g08", t) - rec("fspl5s_g08", t)) for t in (budgets[0], mid, budgets[3]))))
+    cmd("bmlGullsEsplBinDiffMax", three(max(abs(x["k"] / x["n"] - y["k"] / y["n"]) for x, y in
+                                            zip(M["fspl5s_espl_g08"]["fa_1S1L_by_rho_over_u0"], M["fspl5s_g08"]["fa_1S1L_by_rho_over_u0"]))))
     if "sched_rand" in M:            # same recipe as g08e12 on another pool: the closest thing to a seed replicate
         d_ = [abs(rec("sched_rand", t) - rec("ft_g08e12", t)) for t in (budgets[0], mid, budgets[3])]
         cmd("bmlSeedSpreadLo", three(min(d_))); cmd("bmlSeedSpreadHi", three(max(d_)))

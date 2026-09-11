@@ -162,8 +162,8 @@ The high-ratio bins are high-magnification events with very small $|u_0|$, not l
 $\bmlGullsNrhoGtOne$ scored single lenses have $\rho > 1$ (99th percentile $\bmlGullsRhoPnn$). The
 likely cause is in our generator: its single lenses were point sources while its binaries sampled a
 finite source, so a finite-source single lens, whose rounded peak resembles no training \texttt{PSPL},
-was read as anomalous. Adding finite-source single lenses (a uniform, achromatic disc; $\rho$
-log-uniform up to 5, binaries unchanged) and fine-tuning for a further 12 epochs from the gap-aware
+was read as anomalous. Adding finite-source single lenses (a uniform, achromatic disc computed with
+\textsc{VBBinaryLensing}'s \texttt{ESPLMag2} \citep{Bozza2018}; $\rho$ log-uniform up to 5, binaries unchanged) and fine-tuning for a further 12 epochs from the gap-aware
 checkpoint lowers the rate to $\bmlGullsFaFspl\%$ and the largest-ratio bin to $\bmlGullsRhoHiFspl$,
 while planetary recall at the $\bmlGullsBudgetMid\%$ budget rises from $\bmlGullsRecGapaware$ to
 $\bmlGullsRecFspl$.
@@ -193,8 +193,12 @@ $\bmlGullsNseasons$ seasons scored separately. That arm starts from the shipped 
 pool; the last row of Table~\ref{tab:gulls} combines it with the finite-source single lenses.
 The two gains do not add on RMDC26. The combined checkpoint differs from the finite-source one in three
 ways: measured-season pauses instead of random gaps, the caustic-in-gap relabel off as in the schedule
-arms, and a finite-source magnification without the small hand-off steps of the function used for the
-other finite-source rows. Its planetary recall is within
+arms, and a smooth finite-source magnification (\textsc{VBBinaryLensing}'s \texttt{ESPLMag} in place of
+\texttt{ESPLMag2}, which leaves steps of a few millimagnitudes where it hands over to the point-source
+formula). The last change alone does nothing measurable: the finite-source recipe rerun with it flags
+$\bmlGullsFaEspl\%$ of single lenses ($\bmlGullsFaFspl\%$ for the original), its planetary recall is within
+$\bmlGullsEsplDiffMax$ of the original's at every budget, and its false-alarm rate in every $\rho/|u_0|$ bin
+within $\bmlGullsEsplBinDiffMax$. The combined checkpoint's planetary recall is within
 $\bmlGullsCombDiffMax$ of the finite-source checkpoint's at every budget, less than the
 $\bmlSeedSpreadLo$--$\bmlSeedSpreadHi$ by which two runs of one recipe differ, and at the frozen
 threshold it flags more single lenses ($\bmlGullsFaCombined\%$ against $\bmlGullsFaFspl\%$), mostly in the
@@ -203,8 +207,6 @@ precision $\bmlCombHeldAp$ against $\bmlSidecarHeldAp$), and at its own recalibr
 more false alarms for more recall ($\bmlCombFa\%$ and $\bmlCombRecPlanet$, against $\bmlSidecarFa\%$ and
 $\bmlSidecarRecPlanet$), a different point on the same trade-off. We keep the finite-source
 checkpoint, on which \S\S\ref{sec:gulls:seasons}--\ref{sec:gulls:cascade} were run.
-%% PENDING (smooth-magnification control fspl5s_espl_g08, training 2026-09-11 21:32): one sentence isolating the
-%% magnification function; and name ESPLMag2 / its 4-8 mmag steps in the finite-source sentence of this subsection.
 
 Other changes did not help. Matching GULLS' noise, whose F146 errors equal ours for
 sources brighter than 20th magnitude and reach $\bmlGullsNoiseFaint$ times ours at 24--25~mag (a

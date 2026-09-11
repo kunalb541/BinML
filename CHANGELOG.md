@@ -23,7 +23,8 @@ dispositions in `docs/VERIFICATION_2026-09-11.md`. Changes that alter conclusion
   provenance was recorded. Controls: `pspl5s_ctrl` (point-source continued training: most of the
   gain over g08e12 is the extra training, the physics adds the rest in the largest rho/|u0| bins), the combined
   arm `fspl5s_seasons_g08` (smooth magnification + measured-season pauses; ties `fspl5s` at matched budgets, so
-  `fspl5s` stays recommended) and the `fspl5s` recipe with the smooth magnification alone (`fspl5s_espl_g08`).
+  `fspl5s` stays recommended) and the `fspl5s` recipe with the smooth magnification alone (`fspl5s_espl_g08`: indistinguishable from
+  `fspl5s`, so ESPLMag2's steps did not shape the finite-source result).
 - `binml.gulls.classify_event(mode=...)`; notebooks and `ft_g08e12.pt` committed; manuscript numbers
   only through `paper/make_gulls_macros.py` (fail-closed).
 

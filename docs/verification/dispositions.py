@@ -58,7 +58,7 @@ ISSUES = {
  "G47": ("onset default changed released behaviour", "Fixed: default back to the legacy 7.2-d grid; opt-in --onset-resolution-days; settings recorded in shard attributes."),
  "G48": ("caustic-in-gap relabel is not truth-based even with an exact onset", "Audit finding 9 re-opened; relabel off in the new schedule arm."),
  "G49": ("recorded commits wrong; resumable stamps ignore settings", "Fixed going forward (generation-time git describe --dirty, settings in stamps); validation/gulls/PROVENANCE.md records the past."),
- "G50": ("ESPLMag2 hand-off steps of 4-8 mmag", "Fixed: ESPLMag (matches disc integration); legacy flag. The combined arm (smooth function + measured-season pauses + relabel off) matches round 3 at every matched budget (1S2L recall within 0.008); the smooth-function-only control (fspl5s_espl_g08) isolates the function."),
+ "G50": ("ESPLMag2 hand-off steps of 4-8 mmag", "Fixed: ESPLMag (matches disc integration); legacy flag. The combined arm (smooth function + measured-season pauses + relabel off) matches round 3 at every matched budget (1S2L recall within 0.008); the smooth-function-only control (fspl5s_espl_g08) is indistinguishable from round 3 (FA 4.83% vs 4.85%, recall within 0.001 at every budget, same recalibrated operating point), so the steps did not shape the result."),
  "G51": ("truncation amplitude uses point-source magnification for finite sources", "Fixed for rho > 0.01 (released pools unaffected)."),
  "G52": ("np.trapezoid needs NumPy 2", "Fixed: fallback."),
  "G53": ("transfer status string wrong for fine-tunes", "Fixed."),
