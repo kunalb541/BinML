@@ -1,0 +1,183 @@
+{
+  "_doc": "Finite-source single-lens fine-tune, run locally, scored on our own held-out set AND on GULLS.",
+  "code_commit": "submitted-ac-2026-08-15-36-gb1a03a15f5ac-dirty",
+  "provenance": {
+    "code_at_generation": "submitted-ac-2026-08-15-36-gb1a03a15f5ac-dirty",
+    "onset_resolution_days": null,
+    "prefix": "pspl5s_ctrl",
+    "espl_function": "ESPLMag (smooth table; pools before 2026-09-11 used ESPLMag2)"
+  },
+  "train": {
+    "n_events": 129558,
+    "spec": {
+      "pspl5s_ctrl": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "pspl5s_ctrl_highmag": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  },
+  "heldout": {
+    "n_events": 39864,
+    "spec": "existing memmap /Users/kunalbhatia/Desktop/Research/microlensing/fspl5s_local_work/mm_heldout"
+  },
+  "recipe": "init=ft_g08e12.pt prefix=pspl5s_ctrl epochs=12 lr=0.0001 gap_aug=0.8 truncate_aug=0.5 seed=20260909 onset_res=None data=submitted-ac-2026-08-15-36-gb1a03a15f5ac-dirty",
+  "models": {
+    "pspl5s_ctrl_g08": {
+      "n_events": 39864,
+      "completeness_at_purity": 0.001,
+      "purity": 1.0,
+      "ap": 0.559,
+      "macro_f1": 0.8717,
+      "per_class_f1": {
+        "Flat": 0.967,
+        "PSPL": 0.922,
+        "NonPSPL": 0.649,
+        "PeriodicVar": 0.979,
+        "LongPeriodVar": 0.834,
+        "Eruptive": 0.879
+      },
+      "pspl_recall_by_rho_u0": {
+        "[0,0.03)": {
+          "n": 1651,
+          "pspl_recall": 0.9606,
+          "called_nonpspl": 0.0085
+        },
+        "[0.03,0.1)": {
+          "n": 1101,
+          "pspl_recall": 0.9573,
+          "called_nonpspl": 0.0291
+        },
+        "[0.1,0.3)": {
+          "n": 1087,
+          "pspl_recall": 0.9374,
+          "called_nonpspl": 0.0515
+        },
+        "[0.3,1)": {
+          "n": 1151,
+          "pspl_recall": 0.9044,
+          "called_nonpspl": 0.0834
+        },
+        "[1,3)": {
+          "n": 1082,
+          "pspl_recall": 0.2181,
+          "called_nonpspl": 0.719
+        },
+        "[3,inf)": {
+          "n": 2280,
+          "pspl_recall": 0.1561,
+          "called_nonpspl": 0.6461
+        }
+      }
+    },
+    "ft_g08e12": {
+      "n_events": 39864,
+      "completeness_at_purity": 0.001,
+      "purity": 0.625,
+      "ap": 0.547,
+      "macro_f1": 0.8533,
+      "per_class_f1": {
+        "Flat": 0.966,
+        "PSPL": 0.908,
+        "NonPSPL": 0.603,
+        "PeriodicVar": 0.953,
+        "LongPeriodVar": 0.843,
+        "Eruptive": 0.847
+      },
+      "pspl_recall_by_rho_u0": {
+        "[0,0.03)": {
+          "n": 1651,
+          "pspl_recall": 0.9291,
+          "called_nonpspl": 0.043
+        },
+        "[0.03,0.1)": {
+          "n": 1101,
+          "pspl_recall": 0.8783,
+          "called_nonpspl": 0.1117
+        },
+        "[0.1,0.3)": {
+          "n": 1087,
+          "pspl_recall": 0.8464,
+          "called_nonpspl": 0.1417
+        },
+        "[0.3,1)": {
+          "n": 1151,
+          "pspl_recall": 0.8045,
+          "called_nonpspl": 0.1825
+        },
+        "[1,3)": {
+          "n": 1082,
+          "pspl_recall": 0.1969,
+          "called_nonpspl": 0.7283
+        },
+        "[3,inf)": {
+          "n": 2280,
+          "pspl_recall": 0.1636,
+          "called_nonpspl": 0.6167
+        }
+      }
+    },
+    "shipped": {
+      "n_events": 39864,
+      "completeness_at_purity": 0.001,
+      "purity": 0.333,
+      "ap": 0.563,
+      "macro_f1": 0.8677,
+      "per_class_f1": {
+        "Flat": 0.972,
+        "PSPL": 0.92,
+        "NonPSPL": 0.633,
+        "PeriodicVar": 0.974,
+        "LongPeriodVar": 0.854,
+        "Eruptive": 0.853
+      },
+      "pspl_recall_by_rho_u0": {
+        "[0,0.03)": {
+          "n": 1651,
+          "pspl_recall": 0.9624,
+          "called_nonpspl": 0.0206
+        },
+        "[0.03,0.1)": {
+          "n": 1101,
+          "pspl_recall": 0.9301,
+          "called_nonpspl": 0.059
+        },
+        "[0.1,0.3)": {
+          "n": 1087,
+          "pspl_recall": 0.9062,
+          "called_nonpspl": 0.0892
+        },
+        "[0.3,1)": {
+          "n": 1151,
+          "pspl_recall": 0.8619,
+          "called_nonpspl": 0.1268
+        },
+        "[1,3)": {
+          "n": 1082,
+          "pspl_recall": 0.2052,
+          "called_nonpspl": 0.7126
+        },
+        "[3,inf)": {
+          "n": 2280,
+          "pspl_recall": 0.1759,
+          "called_nonpspl": 0.6088
+        }
+      }
+    }
+  }
+}

@@ -17,6 +17,11 @@ Usage:
       --models shipped=rows_full_shipped_v2.json ft_g08e12=rows_full_ft_g08e12_v2.json \\
                fspl_g08=rows_full_fspl_g08.json fspl5_g08=rows_full_fspl5_g08.json fspl5s_g08=rows_full_fspl5s_g08.json \\
       --f146 fspl_g08=rows_full_fspl_g08_f146only.json ft_g08e12=rows_full_ft_g08e12_f146only.json
+
+From a clone (no curve cache, no RMDC26 metadata): --scores validation/gulls/rmdc26_scores.csv.gz reads P(NonPSPL),
+labels, rho, u0 and season from the committed per-event table; name=value pairs then name its COLUMNS:
+  python validation/gulls/gulls_summary_tables.py --scores validation/gulls/rmdc26_scores.csv.gz \\
+      --models shipped=shipped ft_g08e12=ft_g08e12 fspl5s_g08=fspl5s_g08 --f146 fspl5s_g08=fspl5s_g08_f146only --by-season
 """
 from __future__ import annotations
 
@@ -45,7 +50,24 @@ def load_rows(path):
             for r in json.load(open(path)) if r.get("dense") and "pred" in r}
 
 
-def load_meta(ids, with_season=False):
+def load_scores(path):
+    """The committed per-event table (build_scores_table.py): {column: {event_id: (label, p)}}, {event_id: (rho, |u0|, season)}."""
+    import csv
+    import gzip
+    with gzip.open(path, "rt", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    fixed = {"event_id", "sim_label", "season", "tE", "u0", "rho", "planet_q", "source_is_binary", "m_base", "weight"}
+    cols = {c: {int(r["event_id"]): (r["sim_label"], float(r[c])) for r in rows if r[c] != ""}
+            for c in rows[0] if c not in fixed}
+    meta = {int(r["event_id"]): (float(r["rho"]), abs(float(r["u0"])), int(r["season"])) for r in rows}
+    return cols, meta
+
+
+def load_meta(ids, with_season=False, meta=None):
+    """rho/|u0| (and the high-cadence season index) per event, from the RMDC26 metadata or from `meta`."""
+    if meta is not None:
+        ratio = np.array([meta[i][0] / max(meta[i][1], 1e-6) for i in ids])
+        return (ratio, np.array([meta[i][2] for i in ids])) if with_season else ratio
     import pyarrow.parquet as pq
     m = pq.read_table(META, columns=["event_id", "rho", "u0lens1", "t0lens1"]).to_pydict()
     d = {int(e): (float(r), abs(float(u)), float(t)) for e, r, u, t in zip(m["event_id"], m["rho"], m["u0lens1"], m["t0lens1"])}
@@ -105,12 +127,20 @@ def main(argv=None):
     ap.add_argument("--out-dir", default=HERE)
     ap.add_argument("--by-season", action="store_true", help="also summarise each high-cadence season separately "
                     "(RMDC26 pause phases differ between seasons; validation/gulls/rmdc26_schedule.json)")
+    ap.add_argument("--scores", default=None, help="read everything from the committed rmdc26_scores.csv.gz; "
+                    "name=value pairs of --models/--f146 then name its columns")
     args = ap.parse_args(argv)
-    models = {k: load_rows(v) for k, v in parse_pairs(args.models).items()}
-    f146 = {k: load_rows(v) for k, v in parse_pairs(args.f146).items()}
+    if args.scores:
+        cols, meta = load_scores(args.scores)
+        models = {k: cols[v] for k, v in parse_pairs(args.models).items()}
+        f146 = {k: cols[v] for k, v in parse_pairs(args.f146).items()}
+    else:
+        meta = None
+        models = {k: load_rows(v) for k, v in parse_pairs(args.models).items()}
+        f146 = {k: load_rows(v) for k, v in parse_pairs(args.f146).items()}
     common = sorted(set.intersection(*[set(v) for v in list(models.values()) + list(f146.values())]))
     lab = np.array([next(iter(models.values()))[i][0] for i in common])
-    ratio, season = load_meta(common, with_season=True)
+    ratio, season = load_meta(common, with_season=True, meta=meta)
     trade = {"_doc": __doc__.split("\n")[0], "n_matched_dense": len(common), "frozen_threshold": FROZEN,
              "budgets": list(BUDGETS), "models": {}}
     for name, d in models.items():
@@ -144,6 +174,7 @@ def main(argv=None):
                                    "per_event_abs_dP_median": round(float(np.median(np.abs(pa - pb))), 4),
                                    "per_event_abs_dP_p90": round(float(np.percentile(np.abs(pa - pb), 90)), 4),
                                    "frac_decisions_flipped_at_frozen": round(float(((pa >= FROZEN) != (pb >= FROZEN)).mean()), 4)}
+        col["command"] = " ".join(sys.argv)
         json.dump(col, open(os.path.join(args.out_dir, "transfer_colour_ablation.json"), "w"), indent=1)
         print("\ncolour ablation (recall at 5.2% FA, 1S2L/2S2L; mean recall FA<=0.3):")
         for name, c in col["models"].items():

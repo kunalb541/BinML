@@ -54,72 +54,78 @@
     "planetary_prevalence_0.01": {
      "purity_detectable_anomaly_alerts": 0.0519,
      "purity_any_binary_alerts": 0.0693,
-     "alerts_per_1000_events_per_season": 61.0
+     "alerts_per_1000_events_per_season": 61.0,
+     "rates": "unweighted"
     },
     "planetary_prevalence_0.05": {
      "purity_detectable_anomaly_alerts": 0.2093,
-     "purity_any_binary_alerts": 0.2795,
-     "alerts_per_1000_events_per_season": 75.6
+     "purity_any_binary_alerts": 0.2794,
+     "alerts_per_1000_events_per_season": 75.6,
+     "rates": "unweighted"
     },
-    "planetary_prevalence_0.307": {
-     "purity_detectable_anomaly_alerts": 0.5734,
-     "purity_any_binary_alerts": 0.7655,
-     "alerts_per_1000_events_per_season": 169.4
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.5121,
+     "purity_any_binary_alerts": 0.6507,
+     "alerts_per_1000_events_per_season": 165.5,
+     "rates": "final_weight-weighted"
     }
    }
   },
-  "fspl5s_g08|f146|calibrated_gapped": {
-   "threshold": 0.9491875171661377,
+  "fspl5s_g08|f146|calibrated_seasons_fullpool": {
+   "threshold": 0.9569272398948669,
    "timing": {
     "n_eligible": 1667,
-    "detected_frac": 0.4469,
+    "detected_frac": 0.4217,
     "detected_ci95": [
-     0.4232,
-     0.4709
+     0.3982,
+     0.4456
     ],
-    "premature_frac": 0.012,
+    "premature_frac": 0.009,
     "premature_ci95": [
-     0.0078,
-     0.0185
+     0.0055,
+     0.0148
     ],
-    "median_lag_nonpremature_days": 8.0,
+    "median_lag_nonpremature_days": 8.75,
     "median_onset_day": 35.0
    },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
-     "alert_frac_per_season": 0.0273,
-     "alert_frac_weighted": 0.032,
-     "alerts_per_1000_events_per_day": 0.38
+     "alert_frac_per_season": 0.022,
+     "alert_frac_weighted": 0.0275,
+     "alerts_per_1000_events_per_day": 0.306
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
-     "alert_frac_per_season": 0.294,
-     "alert_frac_weighted": 0.3667,
-     "alerts_per_1000_events_per_day": 4.083
+     "alert_frac_per_season": 0.2693,
+     "alert_frac_weighted": 0.3165,
+     "alerts_per_1000_events_per_day": 3.741
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
-     "alert_frac_per_season": 0.326,
-     "alert_frac_weighted": 0.3367,
-     "alerts_per_1000_events_per_day": 4.528
+     "alert_frac_per_season": 0.3027,
+     "alert_frac_weighted": 0.3144,
+     "alerts_per_1000_events_per_day": 4.204
     }
    },
    "streaming_purity": {
     "planetary_prevalence_0.01": {
-     "purity_detectable_anomaly_alerts": 0.0824,
-     "purity_any_binary_alerts": 0.1029,
-     "alerts_per_1000_events_per_season": 30.1
+     "purity_detectable_anomaly_alerts": 0.0951,
+     "purity_any_binary_alerts": 0.1161,
+     "alerts_per_1000_events_per_season": 24.6,
+     "rates": "unweighted"
     },
     "planetary_prevalence_0.05": {
-     "purity_detectable_anomaly_alerts": 0.2997,
-     "purity_any_binary_alerts": 0.3741,
-     "alerts_per_1000_events_per_season": 41.4
+     "purity_detectable_anomaly_alerts": 0.3329,
+     "purity_any_binary_alerts": 0.4063,
+     "alerts_per_1000_events_per_season": 35.2,
+     "rates": "unweighted"
     },
-    "planetary_prevalence_0.307": {
-     "purity_detectable_anomaly_alerts": 0.6682,
-     "purity_any_binary_alerts": 0.8342,
-     "alerts_per_1000_events_per_season": 114.1
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.6581,
+     "purity_any_binary_alerts": 0.7645,
+     "alerts_per_1000_events_per_season": 91.1,
+     "rates": "final_weight-weighted"
     }
    }
   },
@@ -162,76 +168,115 @@
    },
    "streaming_purity": {
     "planetary_prevalence_0.01": {
-     "purity_detectable_anomaly_alerts": 0.0591,
+     "purity_detectable_anomaly_alerts": 0.059,
      "purity_any_binary_alerts": 0.0822,
-     "alerts_per_1000_events_per_season": 49.9
+     "alerts_per_1000_events_per_season": 50.0,
+     "rates": "unweighted"
     },
     "planetary_prevalence_0.05": {
-     "purity_detectable_anomaly_alerts": 0.2286,
-     "purity_any_binary_alerts": 0.3183,
-     "alerts_per_1000_events_per_season": 64.5
+     "purity_detectable_anomaly_alerts": 0.2285,
+     "purity_any_binary_alerts": 0.3181,
+     "alerts_per_1000_events_per_season": 64.5,
+     "rates": "unweighted"
     },
-    "planetary_prevalence_0.307": {
-     "purity_detectable_anomaly_alerts": 0.5726,
-     "purity_any_binary_alerts": 0.7971,
-     "alerts_per_1000_events_per_season": 158.2
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.4874,
+     "purity_any_binary_alerts": 0.6379,
+     "alerts_per_1000_events_per_season": 170.6,
+     "rates": "final_weight-weighted"
     }
    }
   },
-  "fspl5s_g08|threeband|calibrated_gapped": {
-   "threshold": 0.9491875171661377,
+  "fspl5s_g08|threeband|calibrated_seasons_fullpool": {
+   "threshold": 0.9569272398948669,
    "timing": {
     "n_eligible": 1667,
-    "detected_frac": 0.4043,
+    "detected_frac": 0.3725,
     "detected_ci95": [
-     0.381,
-     0.4281
+     0.3496,
+     0.396
     ],
-    "premature_frac": 0.0042,
+    "premature_frac": 0.0036,
     "premature_ci95": [
-     0.002,
-     0.0086
+     0.0017,
+     0.0078
     ],
-    "median_lag_nonpremature_days": 13.5,
+    "median_lag_nonpremature_days": 14.5,
     "median_onset_day": 35.0
    },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
-     "alert_frac_per_season": 0.0217,
-     "alert_frac_weighted": 0.0363,
-     "alerts_per_1000_events_per_day": 0.301
+     "alert_frac_per_season": 0.0147,
+     "alert_frac_weighted": 0.0247,
+     "alerts_per_1000_events_per_day": 0.204
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
-     "alert_frac_per_season": 0.2853,
-     "alert_frac_weighted": 0.3738,
-     "alerts_per_1000_events_per_day": 3.963
+     "alert_frac_per_season": 0.2627,
+     "alert_frac_weighted": 0.3527,
+     "alerts_per_1000_events_per_day": 3.648
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
-     "alert_frac_per_season": 0.3073,
-     "alert_frac_weighted": 0.3658,
-     "alerts_per_1000_events_per_day": 4.269
+     "alert_frac_per_season": 0.2753,
+     "alert_frac_weighted": 0.3363,
+     "alerts_per_1000_events_per_day": 3.824
     }
    },
    "streaming_purity": {
     "planetary_prevalence_0.01": {
-     "purity_detectable_anomaly_alerts": 0.0919,
-     "purity_any_binary_alerts": 0.1212,
-     "alerts_per_1000_events_per_season": 24.4
+     "purity_detectable_anomaly_alerts": 0.1203,
+     "purity_any_binary_alerts": 0.1563,
+     "alerts_per_1000_events_per_season": 17.2,
+     "rates": "unweighted"
     },
     "planetary_prevalence_0.05": {
-     "purity_detectable_anomaly_alerts": 0.317,
-     "purity_any_binary_alerts": 0.4182,
-     "alerts_per_1000_events_per_season": 35.4
+     "purity_detectable_anomaly_alerts": 0.378,
+     "purity_any_binary_alerts": 0.4912,
+     "alerts_per_1000_events_per_season": 27.4,
+     "rates": "unweighted"
     },
-    "planetary_prevalence_0.307": {
-     "purity_detectable_anomaly_alerts": 0.6506,
-     "purity_any_binary_alerts": 0.8581,
-     "alerts_per_1000_events_per_season": 106.0
+    "planetary_prevalence_0.2207_rmdc26_scored_rate_weighted": {
+     "purity_detectable_anomaly_alerts": 0.6325,
+     "purity_any_binary_alerts": 0.7986,
+     "alerts_per_1000_events_per_season": 95.4,
+     "rates": "final_weight-weighted"
     }
    }
   }
- }
+ },
+ "inhouse_reference": {
+  "model": "shipped (cascade-trained)",
+  "n_eligible": 1000,
+  "premature_rate_of_eligible": 0.016,
+  "premature_ci_of_eligible": [
+   0.01,
+   0.026
+  ],
+  "detection_fraction": 0.89,
+  "median_lag_non_premature_days": 5.0,
+  "by_mass_ratio": {
+   "stellar": {
+    "n_eligible": 805,
+    "detection_fraction": 0.902,
+    "premature_rate_of_eligible": 0.015,
+    "median_lag_non_premature_days": 5.0
+   },
+   "giant": {
+    "n_eligible": 138,
+    "detection_fraction": 0.891,
+    "premature_rate_of_eligible": 0.014,
+    "median_lag_non_premature_days": 4.5
+   },
+   "neptune": {
+    "n_eligible": 48,
+    "detection_fraction": 0.729,
+    "premature_rate_of_eligible": 0.042,
+    "median_lag_non_premature_days": 4.5
+   }
+  },
+  "note": "in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; RMDC26 anomalies are all planetary, so compare with the giant/neptune strata"
+ },
+ "command": "validation/gulls/cascade_gulls.py --reduce"
 }

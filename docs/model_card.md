@@ -52,7 +52,11 @@ confirmatory population-level inference.
 
 The prefix scan contains only already-eligible binaries and uses the complete-season operating
 threshold. It does not measure repeated-score false alerts, streaming purity, or alert burden on
-Flat, PSPL, demoted-binary, and variable-star prefixes.
+Flat, PSPL, demoted-binary, and variable-star prefixes. A repeat on RMDC26 with single lenses included
+(`validation/gulls/cascade_gulls.json`; gap-aware checkpoint, F146 only) measures the single-lens part:
+5.7% of single lenses raise an alert at some point in the season at the frozen threshold (2.2% at 0.957),
+so if 1% of events were planetary about one alert in twenty would come from a claimable anomaly (one in
+ten at 0.957). RMDC26 contains no variable stars or flat sources, so a real stream would be less pure.
 
 The 14.9-million-event stress suite contains a 4.5-million-event same-prior subset, on which
 macro-F1 is 0.927, and 10.4 million targeted out-of-distribution cases that expose failures. Full

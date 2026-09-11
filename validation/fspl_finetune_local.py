@@ -86,7 +86,10 @@ def build(work, name, spec, workers):
         raw_dir = os.path.join(work, f"raw_{regime}")
         os.makedirs(raw_dir, exist_ok=True)
         jobs += [(raw_dir, regime, s) for s in shards]
-    todo = [j for j in jobs if not os.path.exists(os.path.join(j[0], f"shard_{j[2]:05d}.h5"))]
+    # a shard needs generating only if neither its raw file nor its cached file exists (--delete-raw removes
+    # the raw files of a finished pool; reusing that pool for another arm must not regenerate them)
+    todo = [j for j in jobs if not os.path.exists(os.path.join(j[0], f"shard_{j[2]:05d}.h5"))
+            and not os.path.exists(os.path.join(cache_dir, f"{j[1]}_{j[2]:05d}.h5"))]
     log(f"  {name}: {len(jobs) - len(todo)} shards cached, generating {len(todo)} with {workers} workers")
     with cf.ProcessPoolExecutor(max_workers=workers) as ex:
         for (shard, dt), j in zip(ex.map(gen_one, *zip(*todo), [ONSET_RES] * len(todo)) if todo else [], todo):
@@ -167,6 +170,8 @@ def main(argv=None):
                     help="evaluate on this existing held-out memmap instead of generating one (e.g. a control "
                          "arm trained on point sources, evaluated on the finite-source held-out of the arm it controls)")
     ap.add_argument("--delete-raw", action="store_true", help="delete raw shards once cached (they are regenerable)")
+    ap.add_argument("--train-extra", default="", help="extra pipeline.train arguments, e.g. "
+                    "'--gap-schedule rmdc26_seasons --gap-relabel-anomaly off' (recorded in the recipe stamp)")
     args = ap.parse_args(argv)
     global TRAIN, HELDOUT, ONSET_RES
     TRAIN, HELDOUT = specs(args.prefix)
@@ -199,7 +204,8 @@ def main(argv=None):
     log("=== fine-tune from ft_g08e12 ===")
     ckpt = os.path.join(W, f"{args.tag}.pt")
     stamp = (f"init={os.path.basename(args.init)} prefix={args.prefix} epochs={args.epochs} lr={args.lr} gap_aug={args.gap_aug} "
-             f"truncate_aug=0.5 seed={SEED_TRAIN} onset_res={ONSET_RES} data={json.load(open(prov))['code_at_generation']}")
+             f"truncate_aug=0.5 seed={SEED_TRAIN} onset_res={ONSET_RES} data={json.load(open(prov))['code_at_generation']}"
+             + (f" extra={args.train_extra}" if args.train_extra else ""))
     if not (os.path.exists(ckpt + ".done") and open(ckpt + ".done").read().strip() == stamp):
         for stale in (ckpt, ckpt + ".last", ckpt + ".done"):
             if os.path.exists(stale):
@@ -208,7 +214,7 @@ def main(argv=None):
         run([sys.executable, "-m", "pipeline.train", "--cache", mm_tr, "--out", ckpt,
              "--init-weights", args.init, "--epochs", str(args.epochs), "--lr", str(args.lr),
              "--truncate-aug", "0.5", "--gap-aug", str(args.gap_aug),
-             "--seed", str(SEED_TRAIN), "--device", args.device])
+             "--seed", str(SEED_TRAIN), "--device", args.device] + (args.train_extra.split() if args.train_extra else []))
         open(ckpt + ".done", "w").write(stamp + "\n")
         log(f"  trained in {(time.time()-t0)/60:.1f} min")
 

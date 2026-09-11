@@ -233,8 +233,10 @@ def reduce(args):
            "host_visible_definition": "host single-lens excursion at the window edge nearest t0 >= 0.02 mag (catalogue u0, tE, t0, fs)",
            "population_context": _population_counts(args), "by_class": {}, "models": {}}
 
+    ref_model = next(iter(MODELS))
+
     def scored(r):
-        return [x for x in r["seasons"].values() if x.get("dense") and "fspl5s_g08" in x]
+        return [x for x in r["seasons"].values() if x.get("dense") and ref_model in x]
 
     def det(r):
         return any(x.get("truth", {}).get("label_detect") == "NonPSPL" for x in scored(r))
@@ -296,9 +298,14 @@ def main(argv=None):
     ap.add_argument("--chunk", type=int, default=200); ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--max-blocks", type=int, default=0)
     ap.add_argument("--out-cache", default=OUT_CACHE)
+    ap.add_argument("--ckpt", nargs="*", default=[], help="name=weights.pt to score instead of the defaults")
     ap.add_argument("--meta-cache", default="/tmp/rmdc26_meta.parquet"); ap.add_argument("--epoch-cache", default="/tmp/rmdc26_epoch.parquet")
     ap.add_argument("--out", default=os.path.join(HERE, "transfer_multiseason.json"))
     args = ap.parse_args(argv)
+    if args.ckpt:
+        MODELS.clear()
+        for it in args.ckpt:
+            k, v = it.split("=", 1); MODELS[k] = v
     if args.extract: extract(args)
     if args.reduce: reduce(args)
     return 0

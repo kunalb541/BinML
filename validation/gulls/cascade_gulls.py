@@ -227,7 +227,8 @@ def scan(args):
     idx = curve_index(ids)
     print(f"[scan] {len(ids)} events, {sum(1 for e in ids if e in idx)} in the curve cache, {sum(1 for e in ids if e in truth)} with true curves", flush=True)
     done = set()
-    for f in glob.glob(os.path.join(args.cache, "scan_v2_*.npz")):
+    tagc = "" if list(CKPT) == ["fspl5s_g08"] else "_" + "+".join(sorted(CKPT))
+    for f in glob.glob(os.path.join(args.cache, f"scan_v2{tagc}_[0-9]*.npz")):
         done |= {int(k.split("|")[1]) for k in np.load(f, allow_pickle=False).files if k.startswith("id|")}
     todo = [e for e in ids if e in idx and e not in done]
     print(f"[scan] {len(done)} already scanned, {len(todo)} to do", flush=True)
@@ -246,7 +247,8 @@ def scan(args):
                 for k, v in r.items():
                     if k != "event_id":
                         payload[f"{k}|{e}"] = v
-            outf = os.path.join(args.cache, f"scan_v2_{os.path.basename(chunk)[2:-4]}.npz")
+            tagc = "" if list(CKPT) == ["fspl5s_g08"] else "_" + "+".join(sorted(CKPT))
+            outf = os.path.join(args.cache, f"scan_v2{tagc}_{os.path.basename(chunk)[2:-4]}.npz")
             np.savez_compressed(outf + ".tmp.npz", **payload); os.replace(outf + ".tmp.npz", outf)
             n += len(jobs); print(f"  {n}/{len(todo)}  ({time.time() - t0_:.0f}s)", flush=True)
     print("[scan] done", flush=True)
@@ -256,7 +258,8 @@ def scan(args):
 def reduce(args):
     import pyarrow.parquet as pq
     rows = {}
-    for f in glob.glob(os.path.join(args.cache, "scan_v2_*.npz")):
+    tagc = "" if list(CKPT) == ["fspl5s_g08"] else "_" + "+".join(sorted(CKPT))
+    for f in glob.glob(os.path.join(args.cache, f"scan_v2{tagc}_[0-9]*.npz")):
         z = np.load(f, allow_pickle=False)
         for k in z.files:
             if k.startswith("id|"):
@@ -352,9 +355,14 @@ def main(argv=None):
     ap.add_argument("--cap-1s1l", type=int, default=3000); ap.add_argument("--cap-binary", type=int, default=1500)
     ap.add_argument("--chunk", type=int, default=200); ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--cache", default=CACHE)
+    ap.add_argument("--ckpt", nargs="*", default=[], help="name=weights.pt to scan instead of the default fspl5s_g08")
     ap.add_argument("--meta-cache", default="/tmp/rmdc26_meta.parquet"); ap.add_argument("--epoch-cache", default="/tmp/rmdc26_epoch.parquet")
-    ap.add_argument("--out", default=os.path.join(HERE, "cascade_gulls.json"))
+    ap.add_argument("--out", default=os.path.join(HERE, "cascade_gulls.json"))  # pass a different --out with --ckpt
     args = ap.parse_args(argv)
+    if args.ckpt:
+        CKPT.clear()
+        for it in args.ckpt:
+            k, v = it.split("=", 1); CKPT[k] = v if os.path.isabs(v) else os.path.join(REPO, v)
     if args.extract: extract(args)
     if args.scan: scan(args)
     if args.reduce: reduce(args)

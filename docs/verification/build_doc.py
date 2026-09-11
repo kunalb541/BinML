@@ -39,7 +39,7 @@ had checked. Raw output: `docs/verification/2026-09-11_findings.json`.
   so produced a spurious collapse, caught before use); on real RMDC26 inputs its effect was measured directly.
 * **The colour-band gain is not anomaly signal.** It comes from planetary events without a detectable F146
   anomaly; its mechanism is not identified.
-* **"The schedule hides half the planets" was wrong.** The gap removes 4-10 points of detectable anomalies.
+* **"The schedule hides half the planets" was wrong.** The unobserved gap costs 12 (1S2L) and 20 (2S2L) points of claimable anomalies.
 * **Recall against RMDC26's generator labels is not bounded by the detectable fraction**, and "no anomaly a
   survey could claim" was an overstatement of what our 0.02 mag, single-season policy says.
 * **The onset fix had two off-by-one errors and changed a released default**; the relabel rule that consumes

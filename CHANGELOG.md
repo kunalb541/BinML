@@ -20,24 +20,28 @@ dispositions in `docs/VERIFICATION_2026-09-11.md`. Changes that alter conclusion
   enforced, a multi-start refit when the peak is outside the window, every derived number in the artifact.
 - New artifacts: `rmdc26_dataset_facts.json`, `occupancy_sensitivity.json`, per-event
   `rmdc26_scores.csv.gz`; `validation/gulls/PROVENANCE.md` for artifacts made before generation-time
-  provenance was recorded. Controls: `pspl5s_ctrl` (point-source continued training) and the `fspl5s`
-  recipe with the smooth magnification.
+  provenance was recorded. Controls: `pspl5s_ctrl` (point-source continued training: most of the
+  gain over g08e12 is the extra training, the physics adds the rest in the largest rho/|u0| bins), the combined
+  arm `fspl5s_seasons_g08` (smooth magnification + measured-season pauses; ties `fspl5s` at matched budgets, so
+  `fspl5s` stays recommended) and the `fspl5s` recipe with the smooth magnification alone (`fspl5s_espl_g08`).
 - `binml.gulls.classify_event(mode=...)`; notebooks and `ft_g08e12.pt` committed; manuscript numbers
   only through `paper/make_gulls_macros.py` (fail-closed).
 
 ## Unreleased — follow-up experiments after the GULLS transfer (2026-09-10/11)
 
 Generator / training (all opt-in or version-flagged; the released checkpoints and frozen artifacts are unchanged):
-- `SurveyConfig.onset_resolution_days` (default 0.5): the recorded anomaly onset `t_anom` is now resolved on the
-  0.5 d grid the cascade evaluation uses, by a fine scan inside the first detectable 7.2 d interval; 7.2 reproduces
-  the legacy grid bit-for-bit. Audit finding 9 measured: under a FIXED gap schedule the old grid put 2 of 10 onset
+- `SurveyConfig.onset_resolution_days`: the recorded anomaly onset `t_anom` can be resolved on the 0.5 d grid the
+  cascade evaluation uses. *Corrected by the 2026-09-11 verification (section above):* this entry first made 0.5 the
+  default and its fine scan skipped grid points; the default is the legacy 7.2 d grid again and 0.5 is an opt-in
+  full-grid first-detectable scan. Audit finding 9 measured: under a FIXED gap schedule the old grid put 2 of 10 onset
   values inside the blanked bins and the caustic-in-gap relabel fired on 20% of all binaries
   (`validation/schedule_finetune_local.py`). Released checkpoints were trained on the legacy grid (paper says so).
 - `pipeline.train --gap-schedule rmdc26` (exact seven-pause schedule + 70.7 d season end) and
   `--gap-relabel-anomaly off`; `SurveyConfig.noise_mult` / `bkg_mult` (defaults bit-identical); regimes
   `fspl5s_noisy{,_highmag}` (bkg_mult 7, measured on GULLS).
 - Finite-source single lenses (`PSPL_FINITE_SOURCE`, VBBinaryLensing ESPL), regimes `fspl*`; round 3 `fspl5s`
-  is the sidecar candidate (`validation/gulls/weights/ft_fspl5s_g08.pt`, gapped-calibrated threshold 0.949).
+  is the sidecar candidate (`validation/gulls/weights/ft_fspl5s_g08.pt`; threshold 0.957 under the measured
+  per-season pauses; the 0.949 first-season calibration is superseded).
 
 Validation (new scripts and artifacts under `validation/gulls/`):
 - `detectability_relabel.py`: BinML's own label policy applied to GULLS from `true_flux_uJy`/`flux_err_uJy`
