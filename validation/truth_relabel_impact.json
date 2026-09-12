@@ -1,8 +1,10 @@
 {
  "_doc": "How wrong were the legacy augmentation labels? -> validation/truth_relabel_impact.json (audit findings 8-10).",
  "shard": "shard_00002.h5",
+ "onset_ref": "shard_00002.h5",
  "n_events": 7403,
  "reps": 4,
+ "perturb": 5,
  "label_mix": {
   "Flat": 2427,
   "PSPL": 2119,
@@ -48,13 +50,21 @@
     "Eruptive": 2868,
     "PeriodicVar": 2632
    },
+   "disagree_k_by_class": {
+    "Flat": 0,
+    "PSPL": 426,
+    "NonPSPL": 163,
+    "LongPeriodVar": 408,
+    "Eruptive": 90,
+    "PeriodicVar": 230
+   },
    "disagree_frac_by_class": {
     "Flat": 0.0,
-    "PSPL": 0.0503,
-    "NonPSPL": 0.0475,
-    "LongPeriodVar": 0.1635,
-    "Eruptive": 0.0307,
-    "PeriodicVar": 0.0874
+    "PSPL": 0.05025955639452572,
+    "NonPSPL": 0.047494172494172496,
+    "LongPeriodVar": 0.16346153846153846,
+    "Eruptive": 0.03138075313807531,
+    "PeriodicVar": 0.08738601823708207
    },
    "transitions_legacy_to_truth": {
     "PSPL: legacy PSPL / truth Flat": 344,
@@ -62,7 +72,7 @@
     "PeriodicVar: legacy PeriodicVar / truth Flat": 230,
     "LongPeriodVar: legacy Flat / truth LongPeriodVar": 151,
     "NonPSPL: legacy PSPL / truth Flat": 117,
-    "Eruptive: legacy Eruptive / truth Flat": 88,
+    "Eruptive: legacy Eruptive / truth Flat": 90,
     "PSPL: legacy Flat / truth PSPL": 82,
     "NonPSPL: legacy Flat / truth NonPSPL": 31,
     "NonPSPL: legacy Flat / truth PSPL": 15
@@ -77,13 +87,21 @@
     "Eruptive": 2868,
     "PeriodicVar": 2632
    },
+   "disagree_k_by_class": {
+    "Flat": 0,
+    "PSPL": 2,
+    "NonPSPL": 40,
+    "LongPeriodVar": 2,
+    "Eruptive": 0,
+    "PeriodicVar": 1
+   },
    "disagree_frac_by_class": {
     "Flat": 0.0,
-    "PSPL": 0.0002,
-    "NonPSPL": 0.0117,
-    "LongPeriodVar": 0.0008,
+    "PSPL": 0.00023596035865974517,
+    "NonPSPL": 0.011655011655011656,
+    "LongPeriodVar": 0.0008012820512820513,
     "Eruptive": 0.0,
-    "PeriodicVar": 0.0004
+    "PeriodicVar": 0.00037993920972644377
    },
    "transitions_legacy_to_truth": {
     "NonPSPL: legacy PSPL / truth NonPSPL": 26,
@@ -102,13 +120,21 @@
     "Eruptive": 2868,
     "PeriodicVar": 2632
    },
+   "disagree_k_by_class": {
+    "Flat": 0,
+    "PSPL": 12,
+    "NonPSPL": 360,
+    "LongPeriodVar": 8,
+    "Eruptive": 31,
+    "PeriodicVar": 4
+   },
    "disagree_frac_by_class": {
     "Flat": 0.0,
-    "PSPL": 0.0014,
-    "NonPSPL": 0.1049,
-    "LongPeriodVar": 0.0032,
-    "Eruptive": 0.0108,
-    "PeriodicVar": 0.0015
+    "PSPL": 0.001415762151958471,
+    "NonPSPL": 0.1048951048951049,
+    "LongPeriodVar": 0.003205128205128205,
+    "Eruptive": 0.010808926080892609,
+    "PeriodicVar": 0.001519756838905775
    },
    "transitions_legacy_to_truth": {
     "NonPSPL: legacy PSPL / truth NonPSPL": 357,
@@ -128,13 +154,21 @@
     "Eruptive": 2868,
     "PeriodicVar": 2632
    },
+   "disagree_k_by_class": {
+    "Flat": 0,
+    "PSPL": 2,
+    "NonPSPL": 14,
+    "LongPeriodVar": 2,
+    "Eruptive": 0,
+    "PeriodicVar": 1
+   },
    "disagree_frac_by_class": {
     "Flat": 0.0,
-    "PSPL": 0.0002,
-    "NonPSPL": 0.0041,
-    "LongPeriodVar": 0.0008,
+    "PSPL": 0.00023596035865974517,
+    "NonPSPL": 0.004079254079254079,
+    "LongPeriodVar": 0.0008012820512820513,
     "Eruptive": 0.0,
-    "PeriodicVar": 0.0004
+    "PeriodicVar": 0.00037993920972644377
    },
    "transitions_legacy_to_truth": {
     "NonPSPL: legacy NonPSPL / truth PSPL": 14,
@@ -152,13 +186,21 @@
     "Eruptive": 2868,
     "PeriodicVar": 2632
    },
+   "disagree_k_by_class": {
+    "Flat": 0,
+    "PSPL": 12,
+    "NonPSPL": 47,
+    "LongPeriodVar": 8,
+    "Eruptive": 31,
+    "PeriodicVar": 4
+   },
    "disagree_frac_by_class": {
     "Flat": 0.0,
-    "PSPL": 0.0014,
-    "NonPSPL": 0.0137,
-    "LongPeriodVar": 0.0032,
-    "Eruptive": 0.0108,
-    "PeriodicVar": 0.0015
+    "PSPL": 0.001415762151958471,
+    "NonPSPL": 0.013694638694638694,
+    "LongPeriodVar": 0.003205128205128205,
+    "Eruptive": 0.010808926080892609,
+    "PeriodicVar": 0.001519756838905775
    },
    "transitions_legacy_to_truth": {
     "NonPSPL: legacy NonPSPL / truth PSPL": 47,
@@ -168,35 +210,80 @@
     "PeriodicVar: legacy PeriodicVar / truth Flat": 4
    }
   },
-  "truncation_vs_prefix_rule": {
-   "presentations": 3432,
-   "disagree_with_prefix_rule": {
-    "legacy": 0.11305361305361306,
-    "full_season_residuals": 0.1418997668997669,
-    "floors_plus_onset_7p2": 0.0675990675990676,
-    "floors_plus_onset_0p5": 0.0
+  "refit_reference": {
+   "n_binaries": 858,
+   "full_window_reference_not_binary": 0,
+   "full_window_reference_unstable": 5,
+   "note": "counts per presentation; '<method> X / refit Y' = the method's label X where the refit reference gives Y; 'unstable' = the reference decision changes under 1e-7 perturbations of the refit seed",
+   "truncation": {
+    "presentations": 3432,
+    "counts": {
+     "full_season_residuals NonPSPL / refit PSPL": 520,
+     "floors_onset_7p2 PSPL / refit NonPSPL": 188,
+     "legacy PSPL / refit NonPSPL": 181,
+     "legacy PSPL / refit Flat": 117,
+     "floors_onset_0p5 NonPSPL / refit PSPL": 73,
+     "floors_onset_7p2 NonPSPL / refit PSPL": 32,
+     "legacy Flat / refit NonPSPL": 31,
+     "legacy NonPSPL / refit PSPL": 29,
+     "legacy: reference unstable": 18,
+     "full_season_residuals: reference unstable": 18,
+     "floors_onset_7p2: reference unstable": 18,
+     "floors_onset_0p5: reference unstable": 18,
+     "legacy Flat / refit PSPL": 11,
+     "floors_onset_0p5 PSPL / refit NonPSPL": 8,
+     "full_season_residuals PSPL / refit NonPSPL": 3
+    }
    },
-   "disagree_counts": {
-    "legacy": 388,
-    "full_season_residuals": 487,
-    "floors_plus_onset_7p2": 232,
-    "floors_plus_onset_0p5": 0
+   "measured_seasons": {
+    "presentations": 3432,
+    "counts": {
+     "legacy_relabel_on PSPL / refit NonPSPL": 322,
+     "legacy_relabel_off NonPSPL / refit PSPL": 87,
+     "truth_bins NonPSPL / refit PSPL": 52,
+     "legacy_relabel_on: reference unstable": 13,
+     "legacy_relabel_off: reference unstable": 13,
+     "truth_bins: reference unstable": 13,
+     "legacy_relabel_on NonPSPL / refit PSPL": 13,
+     "truth_bins PSPL / refit NonPSPL": 12
+    }
    },
-   "transitions": {
-    "full_season_residuals NonPSPL / rule PSPL": 469,
-    "floors_plus_onset_7p2 PSPL / rule NonPSPL": 230,
-    "legacy PSPL / rule NonPSPL": 223,
-    "legacy PSPL / rule Flat": 117,
-    "legacy Flat / rule NonPSPL": 38,
-    "full_season_residuals PSPL / rule NonPSPL": 18,
-    "legacy Flat / rule PSPL": 8,
-    "legacy NonPSPL / rule PSPL": 2,
-    "floors_plus_onset_7p2 NonPSPL / rule PSPL": 2
+   "random_gaps": {
+    "presentations": 3432,
+    "counts": {
+     "legacy_relabel_on NonPSPL / refit PSPL": 27,
+     "legacy_relabel_off NonPSPL / refit PSPL": 27,
+     "legacy_relabel_on PSPL / refit NonPSPL": 25,
+     "legacy_relabel_on: reference unstable": 16,
+     "legacy_relabel_off: reference unstable": 16,
+     "truth_bins: reference unstable": 16,
+     "truth_bins NonPSPL / refit PSPL": 14,
+     "truth_bins PSPL / refit NonPSPL": 1
+    }
    },
-   "onset_ref": "shard_00002.h5",
-   "note": "legacy = released proxies + 7.2-d onset; full_season_residuals = the truth-bin anomaly test (withdrawn for truncation); floors_plus_onset_* = pipeline.train._apply_truncation with truth (floors from the truth bins, anomaly from the recorded onset) at the two onset resolutions"
+   "cadence": {
+    "presentations": 3432,
+    "counts": {
+     "legacy PSPL / refit NonPSPL [keep<0.2]": 835,
+     "truth_bins NonPSPL / refit PSPL [keep<0.2]": 304,
+     "legacy PSPL / refit NonPSPL": 249,
+     "legacy NonPSPL / refit PSPL [keep<0.2]": 147,
+     "legacy PSPL / refit Flat [keep<0.2]": 90,
+     "legacy NonPSPL / refit PSPL": 67,
+     "truth_bins NonPSPL / refit PSPL": 29,
+     "legacy NonPSPL / refit Flat [keep<0.2]": 11,
+     "truth_bins PSPL / refit NonPSPL [keep<0.2]": 11,
+     "legacy: reference unstable [keep<0.2]": 6,
+     "truth_bins: reference unstable [keep<0.2]": 6,
+     "legacy: reference unstable": 4,
+     "truth_bins: reference unstable": 4,
+     "truth_bins PSPL / refit NonPSPL": 4,
+     "legacy PSPL / refit Flat": 2,
+     "legacy NonPSPL / refit Flat": 2
+    }
+   }
   }
  },
- "code": "submitted-ac-2026-08-15-47-gfa91bc7afb90-dirty",
- "command": "validation/truth_relabel_impact.py --raw /Users/kunalbhatia/Desktop/Research/microlensing/truth_relabel_work/raw/shard_00002.h5 --reps 4 --onset-ref /Users/kunalbhatia/Desktop/Research/microlensing/truth_relabel_work/raw05/shard_00002.h5"
+ "code": "submitted-ac-2026-08-15-50-g218e3f1045ca",
+ "command": "validation/truth_relabel_impact.py --raw /Users/kunalbhatia/Desktop/Research/microlensing/truth_relabel_work/raw_v2/shard_00002.h5 --onset-ref /Users/kunalbhatia/Desktop/Research/microlensing/truth_relabel_work/raw05/shard_00002.h5 --reps 4 --perturb 5"
 }

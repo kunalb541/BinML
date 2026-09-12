@@ -29,14 +29,14 @@ These are benchmark
 values for a continuous 15-minute schedule and an adopted $0.02$~mag detectability floor, not \Rom{}
 yield forecasts. On RMDC26, an independent GULLS simulation of the survey made for the Roman
 Microlensing Data Challenge 2026 ($\bmlGullsN$ selected events, none used for training), the shipped
-checkpoint flags $\bmlGullsFaShipped\%$ of single lenses as anomalous, mostly because our training
+checkpoint flags $\bmlGullsFaShipped\%$ of single lenses per simulated event as anomalous, mostly because our training
 seasons lack the survey's F146 observing pauses. Fine-tuning on our own simulations with gap
 augmentation, finite-source single lenses and the measured pauses raises planetary recall at a
 $\bmlGullsBudgetMid\%$ single-lens false-alarm budget from $\bmlGullsRecShipped$ to
 $\bmlSeedRecLo$--$\bmlSeedRecHi$ per simulated event across three training seeds
 ($\bmlGullsRecWShipped$ to $\bmlSeedRecWLo$--$\bmlSeedRecWHi$ weighted by event rate); RMDC26 also
 guided the diagnosis and the choice of checkpoint, so these values are optimistic, and
-$\bmlGullsUndetPlanet$--$\bmlGullsUndetPlanetBin\%$ of its planetary events carry no anomaly our
+$\bmlGullsUndetPlanet$--$\bmlGullsUndetPlanetBin\%$ of the planetary events we checked carry no anomaly our
 labelling policy would claim within one season. Code, weights, and reproducibility artifacts are released openly.
 
 % ---------------------------------------------------------------- [B] Sec. limits, replacement paragraph
