@@ -115,6 +115,102 @@
     },
     "validation/latency_gaps_result.json": {
       "sha256": "a7922d21509bf0d38068de9c9f444390778704720b29c8124a70aef7d2d98784"
+    },
+    "validation/gulls/gap_sensitivity.json": {
+      "sha256": "d24e18a869ba360620e2d408f9d98559bcdd4687eb4ee2bb8694a541e3c8ff0b",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/rmdc26_dataset_facts.json": {
+      "sha256": "dedf8534ede45eab15eab65255068672e84e951df14c8e3bbe9465ed34263400",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/transfer_full_reduced.json": {
+      "sha256": "e7ff4517c078c0efd97fb5bdcf355cb6fd69bc8bf470bfce8b2890bb532eb560",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/transfer_full_reduced_rawpool.json": {
+      "sha256": "c84e7566a1f4795221cda3b010588fe3c9f1309c05e3dc4ff2b09c6871200268",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/transfer_tradeoff_all.json": {
+      "sha256": "ae5e56c1446b9be8b77dbb3ecf0c176aaa9840accf9266cba9a64b93be004d0b",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/transfer_colour_ablation.json": {
+      "sha256": "9448967c9f5ec4b83b58e168105dde689bf7455cdfb93458c55552eb3238baff",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/transfer_detectability_relabel.json": {
+      "sha256": "8bf82f1eb09723dae41abf943d073c8d8d5aab256d5dc9b36b8ae97b57878f93",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/floor_sensitivity.json": {
+      "sha256": "ad45d4279710ad0cb6409be53b020cba04e3639f0d70a2782bc96194079311b1",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/transfer_subday.json": {
+      "sha256": "9edff2d04e6f3ae9699493902bb79236739099d40b19891ea0b4cc0be15dde44",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/gulls_noise_model.json": {
+      "sha256": "b209053c31bc363202fc0d9ad861fcfc2ea7cf255767905c03e1122784bfbd27",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/fspl_finetune_fspl5s_g08.json": {
+      "sha256": "cdb79818e0102180e68bc318b50c1077a286d8810f2adaf5a0c4c366d195796c",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/fspl_finetune_pspl5s_ctrl_g08.json": {
+      "sha256": "39f75a88b04c4df885d3dcce3bf1206c17c4afc16a44a55e3f60a5808501d425",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/gapped_threshold_fspl5s_seasons_g08_seasons.json": {
+      "sha256": "e2ec63f03438775e6292ee55833fe92eb2bd95cc5668001fe6722ac08f236297",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/gapped_threshold_fspl5s_g08_seasons.json": {
+      "sha256": "632d6b8d10e353ce93d5000bf3d4867a29e57a8c590fd019cacafec64dd1ceb5",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/occupancy_sensitivity.json": {
+      "sha256": "6f32a2e0d38d1d6f1ddf6ed1df235113b82d53e6a3a98a56492a9fc480509a49",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/schedule_finetune.json": {
+      "sha256": "021ffc763726ccbaae42e6fbbfb658f138f1a28d1764ec2f5b50c0ccd544aea6",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/transfer_multiseason.json": {
+      "sha256": "5d7eab69d6eea049c1a646ecbdeb19c1b0f4b59270bbc961027e67399bcbcbd1",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/cascade_gulls.json": {
+      "sha256": "9538e729f70e9e7b173ef6437efb2fd8b6cf028a82a1264adb9f6d070d03c209",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/referee_round.json": {
+      "sha256": "2d20adf6f95ffe750604816414d76a88b647666a3731d690f160cab7a2c6e642",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/truth_relabel_impact.json": {
+      "sha256": "3ca1fd5e15e75fbc542926e54496ba0482bd1a668db5f5ba772e2652f8b40bfa",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/gapped_threshold_fspl5s_seasons_g08_s2_seasons.json": {
+      "sha256": "aad890a38a0dccac8ac63c52d823007a8c3c447e4ec0ea3126903a9922ba1417",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/gapped_threshold_fspl5s_seasons_g08_s3_seasons.json": {
+      "sha256": "2051d56b78b5fba3b9720b2af3b34303047206f51398946cda5c707f0f8981c0",
+      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+    },
+    "validation/gulls/rmdc26_scores.csv.gz": {
+      "sha256": "54b62e4a6fda84c7b9cd9553ede3b0782366c62942610ec1e4f4e9509492c4ad",
+      "_note": "2026-09-12: per-event RMDC26 scores of every checkpoint (gulls_summary_tables.py --scores)"
+    },
+    "binml/weights/binml-gapaware.pt": {
+      "sha256": "b2c4c24ca33f9d0d6a8ee0ace8c55654b1c7f3a703e28584d890839bd018d812",
+      "_note": "2026-09-12: recommended gap-aware checkpoint (byte-identical to validation/gulls/weights/ft_fspl5s_seasons_g08.pt)"
     }
   }
 }

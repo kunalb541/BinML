@@ -117,3 +117,30 @@ def test_truth_survives_writer_cache_and_memmap(tmp_path):
     for i in range(n):                                        # rows travel together through the shuffle
         if d[i] > 0:
             assert np.isclose(chi[i].sum(), d[i], rtol=1e-3)
+
+
+def test_truncation_takes_the_anomaly_from_the_onset_not_the_full_season_residuals():
+    """A prefix refit absorbs pre-onset residuals of the full-season fit; the truth bins cannot, so truncated binaries
+    keep the recorded onset (validation/truth_relabel_impact.json: the residual rule taught 13.7% of truncated binary
+    presentations NonPSPL before the onset). The floors still come from the truth bins."""
+    from pipeline.train import I_FLAT, I_NON, I_PSPL, _apply_truncation
+    nb = 864
+    vis = np.full(nb, 0.3, np.float32)
+    aa = np.full(nb, 0.03, np.float32); ac = np.full(nb, 1.0, np.float32)    # full-season-fit residuals everywhere
+    pf_idx = {"t_anom": 0}; params = np.array([50.0])                        # anomaly detectable in a prefix from day 50
+    seen = {}
+    for s in range(300):
+        o = _out(); f = float(np.random.default_rng(s).uniform(0.03, 1.0))
+        lab = _apply_truncation(o, I_NON, np.random.default_rng(s), params, pf_idx, truth=(vis, aa, ac))
+        seen[f * 72.0 >= 50.0] = lab
+        if f * 72.0 > 300 / 12 and f * 72.0 < 50.0:                         # >= 160 of residual chi^2 already revealed
+            assert lab == I_PSPL
+        if len(seen) == 2 and s > 50:
+            break
+    assert seen == {False: I_PSPL, True: I_NON}
+    # the floors: nothing above 0.02 mag revealed -> Flat, whatever the onset says
+    quiet = np.zeros(nb, np.float32); quiet[700:] = 0.3
+    for s in range(50):
+        o = _out(); f = float(np.random.default_rng(s).uniform(0.03, 1.0))
+        if f * 864 < 690:
+            assert _apply_truncation(o, I_NON, np.random.default_rng(s), params, pf_idx, truth=(quiet, aa, ac)) == I_FLAT

@@ -27,6 +27,7 @@ CHECKPOINTS = {
     "fspl5s_noisy_g08": "rows_full_fspl5s_noisy_g08.json", "fspl5s_v2_g08": "rows_full_fspl5s_v2_g08.json",
     "pspl5s_ctrl_g08": "rows_full_pspl5s_ctrl_g08.json", "fspl5s_espl_g08": "rows_full_fspl5s_espl_g08.json",
     "fspl5s_seasons_g08": "rows_full_fspl5s_seasons_g08.json",
+    "fspl5s_seasons_g08_s2": "rows_full_fspl5s_seasons_g08_s2.json", "fspl5s_seasons_g08_s3": "rows_full_fspl5s_seasons_g08_s3.json",
     "sched_rand": "rows_full_sched_rand.json", "sched_sched": "rows_full_sched_sched.json",
     "sched_sched_norelabel": "rows_full_sched_sched_norelabel.json", "sched_rand_norelabel": "rows_full_sched_rand_norelabel.json",
     "sched_sched_seasons": "rows_full_sched_sched_seasons.json",

@@ -20,6 +20,12 @@ uncommitted working tree. Runners now record `git describe --dirty` at data-gene
 | `transfer_full_<tag>.json` of fine-tunes scored before 2026-09-11 (13 files, including `transfer_full_fspl5s_g08.json`) | — | written by `gulls_transfer.py` before its status string was fixed | their `status` field reads 'NOT A TRANSFER MEASUREMENT for the shipped checkpoint'; that string was meant for gap-aware checkpoints in general and does not mean the numbers are invalid. Artifacts written since carry the corrected string |
 | `gapped_threshold_fspl5s_g08_seasonsocc.json` | — | 2026-09-11 | the blank + occupancy-cap DIAGNOSTIC (AP 0.743); its `schedule` field said `seasons` and was corrected by hand to `seasons_occ` on 2026-09-12 (note field in the file; numbers unchanged). The evaluation directories under `fspl5s_local_work/calib/` were renamed after evaluation, so their `meta.json` cache paths are stale (the `_seasons` eval points at a non-existent `mm_heldout_gapped_seasonsmask`, the `_seasonsocc` eval at `mm_heldout_gapped_seasons`, which now holds the blank-only data); the saved logits reproduce exactly on the current directories (2026-09-12 check) |
 
+Later artifacts (2026-09-12) record their generating code themselves: `validation/referee_round.json` (`code`,
+`command`, per-arm `run_shard_args`; test shards 90-91 regenerated under `~/Desktop/Research/microlensing/referee_local_work`),
+`validation/truth_relabel_impact.json` (`code`, `gen_settings`), and the seed replicates `fspl_finetune_fspl5s_seasons_g08_s{2,3}.json`
+(`provenance.json` in `fspl5s_seasons_local_work`; the same pool, recipe and code as `fspl5s_seasons_g08`, only `--seed` differs:
+20260910, 20260911 against 20260909).
+
 Unaffected: the shipped weights, every paper artifact under `paper/results/`, and the manifest-hashed
 validation results. The ESPLMag2 steps and the first-season mask affect only the post-submission
 fine-tunes listed above. The quantised 7.2-d onset is different: it is shared by the shipped model's

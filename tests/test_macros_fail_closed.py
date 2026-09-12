@@ -24,6 +24,8 @@ def _tree(tmp):
     for f in os.listdir(os.path.join(REPO, "validation/gulls")):
         if f.endswith(".json"):
             shutil.copy(os.path.join(REPO, "validation/gulls", f), os.path.join(tmp, "validation/gulls"))
+    for f in ("referee_round.json", "truth_relabel_impact.json", "cascade_reproduce_result.json"):
+        shutil.copy(os.path.join(REPO, "validation", f), os.path.join(tmp, "validation"))
     for f in ("__init__.py", "priors.py"):
         shutil.copy(os.path.join(REPO, "pipeline", f), os.path.join(tmp, "pipeline"))
     for o in OUTS:
@@ -38,6 +40,10 @@ def _edit(tmp, name, fn):
     p = os.path.join(tmp, "validation/gulls", name); d = json.load(open(p)); fn(d); json.dump(d, open(p, "w"))
 
 
+def _drop_seed(tmp):
+    _edit(tmp, "transfer_tradeoff_all.json", lambda d: d["models"].pop("fspl5s_seasons_g08_s3"))
+
+
 CASES = {
     "missing artifact": lambda t: os.remove(os.path.join(t, "validation/gulls/transfer_colour_ablation.json")),
     "late missing artifact": lambda t: os.remove(os.path.join(t, "validation/gulls/cascade_gulls.json")),
@@ -47,6 +53,10 @@ CASES = {
     "no calibrated cascade": lambda t: _edit(t, "cascade_gulls.json",
                                              lambda d: d["results"].pop("fspl5s_seasons_g08|f146|calibrated_seasons_fullpool")),
     "no PeriodicVar": lambda t: _edit(t, "transfer_subday.json", lambda d: d["models"]["shipped"]["argmax_distribution"].pop("PeriodicVar")),
+    "no referee round": lambda t: os.remove(os.path.join(t, "validation/referee_round.json")),
+    "no colour fine-tunes": lambda t: _edit(t, "../referee_round.json", lambda d: d["colour_ablation"].pop("finetuned_on_train_colour")),
+    "no third seed": _drop_seed,
+    "no prefix-rule check": lambda t: _edit(t, "../truth_relabel_impact.json", lambda d: d["results"].pop("truncation_vs_prefix_rule")),
 }
 
 

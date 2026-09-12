@@ -5,19 +5,26 @@ The pre-submission referee round (paper/REVISION.md section 2) deferred four ite
 simulator only, with the SHIPPED checkpoint unless stated:
 
 1. Detectability-floor sensitivity by RE-SIMULATION. Test shards 90-91 (disjoint from training) regenerated with
-   the label floor at 0.01, 0.02 (adopted) and 0.05 mag (the same seeds, so the same underlying events): the
-   NonPSPL prevalence (raw and population-weighted) and the headline completeness at 90% purity, AP and macro-F1
-   by the paper's own procedure (pipeline.evaluate). The model is not retrained; this is the label side plus the
-   shipped model's response.
+   the label floor at 0.01, 0.02 (adopted) and 0.05 mag. The seeds are the same but the events are NOT: the
+   generator draws a keep/drop number only for a NonPSPL candidate relabelled PSPL or Flat, so its random stream
+   diverges at the first event whose label depends on the floor (within the first ~100 events of each shard).
+   Each floor is therefore an independent draw from the same population, and arm-to-arm differences include
+   sampling noise (Wilson intervals on completeness are recorded). Per arm: the NonPSPL prevalence (raw and
+   population-weighted), AP and macro-F1 by the paper's own procedure (pipeline.evaluate), and completeness and
+   population-weighted purity at the frozen threshold. The model is not retrained; this is the label side plus
+   the shipped model's response.
 2. Colour-band calibration ablation. The same test shards with the audited F087/F213 zeropoints, backgrounds and
-   saturation (pipeline.photometry.ROMAN_BANDS_COLOUR_AUDITED; F146 and cadences unchanged): the shipped model on
-   both photometries of the same events; then (--finetune) a short fine-tune of the shipped weights on training
+   saturation (pipeline.photometry.ROMAN_BANDS_COLOUR_AUDITED; F146 and cadences unchanged). Here the events ARE the
+   same (no label-dependent draw changes; parameters match row for row, checked below, and only the labels whose
+   detectability depends on colour-band noise differ): the shipped model on both photometries; then (--finetune) a short fine-tune of the shipped weights on training
    shards 0-1 generated with each calibration, each evaluated on both test photometries.
 3. Mixed-class sequential evaluation. Every event of the adopted-floor test shards (all six classes) revealed in
-   144 half-day prefixes and scored at the frozen threshold: the share of each class that raises an alert, alerts
+   144 half-day prefixes, ALL THREE BANDS revealed together (the paper's primary in-house scan reveals F146 only;
+   its three-band variant is the comparison), and scored at the frozen threshold: the share of each class that raises an alert, alerts
    per 1,000 events per day, streaming purity at the simulated population mix (keep_prob weights, as the paper's
    prevalence), and, for NonPSPL events with a finite onset, premature alerts and lag against the 0.5-day
-   first-detectable onset recorded at generation.
+   first-detectable onset recorded at generation. Purity and alert rate are also given at 1% and 0.1% anomaly
+   prevalence by prior shift (class-conditional alert fractions and the non-anomalous mix held fixed).
 
 The fourth item, a three-seed sweep of the shipped model's final training stage, needs the 1.9M-event training
 set, which is on S3 and not on this machine; it is not run here.
@@ -116,6 +123,23 @@ def _wilson(k, n, z=1.96):
     return [float(max(0.0, c - h)), float(min(1.0, c + h))]
 
 
+def _same_events(a, b):
+    """Row-for-row identity of two arms' raw shards: parameters (t_anom excluded: onset resolution may differ) and labels."""
+    import h5py
+    n = same = lab_same = 0
+    for s in ARMS[a][0]:
+        with h5py.File(os.path.join(WORK, f"raw_{a}", f"shard_{s:05d}.h5"), "r") as fa, \
+                h5py.File(os.path.join(WORK, f"raw_{b}", f"shard_{s:05d}.h5"), "r") as fb:
+            pf = [x.decode() if isinstance(x, bytes) else str(x) for x in fa.attrs["param_fields"]]
+            pa, pb = fa["params"][:], fb["params"][:]
+            if pa.shape != pb.shape:
+                return {"identical_params": False, "n_a": int(pa.shape[0]), "n_b": int(pb.shape[0])}
+            cols = [i for i in range(pa.shape[1]) if pf[i] != "t_anom"]
+            same += int(np.all(np.isclose(pa[:, cols], pb[:, cols], equal_nan=True), axis=1).sum())
+            lab_same += int((fa["label"][:] == fb["label"][:]).sum()); n += pa.shape[0]
+    return {"identical_params": same == n, "n": n, "label_agreement": lab_same / n, "n_label_changed": n - lab_same}
+
+
 # ------------------------------------------------------------------ mixed-class sequential scan
 _C = {}
 
@@ -181,12 +205,14 @@ def stream_scan(workers):
 def stream_reduce(scans):
     import h5py
     from pipeline.classes import CLASS_NAMES
-    P, lab, kp, tan = [], [], [], []
+    P, lab, kp, tan, tcl = [], [], [], [], []
     for s, (path, p) in scans.items():
         with h5py.File(path, "r") as f:
             pf = [x.decode() if isinstance(x, bytes) else str(x) for x in f.attrs["param_fields"]]
             P.append(p); lab.append(f["label"][:]); kp.append(f["keep_prob"][:]); tan.append(f["params"][:, pf.index("t_anom")])
-    P, lab, kp, tan = np.concatenate(P), np.concatenate(lab), np.concatenate(kp).astype(np.float64), np.concatenate(tan)
+            tcl.append(f["true_class"][:])
+    P, lab, kp, tan, tcl = (np.concatenate(P), np.concatenate(lab), np.concatenate(kp).astype(np.float64), np.concatenate(tan),
+                            np.concatenate(tcl))
     w = 1.0 / np.clip(kp, 1e-3, 1.0)
     cuts = np.arange(1, 145) * 0.5
     alert = np.nan_to_num(P, nan=-1.0) >= FROZEN
@@ -203,6 +229,19 @@ def stream_reduce(scans):
     out["streaming_purity_nonpspl"] = {"raw": float((lab[fired] == 2).mean()) if fired.any() else None,
                                        "population_weighted": float(w[fired & (lab == 2)].sum() / wa.sum()) if fired.any() else None}
     out["alert_share_by_class_population_weighted"] = {CLASS_NAMES[k]: float(w[fired & (lab == k)].sum() / wa.sum()) for k in range(len(CLASS_NAMES)) if (lab == k).any()}
+    # prior shift, as the paper's prevalence figure: hold the class-conditional alert fractions and the mix of the
+    # non-anomalous classes fixed, rescale the anomaly prevalence pi
+    pos = lab == 2
+    D = float(w[fired & pos].sum() / w[pos].sum()); F = float(w[fired & ~pos].sum() / w[~pos].sum())
+    out["alert_frac_nonnonpspl_population_weighted"] = F
+    out["at_prevalence"] = {str(pi): {"purity": pi * D / (pi * D + (1 - pi) * F),
+                                      "alerts_per_1000_events_per_day": 1000 * (pi * D + (1 - pi) * F) / 72.0}
+                            for pi in (0.01, 0.001)}
+    out["simulated_prevalence_population_weighted"] = float(w[pos].sum() / w.sum())
+    # single-lens alerts that are binaries generated as such whose anomaly fails the detectability policy
+    ps_f = fired & (lab == CLASS_NAMES.index("PSPL")); dem = ps_f & (tcl == CLASS_NAMES.index("NonPSPL"))
+    out["pspl_alerts_from_demoted_binaries"] = {"k": int(dem.sum()), "n": int(ps_f.sum()),
+                                                "population_weighted": float(w[dem].sum() / w[ps_f].sum()) if ps_f.any() else None}
     el = (lab == 2) & np.isfinite(tan)
     prem = el & fired & (first < tan); lag = (first - tan)[el & fired & ~prem]
     k_, n_ = int(prem.sum()), int(el.sum())
@@ -254,6 +293,7 @@ def main(argv=None):
         log(f"floor {fl}: {res['floor_sensitivity'][str(fl)]}")
     for a in ("test_f002", "test_colour"):
         res["colour_ablation"]["shipped"][a] = summary(evaluate(SHIPPED, mms[a], f"shipped_{a}"))
+    res["colour_ablation"]["same_events"] = _same_events("test_f002", "test_colour")
     if args.finetune:
         for tr in ("train_trained", "train_colour"):
             ck = finetune(tr, args.device)

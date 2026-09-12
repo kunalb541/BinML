@@ -1,0 +1,501 @@
+{
+ "_doc": "Referee-round items that need compute, run locally on our own simulator -> validation/referee_round.json.",
+ "shards": {
+  "test_f001": [
+   90,
+   91
+  ],
+  "test_f002": [
+   90,
+   91
+  ],
+  "test_f005": [
+   90,
+   91
+  ],
+  "test_colour": [
+   90,
+   91
+  ],
+  "train_trained": [
+   0,
+   1
+  ],
+  "train_colour": [
+   0,
+   1
+  ]
+ },
+ "run_shard_args": {
+  "test_f001": [
+   "--min-amplitude-mag",
+   "0.01"
+  ],
+  "test_f002": [
+   "--onset-resolution-days",
+   "0.5"
+  ],
+  "test_f005": [
+   "--min-amplitude-mag",
+   "0.05"
+  ],
+  "test_colour": [
+   "--band-set",
+   "colour_audited"
+  ],
+  "train_trained": [],
+  "train_colour": [
+   "--band-set",
+   "colour_audited"
+  ]
+ },
+ "code": "submitted-ac-2026-08-15-47-gfa91bc7afb90-dirty",
+ "floor_sensitivity": {
+  "0.01": {
+   "completeness_at_purity": 0.8760429082240763,
+   "purity_achieved": 0.8758689215861496,
+   "threshold": 0.6755319237709045,
+   "completeness_ci95": [
+    0.8606540740506863,
+    0.8903743983725912
+   ],
+   "ap": 0.9419157978131575,
+   "macro_f1_population": 0.8892888356412295,
+   "f1_population": {
+    "Flat": 0.8741074799715881,
+    "PSPL": 0.9395979156341854,
+    "NonPSPL": 0.8500326252030848,
+    "PeriodicVar": 0.9615384615384616,
+    "LongPeriodVar": 0.8221551403562914,
+    "Eruptive": 0.8883013911437658
+   },
+   "n_events": 15206,
+   "prevalence": {
+    "raw": 0.1355386031829541,
+    "population_weighted": 0.06519882477624342,
+    "n": 15206
+   },
+   "at_frozen_threshold": {
+    "threshold": 0.9042405486106873,
+    "completeness": 0.8083454633672974,
+    "completeness_k_n": [
+     1666,
+     2061
+    ],
+    "completeness_wilson95": [
+     0.790784719424018,
+     0.8247588651298771
+    ],
+    "purity_population_weighted": 0.961338720306988,
+    "false_flag_rate_nonnonpspl_population_weighted": 0.0022673434637790063
+   }
+  },
+  "0.02": {
+   "completeness_at_purity": 0.9275053304904051,
+   "purity_achieved": 0.8413926550768184,
+   "threshold": 0.7894409894943237,
+   "completeness_ci95": [
+    0.9141342776259147,
+    0.9408823833928663
+   ],
+   "ap": 0.9565390094101303,
+   "macro_f1_population": 0.9113431226042379,
+   "f1_population": {
+    "Flat": 0.9705696299608799,
+    "PSPL": 0.9597308707324825,
+    "NonPSPL": 0.812399035909828,
+    "PeriodicVar": 0.9678012879484821,
+    "LongPeriodVar": 0.864361705172575,
+    "Eruptive": 0.8931962059011799
+   },
+   "n_events": 15016,
+   "prevalence": {
+    "raw": 0.11674214171550347,
+    "population_weighted": 0.05462817865364875,
+    "n": 15016
+   },
+   "at_frozen_threshold": {
+    "threshold": 0.9042405486106873,
+    "completeness": 0.8910439247005134,
+    "completeness_k_n": [
+     1562,
+     1753
+    ],
+    "completeness_wilson95": [
+     0.8755935942459526,
+     0.9047841017284596
+    ],
+    "purity_population_weighted": 0.9125608599718091,
+    "false_flag_rate_nonnonpspl_population_weighted": 0.004933523726286989
+   }
+  },
+  "0.05": {
+   "completeness_at_purity": 0.8148854961832062,
+   "purity_achieved": 0.9005272442950601,
+   "threshold": 0.9894481897354126,
+   "completeness_ci95": [
+    0.7914989518529846,
+    0.8407896212240138
+   ],
+   "ap": 0.9342405014021664,
+   "macro_f1_population": 0.7728647086065408,
+   "f1_population": {
+    "Flat": 0.7481683180864653,
+    "PSPL": 0.8631591781726403,
+    "NonPSPL": 0.7226096280783162,
+    "PeriodicVar": 0.8243243243243245,
+    "LongPeriodVar": 0.629050707109906,
+    "Eruptive": 0.8498760958675926
+   },
+   "n_events": 14636,
+   "prevalence": {
+    "raw": 0.09169171904892047,
+    "population_weighted": 0.0420883175317608,
+    "n": 14636
+   },
+   "at_frozen_threshold": {
+    "threshold": 0.9042405486106873,
+    "completeness": 0.9478390461997019,
+    "completeness_k_n": [
+     1272,
+     1342
+    ],
+    "completeness_wilson95": [
+     0.9346126170108616,
+     0.9585088320511975
+    ],
+    "purity_population_weighted": 0.7662650672111337,
+    "false_flag_rate_nonnonpspl_population_weighted": 0.012703262964439794
+   }
+  }
+ },
+ "colour_ablation": {
+  "shipped": {
+   "test_f002": {
+    "completeness_at_purity": 0.9275053304904051,
+    "purity_achieved": 0.8413926550768184,
+    "threshold": 0.7894409894943237,
+    "completeness_ci95": [
+     0.9141342776259147,
+     0.9408823833928663
+    ],
+    "ap": 0.9565390094101303,
+    "macro_f1_population": 0.9113431226042379,
+    "f1_population": {
+     "Flat": 0.9705696299608799,
+     "PSPL": 0.9597308707324825,
+     "NonPSPL": 0.812399035909828,
+     "PeriodicVar": 0.9678012879484821,
+     "LongPeriodVar": 0.864361705172575,
+     "Eruptive": 0.8931962059011799
+    },
+    "n_events": 15016,
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.8910439247005134,
+     "completeness_k_n": [
+      1562,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8755935942459526,
+      0.9047841017284596
+     ],
+     "purity_population_weighted": 0.9125608599718091,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.004933523726286989
+    }
+   },
+   "test_colour": {
+    "completeness_at_purity": 0.92181947405828,
+    "purity_achieved": 0.8442178397661837,
+    "threshold": 0.7918594479560852,
+    "completeness_ci95": [
+     0.9097638861343853,
+     0.9357890521698935
+    ],
+    "ap": 0.9557472451249178,
+    "macro_f1_population": 0.906031452664751,
+    "f1_population": {
+     "Flat": 0.9679217278425386,
+     "PSPL": 0.9599277091916915,
+     "NonPSPL": 0.8182929363846383,
+     "PeriodicVar": 0.9484536082474228,
+     "LongPeriodVar": 0.8683169795403745,
+     "Eruptive": 0.8732757547818407
+    },
+    "n_events": 15016,
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.8881916714204221,
+     "completeness_k_n": [
+      1557,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8725823842330543,
+      0.9021032789479632
+     ],
+     "purity_population_weighted": 0.9194881918533211,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.004494011590664943
+    }
+   }
+  },
+  "same_events": {
+   "identical_params": true,
+   "n": 15016,
+   "label_agreement": 0.9983351092168353,
+   "n_label_changed": 25
+  },
+  "finetuned_on_train_trained": {
+   "test_f002": {
+    "completeness_at_purity": 0.9402985074626866,
+    "purity_achieved": 0.8036039744920856,
+    "threshold": 0.7383091449737549,
+    "completeness_ci95": [
+     0.9274438271078818,
+     0.9511438861780952
+    ],
+    "ap": 0.9582926806277896,
+    "macro_f1_population": 0.9179912064953751,
+    "f1_population": {
+     "Flat": 0.9609707721577537,
+     "PSPL": 0.9595034389512566,
+     "NonPSPL": 0.8312170997812373,
+     "PeriodicVar": 0.9580674567000912,
+     "LongPeriodVar": 0.8866624947099389,
+     "Eruptive": 0.9115259766719731
+    },
+    "n_events": 15016,
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.905875641756988,
+     "completeness_k_n": [
+      1588,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8913048435870119,
+      0.9186714229130526
+     ],
+     "purity_population_weighted": 0.9098548542076043,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.005186243205579513
+    }
+   },
+   "test_colour": {
+    "completeness_at_purity": 0.9367448471926084,
+    "purity_achieved": 0.7960539623514585,
+    "threshold": 0.7246494293212891,
+    "completeness_ci95": [
+     0.923204760400318,
+     0.9493688664485848
+    ],
+    "ap": 0.9574933260027827,
+    "macro_f1_population": 0.9066106346589308,
+    "f1_population": {
+     "Flat": 0.9524146472846917,
+     "PSPL": 0.9573590404042158,
+     "NonPSPL": 0.8279492255196248,
+     "PeriodicVar": 0.9179331306990882,
+     "LongPeriodVar": 0.8880332690947396,
+     "Eruptive": 0.8959744949512243
+    },
+    "n_events": 15016,
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.9024529378208785,
+     "completeness_k_n": [
+      1582,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8876707940003095,
+      0.9154750331476817
+     ],
+     "purity_population_weighted": 0.9130434813319889,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.0049664871377684905
+    }
+   }
+  },
+  "finetuned_on_train_colour": {
+   "test_f002": {
+    "completeness_at_purity": 0.937455579246624,
+    "purity_achieved": 0.8192546640467027,
+    "threshold": 0.7685373425483704,
+    "completeness_ci95": [
+     0.9251116071428572,
+     0.9491961906968277
+    ],
+    "ap": 0.9576405324003326,
+    "macro_f1_population": 0.8732020266581352,
+    "f1_population": {
+     "Flat": 0.9048001477896158,
+     "PSPL": 0.9595952811924806,
+     "NonPSPL": 0.8239025936558746,
+     "PeriodicVar": 0.7491141038946437,
+     "LongPeriodVar": 0.8790397074272307,
+     "Eruptive": 0.9227603259889652
+    },
+    "n_events": 15016,
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.9087278950370793,
+     "completeness_k_n": [
+      1593,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8943373745428871,
+      0.9213309247505723
+     ],
+     "purity_population_weighted": 0.9032319066236261,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.005625755341201555
+    }
+   },
+   "test_colour": {
+    "completeness_at_purity": 0.9353233830845771,
+    "purity_achieved": 0.8083538142729287,
+    "threshold": 0.7579194903373718,
+    "completeness_ci95": [
+     0.921910354961565,
+     0.9480442053747249
+    ],
+    "ap": 0.9569916851208718,
+    "macro_f1_population": 0.9159689001620768,
+    "f1_population": {
+     "Flat": 0.9618436853416422,
+     "PSPL": 0.9584159302233052,
+     "NonPSPL": 0.8251231575547952,
+     "PeriodicVar": 0.9549359458566563,
+     "LongPeriodVar": 0.8850046024041893,
+     "Eruptive": 0.9104900795918721
+    },
+    "n_events": 15016,
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.9030233884768968,
+     "completeness_k_n": [
+      1583,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8882761010861536,
+      0.9160081326205164
+     ],
+     "purity_population_weighted": 0.9026801022495042,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.005625755341201556
+    }
+   }
+  }
+ },
+ "mixed_class_stream": {
+  "n_events": 15016,
+  "threshold": 0.9042405486106873,
+  "by_class": {
+   "Flat": {
+    "n": 4849,
+    "alert_frac_per_season": 0.0,
+    "alert_frac_population_weighted": 0.0
+   },
+   "PSPL": {
+    "n": 4391,
+    "alert_frac_per_season": 0.007287633796401731,
+    "alert_frac_population_weighted": 0.010169725611222038
+   },
+   "NonPSPL": {
+    "n": 1753,
+    "alert_frac_per_season": 0.899030233884769,
+    "alert_frac_population_weighted": 0.899030233884769
+   },
+   "PeriodicVar": {
+    "n": 1326,
+    "alert_frac_per_season": 0.0,
+    "alert_frac_population_weighted": 0.0
+   },
+   "LongPeriodVar": {
+    "n": 1274,
+    "alert_frac_per_season": 0.0,
+    "alert_frac_population_weighted": 0.0
+   },
+   "Eruptive": {
+    "n": 1423,
+    "alert_frac_per_season": 0.0,
+    "alert_frac_population_weighted": 0.0
+   }
+  },
+  "alerts_per_1000_events_per_day": {
+   "raw": 1.4873024329603979,
+   "population_weighted": 0.7670924569585149
+  },
+  "streaming_purity_nonpspl": {
+   "raw": 0.9800995024875622,
+   "population_weighted": 0.8892232500458986
+  },
+  "alert_share_by_class_population_weighted": {
+   "Flat": 0.0,
+   "PSPL": 0.11077674995410149,
+   "NonPSPL": 0.8892232500458986,
+   "PeriodicVar": 0.0,
+   "LongPeriodVar": 0.0,
+   "Eruptive": 0.0
+  },
+  "alert_frac_nonnonpspl_population_weighted": 0.006471816200964143,
+  "at_prevalence": {
+   "0.01": {
+    "purity": 0.5838844297254648,
+    "alerts_per_1000_events_per_day": 0.2138527830250304
+   },
+   "0.001": {
+    "purity": 0.1220782864044232,
+    "alerts_per_1000_events_per_day": 0.10228298081455482
+   }
+  },
+  "simulated_prevalence_population_weighted": 0.05462817865364876,
+  "pspl_alerts_from_demoted_binaries": {
+   "k": 29,
+   "n": 32,
+   "population_weighted": 0.9847198635786701
+  },
+  "timing_nonpspl": {
+   "n_eligible": 1753,
+   "detected_frac": 0.899030233884769,
+   "premature_frac": 0.0068454078722190535,
+   "premature_ci95": [
+    0.00392015306197514,
+    0.011927376960082628
+   ],
+   "median_lag_nonpremature_days": 6.5,
+   "onset": "t_anom on the 0.5-d first-detectable grid recorded at generation"
+  }
+ },
+ "command": "validation/referee_round_local.py --workers 6 --finetune"
+}

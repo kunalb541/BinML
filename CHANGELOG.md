@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased — referee-round items, seed replicates, RMDC26 section merged (2026-09-12, afternoon)
+
+- **Referee round on our own simulator** (`validation/referee_round_local.py` -> `validation/referee_round.json`;
+  paper §limits and §cascade via `\bmlRef*`):
+  - Detectability floor 0.01 / 0.02 / 0.05 mag, label side (shipped model, frozen threshold): completeness
+    0.808 / 0.891 / 0.948, purity 0.961 / 0.913 / 0.766, prevalence 6.5 / 5.5 / 4.2%, AP 0.942 / 0.957 / 0.934.
+    The three arms are independent draws (the keep draw desynchronises the random stream), not the same events.
+  - Colour calibration: the shipped model on the audited F087/F213 photometry of the same events keeps its anomaly
+    channel (AP 0.956 vs 0.957) and loses 2 points of F1 on periodic and eruptive variables; short fine-tunes on
+    each calibration keep AP at 0.957-0.958 and tie periodic-variable F1 to the training calibration (0.955 vs 0.918).
+  - Mixed-class sequential scan (all six classes, all bands): no Flat or variable-star alert; 0.77 alerts per 1,000
+    events per day, 89% anomalies at the simulated 5.5% prevalence (58% at 1%); 29 of 32 single-lens alerts are
+    binaries below the detectability policy; timing matches the in-house three-band scan.
+  - Seed sweep of the shipped model: not possible (training set on S3; AWS unavailable).
+- **Seed replicates of the recommended recipe** (`fspl5s_seasons_g08_s2`, `_s3`): 1S2L recall at the 5.2% budget
+  0.349-0.391 per event, 0.385-0.407 weighted; the paired event-bootstrap intervals exclude zero between seeds, so
+  the paper now interprets no difference between single runs smaller than the seed range. The combined arm's lead
+  over `ft_fspl5s_g08.pt` does not survive (seeds 2-3 trail it per event, tie it weighted); the extra training, the
+  measured pauses and the physics' false-alarm drop at large rho/|u0| do. `binml-gapaware.pt` stays seed 1, stated
+  as the best of three.
+- **Truth relabelling corrected for truncation** (audit findings 8-10): full-season-fit residuals taught 13.7% of
+  truncated binary presentations NonPSPL before the onset; truncation now takes only the floors from the truth and
+  keeps the onset (use `--onset-resolution-days 0.5`). Measured impact of the released labels in
+  `validation/truth_relabel_impact.json` and the paper (§training, §limits). No released checkpoint used truth relabelling.
+- Abstract block [A] merged into `paper.tex`; the paper now carries every RMDC26 block.
+- `paper/make_gulls_macros.py`: referee and seed blocks, fail-closed direction checks for the sentences that
+  describe them, `--list-inputs` for manifest hashing; seed replicates are not counted as candidates.
+
 ## Unreleased — second verification pass and the recommended checkpoint (2026-09-12)
 
 A second pass (five verifiers, five adversarial checkers, a completeness critic) on the corrected state found

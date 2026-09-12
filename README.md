@@ -230,8 +230,10 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   flags 6.3% against the shipped weights' 35.6%. It replaced the earlier finite-source checkpoint
   `ft_fspl5s_g08.pt` (threshold 0.957, 1.6%, recall 0.24 / 0.27) on 2026-09-12: the two tie at matched
   false-alarm budgets per simulated event, and the new one is ahead when events are weighted by rate and
-  on our own held-out seasons. RMDC26 also guided the diagnosis and the choice of this checkpoint, so these
-  numbers are optimistic for it. Under our own label policy 44-46% of the selected RMDC26 planetary
+  on our own held-out seasons. Two further training seeds of the same recipe, trained afterwards, trail
+  `ft_fspl5s_g08.pt` per event (recall 0.349 / 0.358 against 0.390 at a 5.2% false-alarm budget) and tie it
+  weighted, so RMDC26 does not separate the two recipes; the released run is the best of the three seeds.
+  RMDC26 also guided the diagnosis and the choice of this checkpoint, so these numbers are optimistic for it. Under our own label policy 44-46% of the selected RMDC26 planetary
   events carry no anomaly the policy would claim within one season; on those with one, recall at 0.956
   is 0.41 / 0.48. The shipped weights are unchanged so that the submitted numbers stay exact. Full
   account, including what did not work and what two verification passes corrected, in

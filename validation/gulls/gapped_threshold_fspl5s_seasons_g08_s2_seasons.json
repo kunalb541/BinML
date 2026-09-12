@@ -1,0 +1,172 @@
+{
+  "_doc": "Re-calibrate the anomaly threshold for Roman's gapped schedule WITHOUT touching GULLS.",
+  "checkpoint": "validation/gulls/weights/ft_fspl5s_seasons_g08_s2.pt",
+  "target_purity": 0.9,
+  "heldout_source": "/Users/kunalbhatia/Desktop/Research/microlensing/fspl5s_local_work/mm_heldout",
+  "schedule": "seasons",
+  "frozen_threshold": 0.9042405486106873,
+  "label_note": "gapped copy keeps the unblanked labels (an anomaly entirely inside a pause still counts as NonPSPL)",
+  "arms": {
+    "clean": {
+      "threshold_at_target_purity": 0.9141090512275696,
+      "our_heldout": {
+        "completeness": 0.7879,
+        "purity": 0.8826,
+        "ap": 0.9193
+      },
+      "gulls_at_this_threshold": {
+        "fa_1S1L": 0.0413,
+        "fa_1S1L_k": 1376,
+        "fa_1S1L_n": 33353,
+        "recall_1S2L": 0.3148,
+        "recall_1S2L_k": 3585,
+        "recall_1S2L_n": 11388,
+        "recall_2S2L": 0.3433,
+        "recall_2S2L_k": 4200,
+        "recall_2S2L_n": 12234
+      },
+      "pool": {
+        "full_pool": {
+          "target_purity": 0.9,
+          "achievable": true,
+          "threshold": 0.9217840433120728,
+          "completeness": 0.7823709536307961,
+          "purity": 0.9013859743866024,
+          "n_selected": 3770
+        },
+        "prevalence_nonpspl_raw": 0.1147,
+        "prevalence_nonpspl_population_weighted": 0.0601,
+        "slice_thresholds": {
+          "n_achievable": 200,
+          "reps": 200,
+          "median": 0.9186862409114838,
+          "p16": 0.9082087254524231,
+          "p84": 0.9338795018196105,
+          "p2.5": 0.8777387648820877,
+          "p97.5": 0.9536914080381393
+        }
+      },
+      "gulls_at_full_pool_threshold": {
+        "fa_1S1L": 0.0366,
+        "fa_1S1L_k": 1220,
+        "fa_1S1L_n": 33353,
+        "recall_1S2L": 0.2986,
+        "recall_1S2L_k": 3400,
+        "recall_1S2L_n": 11388,
+        "recall_2S2L": 0.3275,
+        "recall_2S2L_k": 4007,
+        "recall_2S2L_n": 12234
+      },
+      "gulls_at_slice_p16_p84": [
+        {
+          "fa_1S1L": 0.0447,
+          "fa_1S1L_k": 1491,
+          "fa_1S1L_n": 33353,
+          "recall_1S2L": 0.3266,
+          "recall_1S2L_k": 3719,
+          "recall_1S2L_n": 11388,
+          "recall_2S2L": 0.3538,
+          "recall_2S2L_k": 4329,
+          "recall_2S2L_n": 12234
+        },
+        {
+          "fa_1S1L": 0.0299,
+          "fa_1S1L_k": 997,
+          "fa_1S1L_n": 33353,
+          "recall_1S2L": 0.2726,
+          "recall_1S2L_k": 3104,
+          "recall_1S2L_n": 11388,
+          "recall_2S2L": 0.3017,
+          "recall_2S2L_k": 3691,
+          "recall_2S2L_n": 12234
+        }
+      ]
+    },
+    "rmdc26_gapped": {
+      "threshold_at_target_purity": 0.9170977473258972,
+      "our_heldout": {
+        "completeness": 0.7174,
+        "purity": 0.8678,
+        "ap": 0.8764
+      },
+      "gulls_at_this_threshold": {
+        "fa_1S1L": 0.0394,
+        "fa_1S1L_k": 1314,
+        "fa_1S1L_n": 33353,
+        "recall_1S2L": 0.3084,
+        "recall_1S2L_k": 3512,
+        "recall_1S2L_n": 11388,
+        "recall_2S2L": 0.3373,
+        "recall_2S2L_k": 4127,
+        "recall_2S2L_n": 12234
+      },
+      "pool": {
+        "full_pool": {
+          "target_purity": 0.9,
+          "achievable": true,
+          "threshold": 0.9393136501312256,
+          "completeness": 0.6861329833770778,
+          "purity": 0.9007465562829031,
+          "n_selected": 3324
+        },
+        "prevalence_nonpspl_raw": 0.1147,
+        "prevalence_nonpspl_population_weighted": 0.0601,
+        "slice_thresholds": {
+          "n_achievable": 200,
+          "reps": 200,
+          "median": 0.9393136501312256,
+          "p16": 0.9203358292579651,
+          "p84": 0.9489282965660095,
+          "p2.5": 0.912593075633049,
+          "p97.5": 0.9619559645652771
+        }
+      },
+      "gulls_at_full_pool_threshold": {
+        "fa_1S1L": 0.0262,
+        "fa_1S1L_k": 874,
+        "fa_1S1L_n": 33353,
+        "recall_1S2L": 0.2589,
+        "recall_1S2L_k": 2948,
+        "recall_1S2L_n": 11388,
+        "recall_2S2L": 0.2885,
+        "recall_2S2L_k": 3530,
+        "recall_2S2L_n": 12234
+      },
+      "gulls_at_slice_p16_p84": [
+        {
+          "fa_1S1L": 0.0373,
+          "fa_1S1L_k": 1245,
+          "fa_1S1L_n": 33353,
+          "recall_1S2L": 0.3017,
+          "recall_1S2L_k": 3436,
+          "recall_1S2L_n": 11388,
+          "recall_2S2L": 0.33,
+          "recall_2S2L_k": 4037,
+          "recall_2S2L_n": 12234
+        },
+        {
+          "fa_1S1L": 0.0209,
+          "fa_1S1L_k": 697,
+          "fa_1S1L_n": 33353,
+          "recall_1S2L": 0.2355,
+          "recall_1S2L_k": 2682,
+          "recall_1S2L_n": 11388,
+          "recall_2S2L": 0.2649,
+          "recall_2S2L_k": 3241,
+          "recall_2S2L_n": 12234
+        }
+      ]
+    }
+  },
+  "gulls_at_frozen_threshold": {
+    "fa_1S1L": 0.0469,
+    "fa_1S1L_k": 1564,
+    "fa_1S1L_n": 33353,
+    "recall_1S2L": 0.3328,
+    "recall_1S2L_k": 3790,
+    "recall_1S2L_n": 11388,
+    "recall_2S2L": 0.3614,
+    "recall_2S2L_k": 4421,
+    "recall_2S2L_n": 12234
+  }
+}

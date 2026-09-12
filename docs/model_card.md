@@ -79,7 +79,9 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   pauses in training) at threshold 0.956 (`binml.GAPAWARE_THRESHOLD`) (chosen at 90% purity on our own simulations with
   the measured RMDC26 pauses; 68% slice range 0.947-0.965); the shipped threshold does not apply to it. On
   RMDC26 it flags 2.4% of single lenses at that threshold (3.5% weighted by event rate), with planetary
-  recall 0.29 / 0.33. See `paper/REVISION.md` §1½ and `docs/VERIFICATION_2026-09-1{1,2}.md`.
+  recall 0.29 / 0.33; two further training seeds of the recipe, calibrated the same way, give 2.6% / 3.0%
+  and 1S2L recall 0.26 / 0.28 (the released run is the best of three on RMDC26). See `paper/REVISION.md` §1½
+  and `docs/VERIFICATION_2026-09-1{1,2}.md`.
 - **Partial bin occupancy.** Survey schedules in which colour visits displace F146 exposures leave
   bins partly filled (RMDC26: one of eight epochs in about 35% of bins), which training never
   contains; on RMDC26 the recommended gap-aware checkpoint reads it as mild evidence of an anomaly
