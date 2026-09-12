@@ -74,8 +74,9 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   `validation/gulls/schedule_finetune.json`). One gap of 0.5 h costs nothing; one of 1-2 h at mid-season (day 43) costs
   about 7 points of single-lens recall (`gap_sensitivity.json`, n = 100 per class; the cost depends on the gap's position). **Input contract:**
   continuous F146 within one 72-day season. For a gapped schedule use the recommended gap-aware
-  checkpoint `validation/gulls/weights/ft_fspl5s_seasons_g08.pt` (finite-source single lenses and the
-  measured RMDC26 pauses in training) at threshold 0.956 (chosen at 90% purity on our own simulations with
+  checkpoint `binml/weights/binml-gapaware.pt` (`Classifier(weights="gapaware")`; identical to
+  `validation/gulls/weights/ft_fspl5s_seasons_g08.pt`: finite-source single lenses and the measured RMDC26
+  pauses in training) at threshold 0.956 (`binml.GAPAWARE_THRESHOLD`) (chosen at 90% purity on our own simulations with
   the measured RMDC26 pauses; 68% slice range 0.947-0.965); the shipped threshold does not apply to it. On
   RMDC26 it flags 2.4% of single lenses at that threshold (3.5% weighted by event rate), with planetary
   recall 0.29 / 0.33. See `paper/REVISION.md` §1½ and `docs/VERIFICATION_2026-09-1{1,2}.md`.

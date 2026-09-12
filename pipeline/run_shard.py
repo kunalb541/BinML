@@ -332,7 +332,16 @@ def main(argv=None) -> int:
                     help="resolution of the recorded anomaly onset t_anom. Default: SurveyConfig's legacy "
                          "7.2 d grid (every released shard). 0.5 = the cascade evaluation's first-"
                          "detectable half-day cut (slower: up to 144 refits per anomalous event).")
+    ap.add_argument("--min-amplitude-mag", type=float, default=None,
+                    help="detectability floor for the labels (SurveyConfig.min_amplitude_mag; default 0.02, every released "
+                         "shard). The floor-sensitivity sweep of the referee round regenerates one shard at 0.01 and 0.05.")
+    ap.add_argument("--band-set", default="trained", choices=("trained", "colour_audited", "audited"),
+                    help="photometric calibration: the released model's (trained, default), the audited F087/F213 "
+                         "zeropoints/backgrounds only (colour_audited), or every audited value (audited)")
     args = ap.parse_args(argv)
+    if args.band_set != "trained":
+        from .photometry import use_band_set
+        use_band_set(args.band_set)
 
     # HARD GATE. _binary_magnification falls back to PSPL when VBBinaryLensing is missing,
     # which would silently generate every NonPSPL event as a single lens -- a ruined dataset
@@ -347,6 +356,9 @@ def main(argv=None) -> int:
     if args.onset_resolution_days is not None:
         import dataclasses
         cfg = dataclasses.replace(cfg, onset_resolution_days=float(args.onset_resolution_days))
+    if args.min_amplitude_mag is not None:
+        import dataclasses
+        cfg = dataclasses.replace(cfg, min_amplitude_mag=float(args.min_amplitude_mag))
     shards = [s for s in range(args.n_shards) if s % args.workers == args.worker] \
         if args.workers > 1 else [args.shard]
 
@@ -382,6 +394,8 @@ def main(argv=None) -> int:
             w._h5.attrs["onset_resolution_days"] = float(cfg_eff.onset_resolution_days)
             w._h5.attrs["noise_mult"] = float(cfg_eff.noise_mult)
             w._h5.attrs["bkg_mult"] = float(cfg_eff.bkg_mult)
+            w._h5.attrs["min_amplitude_mag"] = float(cfg_eff.min_amplitude_mag)
+            w._h5.attrs["band_set"] = args.band_set
             w._h5.attrs["regime_priors"] = json.dumps(HARD_REGIMES.get(args.regime or "", {}))
             rp = HARD_REGIMES.get(args.regime or "", {})
             w._h5.attrs["espl_function"] = ("none (point-source single lenses)" if not rp.get("PSPL_FINITE_SOURCE")

@@ -40,8 +40,8 @@ Code, weights, and reproducibility artifacts are released openly.
 
 % ---------------------------------------------------------------- [B] Sec. limits, replacement paragraph
 \paragraph{The schedule, not the sampling rate, is what the shipped model cannot survive.}
-Our training grid is continuous within a season. The survey as simulated in the RMDC26 release of the
-Roman Galactic Exoplanet Survey Project Infrastructure Team \citep{RGESPIT2026} is not: following the
+Our training grid is continuous within a season. The survey as simulated in the Roman Microlensing Data Challenge 2026 (RMDC26) release of
+the Roman Galactic Exoplanet Survey Project Infrastructure Team \citep{RGESPIT2026} is not: following the
 survey design \citep{STScI2025GBTDS,ROTAC2025}, F146 pauses for $\bmlGullsPauseHoursLo$--$\bmlGullsPauseHoursHi$~h
 per $\bmlGullsSeasonDays$-day season, in six or seven pauses whose phases differ between its six
 high-cadence seasons (only those near days $\bmlGullsCommonPauseA$, $\bmlGullsCommonPauseB$ and
@@ -82,12 +82,12 @@ reference and g08e12 are 12-epoch warm-start fine-tunes of the shipped weights o
 g08e12 (the gap-augmented checkpoint, from which the finite-source checkpoints of \S\ref{sec:gulls}
 start) used a different pool. One seed each. Generated from
 \code{validation/gulls/schedule\_finetune.json}.\label{tab:gap}}
-\tablehead{\colhead{augmentation} & \colhead{AP clean} & \colhead{AP pauses} & \colhead{PSPL} &
+\tablehead{\colhead{augmentation} & \colhead{AP clean} & \colhead{AP pauses} & \colhead{PSPL\tablenotemark{a}} &
            \colhead{Flat} & \colhead{NonPSPL} & \colhead{macro-F1}}
 \startdata
 \input{outputs/gulls_gap_table.tex}
 \enddata
-\tablenotetext{a}{PSPL, Flat and NonPSPL\tablenotemark{a} are argmax recalls under the pauses. The first-season mask
+\tablenotetext{a}{PSPL, Flat and NonPSPL are argmax recalls under the pauses. The first-season mask
 arm trained on one season's pauses (the mask this work first took to be ``the'' schedule); it matches
 one RMDC26 season in six.}
 \end{deluxetable*}
@@ -95,10 +95,10 @@ one RMDC26 season in six.}
 % ---------------------------------------------------------------- [C] new section
 \section{Cross-simulator validation on an independent \Rom{} simulation}\label{sec:gulls}
 
-Every number so far comes from our own simulator. The Roman Galactic Exoplanet Survey Project
-Infrastructure Team's RMDC26 release \citep{RGESPIT2026} is a simulation of the survey made with
-GULLS \citep{Penny2013,Penny2019} by a different group, with its own implementation of the observing
-schedule, photometry and Galactic population. We use it to test transfer: no RMDC26 event entered
+Every number so far comes from our own simulator. RMDC26 \citep{RGESPIT2026} is a simulation of the
+survey made by a different group with GULLS \citep{Penny2013,Penny2019} and the SynthPop Galactic model
+\citep{Kluter2025}, with its own implementation of the observing schedule, photometry and Galactic
+population, released openly for testing and development. We use it to test transfer: no RMDC26 event entered
 training and no operating threshold was chosen on it. It was, however, used to diagnose the residual
 false alarms, to set the upper end of the single-lens source-size prior, and to choose among the
 $\bmlGullsNcheckpoints$ fine-tuned checkpoints scored on it (one seed each), and the recommendation below
@@ -162,7 +162,8 @@ still come from all its epochs; teaching it would need augmentation before binni
 Table~\ref{tab:gulls} gives the single-lens false-alarm rate at the frozen operating threshold and
 planetary recall at matched single-lens false-alarm budgets, on the identical $\bmlGullsN$ events for
 every checkpoint; the matched-budget comparison is the one a threshold shift cannot fake. Rates are per
-simulated event. RMDC26 also gives each event an event-rate weight, and because the unweighted sample
+simulated event. RMDC26 also gives each event an event-rate weight, which the release recommends for
+representative statistics, and because the unweighted sample
 over-represents short single lenses while false alarms rise with timescale (for the recommended checkpoint
 from $\bmlGullsFaTeLoRec\%$ of single lenses at $1 \le t_{\rm E} < 3$~d to $\bmlGullsFaTeHiRec\%$ at
 30--300~d), the weighted rates differ; the table gives both, and we say where a conclusion depends on
@@ -257,24 +258,27 @@ $\bmlGullsColUndetOne$ to $\bmlGullsColUndetThree$ on events without one. We hav
 evidence that the colour bands carry anomaly information across simulators.
 
 \begin{deluxetable*}{lcccccccccc}
+\tabletypesize{\scriptsize}
 \tablecaption{Cross-simulator transfer on $\bmlGullsN$ RMDC26 events ($\bmlGullsNSingle$ 1S1L,
 $\bmlGullsNPlanet$ 1S2L, $\bmlGullsNPlanetBin$ 2S2L), identical inputs for every row. ``FA'' is the
-percentage of single lenses over the frozen threshold $\bmlThreshold$. ``Recall at'' columns give 1S2L
-recall at the threshold that yields the stated single-lens false-alarm rate on this population (achieved
+percentage of single lenses over the frozen threshold $\bmlThreshold$. R$_x$ columns give 1S2L recall at
+the threshold that yields a single-lens false-alarm rate of $x\%$ on this population (achieved
 within $\bmlGullsBudgetSlack$ points); the $\bmlGullsBudgetMid\%$ and $\bmlGullsBudgetHi\%$ budgets are
 close to the frozen-threshold false-alarm rates of two earlier checkpoints (the first finite-source round,
 $\bmlGullsFaFsplOne\%$, and gap augmentation, $\bmlGullsFaGapaware\%$) and $\bmlGullsBudgetLo\%$ is a
 low-budget reference, all chosen after seeing the results. Columns marked (w) weight each event by its
 RMDC26 event rate, budgets included (effective sample sizes $\bmlGullsNeffSingle$ single lenses and
 $\bmlGullsNeffPlanet$ 1S2L events). The last four columns are the single-lens false-alarm rate at the
-frozen threshold in four of the six bins of $\rho/|u_0|$ (the 0.03--0.3 bins are omitted). Fine-tunes are
+frozen threshold in four of the six bins of $\rho/|u_0|$ (the 0.03--0.3 bins are omitted). Rows below
+gap augmentation add 12 epochs from it with point-source single lenses (control), finite-source single
+lenses, and finite sources plus the measured pauses (recommended). Fine-tunes are
 12-epoch warm starts on our simulations, one seed each: gap augmentation starts from the shipped weights,
 every other row from the gap-augmented checkpoint. The last row also has the caustic-in-gap relabel off
 and a finite-source magnification without hand-off steps (\S\ref{sec:gulls:results}). Generated from
 \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:gulls}}
-\tablehead{\colhead{checkpoint} & \colhead{FA (\%)} & \colhead{FA (w)} & \colhead{recall at $\bmlGullsBudgetLo\%$} &
-           \colhead{at $\bmlGullsBudgetMid\%$} & \colhead{at $\bmlGullsBudgetHi\%$} & \colhead{at $\bmlGullsBudgetMid\%$ (w)} &
-           \colhead{$\rho/|u_0| < 0.03$} & \colhead{0.3--1} & \colhead{1--3} & \colhead{$> 3$}}
+\tablehead{\colhead{checkpoint} & \colhead{FA} & \colhead{FA (w)} & \colhead{R$_{\bmlGullsBudgetLo}$} &
+           \colhead{R$_{\bmlGullsBudgetMid}$} & \colhead{R$_{\bmlGullsBudgetHi}$} & \colhead{R$_{\bmlGullsBudgetMid}$ (w)} &
+           \colhead{$<0.03$} & \colhead{0.3--1} & \colhead{1--3} & \colhead{$> 3$}}
 \startdata
 \input{outputs/gulls_transfer_table.tex}
 \enddata
@@ -428,7 +432,7 @@ simulation, labels over the full mission and a hierarchical input, and is the na
 
 % ---------------------------------------------------------------- [E] model card / data availability
 % Model card, "Input contract": continuous F146 within one 72-day season. For a gapped schedule such as
-% RMDC26's, use binml-gapaware.pt (= validation/gulls/weights/ft_fspl5s_seasons_g08.pt, the recommended
+% RMDC26's, use binml/weights/binml-gapaware.pt (Classifier(weights="gapaware"); = validation/gulls/weights/ft_fspl5s_seasons_g08.pt, the recommended
 % checkpoint: finite-source single lenses and the measured-season pauses) at threshold \bmlSidecarThr
 % (chosen on our own simulations with the measured RMDC26 pauses; 68% slice range
 % \bmlSidecarThrLo-\bmlSidecarThrHi); the shipped threshold does not apply to it, and the frozen-threshold
@@ -437,8 +441,7 @@ simulation, labels over the full mission and a hierarchical input, and is the na
 % pinned to revision a338d5bab441b5caf551d2fea9469aadfdc81ec1; validation/gulls/rmdc26_scores.csv.gz
 % holds every scored event's P(NonPSPL) for every checkpoint, from which the tables regenerate.
 
-% ---------------------------------------------------------------- [F] bibliography to add before merging
-% RGESPIT2026 (RMDC26 data release; citation, data-use terms and the expansion of "RMDC26" to confirm with
-% the RGES-PIT; the text names it only as "the RMDC26 release"),
-% Penny2013 (GULLS), Bozza2010 / Bozza2018 (VBBinaryLensing; already in refs.bib), STScI2025GBTDS (for
-% the schedule; already in refs.bib).
+% ---------------------------------------------------------------- [F] bibliography (added to refs.bib 2026-09-12)
+% RGESPIT2026 (the Hugging Face dataset card: Roman Microlensing Data Challenge 2026, CC0 1.0, "intended for
+% testing and development"; it asks users to reference GULLS and SynthPop), Penny2013 (GULLS; Crossref record),
+% Kluter2025 (SynthPop; Crossref record); Penny2019, Bozza2018, ROTAC2025, STScI2025GBTDS, Gaudi1998 already there.

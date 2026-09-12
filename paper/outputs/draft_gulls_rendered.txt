@@ -40,8 +40,8 @@ Code, weights, and reproducibility artifacts are released openly.
 
 % ---------------------------------------------------------------- [B] Sec. limits, replacement paragraph
 \paragraph{The schedule, not the sampling rate, is what the shipped model cannot survive.}
-Our training grid is continuous within a season. The survey as simulated in the RMDC26 release of the
-Roman Galactic Exoplanet Survey Project Infrastructure Team \citep{RGESPIT2026} is not: following the
+Our training grid is continuous within a season. The survey as simulated in the Roman Microlensing Data Challenge 2026 (RMDC26) release of
+the Roman Galactic Exoplanet Survey Project Infrastructure Team \citep{RGESPIT2026} is not: following the
 survey design \citep{STScI2025GBTDS,ROTAC2025}, F146 pauses for $43$--$44$~h
 per $70.7$-day season, in six or seven pauses whose phases differ between its six
 high-cadence seasons (only those near days $1.0$, $35.2$ and
@@ -101,10 +101,10 @@ one RMDC26 season in six.}
 % ---------------------------------------------------------------- [C] new section
 \section{Cross-simulator validation on an independent \Rom{} simulation}\label{sec:gulls}
 
-Every number so far comes from our own simulator. The Roman Galactic Exoplanet Survey Project
-Infrastructure Team's RMDC26 release \citep{RGESPIT2026} is a simulation of the survey made with
-GULLS \citep{Penny2013,Penny2019} by a different group, with its own implementation of the observing
-schedule, photometry and Galactic population. We use it to test transfer: no RMDC26 event entered
+Every number so far comes from our own simulator. RMDC26 \citep{RGESPIT2026} is a simulation of the
+survey made by a different group with GULLS \citep{Penny2013,Penny2019} and the SynthPop Galactic model
+\citep{Kluter2025}, with its own implementation of the observing schedule, photometry and Galactic
+population, released openly for testing and development. We use it to test transfer: no RMDC26 event entered
 training and no operating threshold was chosen on it. It was, however, used to diagnose the residual
 false alarms, to set the upper end of the single-lens source-size prior, and to choose among the
 $14$ fine-tuned checkpoints scored on it (one seed each), and the recommendation below
@@ -168,7 +168,8 @@ still come from all its epochs; teaching it would need augmentation before binni
 Table~\ref{tab:gulls} gives the single-lens false-alarm rate at the frozen operating threshold and
 planetary recall at matched single-lens false-alarm budgets, on the identical $56,975$ events for
 every checkpoint; the matched-budget comparison is the one a threshold shift cannot fake. Rates are per
-simulated event. RMDC26 also gives each event an event-rate weight, and because the unweighted sample
+simulated event. RMDC26 also gives each event an event-rate weight, which the release recommends for
+representative statistics, and because the unweighted sample
 over-represents short single lenses while false alarms rise with timescale (for the recommended checkpoint
 from $5.3\%$ of single lenses at $1 \le t_{\rm E} < 3$~d to $11.7\%$ at
 30--300~d), the weighted rates differ; the table gives both, and we say where a conclusion depends on
@@ -449,8 +450,7 @@ simulation, labels over the full mission and a hierarchical input, and is the na
 % pinned to revision a338d5bab441b5caf551d2fea9469aadfdc81ec1; validation/gulls/rmdc26_scores.csv.gz
 % holds every scored event's P(NonPSPL) for every checkpoint, from which the tables regenerate.
 
-% ---------------------------------------------------------------- [F] bibliography to add before merging
-% RGESPIT2026 (RMDC26 data release; citation, data-use terms and the expansion of "RMDC26" to confirm with
-% the RGES-PIT; the text names it only as "the RMDC26 release"),
-% Penny2013 (GULLS), Bozza2010 / Bozza2018 (VBBinaryLensing; already in refs.bib), STScI2025GBTDS (for
-% the schedule; already in refs.bib).
+% ---------------------------------------------------------------- [F] bibliography (added to refs.bib 2026-09-12)
+% RGESPIT2026 (the Hugging Face dataset card: Roman Microlensing Data Challenge 2026, CC0 1.0, "intended for
+% testing and development"; it asks users to reference GULLS and SynthPop), Penny2013 (GULLS; Crossref record),
+% Kluter2025 (SynthPop; Crossref record); Penny2019, Bozza2018, ROTAC2025, STScI2025GBTDS, Gaudi1998 already there.

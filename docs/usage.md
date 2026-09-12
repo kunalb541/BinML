@@ -80,9 +80,8 @@ import json
 import binml
 from binml import gulls
 seasons, epoch_map, meta = gulls.load_tables()                     # one-time 150 MB download
-clf = binml.Classifier(weights="validation/gulls/weights/ft_fspl5s_seasons_g08.pt")   # recommended gap-aware
-cal = json.load(open("validation/gulls/gapped_threshold_fspl5s_seasons_g08_seasons.json"))
-threshold = cal["arms"]["rmdc26_gapped"]["pool"]["full_pool"]["threshold"]    # 0.956
+clf = binml.Classifier(weights="gapaware")        # binml/weights/binml-gapaware.pt, the recommended gap-aware checkpoint
+threshold = binml.GAPAWARE_THRESHOLD              # 0.956; from validation/gulls/gapped_threshold_fspl5s_seasons_g08_seasons.json
 res = gulls.classify_event(clf, 306535, seasons, epoch_map, meta)              # mode="peak"
 if res["p_nonpspl_max"] is not None:
     print(res["p_nonpspl_max"] >= threshold)

@@ -142,6 +142,27 @@ ROMAN_BANDS_AUDITED: Dict[str, Band] = {
                  exposure_s=_EXPOSURE_S_AUDITED, background_e2=9700.0, saturation_ab=14.5),
 }
 
+# Colour-calibration ablation (referee item, 2026-09-12): the trained F146 with the audited F087/F213 zeropoints,
+# backgrounds and saturation, at the trained exposure and cadence, so only the colour calibration changes.
+# background_e2 is counts per exposure in the aperture, so the audited 66-s backgrounds are scaled to 46.8 s.
+_BKG_SCALE = _EXPOSURE_S / _EXPOSURE_S_AUDITED
+ROMAN_BANDS_COLOUR_AUDITED: Dict[str, Band] = {
+    "F146": ROMAN_BANDS["F146"],
+    "F087": Band("F087", 0.87, cadence_minutes=360.0, zeropoint=26.302,
+                 exposure_s=_EXPOSURE_S, background_e2=400.0 * _BKG_SCALE, saturation_ab=13.6),
+    "F213": Band("F213", 2.13, cadence_minutes=360.0, zeropoint=25.863,
+                 exposure_s=_EXPOSURE_S, background_e2=9700.0 * _BKG_SCALE, saturation_ab=14.5),
+}
+_TRAINED_BANDS = dict(ROMAN_BANDS)
+
+
+def use_band_set(name: str) -> None:
+    """Switch the band calibration used by the simulator IN PLACE (ROMAN_BANDS is shared by reference).
+    'trained' (default, the released model's), 'colour_audited' (audited F087/F213 only) or 'audited' (all)."""
+    table = {"trained": _TRAINED_BANDS, "colour_audited": ROMAN_BANDS_COLOUR_AUDITED, "audited": ROMAN_BANDS_AUDITED}[name]
+    ROMAN_BANDS.clear(); ROMAN_BANDS.update(table)
+
+
 # Published calibration anchor used by the self-test.
 SNR_ANCHOR_BAND = "F146"
 SNR_ANCHOR_MAG = 21.2

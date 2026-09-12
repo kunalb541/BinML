@@ -118,6 +118,9 @@ def main(argv=None) -> int:
                         "quiescent source (can turn Flat into PSPL) and bright on a long/blended "
                         "event (microlensing -> LongPeriodVar). Use only for a quick look.")
     c.add_argument("--t-start", type=_finite_float, default=None, help="day the 72-d window opens")
+    c.add_argument("--weights", default="shipped",
+                   help="'shipped' (default; continuous F146 seasons), 'gapaware' (seasons with observing pauses, "
+                        "e.g. Roman's GBTDS as simulated in RMDC26), or a checkpoint path")
     ap.add_argument("--version", action="store_true")
     a = ap.parse_args(argv)
     if a.version:
@@ -131,12 +134,16 @@ def main(argv=None) -> int:
     try:
         t, m = _load_light_curve(a.file)
         import binml
-        r = binml.Classifier().predict(t, m, m_base_ref=a.m_base, t_start=a.t_start)
+        clf = binml.Classifier() if a.weights == "shipped" else binml.Classifier(weights=a.weights)
+        r = clf.predict(t, m, m_base_ref=a.m_base, t_start=a.t_start)
     except (OSError, ValueError) as exc:
         ap.error(str(exc))
     print(r)
     for k, v in sorted(r.probabilities.items(), key=lambda kv: -kv[1]):
         print(f"  {k:14s} {v:.3f}")
+    if a.weights == "gapaware":
+        print(f"  NonPSPL >= gap-aware threshold {binml.GAPAWARE_THRESHOLD:.3f}: "
+              f"{'yes' if r.probabilities['NonPSPL'] >= binml.GAPAWARE_THRESHOLD else 'no'}")
     return 0
 
 

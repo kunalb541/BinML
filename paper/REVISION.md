@@ -28,11 +28,11 @@ done until this table says so.
 | Round 2 `ft_fspl5_g08.pt` (rho ≤ 5 + binary rho ≤ 0.1): negative — no gain over round 1, finite-source bins worse | ✅ `fspl_finetune_fspl5_g08.json`, `transfer_tradeoff_all.json` | — (one sentence at most) |
 | Round 3 `ft_fspl5s_g08.pt` (single-lens rho ≤ 5, binaries unchanged): best at matched budgets, tied by the combined arm (§1½ row 14) — FA 4.8%, recall 0.390 @ 5.2% FA, mean 0.538 | ✅ `fspl_finetune_fspl5s_g08.json`, `transfer_tradeoff_all.json` | ❌ not yet — the matched-budget table |
 | Colour ablation on GULLS (four checkpoints): removing colour costs 4–7 pts planetary recall at matched budget, mostly on events without a claimable anomaly; the reading that colour carries anomaly signal is withdrawn (§1½ row 7) | ✅ `transfer_colour_ablation.json` | ❌ not yet — one sentence |
-| Decision (revised 2026-09-12): gap-aware checkpoint = `ft_fspl5s_seasons_g08.pt` at 0.956 (`gapped_threshold_fspl5s_seasons_g08_seasons.json`) | **Recommended**: matches or beats `ft_fspl5s_g08.pt` at every matched budget per event and rate-weighted, better on our own held-out (§1½ row 14) — author confirms at release, as `binml-gapaware.pt` (not yet created) | draft (all subsections use it) |
+| Decision (revised 2026-09-12): gap-aware checkpoint = `ft_fspl5s_seasons_g08.pt` at 0.956 (`gapped_threshold_fspl5s_seasons_g08_seasons.json`) | **Recommended**: matches or beats `ft_fspl5s_g08.pt` at every matched budget per event and rate-weighted, better on our own held-out (§1½ row 14) — released as `binml/weights/binml-gapaware.pt` | draft (all subsections use it) |
 | Figures rebuilt through `build.sh` (weighted prevalence line) | ❌ not yet | — |
 | Zenodo release + DOI in Data Availability, CITATION.cff, README | ❌ needs one-time GitHub↔Zenodo authorisation by the author | — |
-| Bibliography: RGESPIT2026 (RMDC26 release; data-use terms and the expansion of "RMDC26" to confirm with the RGES-PIT) and Penny2013 (GULLS) are cited by the draft but not in `paper/refs.bib` | ❌ author (draft block [F]) | — |
-| `binml-gapaware.pt` (the recommended checkpoint under its release name) | ❌ release step | — |
+| Bibliography: RGESPIT2026 (Roman Microlensing Data Challenge 2026, CC0 1.0, from the dataset card), Penny2013 (GULLS) and Kluter2025 (SynthPop, which the card asks users to cite) | ✅ `paper/refs.bib` (Crossref records) | ✅ cited in the draft |
+| `binml-gapaware.pt` (the recommended checkpoint under its release name) | ✅ `binml/weights/binml-gapaware.pt` (byte-identical to `ft_fspl5s_seasons_g08.pt`; `Classifier(weights="gapaware")`, `binml.GAPAWARE_THRESHOLD`, CLI `--weights gapaware`; `tests/test_gapaware_weights.py`) | [E] |
 | Resubmit via Editorial Manager (starts review) | — | ❌ after the rows above |
 
 The GULLS work itself is finished: the curve cache (~4 GB at
@@ -377,7 +377,7 @@ like g08e12, and state that RMDC26 was used for diagnosis and checkpoint choice 
 - **Discussion [D]** and **model card / data availability [E]** as in the draft.
 - **Decided:** the shipped weights stay; the recommended gap-aware checkpoint (`ft_fspl5s_seasons_g08.pt`,
   finite-source single lenses + the measured-season pauses) ships alongside as `binml-gapaware.pt` with its own
-  operating point, 0.956 (section 1½ rows 4, 13, 14 and 18). The file does not exist yet: creating it is a release step. Every number enters through `make_macros.py` from the artifacts named in the
+  operating point, 0.956 (section 1½ rows 4, 13, 14 and 18); it is `binml/weights/binml-gapaware.pt`. Every number enters through `make_macros.py` from the artifacts named in the
   draft's macro list; the GULLS artifacts join the manifest at that step.
 
 ### Reproduce (full population; each writes its own artifact and records its command and code version)

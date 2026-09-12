@@ -32,6 +32,7 @@ echo "[1/5] validate frozen artifacts"; "$PYTHON_BIN" validate_artifacts.py
 echo "[2/5] figures from eval artifact"; "$PYTHON_BIN" make_figures.py
 echo "[3/5] figures from simulated events (slower)"; "$PYTHON_BIN" make_data_figures.py
 echo "[4/5] macros";   "$PYTHON_BIN" make_macros.py
+echo "      RMDC26 macros and tables (fail-closed)"; "$PYTHON_BIN" make_gulls_macros.py
 echo "[5/5] latex"
 export PATH="/Library/TeX/texbin:$PATH"
 pdflatex -interaction=nonstopmode -halt-on-error paper.tex >build.log 2>&1 || { tail -40 build.log; exit 1; }

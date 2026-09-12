@@ -175,9 +175,9 @@ if RP0 and RP1:
 # ------------------------------------------------------------------ transfer table + text numbers
 T = load("transfer_tradeoff_all.json")
 ROWS = [("shipped", "shipped"), ("ft_g08e12", "gap augmentation (g08e12)"),
-        ("pspl5s_ctrl_g08", "\\quad + 12 epochs, point-source single lenses (control)"),
-        ("fspl5s_g08", "\\quad + 12 epochs, finite-source single lenses"),
-        ("fspl5s_seasons_g08", "\\quad + 12 epochs, finite source, measured-season pauses (recommended)")]
+        ("pspl5s_ctrl_g08", "\\quad + point-source control"),
+        ("fspl5s_g08", "\\quad + finite source"),
+        ("fspl5s_seasons_g08", "\\quad + finite source, pauses (rec.)")]
 if T:
     M = T["models"]
     def fa(m):

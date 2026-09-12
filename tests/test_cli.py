@@ -63,3 +63,16 @@ def test_cli_rejects_nonfinite_window_metadata(tmp_path, option, value):
         main(["classify", str(path), option, value])
 
     assert exc.value.code == 2
+
+
+def test_cli_gapaware_weights_prints_the_gapaware_decision(tmp_path):
+    import subprocess
+    import sys
+    import numpy as np
+    t = np.arange(0, 72, 0.25)
+    f = tmp_path / "flat.csv"
+    f.write_text("time,mag\n" + "\n".join(f"{a},{20.0 + 0.001 * np.sin(a)}" for a in t))
+    r = subprocess.run([sys.executable, "-m", "binml.cli", "classify", str(f), "--m-base", "20.0", "--weights", "gapaware"],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    assert "gap-aware threshold" in r.stdout and "Flat" in r.stdout

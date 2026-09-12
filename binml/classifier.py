@@ -22,6 +22,14 @@ from .preprocess import Tokens, to_tokens
 
 _HERE = os.path.dirname(__file__)
 _DEFAULT_WEIGHTS = os.path.join(_HERE, "weights", "binml.pt")
+# The gap-aware checkpoint for schedules with observing pauses (the RMDC26/GBTDS case; see README, "known
+# limitations"): finite-source single lenses and the measured RMDC26 season pauses in training
+# (validation/gulls/weights/ft_fspl5s_seasons_g08.pt). Its threshold was chosen at 90% purity on our own simulated
+# seasons with those pauses imposed (validation/gulls/gapped_threshold_fspl5s_seasons_g08_seasons.json, full pool);
+# the shipped threshold does not apply to it.
+GAPAWARE_WEIGHTS = os.path.join(os.path.dirname(_DEFAULT_WEIGHTS), "binml-gapaware.pt")
+GAPAWARE_THRESHOLD = 0.9563422799110413
+_NAMED_WEIGHTS = {"shipped": _DEFAULT_WEIGHTS, "gapaware": GAPAWARE_WEIGHTS}
 CLASS_NAMES = ["Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"]
 
 BandInput = Dict[str, Tuple[np.ndarray, np.ndarray]]
@@ -56,10 +64,12 @@ class Classifier:
     """Load BinML and classify Roman light curves into six classes."""
 
     def __init__(self, weights: Optional[str] = None, device: str = "cpu"):
+        """``weights``: a checkpoint path, ``"shipped"`` (default) or ``"gapaware"`` (for gapped schedules; use it
+        with ``GAPAWARE_THRESHOLD``, not the shipped operating threshold)."""
         import torch
         self._torch = torch
         self.device = device
-        ck = torch.load(weights or _DEFAULT_WEIGHTS, map_location="cpu")
+        ck = torch.load(_NAMED_WEIGHTS.get(weights, weights) or _DEFAULT_WEIGHTS, map_location="cpu")
         cfg = ModelConfigV5(**{k: v for k, v in ck["config"].items()
                                if k in ModelConfigV5.__dataclass_fields__})
         net = BinMLv5(cfg).to(device)

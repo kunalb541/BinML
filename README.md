@@ -220,9 +220,10 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   long-period variables and NonPSPL (`validation/gulls/schedule_finetune.json`). A single gap of
   0.5 h costs nothing; one gap of 1-2 h at mid-season (day 43) already costs about 7 points of single-lens recall
   (the cost depends on where the gap falls).
-  **For a gapped schedule use the recommended gap-aware checkpoint**
-  `validation/gulls/weights/ft_fspl5s_seasons_g08.pt` (finite-source single lenses and the measured RMDC26
-  season pauses in training) at its own threshold, 0.956, chosen at 90% purity on our own simulated
+  **For a gapped schedule use the recommended gap-aware checkpoint**, shipped as `binml/weights/binml-gapaware.pt`
+  (`binml.Classifier(weights="gapaware")`, CLI `binml classify --weights gapaware`; identical to
+  `validation/gulls/weights/ft_fspl5s_seasons_g08.pt`: finite-source single lenses and the measured RMDC26
+  season pauses in training) at its own threshold, 0.956 (`binml.GAPAWARE_THRESHOLD`), chosen at 90% purity on our own simulated
   seasons with the measured pauses imposed (68% of validation slices: 0.947-0.965). On 56,975 RMDC26 events
   it flags 2.4% of single lenses at that threshold (1.8-3.1% across the slice spread; 3.5% weighted by
   RMDC26's event rates) with planetary recall 0.29 / 0.33 (1S2L / 2S2L); at the shipped threshold it
