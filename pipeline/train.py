@@ -113,9 +113,31 @@ def load_rmdc26_templates(path: str = RMDC26_SCHEDULE_JSON) -> list:
     return out
 
 
+TRUTH_DCHI2_ANOM = 160.0          # = assemble.SurveyConfig.dchi2_anomaly (the label rule's anomaly threshold)
+
+
+def _truth_relabel(label: int, surviving: np.ndarray, truth) -> int:
+    """Truth-based relabel after any augmentation (audit findings 8-10, 2026-09-12).
+
+    ``surviving``: reference-band bins still observed after the augmentation; ``truth``: the event's per-bin
+    noise-free (vis_amp, anom_amp, anom_chi2) from generation (assemble store_truth_bins). Applies the label
+    rule to what survives: no bin with a signal above the floor -> Flat (for EVERY class, periodic included,
+    and without the noisy min/max that made the legacy Flat branch dead); a binary whose surviving anomaly
+    fails dchi2 >= 160 or the amplitude floor -> PSPL (the anomaly itself, not a 7.2-day onset proxy).
+    Approximation: the static single-lens refit is the full-season one, not refit on the surviving epochs."""
+    if label == I_FLAT:
+        return label
+    vis, aa, ac = truth
+    if not surviving.any() or float(vis[surviving].max()) < TRUNC_MIN_AMP_MAG:
+        return I_FLAT
+    if label == I_NON and (float(ac[surviving].sum()) < TRUTH_DCHI2_ANOM or float(aa[surviving].max()) < TRUNC_MIN_AMP_MAG):
+        return I_PSPL
+    return label
+
+
 def _apply_schedule_template(out: Dict[str, np.ndarray], label: int, template: dict,
                              params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
-                             relabel_anomaly: bool = False, cap_occupancy: bool = False) -> int:
+                             relabel_anomaly: bool = False, cap_occupancy: bool = False, truth=None) -> int:
     """Impose one measured RMDC26 season on a training event: blank its empty bins in every band;
     re-label as _apply_gaps does.
 
@@ -132,6 +154,11 @@ def _apply_schedule_template(out: Dict[str, np.ndarray], label: int, template: d
         if cap_occupancy:
             keep = ~empty
             x[keep, 3] = np.minimum(x[keep, 3], fr[keep])
+    if truth is not None:
+        surv = out["F146"][:, 4] > 0
+        if relabel_anomaly or label != I_NON:
+            return _truth_relabel(label, surv, truth)
+        return I_FLAT if _truth_relabel(I_PSPL, surv, truth) == I_FLAT else label   # relabel off: Flat rule only
     if label == I_FLAT:
         return label
     ref = out["F146"]
@@ -209,7 +236,7 @@ def _visible_amplitude(params: np.ndarray, pf_idx: dict, f_s: float, t_cut: floa
 def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
                       params: Optional[np.ndarray] = None,
                       pf_idx: Optional[dict] = None, f_s: float = 0.5,
-                      min_frac: float = 0.03) -> int:
+                      min_frac: float = 0.03, truth=None) -> int:
     """Reveal a random prefix of the season and RE-LABEL by what is observable in it.
 
     Returning the original label would be a serious error. A PSPL peaking on day 50, cut at
@@ -233,6 +260,8 @@ def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Gen
         x[cut:, :3] = 0.0      # mean/min/max
         x[cut:, 3] = 0.0       # observed fraction
         x[cut:, 4] = 0.0       # observed mask
+    if truth is not None:
+        return _truth_relabel(label, out["F146"][:, 4] > 0, truth)
     if params is None or pf_idx is None or label == I_FLAT:
         return label
     amp = _visible_amplitude(params, pf_idx, f_s, f * 72.0)
@@ -254,7 +283,7 @@ def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Gen
 
 def _apply_cadence(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
                    params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
-                   min_keep: float = 0.02) -> int:
+                   min_keep: float = 0.02, truth=None) -> int:
     """Thin the OBSERVED bins to a random density and RE-LABEL by what survives.
 
     BinML is trained on Roman's dense F146 sampling; a sparsely-sampled light curve is
@@ -287,6 +316,8 @@ def _apply_cadence(out: Dict[str, np.ndarray], label: int, rng: np.random.Genera
             nk = max(0, int(round(keep * oi.size)))
             d = rng.permutation(oi)[nk:] if oi.size else oi
         x[d, :3] = 0.0; x[d, 3] = 0.0; x[d, 4] = 0.0
+    if truth is not None:
+        return _truth_relabel(label, ref[:, 4] > 0, truth)
     if label == I_FLAT:
         return label
     # largest surviving baseline-relative deviation (channels are already /MAG_SCALE)
@@ -309,7 +340,7 @@ def _apply_cadence(out: Dict[str, np.ndarray], label: int, rng: np.random.Genera
 def _apply_gaps(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator,
                 params: Optional[np.ndarray] = None, pf_idx: Optional[dict] = None,
                 n_gaps_max: int = 8, gap_h_min: float = 1.0, gap_h_max: float = 12.0,
-                schedule: Optional[np.ndarray] = None, relabel_anomaly: bool = True) -> int:
+                schedule: Optional[np.ndarray] = None, relabel_anomaly: bool = True, truth=None) -> int:
     """Blank CONTIGUOUS runs of bins, as Roman's real schedule does, and re-label.
 
     ``schedule``: a fixed reference-band blank mask (see ``rmdc26_schedule_mask``) used instead
@@ -356,6 +387,10 @@ def _apply_gaps(out: Dict[str, np.ndarray], label: int, rng: np.random.Generator
         # map the reference-band blank mask onto this band's (coarser) grid
         m = blanked if nbb == nb else blanked.reshape(nbb, nb // nbb).any(axis=1)
         x[m, :3] = 0.0; x[m, 3] = 0.0; x[m, 4] = 0.0
+    if truth is not None:
+        if relabel_anomaly or label != I_NON:
+            return _truth_relabel(label, ref[:, 4] > 0, truth)
+        return I_FLAT if _truth_relabel(I_PSPL, ref[:, 4] > 0, truth) == I_FLAT else label
     if label == I_FLAT:
         return label
     surv = ref[ref[:, 4] > 0]
@@ -390,8 +425,9 @@ class CacheDataset(Dataset):
                  f_s_ref: Optional[np.ndarray] = None, cadence_aug: float = 0.0,
                  gap_aug: float = 0.0, gap_schedule: Optional[np.ndarray] = None,
                  gap_relabel_anomaly: bool = True, gap_templates: Optional[list] = None,
-                 gap_cap_occupancy: bool = False):
+                 gap_cap_occupancy: bool = False, truth: Optional[Dict[str, np.ndarray]] = None):
         self.a = arrays
+        self.truth = truth          # per-bin noise-free truth memmaps (vis_amp, anom_amp, anom_chi2) or None
         self.gap_schedule = gap_schedule
         self.gap_relabel_anomaly = gap_relabel_anomaly
         self.gap_templates = gap_templates
@@ -429,22 +465,25 @@ class CacheDataset(Dataset):
             # channel order must match model.CH_MIN / CH_MAX: mean, min, max, frac, mask
             out[b] = np.concatenate([feat, frac[:, None], obs[:, None]], axis=1)
         lab = int(self.labels[j])
+        tj = None
+        if self.truth is not None:
+            tj = tuple(np.asarray(self.truth[k][j], dtype=np.float32) for k in ("vis_amp", "anom_amp", "anom_chi2"))
         if self.truncate_aug > 0 and self._rng.random() < self.truncate_aug:
             fs = float(self.f_s_ref[j]) if self.f_s_ref is not None else 0.5
-            lab = _apply_truncation(out, lab, self._rng, self.params[j], self.pf_idx, fs)
+            lab = _apply_truncation(out, lab, self._rng, self.params[j], self.pf_idx, fs, truth=tj)
         if self.cadence_aug > 0 and self._rng.random() < self.cadence_aug:
             pj = self.params[j] if self.params is not None else None
-            lab = _apply_cadence(out, lab, self._rng, pj, self.pf_idx)
+            lab = _apply_cadence(out, lab, self._rng, pj, self.pf_idx, truth=tj)
         if self.gap_aug > 0 and self._rng.random() < self.gap_aug:
             pj = self.params[j] if self.params is not None else None
             if self.gap_templates:
                 tmpl = self.gap_templates[int(self._rng.integers(len(self.gap_templates)))]
                 lab = _apply_schedule_template(out, lab, tmpl, pj, self.pf_idx,
                                                relabel_anomaly=self.gap_relabel_anomaly,
-                                               cap_occupancy=self.gap_cap_occupancy)
+                                               cap_occupancy=self.gap_cap_occupancy, truth=tj)
             else:
                 lab = _apply_gaps(out, lab, self._rng, pj, self.pf_idx, schedule=self.gap_schedule,
-                                  relabel_anomaly=self.gap_relabel_anomaly)
+                                  relabel_anomaly=self.gap_relabel_anomaly, truth=tj)
         return (out, lab, float(self.weights[j]), float(self.dchi2_anom[j]))
 
 
@@ -583,6 +622,10 @@ def main(argv=None) -> int:
                          "(validation/gulls/rmdc26_schedule.json: its empty bins in every band); "
                          "'rmdc26_seasons_occ' = same plus the occupancy cap (diagnostic only, not faithful "
                          "on binned data). 'none' = random 1-12 h runs.")
+    ap.add_argument("--truth-relabel", choices=["auto", "off"], default="auto",
+                    help="auto: when the cache carries per-bin noise-free truth (shards made with run_shard --truth-bins), "
+                         "relabel augmented events by it (audit findings 8-10); off: the legacy proxies. Released caches "
+                         "carry no truth, so 'auto' leaves them unchanged.")
     ap.add_argument("--gap-relabel-anomaly", choices=["on", "off"], default="on",
                     help="with --gap-aug: relabel a binary PSPL when the bins around its recorded "
                          "onset t_anom are blanked. The rule is approximate: t_anom is the first time "
@@ -619,6 +662,14 @@ def main(argv=None) -> int:
     fpath = os.path.join(args.cache, "f_s_F146.npy")
     if os.path.exists(fpath):
         f_s_ref = np.load(fpath)
+    truth = None
+    tinfo = meta.get("truth") or {}
+    if args.truth_relabel == "auto" and all(k in tinfo for k in ("vis_amp", "anom_amp", "anom_chi2")):
+        truth = {}
+        for k, (dt, nb) in tinfo.items():
+            ext = "f16" if dt == "float16" else "f32"
+            truth[k] = np.memmap(os.path.join(args.cache, f"truth_{k}.{ext}"), dtype=dt, mode="r", shape=(n, nb))
+        print(f"truth-based relabelling: on ({', '.join(sorted(truth))})", flush=True)
     # --label-source: 'observational' is the detectability-conditioned label the model ships with;
     # 'generator' uses the raw generation class (true_class), i.e. labels an event by what it was
     # SIMULATED as regardless of whether that is observable. The latter is the ablation of the
@@ -659,7 +710,7 @@ def main(argv=None) -> int:
                      gap_aug=args.gap_aug if shuf else 0.0,
                      gap_schedule=(rmdc26_schedule_mask(BAND_BINS["F146"])
                                    if (shuf and args.gap_schedule == "rmdc26") else None),
-                     gap_relabel_anomaly=(args.gap_relabel_anomaly == "on"),
+                     gap_relabel_anomaly=(args.gap_relabel_anomaly == "on"), truth=truth,
                      gap_templates=(load_rmdc26_templates()
                                     if (shuf and args.gap_schedule in ("rmdc26_seasons", "rmdc26_seasons_occ")) else None),
                      gap_cap_occupancy=(args.gap_schedule == "rmdc26_seasons_occ")),

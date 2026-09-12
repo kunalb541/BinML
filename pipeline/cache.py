@@ -87,6 +87,8 @@ def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:
     param_fields = None
     n_total = 0
     gen = {}                                   # generation settings of the input shards (run_shard attrs)
+    truth: Dict[str, list] = {}                # per-bin noise-free truth, when the shards carry it
+    n_nonempty = 0
     for i, p in enumerate(sorted(shard_paths)):
         with h5py.File(p, "r") as f:
             for a in GEN_ATTRS:
@@ -108,6 +110,10 @@ def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:
             for b in bands:
                 for k in ("f_s", "n_kept"):
                     perband[f"{k}/{b}"].append(f[f"{k}/{b}"][:])
+            if "truth" in f:
+                for k in f["truth"]:
+                    truth.setdefault(k, []).append(f[f"truth/{k}"][:])
+            n_nonempty += 1
             n_total += n
         if verbose and (i + 1) % 20 == 0:
             print(f"  binned {i+1} shards, {n_total:,} events", flush=True)
@@ -144,6 +150,11 @@ def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:
         if param_fields:
             o.attrs["param_fields"] = [x.encode() for x in param_fields]
         o.attrs["gen_settings"] = json.dumps({a: sorted(v) for a, v in gen.items()})
+        if truth:
+            if any(len(v) != n_nonempty for v in truth.values()):
+                raise ValueError("build_cache: some shards carry truth bins and others do not")
+            for k, v in truth.items():
+                o.create_dataset(f"truth/{k}", data=np.concatenate(v), compression="lzf")
         for k, v in perband.items():
             o.create_dataset(k, data=np.concatenate(v))
     return {"n_events": n_total, "bytes": os.path.getsize(out_path)}

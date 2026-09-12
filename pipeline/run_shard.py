@@ -335,6 +335,9 @@ def main(argv=None) -> int:
     ap.add_argument("--min-amplitude-mag", type=float, default=None,
                     help="detectability floor for the labels (SurveyConfig.min_amplitude_mag; default 0.02, every released "
                          "shard). The floor-sensitivity sweep of the referee round regenerates one shard at 0.01 and 0.05.")
+    ap.add_argument("--truth-bins", action="store_true",
+                    help="store per-bin noise-free truth (signal deviation, binary anomaly residual) for truth-based "
+                         "relabelling in training augmentations (pipeline.train --truth-relabel); off for released shards")
     ap.add_argument("--band-set", default="trained", choices=("trained", "colour_audited", "audited"),
                     help="photometric calibration: the released model's (trained, default), the audited F087/F213 "
                          "zeropoints/backgrounds only (colour_audited), or every audited value (audited)")
@@ -359,6 +362,9 @@ def main(argv=None) -> int:
     if args.min_amplitude_mag is not None:
         import dataclasses
         cfg = dataclasses.replace(cfg, min_amplitude_mag=float(args.min_amplitude_mag))
+    if args.truth_bins:
+        import dataclasses
+        cfg = dataclasses.replace(cfg, store_truth_bins=True)
     shards = [s for s in range(args.n_shards) if s % args.workers == args.worker] \
         if args.workers > 1 else [args.shard]
 

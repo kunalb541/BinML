@@ -46,6 +46,22 @@ def _gen_settings(paths) -> dict:
     return {k: sorted(v) for k, v in out.items()}
 
 
+_TRUTH_DTYPE = {"vis_amp": np.float16, "anom_amp": np.float16, "anom_chi2": np.float32}
+
+
+def _copy_truth(f, truth_mm: dict, out_dir: str, n_out: int, src, dst) -> None:
+    """Per-bin noise-free truth (pipeline.assemble store_truth_bins) rides the same permutation as the curves."""
+    if "truth" not in f:
+        return
+    for k in f["truth"]:
+        a = f[f"truth/{k}"]
+        if k not in truth_mm:
+            dt = _TRUTH_DTYPE.get(k, np.float32)
+            ext = "f16" if dt == np.float16 else "f32"
+            truth_mm[k] = np.memmap(os.path.join(out_dir, f"truth_{k}.{ext}"), dtype=dt, mode="w+", shape=(n_out, a.shape[1]))
+        truth_mm[k][dst] = a[:][src]
+
+
 def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720) -> dict:
     os.makedirs(out_dir, exist_ok=True)
     paths = sorted(cache_paths)
@@ -78,6 +94,7 @@ def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720
     # order instead would scramble every slice relative to its own light curve.
     par = None
     param_fields = None
+    truth_mm: dict = {}
 
     base = 0
     for p, cnt in zip(paths, counts):
@@ -103,9 +120,10 @@ def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720
                             param_fields = [x.decode() if isinstance(x, bytes) else str(x)
                                             for x in pf]
                     par[dst] = f["params"][:][src]
+                _copy_truth(f, truth_mm, out_dir, n_out, src, dst)
         base += cnt
 
-    for v in mm.values():
+    for v in list(mm.values()) + list(truth_mm.values()):
         v.flush()
     np.save(os.path.join(out_dir, "label.npy"), sc["label"].astype(np.int64))
     np.save(os.path.join(out_dir, "true_class.npy"), sc["true_class"].astype(np.int64))
@@ -116,7 +134,8 @@ def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720
     for b in BAND_BINS:
         for k in PERBAND:
             np.save(os.path.join(out_dir, f"{k}_{b}.npy"), sc[f"{k}_{b}"].astype(np.float32))
-    meta = {"gen_settings": _gen_settings(paths), "n_events": int(n_out), "n_source_events": int(total),
+    meta = {"gen_settings": _gen_settings(paths), "truth": {k: [str(v.dtype), int(v.shape[1])] for k, v in truth_mm.items()},
+            "n_events": int(n_out), "n_source_events": int(total),
             "param_fields": param_fields,
             "bands": {b: BAND_BINS[b] for b in BAND_BINS}, "dtype": "float16",
             "shuffled": True, "seed": seed}
@@ -182,6 +201,7 @@ def convert_selected(cache_paths, keep_masks, out_dir: str, seed: int = 20260721
         for k in PERBAND:
             sc[f"{k}_{b}"] = np.zeros(n_out, dtype=np.float64)
     par, param_fields = None, None
+    truth_mm: dict = {}
     src_regime = np.zeros(n_out, dtype=np.int16)
     regimes = sorted({os.path.basename(os.path.dirname(p)) for p in paths})
 
@@ -210,9 +230,10 @@ def convert_selected(cache_paths, keep_masks, out_dir: str, seed: int = 20260721
                         param_fields = [x.decode() if isinstance(x, bytes) else str(x)
                                         for x in pf]
                 par[dst] = f["params"][:][src]
+            _copy_truth(f, truth_mm, out_dir, n_out, src, dst)
         src_regime[dst] = regimes.index(os.path.basename(os.path.dirname(p)))
 
-    for v in mm.values():
+    for v in list(mm.values()) + list(truth_mm.values()):
         v.flush()
     np.save(os.path.join(out_dir, "label.npy"), sc["label"].astype(np.int64))
     np.save(os.path.join(out_dir, "true_class.npy"), sc["true_class"].astype(np.int64))
@@ -224,7 +245,8 @@ def convert_selected(cache_paths, keep_masks, out_dir: str, seed: int = 20260721
         for kk in PERBAND:
             np.save(os.path.join(out_dir, f"{kk}_{b}.npy"), sc[f"{kk}_{b}"].astype(np.float32))
     np.save(os.path.join(out_dir, "src_regime.npy"), src_regime)
-    meta = {"gen_settings": _gen_settings(paths), "n_events": int(n_out), "param_fields": param_fields,
+    meta = {"gen_settings": _gen_settings(paths), "truth": {k: [str(v.dtype), int(v.shape[1])] for k, v in truth_mm.items()},
+            "n_events": int(n_out), "param_fields": param_fields,
             "bands": {b: BAND_BINS[b] for b in BAND_BINS}, "dtype": "float16",
             "shuffled": True, "seed": seed, "regimes": regimes, "stratified": True}
     json.dump(meta, open(os.path.join(out_dir, "meta.json"), "w"), indent=2)

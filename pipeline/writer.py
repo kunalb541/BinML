@@ -122,6 +122,12 @@ class ShardWriter:
             g.create_dataset(name, shape=(0,), maxshape=(None,), dtype=dt)
         g.create_dataset("params", shape=(0, len(PARAM_FIELDS)),
                          maxshape=(None, len(PARAM_FIELDS)), dtype=np.float32)
+        self._truth = bool(getattr(cfg, "store_truth_bins", False))
+        if self._truth:                     # per-bin noise-free truth for truth-based relabelling
+            nb = int(cfg.truth_bins); g.attrs["truth_bins"] = nb
+            for name, dt in (("truth/vis_amp", np.float16), ("truth/anom_amp", np.float16), ("truth/anom_chi2", np.float32)):
+                g.create_dataset(name, shape=(0, nb), maxshape=(None, nb), dtype=dt, chunks=(CHUNK_ROWS, nb),
+                                 compression=compression)
 
     def append(self, events: Sequence[Event]) -> None:
         if not events:
@@ -169,6 +175,11 @@ class ShardWriter:
             d = g[name]; d.resize(hi, axis=0); d[lo:hi] = arr
         p = np.stack([_param_vector(e.params) for e in events])
         d = g["params"]; d.resize(hi, axis=0); d[lo:hi] = p
+        if self._truth:
+            nb = int(self.cfg.truth_bins)
+            for key in ("vis_amp", "anom_amp", "anom_chi2"):
+                arr = np.stack([e.truth[key] if e.truth is not None else np.zeros(nb, np.float32) for e in events])
+                d = g[f"truth/{key}"]; d.resize(hi, axis=0); d[lo:hi] = arr
 
         self.n = hi
 

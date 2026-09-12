@@ -98,6 +98,12 @@ class SurveyConfig:
     t0_pad_tE: float = 0.5
     t0_pad_max_frac: float = 0.5    # never pad more than half a window
     min_usable_epochs: int = 20     # below this the event is unusable, not "flat"
+    # Truth-based relabelling for training augmentations (2026-09-12; audit findings 8, 9, 10). When on, each
+    # event carries noise-free per-bin truth on the reference-band grid of ``truth_bins`` bins: the signal's
+    # deviation from baseline (max per bin), and for binaries the anomaly residual against the best static PSPL
+    # (max |residual| and sum of (residual/sigma)^2 per bin). Off by default: released shards are unchanged.
+    store_truth_bins: bool = False
+    truth_bins: int = 864
 
 
 @dataclass
@@ -120,6 +126,7 @@ class Event:
     dchi2_event: float       # vs a flat model, summed over bands
     dchi2_anomaly: float     # vs the REFIT PSPL, reference band only (not summed)
     n_usable_bands: int
+    truth: Optional[Dict[str, np.ndarray]] = None   # per-bin noise-free truth (cfg.store_truth_bins)
 
 
 def _epochs(band_name: str, window_days: float) -> np.ndarray:
@@ -151,8 +158,8 @@ _REFIT_MAX_POINTS = 400     # subsample cap: the fit needs shape, not every epoc
 
 
 def _pspl_refit_dchi2(t: np.ndarray, mag_true: np.ndarray, sigma: np.ndarray,
-                      m_base: float, f_s: float, params: Dict[str, float]
-                      ) -> Tuple[float, float]:
+                      m_base: float, f_s: float, params: Dict[str, float],
+                      return_resid: bool = False):
     """Anomaly statistics from the best-fitting PSPL, against a noise-free curve.
 
     Returns ``(dchi2, peak_deviation_mag)``: the chi^2 the best PSPL cannot absorb, and the
@@ -198,7 +205,24 @@ def _pspl_refit_dchi2(t: np.ndarray, mag_true: np.ndarray, sigma: np.ndarray,
         pass                                               # keep the seed model
 
     dev = mag_true - model_mag(best, t)                    # FULL-resolution residual
+    if return_resid:
+        return float(np.sum((dev / sigma) ** 2)), float(np.max(np.abs(dev))), dev
     return float(np.sum((dev / sigma) ** 2)), float(np.max(np.abs(dev)))
+
+
+def _truth_bins(ref_truth, resid, cfg) -> Dict[str, np.ndarray]:
+    """Noise-free per-bin truth on the reference grid (cfg.truth_bins bins over the window): signal deviation
+    from baseline (max), anomaly |residual| against the best static PSPL (max) and its chi^2 (sum)."""
+    nb = cfg.truth_bins
+    vis = np.zeros(nb, np.float32); aa = np.zeros(nb, np.float32); ac = np.zeros(nb, np.float32)
+    if ref_truth is not None and ref_truth[0].size:
+        t, mag, sig, mb, _ = ref_truth
+        idx = np.clip((np.asarray(t) / cfg.window_days * nb).astype(np.int64), 0, nb - 1)
+        np.maximum.at(vis, idx, np.abs(mag - mb).astype(np.float32))
+        if resid is not None:
+            np.maximum.at(aa, idx, np.abs(resid).astype(np.float32))
+            np.add.at(ac, idx, ((resid / sig) ** 2).astype(np.float32))
+    return {"vis_amp": vis, "anom_amp": aa, "anom_chi2": ac}
 
 
 
@@ -369,8 +393,12 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     # fitter would simply absorb, inflating delta-chi^2 for events with no visible anomaly.
     anom_amp_mag = 0.0
     t_anom = float("inf")
+    resid = None
     if true_class == "NonPSPL" and ref_truth is not None and ref_truth[0].size >= 10:
-        dchi2_anom, anom_amp_mag = _pspl_refit_dchi2(*ref_truth, params)
+        if cfg.store_truth_bins:
+            dchi2_anom, anom_amp_mag, resid = _pspl_refit_dchi2(*ref_truth, params, return_resid=True)
+        else:
+            dchi2_anom, anom_amp_mag = _pspl_refit_dchi2(*ref_truth, params)
         if dchi2_anom >= cfg.dchi2_anomaly and anom_amp_mag >= cfg.min_amplitude_mag:
             t_anom = _anomaly_onset_day(ref_truth, params, cfg)
 
@@ -396,7 +424,8 @@ def simulate_event(true_class: str, rng: np.random.Generator,
 
     ev = Event(true_class=true_class, label=label, label_index=label_of(label),
                bands=bands, params=params, dchi2_event=dchi2_event,
-               dchi2_anomaly=dchi2_anom, n_usable_bands=n_usable_bands)
+               dchi2_anomaly=dchi2_anom, n_usable_bands=n_usable_bands,
+               truth=_truth_bins(ref_truth, resid, cfg) if cfg.store_truth_bins else None)
     if _return_ref_truth:
         return ev, ref_truth
     return ev
