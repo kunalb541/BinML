@@ -81,11 +81,12 @@ jobs:
                       "LaTeX Error"):
               assert bad not in log, f"build log reports: {bad}"
 
-          # 3. every macro the manuscript uses is actually defined. A missing \bml* macro is a
-          #    hard LaTeX error, but a macro defined and never updated is not -- so also check
-          #    that make_macros regenerated the file during this build.
-          macros = open("paper_macros.tex").read()
-          used = set(re.findall(r"\\(bml[A-Za-z]+)", open("paper.tex").read()))
+          # 3. every macro the manuscript uses is actually defined, by either generator
+          #    (make_macros.py -> paper_macros.tex; make_gulls_macros.py -> gulls_macros.tex, the
+          #    RMDC26 section and the referee-round results). LaTeX comments are not uses.
+          macros = open("paper_macros.tex").read() + open("gulls_macros.tex").read()
+          body = "\n".join(re.sub(r"(?<!\\)%.*", "", line) for line in open("paper.tex").read().splitlines())
+          used = set(re.findall(r"\\(bml[A-Za-z]+)", body))
           defined = set(re.findall(r"\\newcommand\{\\(bml[A-Za-z]+)\}", macros))
           missing = sorted(used - defined)
           assert not missing, f"macros used but not defined: {missing}"
