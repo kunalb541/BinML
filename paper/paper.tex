@@ -1388,12 +1388,15 @@ rather than streaming purity. The matched-risk comparison between models trained
 truncation is exploratory---thresholds and outcomes use the same $\bmlMatchN$ events---and does not
 establish a causal timing benefit.
 
-The principal remaining tests are a mixed-class prefix scan that measures sequential false alerts
-and alert burden, an estimated-baseline ablation, sensitivity to the adopted $0.02$~mag floor,
-disjoint calibration and evaluation of the streaming policy with repeated training seeds,
-retraining under the current multi-season survey design, and validation on real photometry. The
-released code and weights provide a rebuildable static benchmark, with per-artifact provenance
-recorded below.
+Three tests first raised in review are now reported: a mixed-class prefix scan that measures the alert
+burden (\S\ref{sec:cascade}), the label side of the $0.02$~mag floor and the colour calibration
+(\S\ref{sec:limits}), and an independent simulation of the survey, on which the shipped model fails for a
+reason we identified and a gap-aware fine-tune recovers (\S\ref{sec:gulls}). The principal remaining tests
+are retraining under another detectability floor, an estimated-baseline ablation, repeated training seeds
+for the shipped model (its training set is not re-created here; seed spread is measured only for the
+gap-aware fine-tune), a model that takes the whole multi-season light curve, and validation on real
+photometry. The released code and weights provide a rebuildable static benchmark, with per-artifact
+provenance recorded below.
 
 \begin{acknowledgments}
 I thank the gravitational lensing group at the Astronomisches Rechen-Institut (ARI), Zentrum für

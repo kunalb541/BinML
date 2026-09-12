@@ -96,7 +96,24 @@ def evaluate(ckpt, mm, name):
     lab = np.load(os.path.join(mm, "label.npy")); kp = np.load(os.path.join(mm, "keep_prob.npy")).astype(np.float64)
     w = 1.0 / np.clip(kp, 1e-3, 1.0)
     m["_prevalence_nonpspl"] = {"raw": float((lab == 2).mean()), "population_weighted": float(w[lab == 2].sum() / w.sum()), "n": int(lab.size)}
+    # the paper's FROZEN operating threshold on every event: no threshold is re-selected on this small set, so the
+    # arms compare like for like (the evaluator's own 20%-slice threshold lands each arm at a different purity)
+    sc = np.load(os.path.join(ev, "score_nonpspl.npy")); lab_e = np.load(os.path.join(ev, "label.npy"))
+    kp_e = np.load(os.path.join(ev, "keep_prob.npy")).astype(np.float64); w_e = 1.0 / np.clip(kp_e, 1e-3, 1.0)
+    flag = sc >= FROZEN; pos = lab_e == 2
+    k, n = int((flag & pos).sum()), int(pos.sum())
+    m["_frozen"] = {"threshold": FROZEN, "completeness": k / n, "completeness_k_n": [k, n], "completeness_wilson95": _wilson(k, n),
+                    "purity_population_weighted": float(w_e[flag & pos].sum() / w_e[flag].sum()) if flag.any() else None,
+                    "false_flag_rate_nonnonpspl_population_weighted": float(w_e[flag & ~pos].sum() / w_e[~pos].sum())}
     return m
+
+
+def _wilson(k, n, z=1.96):
+    if n == 0:
+        return [None, None]
+    ph = k / n; d = 1 + z * z / n; c = (ph + z * z / (2 * n)) / d
+    h = z * np.sqrt(ph * (1 - ph) / n + z * z / (4 * n * n)) / d
+    return [float(max(0.0, c - h)), float(min(1.0, c + h))]
 
 
 # ------------------------------------------------------------------ mixed-class sequential scan
@@ -209,17 +226,13 @@ def finetune(arm, device):
 
 
 def summary(m):
-    keys = ("completeness_at_purity", "purity", "threshold", "ap", "macro_f1")
-    flat = {}
-    def walk(d, pre=""):
-        for k, v in d.items():
-            if isinstance(v, dict):
-                walk(v, pre + k + ".")
-            elif isinstance(v, (int, float)) and any(k.endswith(x) or k == x for x in keys):
-                flat[pre + k] = v
-    walk(m)
-    flat["prevalence"] = m["_prevalence_nonpspl"]
-    return flat
+    """The headline quantities of pipeline.evaluate's metrics.json (the paper's procedure) plus prevalence."""
+    h = m["headline"]; ci = m.get("headline_ci95", {})
+    return {"completeness_at_purity": h["completeness_at_fixed_purity"], "purity_achieved": h["purity_achieved"],
+            "threshold": h["threshold"], "completeness_ci95": [ci.get("lo"), ci.get("hi")],
+            "ap": m["average_precision_population"], "macro_f1_population": m["argmax_population"]["macro_f1"],
+            "f1_population": m["argmax_population"]["f1"], "n_events": m["n_events"],
+            "prevalence": m["_prevalence_nonpspl"], "at_frozen_threshold": m["_frozen"]}
 
 
 def main(argv=None):

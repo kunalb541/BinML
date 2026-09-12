@@ -210,19 +210,25 @@ def _pspl_refit_dchi2(t: np.ndarray, mag_true: np.ndarray, sigma: np.ndarray,
     return float(np.sum((dev / sigma) ** 2)), float(np.max(np.abs(dev)))
 
 
-def _truth_bins(ref_truth, resid, cfg) -> Dict[str, np.ndarray]:
-    """Noise-free per-bin truth on the reference grid (cfg.truth_bins bins over the window): signal deviation
-    from baseline (max), anomaly |residual| against the best static PSPL (max) and its chi^2 (sum)."""
+def _truth_bins(ref_truth, resid, cfg, band_truth=()) -> Dict[str, np.ndarray]:
+    """Noise-free per-bin truth on the reference grid (cfg.truth_bins bins over the window), mirroring the label
+    rule: ``vis_amp`` = max |mag_true - m_base_band| over ALL bands' usable epochs in the bin (the rule's amplitude
+    is the maximum over bands), ``event_chi2`` = the summed (dev/sigma)^2 of all bands (the rule's dchi2_event);
+    for binaries, ``anom_amp`` / ``anom_chi2`` = the reference-band residual against the best static PSPL (max,
+    sum), as the rule's anomaly statistics. Colour-band epochs fall in the reference bin containing them."""
     nb = cfg.truth_bins
-    vis = np.zeros(nb, np.float32); aa = np.zeros(nb, np.float32); ac = np.zeros(nb, np.float32)
-    if ref_truth is not None and ref_truth[0].size:
-        t, mag, sig, mb, _ = ref_truth
-        idx = np.clip((np.asarray(t) / cfg.window_days * nb).astype(np.int64), 0, nb - 1)
-        np.maximum.at(vis, idx, np.abs(mag - mb).astype(np.float32))
-        if resid is not None:
-            np.maximum.at(aa, idx, np.abs(resid).astype(np.float32))
-            np.add.at(ac, idx, ((resid / sig) ** 2).astype(np.float32))
-    return {"vis_amp": vis, "anom_amp": aa, "anom_chi2": ac}
+    vis = np.zeros(nb, np.float32); ec = np.zeros(nb, np.float32)
+    aa = np.zeros(nb, np.float32); ac = np.zeros(nb, np.float32)
+    to_bin = lambda t: np.clip((np.asarray(t) / cfg.window_days * nb).astype(np.int64), 0, nb - 1)
+    for t, dev, chi in band_truth:
+        if len(t):
+            i = to_bin(t)
+            np.maximum.at(vis, i, dev.astype(np.float32)); np.add.at(ec, i, chi.astype(np.float32))
+    if resid is not None and ref_truth is not None and ref_truth[0].size:
+        i = to_bin(ref_truth[0])
+        np.maximum.at(aa, i, np.abs(resid).astype(np.float32))
+        np.add.at(ac, i, ((resid / ref_truth[2]) ** 2).astype(np.float32))
+    return {"vis_amp": vis, "event_chi2": ec, "anom_amp": aa, "anom_chi2": ac}
 
 
 
@@ -335,6 +341,7 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     dchi2_event = 0.0
     dchi2_anom = 0.0
     max_amp_mag = 0.0
+    band_truth = []                                         # (t, |dev|, (dev/sigma)^2) per band, for truth bins
     ref_truth: Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, float, float]] = None
 
     for bname, band in ROMAN_BANDS.items():
@@ -371,6 +378,8 @@ def simulate_event(true_class: str, rng: np.random.Generator,
             resid = (mag_true[usable] - m_base_band) / sigma[usable]
             dchi2_event += float(np.sum(resid ** 2))
             max_amp_mag = max(max_amp_mag, float(np.max(np.abs(mag_true[usable] - m_base_band))))
+            if cfg.store_truth_bins:
+                band_truth.append((t[usable], np.abs(mag_true[usable] - m_base_band), resid ** 2))
 
         if bname == cfg.reference_band:
             ref_truth = (t[usable], mag_true[usable], sigma[usable], m_base_band, f_s_b)
@@ -425,7 +434,7 @@ def simulate_event(true_class: str, rng: np.random.Generator,
     ev = Event(true_class=true_class, label=label, label_index=label_of(label),
                bands=bands, params=params, dchi2_event=dchi2_event,
                dchi2_anomaly=dchi2_anom, n_usable_bands=n_usable_bands,
-               truth=_truth_bins(ref_truth, resid, cfg) if cfg.store_truth_bins else None)
+               truth=_truth_bins(ref_truth, resid, cfg, band_truth) if cfg.store_truth_bins else None)
     if _return_ref_truth:
         return ev, ref_truth
     return ev

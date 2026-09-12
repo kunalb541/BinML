@@ -26,13 +26,28 @@ def _first(true_class, want_label, seeds=range(200)):
 def test_truth_bins_reproduce_the_label_statistics():
     ev = _first("NonPSPL", "NonPSPL")
     t = ev.truth
-    assert set(t) == {"vis_amp", "anom_amp", "anom_chi2"} and all(v.shape == (864,) for v in t.values())
+    assert set(t) == {"vis_amp", "event_chi2", "anom_amp", "anom_chi2"} and all(v.shape == (864,) for v in t.values())
+    assert np.isclose(t["event_chi2"].sum(), ev.dchi2_event, rtol=1e-3)            # all bands, as the label rule
     assert np.isclose(t["anom_chi2"].sum(), ev.dchi2_anomaly, rtol=1e-3)          # same residuals as the label rule
     assert t["anom_amp"].max() >= 0.02 and t["vis_amp"].max() >= 0.02
     ps = _first("PSPL", "PSPL")
     assert ps.truth["anom_chi2"].sum() == 0 and ps.truth["anom_amp"].max() == 0     # no anomaly for single lenses
     off = simulate_event("PSPL", np.random.default_rng(3), SurveyConfig())
     assert off is None or off.truth is None                                        # off by default
+
+
+def test_full_window_truth_reproduces_every_label():
+    """With every bin observed the truth rule must give back the label the generator assigned (the check that
+    caught vis_amp being F146-only while the label rule takes the maximum over bands)."""
+    from pipeline.train import _truth_relabel
+    full = np.ones(864, bool)
+    for c in ("Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"):
+        for sd in range(12):
+            ev = simulate_event(c, np.random.default_rng(100 + sd), CFG)
+            if ev is None:
+                continue
+            t = ev.truth; tj = (t["vis_amp"], t["anom_amp"], t["anom_chi2"], t["event_chi2"])
+            assert _truth_relabel(ev.label_index, full, tj) == ev.label_index, (c, sd, ev.label)
 
 
 def _out(nb=864):
@@ -95,7 +110,7 @@ def test_truth_survives_writer_cache_and_memmap(tmp_path):
     build_cache([raw], str(tmp_path / "c.h5"), verbose=False)
     convert([str(tmp_path / "c.h5")], str(tmp_path / "mm"))
     meta = json.load(open(tmp_path / "mm" / "meta.json"))
-    assert set(meta["truth"]) == {"vis_amp", "anom_amp", "anom_chi2"}
+    assert set(meta["truth"]) == {"vis_amp", "event_chi2", "anom_amp", "anom_chi2"}
     n = meta["n_events"]
     chi = np.memmap(tmp_path / "mm" / "truth_anom_chi2.f32", dtype="float32", mode="r", shape=(n, 864))
     d = np.load(tmp_path / "mm" / "dchi2_anomaly.npy")

@@ -46,7 +46,7 @@ def _gen_settings(paths) -> dict:
     return {k: sorted(v) for k, v in out.items()}
 
 
-_TRUTH_DTYPE = {"vis_amp": np.float16, "anom_amp": np.float16, "anom_chi2": np.float32}
+_TRUTH_DTYPE = {"vis_amp": np.float16, "event_chi2": np.float32, "anom_amp": np.float16, "anom_chi2": np.float32}
 
 
 def _copy_truth(f, truth_mm: dict, out_dir: str, n_out: int, src, dst) -> None:

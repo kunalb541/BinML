@@ -114,21 +114,25 @@ def load_rmdc26_templates(path: str = RMDC26_SCHEDULE_JSON) -> list:
 
 
 TRUTH_DCHI2_ANOM = 160.0          # = assemble.SurveyConfig.dchi2_anomaly (the label rule's anomaly threshold)
+TRUTH_DCHI2_EVENT = 500.0         # = assemble.SurveyConfig.dchi2_event (the label rule's event threshold)
 
 
 def _truth_relabel(label: int, surviving: np.ndarray, truth) -> int:
     """Truth-based relabel after any augmentation (audit findings 8-10, 2026-09-12).
 
     ``surviving``: reference-band bins still observed after the augmentation; ``truth``: the event's per-bin
-    noise-free (vis_amp, anom_amp, anom_chi2) from generation (assemble store_truth_bins). Applies the label
-    rule to what survives: no bin with a signal above the floor -> Flat (for EVERY class, periodic included,
-    and without the noisy min/max that made the legacy Flat branch dead); a binary whose surviving anomaly
-    fails dchi2 >= 160 or the amplitude floor -> PSPL (the anomaly itself, not a 7.2-day onset proxy).
+    noise-free (vis_amp, anom_amp, anom_chi2[, event_chi2]) from generation (assemble store_truth_bins; vis_amp
+    and event_chi2 are over all bands, as the label rule). Applies the label rule to what survives: no surviving
+    signal above the floor, or a surviving event chi^2 below 500 -> Flat (for EVERY class, periodic included,
+    and without the noisy min/max that made the legacy Flat branch dead); a binary whose surviving anomaly fails
+    dchi2 >= 160 or the amplitude floor -> PSPL (the anomaly itself, not a 7.2-day onset proxy).
     Approximation: the static single-lens refit is the full-season one, not refit on the surviving epochs."""
     if label == I_FLAT:
         return label
-    vis, aa, ac = truth
+    vis, aa, ac = truth[:3]
     if not surviving.any() or float(vis[surviving].max()) < TRUNC_MIN_AMP_MAG:
+        return I_FLAT
+    if len(truth) > 3 and float(truth[3][surviving].sum()) < TRUTH_DCHI2_EVENT:
         return I_FLAT
     if label == I_NON and (float(ac[surviving].sum()) < TRUTH_DCHI2_ANOM or float(aa[surviving].max()) < TRUNC_MIN_AMP_MAG):
         return I_PSPL
@@ -467,7 +471,8 @@ class CacheDataset(Dataset):
         lab = int(self.labels[j])
         tj = None
         if self.truth is not None:
-            tj = tuple(np.asarray(self.truth[k][j], dtype=np.float32) for k in ("vis_amp", "anom_amp", "anom_chi2"))
+            tj = tuple(np.asarray(self.truth[k][j], dtype=np.float32)
+                       for k in ("vis_amp", "anom_amp", "anom_chi2", "event_chi2") if k in self.truth)
         if self.truncate_aug > 0 and self._rng.random() < self.truncate_aug:
             fs = float(self.f_s_ref[j]) if self.f_s_ref is not None else 0.5
             lab = _apply_truncation(out, lab, self._rng, self.params[j], self.pf_idx, fs, truth=tj)

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """How wrong were the legacy augmentation labels? -> validation/truth_relabel_impact.json (audit findings 8-10).
 
-One natural-prior training shard generated with per-bin noise-free truth (run_shard --truth-bins). Each event is
+One natural-prior training shard generated with per-bin noise-free truth (run_shard --truth-bins) and the released
+default onset grid (7.2 d), so the legacy rules are measured as the released training used them. Each event is
 presented many times under each training augmentation (truncation, random gaps, the measured RMDC26 seasons); for
 each presentation the SAME random draw is relabelled twice, by the legacy proxies (noisy surviving max for Flat, a
 range-traversed amplitude for periodic classes, the 7.2-/0.5-day onset for binaries) and by the truth
@@ -40,7 +41,7 @@ def main(argv=None):
     build_cache([args.raw], os.path.join(work, "c.h5"), verbose=False)
     mm = os.path.join(work, "mm"); convert([os.path.join(work, "c.h5")], mm)
     meta = json.load(open(os.path.join(mm, "meta.json"))); n = meta["n_events"]
-    assert set(meta.get("truth", {})) == {"vis_amp", "anom_amp", "anom_chi2"}, "shard lacks truth bins (--truth-bins)"
+    assert {"vis_amp", "anom_amp", "anom_chi2", "event_chi2"} <= set(meta.get("truth", {})), "shard lacks truth bins (--truth-bins)"
     feat = {b: np.memmap(os.path.join(mm, f"feat_{b}.f16"), dtype=np.float16, mode="r", shape=(n, L, 3)) for b, L in BAND_BINS.items()}
     frac = {b: np.memmap(os.path.join(mm, f"frac_{b}.f16"), dtype=np.float16, mode="r", shape=(n, L)) for b, L in BAND_BINS.items()}
     tr = {k: np.memmap(os.path.join(mm, f"truth_{k}.{'f16' if dt == 'float16' else 'f32'}"), dtype=dt, mode="r", shape=(n, nb))
@@ -55,11 +56,21 @@ def main(argv=None):
             f = np.asarray(feat[b][j], np.float32); obs = np.isfinite(f[:, 0]).astype(np.float32)
             out[b] = np.concatenate([np.nan_to_num(f) / MAG_SCALE, np.asarray(frac[b][j], np.float32)[:, None], obs[:, None]], 1)
         return out
-    res = {}
+    # self-consistency: with every bin observed, the truth rule must reproduce the stored label of every event
+    from pipeline.train import _truth_relabel
+    full = np.ones(meta["truth"]["vis_amp"][1], bool)
+    incons = Counter()
+    for j in range(n):
+        tj = tuple(np.asarray(tr[k][j], np.float32) for k in ("vis_amp", "anom_amp", "anom_chi2", "event_chi2"))
+        got = _truth_relabel(int(lab[j]), full & np.isfinite(np.asarray(feat["F146"][j][:, 0], np.float32)), tj)
+        if got != int(lab[j]):
+            incons[(CLASS_NAMES[int(lab[j])], CLASS_NAMES[got])] += 1
+    print("full-window inconsistencies:", dict(incons), flush=True)
+    res = {"full_window_inconsistent": {f"{a} -> {b}": v for (a, b), v in incons.items()}}
     for aug in ("truncation", "random_gaps", "measured_seasons"):
         cnt = Counter(); tot = Counter()
         for j in range(n):
-            tj = tuple(np.asarray(tr[k][j], np.float32) for k in ("vis_amp", "anom_amp", "anom_chi2"))
+            tj = tuple(np.asarray(tr[k][j], np.float32) for k in ("vis_amp", "anom_amp", "anom_chi2", "event_chi2"))
             for r in range(args.reps):
                 seed = 1000003 * j + r
                 if aug == "truncation":
