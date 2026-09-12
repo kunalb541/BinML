@@ -223,6 +223,9 @@ def _priors_for(regime: Optional[str]):
     return dataclasses.replace(DEFAULT_PRIORS, **HARD_REGIMES[regime])
 
 
+LEGACY_OOR_MIX = False      # run_shard --legacy-oor-mix: the OOR class mix of the shipped stress suite (see _config_for)
+
+
 def _config_for(regime: Optional[str], cfg: SurveyConfig):
     """Apply a CONFIG_REGIMES override to the survey config, and return the class mix."""
     import dataclasses
@@ -246,7 +249,14 @@ def _config_for(regime: Optional[str], cfg: SurveyConfig):
         # but their support is what stress_report.json's per-class n says, not the regime total.
         mix = {"Flat": 1500, "PSPL": 1000, "NonPSPL": 500,
                "PeriodicVar": 500, "LongPeriodVar": 500, "Eruptive": 500}
-        mix[tgt] = 9000
+        if LEGACY_OOR_MIX:
+            # reproduce the shipped stress suite bit for bit: the swept class keeps the key position of the
+            # original literal (first) and the context value (validation/stress_rescore_local.py)
+            legacy = {tgt: None}
+            legacy.update(mix)
+            mix = legacy
+        else:
+            mix[tgt] = 9000
     if spec is not None:
         if "cfg" in spec:
             cfg = dataclasses.replace(cfg, **spec["cfg"])
@@ -335,6 +345,9 @@ def main(argv=None) -> int:
     ap.add_argument("--min-amplitude-mag", type=float, default=None,
                     help="detectability floor for the labels (SurveyConfig.min_amplitude_mag; default 0.02, every released "
                          "shard). The floor-sensitivity sweep of the referee round regenerates one shard at 0.01 and 0.05.")
+    ap.add_argument("--legacy-oor-mix", action="store_true",
+                    help="OOR regimes: the shipped stress suite's class mix (the swept class at its context count), "
+                         "to regenerate those shards exactly")
     ap.add_argument("--truth-bins", action="store_true",
                     help="store per-bin noise-free truth (signal deviation, binary anomaly residual) for truth-based "
                          "relabelling in training augmentations (pipeline.train --truth-relabel); off for released shards")
@@ -362,6 +375,9 @@ def main(argv=None) -> int:
     if args.min_amplitude_mag is not None:
         import dataclasses
         cfg = dataclasses.replace(cfg, min_amplitude_mag=float(args.min_amplitude_mag))
+    if args.legacy_oor_mix:
+        global LEGACY_OOR_MIX
+        LEGACY_OOR_MIX = True
     if args.truth_bins and (args.onset_resolution_days is None or args.onset_resolution_days > 0.5):
         print("WARNING: --truth-bins without --onset-resolution-days 0.5: truncated binaries will be relabelled by the "
               "legacy 7.2-day onset (pipeline.train._apply_truncation keeps the recorded onset for the anomaly)", flush=True)
