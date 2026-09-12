@@ -126,9 +126,11 @@ def _truth_relabel(label: int, surviving: np.ndarray, truth) -> int:
     signal above the floor, or a surviving event chi^2 below 500 -> Flat (for EVERY class, periodic included,
     and without the noisy min/max that made the legacy Flat branch dead); a binary whose surviving anomaly fails
     dchi2 >= 160 or the amplitude floor -> PSPL (the anomaly itself, not a 7.2-day onset proxy).
-    Approximation: the static single-lens refit is the full-season one, not refit on the surviving epochs. That is
-    adequate when most of the season survives (gaps, pauses, thinning) but not for a prefix: truncation therefore
-    takes only the floors from here and keeps the onset rule for the anomaly (see _apply_truncation)."""
+    Approximation: the static single-lens refit is the full-season one, not refit on the surviving epochs. Against
+    a refit on the survivors (validation/truth_relabel_impact.json, refit_reference) this is close for gaps and
+    the measured pauses (about 2% of binary presentations differ) but not for a prefix (truncation therefore takes
+    only the floors from here and keeps the onset rule, see _apply_truncation) nor for heavy thinning (cadence:
+    about 10% differ when most bins are dropped, against 41% for the legacy rule)."""
     if label == I_FLAT:
         return label
     vis, aa, ac = truth[:3]
@@ -273,11 +275,12 @@ def _apply_truncation(out: Dict[str, np.ndarray], label: int, rng: np.random.Gen
         if _truth_relabel(I_PSPL, surv, truth) == I_FLAT:      # the floors: exact from the truth bins (no fit involved)
             return I_FLAT
         # The ANOMALY in a prefix is the generator's rule: a single-lens model REFIT ON THE PREFIX must leave
-        # dchi2 >= 160 and the floor, i.e. the cut is at or after t_anom. The truth bins cannot do that refit (their
-        # residuals are against the full-season fit, which a prefix refit partly absorbs); used here they taught
-        # 13.7% of truncated binary presentations NonPSPL before the onset (validation/truth_relabel_impact.json,
-        # truncation_vs_prefix_rule). So binaries keep the onset rule; generate with --onset-resolution-days 0.5
-        # for an onset on the half-day grid rather than the legacy 7.2-d one.
+        # dchi2 >= 160 and the floor. The truth bins cannot do that refit (their residuals are against the
+        # full-season fit, which a prefix refit partly absorbs); used here they taught 15% of truncated binary
+        # presentations NonPSPL before a refit at the cut would (validation/truth_relabel_impact.json,
+        # refit_reference). So binaries keep the recorded onset: the cut is at or after t_anom. Detectability is
+        # not monotone in the revealed time, so this approximates the refit at the cut (2.4% of presentations
+        # differ with the half-day onset, 6% with the legacy 7.2-d one); generate with --onset-resolution-days 0.5.
         if params is not None and pf_idx is not None and "t_anom" in pf_idx:
             ta = params[pf_idx["t_anom"]]
             return I_PSPL if (np.isfinite(ta) and (f * 72.0) < ta) else I_NON
@@ -686,6 +689,16 @@ def main(argv=None) -> int:
     truth = None
     tinfo = meta.get("truth") or {}
     if args.truth_relabel == "auto" and all(k in tinfo for k in ("vis_amp", "anom_amp", "anom_chi2")):
+        # the truth rule's constants are the released label rule's; a cache generated at another floor or
+        # threshold would be relabelled at the wrong one, so refuse it
+        gs = meta.get("gen_settings") or {}
+        floors = set(gs.get("min_amplitude_mag", [])); onsets = set(gs.get("onset_resolution_days", []))
+        if floors - {str(TRUNC_MIN_AMP_MAG)}:
+            raise SystemExit(f"truth relabelling assumes the {TRUNC_MIN_AMP_MAG} mag floor; this cache was generated at {sorted(floors)} "
+                             "(pass --truth-relabel off, or generate at the default floor)")
+        if onsets - {"0.5"}:
+            print(f"WARNING: truth relabelling keeps the recorded onset for truncated binaries; this cache records it on a "
+                  f"{sorted(onsets)}-day grid (generate with --onset-resolution-days 0.5 for the half-day grid)", flush=True)
         truth = {}
         for k, (dt, nb) in tinfo.items():
             ext = "f16" if dt == "float16" else "f32"

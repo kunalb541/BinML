@@ -20,11 +20,25 @@ uncommitted working tree. Runners now record `git describe --dirty` at data-gene
 | `transfer_full_<tag>.json` of fine-tunes scored before 2026-09-11 (13 files, including `transfer_full_fspl5s_g08.json`) | — | written by `gulls_transfer.py` before its status string was fixed | their `status` field reads 'NOT A TRANSFER MEASUREMENT for the shipped checkpoint'; that string was meant for gap-aware checkpoints in general and does not mean the numbers are invalid. Artifacts written since carry the corrected string |
 | `gapped_threshold_fspl5s_g08_seasonsocc.json` | — | 2026-09-11 | the blank + occupancy-cap DIAGNOSTIC (AP 0.743); its `schedule` field said `seasons` and was corrected by hand to `seasons_occ` on 2026-09-12 (note field in the file; numbers unchanged). The evaluation directories under `fspl5s_local_work/calib/` were renamed after evaluation, so their `meta.json` cache paths are stale (the `_seasons` eval points at a non-existent `mm_heldout_gapped_seasonsmask`, the `_seasonsocc` eval at `mm_heldout_gapped_seasons`, which now holds the blank-only data); the saved logits reproduce exactly on the current directories (2026-09-12 check) |
 
-Later artifacts (2026-09-12) record their generating code themselves: `validation/referee_round.json` (`code`,
-`command`, per-arm `run_shard_args`; test shards 90-91 regenerated under `~/Desktop/Research/microlensing/referee_local_work`),
-`validation/truth_relabel_impact.json` (`code`, `gen_settings`), and the seed replicates `fspl_finetune_fspl5s_seasons_g08_s{2,3}.json`
-(`provenance.json` in `fspl5s_seasons_local_work`; the same pool, recipe and code as `fspl5s_seasons_g08`, only `--seed` differs:
-20260910, 20260911 against 20260909).
+Later artifacts (2026-09-12/13) record their generating code themselves: `validation/referee_round.json` (`code`,
+`command`, per-arm `run_shard_args`, fine-tune checkpoint hashes, and an `archive` block hashing the per-event inputs
+committed under `validation/referee_round_archive/`; shards 90-91 of the held-out pool regenerated under
+`~/Desktop/Research/microlensing/referee_local_work`) and `validation/truth_relabel_impact.json` (`code`,
+`gen_settings`; shard 2 regenerated with `--truth-bins` after the 2026-09-13 truth-binning fix, and its 0.5-d-onset twin
+`raw05/shard_00002.h5`, whose events are identical). Both were regenerated from a clean commit after the third
+verification. The two colour fine-tunes ran on Apple MPS (pipeline.train default device), whose kernels are not
+bitwise deterministic; their checkpoints are archived with hashes, so the reported numbers re-derive from them, but
+a rerun of the fine-tunes need not reproduce them to the last digit. The seed replicates `fspl_finetune_fspl5s_seasons_g08_s{2,3}.json` use the same pool (one memmap) and
+recipe as `fspl5s_seasons_g08`; only `--seed` differs (20260910, 20260911 against 20260909), which also changes the
+80/10/10 split and hence the kept epoch (9, 5, 11). Their recorded code is 618aca3-dirty (s1), 4a37b8e-dirty (s2) and
+1c4234f-dirty (s3; scored on RMDC26 at fa91bc7-dirty); `pipeline/train.py` differs between those commits only in
+comments and truth-gated branches that caches without truth bins never enter.
+
+Label-policy fragility, measured (2026-09-13, `validation/truth_relabel_impact.json`): rebuilding the 858 binaries of
+the truth shard and refitting the full window, 5 give a different anomaly decision when the refit's seed is perturbed
+at the 1e-7 level (in one, dchi2 is 72,931 at the generator's seed and 0.7 at a perturbed one, so a single-lens model
+fits a curve labelled NonPSPL); 0.5% of truncated presentations are similarly unstable. The released labels carry
+this at that rate; it is disclosed, not fixed (changing the refit would change the released training labels).
 
 Unaffected: the shipped weights, every paper artifact under `paper/results/`, and the manifest-hashed
 validation results. The ESPLMag2 steps and the first-season mask affect only the post-submission

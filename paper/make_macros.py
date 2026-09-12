@@ -80,7 +80,7 @@ for _k in ("n_eligible", "detection_fraction", "premature_rate_of_eligible",
     if _k not in cas:
         raise SystemExit(f"FATAL: cascade artifact lacks '{_k}'; regenerate it "
                          f"(schema changed -- do not hand-edit the JSON)")
-cmd("bmlCascN", str(cas["n_eligible"]))
+cmd("bmlCascN", f'{cas["n_eligible"]:,}')
 cmd("bmlCascDetFrac", pct(cas["detection_fraction"]))
 cmd("bmlCascPrematurePct", pct(cas["premature_rate_of_eligible"]))
 cmd("bmlCascPrematureLo", pct(cas["premature_ci_of_eligible"][0]))
@@ -91,7 +91,7 @@ cmd("bmlCascPrematureOfDet", pct(cas["premature_rate_of_detected"]))
 cmd("bmlCascMedianLagAll", f'{cas["median_lag_detected_days"]:+.1f}')
 cmd("bmlCascMedianLagNonPrem", f'{cas["median_lag_non_premature_days"]:+.1f}')
 cmd("bmlCascNnonPrem", str(cas["n_lag_non_premature"]))
-cmd("bmlCascNdet", str(cas["n_detected"]))
+cmd("bmlCascNdet", f'{cas["n_detected"]:,}')
 cmd("bmlCascCensored", str(cas["n_censored"]))
 
 _sen = cas["sensitivity"]
@@ -294,7 +294,7 @@ cmd("bmlAbLabelEpochs", str(lab2["config"]["epochs"]))
 # MATCHED-DETECTION cascade comparison: the experiment the previous revision named as the paper's
 # clearest outstanding weakness. Read fail-closed like the others.
 mtc = _load("cascade_matched_result.json", ("matched", "detection_0.60"))
-cmd("bmlMatchN", str(mtc["n_eligible"]))
+cmd("bmlMatchN", f'{mtc["n_eligible"]:,}')
 for _t, _nm in (("0.60", "Sixty"), ("0.80", "Eighty"), ("0.90", "Ninety")):
     _r = mtc["matched"][f"detection_{_t}"]
     cmd(f"bmlMatchOn{_nm}", pct(_r["cascade_on"]["premature_rate_of_eligible"]))

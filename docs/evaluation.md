@@ -96,10 +96,8 @@ augmented arm has fewer premature crossings through most, but not all, of the me
 a causal benefit is not established.
 
 The 1,000-event streaming scan is also conditional on binary eligibility: it contains no Flat,
-PSPL, demoted-binary, or variable-star prefix traces, and its threshold was selected on complete
-seasons. It therefore cannot inherit the complete-season purity number or estimate sequential
-false alerts and alert burden. A deployment-style test needs disjoint mixed-class prefix
-calibration and held-out mixed-class streams, with event-level alert metrics.
+PSPL, demoted-binary, or variable-star prefix traces. An every-class scan of the same two shards (`validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: STREAMPLACE The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested. A deployment-style test
+still needs disjoint mixed-class prefix calibration.
 
 The stored scan also has provenance limits. The main trace was generated from a dirty source tree
 and records no source hash or diff. The matched trace does not record the code or checkpoint hashes.
@@ -160,5 +158,4 @@ The cadence and photometry are also legacy assumptions rather than the current s
 The released model uses one 72-day season, 15-min F146 sampling, 46.8-s exposures, and
 non-staggered colour grids. Current planning uses approximately 12-min F146, 66-s exposures,
 staggered colour visits, and multiple seasons. The released F087/F213 zeropoints, F087 saturation,
-and colour-band background ratios have known discrepancies from the current calibration. Their
-effect has not been quantified, and the checkpoint has not been retrained with corrected values.
+and colour-band background ratios have known discrepancies from the current calibration. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750). The released model has not been retrained with corrected values.

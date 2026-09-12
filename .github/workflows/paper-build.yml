@@ -77,6 +77,7 @@ jobs:
           for bad in ("There were undefined references",
                       "There were undefined citations",
                       "Citation(s) may have changed",
+                      "Label(s) may have changed",
                       "Citation `",
                       "LaTeX Error"):
               assert bad not in log, f"build log reports: {bad}"
@@ -92,6 +93,14 @@ jobs:
           assert not missing, f"macros used but not defined: {missing}"
           print(f"OK: {size//1024} kB PDF, {len(defined)} macros defined, {len(used)} used")
           PY
+
+      - name: The generated macros, tables and rendered draft equal the committed ones
+        working-directory: ${{ runner.temp }}/clean/paper
+        run: |
+          python render_draft.py
+          for f in gulls_macros.tex outputs/gulls_transfer_table.tex outputs/gulls_gap_table.tex outputs/gulls_seed_table.tex outputs/draft_gulls_rendered.txt; do
+            cmp "$f" "$GITHUB_WORKSPACE/paper/$f" || { echo "regenerated paper/$f differs from the committed file"; exit 1; }
+          done
 
       - name: Upload the PDF
         uses: actions/upload-artifact@v4

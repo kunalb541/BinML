@@ -171,8 +171,7 @@ python -m pipeline.plot_evolution_cloud --cache data/cache/shard_00000.h5 \
   F087 saturation limit (13.9, carried from a 286-s exposure) is too faint for the shorter exposure --
   at equal exposure and well depth F087 saturates about 1.2 mag brighter than F146, not fainter -- and its colour-band background ratios do
   not match the published thermal backgrounds. Corrected constants are recorded in
-  `photometry.py`, but the released checkpoint has not been retrained with them and their effect is
-  unquantified.
+  `photometry.py` (`ROMAN_BANDS_COLOUR_AUDITED`, `run_shard --band-set colour_audited`). Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750). The released model has not been retrained with corrected values.
 
 - **`keep_prob` reweighting is asymmetric.** NonPSPL rows have `keep_prob=1`; the byproduct
   PSPL/Flat rows are subsampled. So **recall must NOT be reweighted, but precision/purity MUST**.

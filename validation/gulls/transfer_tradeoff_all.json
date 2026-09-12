@@ -181,42 +181,48 @@
        0,
        0.03
       ],
-      "fa": 0.41546354645395506
+      "fa": 0.41546354645395506,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.2573238064190382
+      "fa": 0.2573238064190382,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.2211818825535538
+      "fa": 0.2211818825535538,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.19518970933453553
+      "fa": 0.19518970933453553,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.21839352310687069
+      "fa": 0.21839352310687069,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.21020665102363603
+      "fa": 0.21020665102363603,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -1437,42 +1443,48 @@
        0,
        0.03
       ],
-      "fa": 0.08242148431600481
+      "fa": 0.08242148431600481,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.24470060176841388
+      "fa": 0.24470060176841388,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.502239265708383
+      "fa": 0.502239265708383,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.7518925499232132
+      "fa": 0.7518925499232132,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.8504624968527327
+      "fa": 0.8504624968527327,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.7779372181563576
+      "fa": 0.7779372181563576,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -2712,42 +2724,48 @@
        0,
        0.03
       ],
-      "fa": 0.06297504173689995
+      "fa": 0.06297504173689995,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.11682355179300712
+      "fa": 0.11682355179300712,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.21325198993896674
+      "fa": 0.21325198993896674,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.45625680035147875
+      "fa": 0.45625680035147875,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6082741655695084
+      "fa": 0.6082741655695084,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.6621115055557558
+      "fa": 0.6621115055557558,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -3968,42 +3986,48 @@
        0,
        0.03
       ],
-      "fa": 0.06088684697872165
+      "fa": 0.06088684697872165,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.08447899087531886
+      "fa": 0.08447899087531886,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.19625489194077733
+      "fa": 0.19625489194077733,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.4611061819275824
+      "fa": 0.4611061819275824,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6774287354514741
+      "fa": 0.6774287354514741,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.6562680192989078
+      "fa": 0.6562680192989078,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -5243,42 +5267,48 @@
        0,
        0.03
       ],
-      "fa": 0.07474648271818728
+      "fa": 0.07474648271818728,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.1628624758011352
+      "fa": 0.1628624758011352,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.3770091238771528
+      "fa": 0.3770091238771528,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.6940001925342817
+      "fa": 0.6940001925342817,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.7844778319834909
+      "fa": 0.7844778319834909,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.7757255070562575
+      "fa": 0.7757255070562575,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -6518,42 +6548,48 @@
        0,
        0.03
       ],
-      "fa": 0.05698717661793282
+      "fa": 0.05698717661793282,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.09239783425607352
+      "fa": 0.09239783425607352,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.17938305589408507
+      "fa": 0.17938305589408507,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.4216449472830211
+      "fa": 0.4216449472830211,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6193450096806492
+      "fa": 0.6193450096806492,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.6472946452416706
+      "fa": 0.6472946452416706,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -7793,42 +7829,48 @@
        0,
        0.03
       ],
-      "fa": 0.057402571795157
+      "fa": 0.057402571795157,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.09101981549368249
+      "fa": 0.09101981549368249,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.17957968470753494
+      "fa": 0.17957968470753494,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.42331103604327475
+      "fa": 0.42331103604327475,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6191884578161919
+      "fa": 0.6191884578161919,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.6472946452416706
+      "fa": 0.6472946452416706,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -9068,42 +9110,48 @@
        0,
        0.03
       ],
-      "fa": 0.05572214113425374
+      "fa": 0.05572214113425374,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.13141906467379522
+      "fa": 0.13141906467379522,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.2517541305174931
+      "fa": 0.2517541305174931,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.5040820630885702
+      "fa": 0.5040820630885702,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6074374748617568
+      "fa": 0.6074374748617568,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.632150247100853
+      "fa": 0.632150247100853,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -10343,42 +10391,48 @@
        0,
        0.03
       ],
-      "fa": 0.03455425904432454
+      "fa": 0.03455425904432454,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.07447514794359252
+      "fa": 0.07447514794359252,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.21204167467383592
+      "fa": 0.21204167467383592,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.5137791907314253
+      "fa": 0.5137791907314253,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6662640697714486
+      "fa": 0.6662640697714486,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.6553078316560107
+      "fa": 0.6553078316560107,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -11618,42 +11672,48 @@
        0,
        0.03
       ],
-      "fa": 0.06656093568665135
+      "fa": 0.06656093568665135,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.1342906137445089
+      "fa": 0.1342906137445089,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.3188936184474038
+      "fa": 0.3188936184474038,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.5737659000292052
+      "fa": 0.5737659000292052,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.7399514676471276
+      "fa": 0.7399514676471276,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.7416434467787973
+      "fa": 0.7416434467787973,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -12893,42 +12953,48 @@
        0,
        0.03
       ],
-      "fa": 0.09877766114971012
+      "fa": 0.09877766114971012,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.25687101995650335
+      "fa": 0.25687101995650335,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.46252532562881815
+      "fa": 0.46252532562881815,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.690663377283797
+      "fa": 0.690663377283797,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.8700320604304921
+      "fa": 0.8700320604304921,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.8476549887688942
+      "fa": 0.8476549887688942,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -14168,42 +14234,48 @@
        0,
        0.03
       ],
-      "fa": 0.057805136143774194
+      "fa": 0.057805136143774194,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.09234051297537288
+      "fa": 0.09234051297537288,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.21271556027016572
+      "fa": 0.21271556027016572,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.4892054422579951
+      "fa": 0.4892054422579951,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6623414023214098
+      "fa": 0.6623414023214098,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.6320079602761505
+      "fa": 0.6320079602761505,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -15443,42 +15515,48 @@
        0,
        0.03
       ],
-      "fa": 0.07175618700012829
+      "fa": 0.07175618700012829,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.2395223007186446
+      "fa": 0.2395223007186446,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.5037396686858416
+      "fa": 0.5037396686858416,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.7715771543320221
+      "fa": 0.7715771543320221,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.8699379179572438
+      "fa": 0.8699379179572438,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.8127833263288163
+      "fa": 0.8127833263288163,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -16699,42 +16777,48 @@
        0,
        0.03
       ],
-      "fa": 0.2138105936423039
+      "fa": 0.2138105936423039,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.19868808968399176
+      "fa": 0.19868808968399176,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.24286747592048732
+      "fa": 0.24286747592048732,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.3171631349596183
+      "fa": 0.3171631349596183,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.2762421281538554
+      "fa": 0.2762421281538554,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.3740505506206854
+      "fa": 0.3740505506206854,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -17955,42 +18039,48 @@
        0,
        0.03
       ],
-      "fa": 0.07752526167580415
+      "fa": 0.07752526167580415,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.25266476786172704
+      "fa": 0.25266476786172704,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.5166882056276099
+      "fa": 0.5166882056276099,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.7904450273567053
+      "fa": 0.7904450273567053,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.8762451997288305
+      "fa": 0.8762451997288305,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.8184523103674693
+      "fa": 0.8184523103674693,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -19211,42 +19301,48 @@
        0,
        0.03
       ],
-      "fa": 0.4823163868225839
+      "fa": 0.4823163868225839,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.5287535693868904
+      "fa": 0.5287535693868904,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.6229371204327544
+      "fa": 0.6229371204327544,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.7217620170469344
+      "fa": 0.7217620170469344,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.6511145262196402
+      "fa": 0.6511145262196402,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.6858574014287788
+      "fa": 0.6858574014287788,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -20467,42 +20563,48 @@
        0,
        0.03
       ],
-      "fa": 0.0825445833223481
+      "fa": 0.0825445833223481,
+      "kish_n_eff": 5998.553910033412
      },
      {
       "bin": [
        0.03,
        0.1
       ],
-      "fa": 0.1951301593148507
+      "fa": 0.1951301593148507,
+      "kish_n_eff": 2239.2805094591317
      },
      {
       "bin": [
        0.1,
        0.3
       ],
-      "fa": 0.4392383484660758
+      "fa": 0.4392383484660758,
+      "kish_n_eff": 834.8782065976299
      },
      {
       "bin": [
        0.3,
        1
       ],
-      "fa": 0.6845898126906524
+      "fa": 0.6845898126906524,
+      "kish_n_eff": 263.1224331431141
      },
      {
       "bin": [
        1,
        3
       ],
-      "fa": 0.771371079799601
+      "fa": 0.771371079799601,
+      "kish_n_eff": 95.83277720070068
      },
      {
       "bin": [
        3,
        null
       ],
-      "fa": 0.7015701926931787
+      "fa": 0.7015701926931787,
+      "kish_n_eff": 51.98089253312074
      }
     ],
     "recall_at_matched_fa": [
@@ -22827,8 +22929,113 @@
       ]
      }
     }
+   },
+   "fspl5s_seasons_g08_s3-fspl5s_seasons_g08_s2": {
+    "unweighted": {
+     "fa_frozen": {
+      "diff": 0.026504362426168555,
+      "ci95": [
+       0.024824603483944475,
+       0.0284247294096483
+      ]
+     },
+     "recall_1S2L_at_0.02": {
+      "diff": 0.001141552511415539,
+      "ci95": [
+       -0.005448717948717965,
+       0.007114945556726373
+      ]
+     },
+     "recall_2S2L_at_0.02": {
+      "diff": -0.008664377963053749,
+      "ci95": [
+       -0.015207618113454289,
+       -0.0030223148602255825
+      ]
+     },
+     "recall_1S2L_at_0.052": {
+      "diff": 0.008517737969792771,
+      "ci95": [
+       -0.0005356515630488163,
+       0.015898314014752394
+      ]
+     },
+     "recall_2S2L_at_0.052": {
+      "diff": -0.0021252247833905558,
+      "ci95": [
+       -0.009812816740232162,
+       0.004744973025993141
+      ]
+     },
+     "recall_1S2L_at_0.117": {
+      "diff": 0.011152089919213237,
+      "ci95": [
+       0.0042127678257814745,
+       0.019318580962416565
+      ]
+     },
+     "recall_2S2L_at_0.117": {
+      "diff": 0.00948177211051171,
+      "ci95": [
+       0.0015510053948014026,
+       0.01602092529017496
+      ]
+     }
+    },
+    "weighted": {
+     "fa_frozen": {
+      "diff": 0.03917849140709601,
+      "ci95": [
+       0.03338284179074237,
+       0.044743680957261625
+      ]
+     },
+     "recall_1S2L_at_0.02": {
+      "diff": 0.004102104731468048,
+      "ci95": [
+       -0.01027436386749897,
+       0.01919043201156939
+      ]
+     },
+     "recall_2S2L_at_0.02": {
+      "diff": -0.015770957628552296,
+      "ci95": [
+       -0.03033777169290394,
+       0.0045411901364312834
+      ]
+     },
+     "recall_1S2L_at_0.052": {
+      "diff": -0.0007024676287996079,
+      "ci95": [
+       -0.017654025071646734,
+       0.01415765092687953
+      ]
+     },
+     "recall_2S2L_at_0.052": {
+      "diff": -0.0034187181381987175,
+      "ci95": [
+       -0.022114061792347227,
+       0.00950741773370159
+      ]
+     },
+     "recall_1S2L_at_0.117": {
+      "diff": 0.006464157600668097,
+      "ci95": [
+       -0.005840723555143845,
+       0.020688802666241426
+      ]
+     },
+     "recall_2S2L_at_0.117": {
+      "diff": 0.0022093710582887782,
+      "ci95": [
+       -0.01252535900600093,
+       0.02598287253446046
+      ]
+     }
+    }
    }
   }
  },
- "command": "validation/gulls/gulls_summary_tables.py --models shipped=rows_full_shipped_v2.json ft_g08e12=rows_full_ft_g08e12_v2.json pspl5s_ctrl_g08=rows_full_pspl5s_ctrl_g08.json fspl_g08=rows_full_fspl_g08.json fspl5_g08=rows_full_fspl5_g08.json fspl5s_g08=rows_full_fspl5s_g08.json fspl5s_espl_g08=rows_full_fspl5s_espl_g08.json fspl5s_seasons_g08=rows_full_fspl5s_seasons_g08.json fspl5s_seasons_g08_s2=rows_full_fspl5s_seasons_g08_s2.json fspl5s_seasons_g08_s3=rows_full_fspl5s_seasons_g08_s3.json fspl5s_noisy_g08=rows_full_fspl5s_noisy_g08.json fspl5s_v2_g08=rows_full_fspl5s_v2_g08.json sched_rand=rows_full_sched_rand.json sched_sched=rows_full_sched_sched.json sched_rand_norelabel=rows_full_sched_rand_norelabel.json sched_sched_norelabel=rows_full_sched_sched_norelabel.json sched_sched_seasons=rows_full_sched_sched_seasons.json --f146 fspl_g08=rows_full_fspl_g08_f146only.json ft_g08e12=rows_full_ft_g08e12_f146only.json fspl5s_g08=rows_full_fspl5s_g08_f146only.json fspl5s_seasons_g08=rows_full_fspl5s_seasons_g08_f146only.json --by-season --pairs fspl5s_seasons_g08:fspl5s_g08 fspl5s_g08:pspl5s_ctrl_g08 pspl5s_ctrl_g08:ft_g08e12 fspl5s_g08:ft_g08e12 fspl5s_seasons_g08:ft_g08e12 fspl5s_espl_g08:fspl5s_g08 sched_sched_seasons:sched_rand_norelabel sched_rand:ft_g08e12 fspl5s_seasons_g08_s2:fspl5s_g08 fspl5s_seasons_g08_s3:fspl5s_g08 fspl5s_seasons_g08_s2:fspl5s_seasons_g08 fspl5s_seasons_g08_s3:fspl5s_seasons_g08 --boot 400"
+ "command": "validation/gulls/gulls_summary_tables.py --models shipped=rows_full_shipped_v2.json ft_g08e12=rows_full_ft_g08e12_v2.json pspl5s_ctrl_g08=rows_full_pspl5s_ctrl_g08.json fspl_g08=rows_full_fspl_g08.json fspl5_g08=rows_full_fspl5_g08.json fspl5s_g08=rows_full_fspl5s_g08.json fspl5s_espl_g08=rows_full_fspl5s_espl_g08.json fspl5s_seasons_g08=rows_full_fspl5s_seasons_g08.json fspl5s_seasons_g08_s2=rows_full_fspl5s_seasons_g08_s2.json fspl5s_seasons_g08_s3=rows_full_fspl5s_seasons_g08_s3.json fspl5s_noisy_g08=rows_full_fspl5s_noisy_g08.json fspl5s_v2_g08=rows_full_fspl5s_v2_g08.json sched_rand=rows_full_sched_rand.json sched_sched=rows_full_sched_sched.json sched_rand_norelabel=rows_full_sched_rand_norelabel.json sched_sched_norelabel=rows_full_sched_sched_norelabel.json sched_sched_seasons=rows_full_sched_sched_seasons.json --f146 fspl_g08=rows_full_fspl_g08_f146only.json ft_g08e12=rows_full_ft_g08e12_f146only.json fspl5s_g08=rows_full_fspl5s_g08_f146only.json fspl5s_seasons_g08=rows_full_fspl5s_seasons_g08_f146only.json --by-season --pairs fspl5s_seasons_g08:fspl5s_g08 fspl5s_g08:pspl5s_ctrl_g08 pspl5s_ctrl_g08:ft_g08e12 fspl5s_g08:ft_g08e12 fspl5s_seasons_g08:ft_g08e12 fspl5s_espl_g08:fspl5s_g08 sched_sched_seasons:sched_rand_norelabel sched_rand:ft_g08e12 fspl5s_seasons_g08_s2:fspl5s_g08 fspl5s_seasons_g08_s3:fspl5s_g08 fspl5s_seasons_g08_s2:fspl5s_seasons_g08 fspl5s_seasons_g08_s3:fspl5s_seasons_g08 fspl5s_seasons_g08_s3:fspl5s_seasons_g08_s2 --boot 400",
+ "command_from_clone": "validation/gulls/gulls_summary_tables.py --scores validation/gulls/rmdc26_scores.csv.gz --models shipped=shipped ft_g08e12=ft_g08e12 pspl5s_ctrl_g08=pspl5s_ctrl_g08 fspl_g08=fspl_g08 fspl5_g08=fspl5_g08 fspl5s_g08=fspl5s_g08 fspl5s_espl_g08=fspl5s_espl_g08 fspl5s_seasons_g08=fspl5s_seasons_g08 fspl5s_seasons_g08_s2=fspl5s_seasons_g08_s2 fspl5s_seasons_g08_s3=fspl5s_seasons_g08_s3 fspl5s_noisy_g08=fspl5s_noisy_g08 fspl5s_v2_g08=fspl5s_v2_g08 sched_rand=sched_rand sched_sched=sched_sched sched_rand_norelabel=sched_rand_norelabel sched_sched_norelabel=sched_sched_norelabel sched_sched_seasons=sched_sched_seasons --f146 fspl_g08=fspl_g08_f146only ft_g08e12=ft_g08e12_f146only fspl5s_g08=fspl5s_g08_f146only fspl5s_seasons_g08=fspl5s_seasons_g08_f146only --by-season --pairs fspl5s_seasons_g08:fspl5s_g08 fspl5s_g08:pspl5s_ctrl_g08 pspl5s_ctrl_g08:ft_g08e12 fspl5s_g08:ft_g08e12 fspl5s_seasons_g08:ft_g08e12 fspl5s_espl_g08:fspl5s_g08 sched_sched_seasons:sched_rand_norelabel sched_rand:ft_g08e12 fspl5s_seasons_g08_s2:fspl5s_g08 fspl5s_seasons_g08_s3:fspl5s_g08 fspl5s_seasons_g08_s2:fspl5s_seasons_g08 fspl5s_seasons_g08_s3:fspl5s_seasons_g08 fspl5s_seasons_g08_s3:fspl5s_seasons_g08_s2 --boot 400 --out-dir validation/gulls"
 }

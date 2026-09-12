@@ -13,7 +13,8 @@ import sys
 import pytest
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTS = ("paper/gulls_macros.tex", "paper/outputs/gulls_transfer_table.tex", "paper/outputs/gulls_gap_table.tex")
+OUTS = ("paper/gulls_macros.tex", "paper/outputs/gulls_transfer_table.tex", "paper/outputs/gulls_gap_table.tex",
+        "paper/outputs/gulls_seed_table.tex")
 
 
 def _tree(tmp):
@@ -56,7 +57,22 @@ CASES = {
     "no referee round": lambda t: os.remove(os.path.join(t, "validation/referee_round.json")),
     "no colour fine-tunes": lambda t: _edit(t, "../referee_round.json", lambda d: d["colour_ablation"].pop("finetuned_on_train_colour")),
     "no third seed": _drop_seed,
-    "no prefix-rule check": lambda t: _edit(t, "../truth_relabel_impact.json", lambda d: d["results"].pop("truncation_vs_prefix_rule")),
+    "no refit reference": lambda t: _edit(t, "../truth_relabel_impact.json", lambda d: d["results"].pop("refit_reference")),
+    "no seed-3 vs seed-2 pair": lambda t: _edit(t, "transfer_tradeoff_all.json",
+                                                lambda d: d["paired_differences"]["pairs"].pop("fspl5s_seasons_g08_s3-fspl5s_seasons_g08_s2")),
+    # values that contradict a sentence (the guards, not only missing keys)
+    "floor direction flipped": lambda t: _edit(t, "../referee_round.json",
+                                               lambda d: d["floor_sensitivity"]["0.01"]["prevalence"].update(population_weighted=0.01)),
+    "a variable alerts in the stream": lambda t: _edit(t, "../referee_round.json",
+                                                       lambda d: d["mixed_class_stream"]["by_class"]["PeriodicVar"].update(alert_frac_per_season=0.001)),
+    "colour loses recall": lambda t: _edit(t, "../referee_round.json",
+                                           lambda d: d["colour_ablation"]["shipped"]["test_colour"]["all_events"]["recall"].update(PeriodicVar=0.5)),
+    "seed 2 best weighted": lambda t: _edit(t, "transfer_tradeoff_all.json", lambda d: next(
+        a for a in d["models"]["fspl5s_seasons_g08_s2"]["weighted"]["recall_at_matched_fa"] if abs(a["fa_target"] - 0.052) < 1e-9).update(recall_1S2L=0.6)),
+    "physics resolves weighted": lambda t: _edit(t, "transfer_tradeoff_all.json",
+                                                 lambda d: d["models"]["fspl5s_g08"]["weighted"].update(mean_recall_1S2L_fa_le_0p3=0.9)),
+    "truncation errors not half late": lambda t: _edit(t, "../truth_relabel_impact.json",
+                                                       lambda d: d["results"]["refit_reference"]["truncation"]["counts"].update({"legacy PSPL / refit NonPSPL": 0})),
 }
 
 
@@ -66,7 +82,24 @@ def test_complete_inputs_write_everything(tmp_path):
     assert r.returncode == 0, r.stdout + r.stderr
     for o in OUTS:
         assert "SENTINEL" not in open(os.path.join(tmp_path, o)).read()
-    assert open(os.path.join(tmp_path, OUTS[0])).read() == open(os.path.join(REPO, OUTS[0])).read()
+    for o in OUTS:                                        # macros AND tables equal the committed ones
+        assert open(os.path.join(tmp_path, o)).read() == open(os.path.join(REPO, o)).read(), o
+
+
+def test_every_generator_input_is_in_the_manifest(tmp_path):
+    """--list-inputs names every artifact the generator reads; each must be hashed in paper/results/MANIFEST.json."""
+    import hashlib
+    _tree(str(tmp_path))
+    r = subprocess.run([sys.executable, "paper/make_gulls_macros.py", "--list-inputs"], cwd=str(tmp_path), capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    listed = [x for x in r.stdout.split() if x]
+    assert "paper/results/metrics.json" in listed and "validation/cascade_reproduce_result.json" in listed
+    files = json.load(open(os.path.join(REPO, "paper/results/MANIFEST.json")))["files"]
+    for rel in listed:
+        assert rel in files, f"{rel} is read by make_gulls_macros.py but not hashed in the manifest"
+        assert hashlib.sha256(open(os.path.join(REPO, rel), "rb").read()).hexdigest() == files[rel]["sha256"], rel
+    for o in OUTS:
+        assert open(os.path.join(tmp_path, o)).read() == "SENTINEL\n", "--list-inputs must write nothing"
 
 
 @pytest.mark.parametrize("case", sorted(CASES))

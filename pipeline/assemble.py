@@ -157,6 +157,12 @@ def _band_stride(ref_band: str, band: str) -> int:
 _REFIT_MAX_POINTS = 400     # subsample cap: the fit needs shape, not every epoch
 
 
+def _ref_bin(t, nb: int, window_days: float) -> np.ndarray:
+    """Reference-grid bin of each time, as pipeline.cache bins epochs (F146 epoch k -> bin k // 8). floor(t*nb/window)
+    alone is not: t = k * 15 min is inexact in binary, and 4% of the epochs would land one bin early."""
+    return np.clip(np.floor(np.asarray(t, dtype=np.float64) * (nb / window_days) + 1e-6).astype(np.int64), 0, nb - 1)
+
+
 def _pspl_refit_dchi2(t: np.ndarray, mag_true: np.ndarray, sigma: np.ndarray,
                       m_base: float, f_s: float, params: Dict[str, float],
                       return_resid: bool = False):
@@ -219,7 +225,7 @@ def _truth_bins(ref_truth, resid, cfg, band_truth=()) -> Dict[str, np.ndarray]:
     nb = cfg.truth_bins
     vis = np.zeros(nb, np.float32); ec = np.zeros(nb, np.float32)
     aa = np.zeros(nb, np.float32); ac = np.zeros(nb, np.float32)
-    to_bin = lambda t: np.clip((np.asarray(t) / cfg.window_days * nb).astype(np.int64), 0, nb - 1)
+    to_bin = lambda t: _ref_bin(t, nb, cfg.window_days)
     for t, dev, chi in band_truth:
         if len(t):
             i = to_bin(t)

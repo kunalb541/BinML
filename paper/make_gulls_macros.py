@@ -14,8 +14,6 @@ to "the recommended checkpoint" (operating point, labels, floor, sub-day, occupa
 cascade) is read from REC's blocks. R3 is the finite-source round-3 checkpoint used in comparisons.
 Usage:  python paper/make_gulls_macros.py [--allow-missing (dev only)] [--list-inputs (print inputs, write nothing)]
 """
-import argparse
-import numpy as np
 import json
 import math
 import os
@@ -77,7 +75,9 @@ def sci(x):
 
 
 # ------------------------------------------------------------------ the paper's frozen threshold
-cmd("bmlThreshold", three(json.load(open(os.path.join(HERE, "results", "metrics.json")))["headline"]["threshold"]))
+_MET = load(os.path.join(os.pardir, os.pardir, "paper", "results", "metrics.json"))        # paper/results/metrics.json
+if _MET:
+    cmd("bmlThreshold", three(_MET["headline"]["threshold"]))
 GS = load("gap_sensitivity.json")
 if GS:
     sg1 = GS["single_gap_by_length_h"]
@@ -283,6 +283,8 @@ if T:
     lines.append(f"% achieved single-lens false-alarm rate within {100 * max(ach.values()):.2f} points of each budget")
     TABLES["gulls_transfer_table.tex"] = "\n".join(lines) + "\n"
     cmd("bmlGullsBudgetSlack", f"{100 * max(ach.values()):.2f}")
+    achw = max(abs(next(a for a in M[m]["weighted"]["recall_at_matched_fa"] if abs(a["fa_target"] - mid) < 1e-9)["fa"] - mid) for m, _ in ROWS if m in M)
+    cmd("bmlGullsBudgetSlackW", f"{100 * achw:.2f}")
 
 C = load("transfer_colour_ablation.json")
 if C:
@@ -474,6 +476,7 @@ if CG:
     bu = pr["burden"]["RMDC26_1S1L_ML"]
     cmd("bmlCgSingleAlert", pct(bu["alert_frac_per_season"])); cmd("bmlCgSingleAlertDay", two(bu["alerts_per_1000_events_per_day"]))
     CG_SINGLE_ALERT = bu["alert_frac_per_season"]
+    cmd("bmlCgSingleAlertW", pct(bu["alert_frac_weighted"]))
     sp = pr["streaming_purity"]
     cmd("bmlCgPurOne", pct0(sp["planetary_prevalence_0.01"]["purity_detectable_anomaly_alerts"]))
     cmd("bmlCgPurFive", pct0(sp["planetary_prevalence_0.05"]["purity_detectable_anomaly_alerts"]))
@@ -501,24 +504,29 @@ if CG:
 RR = load(os.path.join(os.pardir, "referee_round.json"))          # validation/referee_round.json (our simulator)
 if RR:
     fl = RR["floor_sensitivity"]
+    AE = lambda x: x["all_events"]                                  # AP and F1 on every event, as completeness and purity
     for key, nm in (("0.01", "Lo"), ("0.02", "Mid"), ("0.05", "Hi")):
         x = fl[key]; fz = x["at_frozen_threshold"]
         cmd(f"bmlRefFloorPrev{nm}", pct(x["prevalence"]["population_weighted"]))
         cmd(f"bmlRefFloorComp{nm}", three(fz["completeness_k_n"][0] / fz["completeness_k_n"][1]))
         cmd(f"bmlRefFloorPur{nm}", three(fz["purity_population_weighted"]))
-        cmd(f"bmlRefFloorAp{nm}", three(x["ap"])); cmd(f"bmlRefFloorFone{nm}", three(x["macro_f1_population"]))
+        cmd(f"bmlRefFloorAp{nm}", three(AE(x)["ap"])); cmd(f"bmlRefFloorFone{nm}", three(AE(x)["macro_f1"]))
         cmd(f"bmlRefFloorCompCiL{nm}", three(fz["completeness_wilson95"][0])); cmd(f"bmlRefFloorCompCiU{nm}", three(fz["completeness_wilson95"][1]))
         cmd(f"bmlRefFloorN{nm}", f"{x['n_events']:,}")
-        cmd(f"bmlRefFloorFfr{nm}", pct(fz["false_flag_rate_nonnonpspl_population_weighted"]))
+        need(AE(x)["n"] == x["n_events"], f"floor arm {key}: all-event block does not cover every event")
     cmd("bmlRefN", f"{fl['0.02']['n_events']:,}")
-    aps = [fl[k]["ap"] for k in ("0.01", "0.02", "0.05")]
+    aps = [AE(fl[k])["ap"] for k in ("0.01", "0.02", "0.05")]
     cmd("bmlRefFloorApMin", three(min(aps))); cmd("bmlRefFloorApMax", three(max(aps)))
+    need(max(aps) - min(aps) < 0.03, "the floor arms' AP moved by 0.03 or more; the text says the ranking stays largely intact")
+    ov = RR["floor_overlap"]
+    cmd("bmlRefFloorShareLo", pct0(ov["test_f001"]["frac_shared"])); cmd("bmlRefFloorShareHi", pct0(ov["test_f005"]["frac_shared"]))
+    need(0 < ov["test_f005"]["frac_shared"] < ov["test_f001"]["frac_shared"] < 0.5, "the floor arms' overlap is no longer 'partly'")
+    cmd("bmlRefValPct", pct0(RR["threshold_selection_overlap"]["frac_threshold_selection_rows"]))
     # the directions the limits paragraph states in words
-    g = lambda k, f: f(fl[k])
-    comp = {k: g(k, lambda x: x["at_frozen_threshold"]["completeness"]) for k in fl}
-    pur = {k: g(k, lambda x: x["at_frozen_threshold"]["purity_population_weighted"]) for k in fl}
-    prev = {k: g(k, lambda x: x["prevalence"]["population_weighted"]) for k in fl}
-    f1 = {k: g(k, lambda x: x["macro_f1_population"]) for k in fl}
+    comp = {k: fl[k]["at_frozen_threshold"]["completeness"] for k in fl}
+    pur = {k: fl[k]["at_frozen_threshold"]["purity_population_weighted"] for k in fl}
+    prev = {k: fl[k]["prevalence"]["population_weighted"] for k in fl}
+    f1 = {k: AE(fl[k])["macro_f1"] for k in fl}
     need(prev["0.01"] > prev["0.02"] > prev["0.05"] and comp["0.01"] < comp["0.02"] < comp["0.05"]
          and pur["0.01"] > pur["0.02"] > pur["0.05"] and f1["0.02"] > max(f1["0.01"], f1["0.05"]),
          "floor arms no longer move in the directions the limits paragraph states")
@@ -527,136 +535,214 @@ if RR:
     need(se["identical_params"], "colour arm is not the same events as the adopted-floor arm")
     cmd("bmlRefColLabChanged", str(se["n_label_changed"]))
     for key, nm in (("test_f002", "Trained"), ("test_colour", "Audited")):
-        fz = sh[key]["at_frozen_threshold"]
+        fz = sh[key]["at_frozen_threshold"]; ae = AE(sh[key])
         cmd(f"bmlRefColComp{nm}", three(fz["completeness_k_n"][0] / fz["completeness_k_n"][1]))
         cmd(f"bmlRefColPur{nm}", three(fz["purity_population_weighted"]))
-        cmd(f"bmlRefColAp{nm}", three(sh[key]["ap"])); cmd(f"bmlRefColFone{nm}", three(sh[key]["macro_f1_population"]))
-        cmd(f"bmlRefColFonePer{nm}", three(sh[key]["f1_population"]["PeriodicVar"]))
-        cmd(f"bmlRefColFoneErupt{nm}", three(sh[key]["f1_population"]["Eruptive"]))
-        cmd(f"bmlRefColFoneNon{nm}", three(sh[key]["f1_population"]["NonPSPL"]))
-        cmd(f"bmlRefColFoneLpv{nm}", three(sh[key]["f1_population"]["LongPeriodVar"]))
-    need(all(sh["test_colour"]["f1_population"][c] < sh["test_f002"]["f1_population"][c] for c in ("PeriodicVar", "Eruptive")),
-         "audited colour photometry no longer lowers the periodic/eruptive F1 as the limits paragraph states")
-    need(abs(sh["test_colour"]["f1_population"]["LongPeriodVar"] - sh["test_f002"]["f1_population"]["LongPeriodVar"]) < 0.01,
-         "long-period F1 moved by 0.01 or more; the limits paragraph calls it essentially unchanged")
+        cmd(f"bmlRefColAp{nm}", three(ae["ap"])); cmd(f"bmlRefColFone{nm}", three(ae["macro_f1"]))
+        for c, cn in (("PeriodicVar", "Per"), ("Eruptive", "Erupt"), ("NonPSPL", "Non"), ("LongPeriodVar", "Lpv")):
+            cmd(f"bmlRefColFone{cn}{nm}", three(ae["f1"][c]))
+        cmd(f"bmlRefColPrecPer{nm}", three(ae["precision"]["PeriodicVar"])); cmd(f"bmlRefColPrecErupt{nm}", three(ae["precision"]["Eruptive"]))
+    T_, A_ = AE(sh["test_f002"]), AE(sh["test_colour"])
+    need(abs(A_["ap"] - T_["ap"]) < 0.005 and abs(sh["test_colour"]["at_frozen_threshold"]["completeness"] - sh["test_f002"]["at_frozen_threshold"]["completeness"]) < 0.01,
+         "the anomaly channel moved; the text says it barely moves")
+    need(all(A_["precision"][c] < T_["precision"][c] - 0.02 and abs(A_["recall"][c] - T_["recall"][c]) < 0.005 for c in ("PeriodicVar", "Eruptive"))
+         and abs(A_["f1"]["LongPeriodVar"] - T_["f1"]["LongPeriodVar"]) < 0.01,
+         "the colour effect is no longer 'precision, not recall' for periodic and eruptive variables with long-period unchanged")
+    from pipeline.classes import CLASS_NAMES as _CN
+    vml = lambda ae: sum(ae["confusion"][i][j] for i in (3, 4, 5) for j in (1, 2))    # variables -> PSPL or NonPSPL, weighted
+    need(vml(A_) <= vml(T_) + 1.0, "the audited photometry now sends more variables to microlensing")
+    cf = lambda ae, i, j: ae["confusion"][i][j]
+    need(cf(A_, 0, 3) > cf(T_, 0, 3) and cf(A_, 1, 5) > cf(T_, 1, 5), "flat->periodic and single-lens->eruptive calls no longer grow")
     if need("finetuned_on_train_trained" in ca and "finetuned_on_train_colour" in ca, "referee_round.json lacks the colour fine-tunes (--finetune)"):
         # first letter: calibration of the fine-tune's training events; second: of the test photometry (T trained, A audited)
         ft_ = {}
         for tr, a_ in (("finetuned_on_train_trained", "T"), ("finetuned_on_train_colour", "A")):
             for key, b_ in (("test_f002", "T"), ("test_colour", "A")):
-                ft_[a_ + b_] = ca[tr][key]
-                cmd(f"bmlRefColFtAp{a_}{b_}", three(ca[tr][key]["ap"]))
-                cmd(f"bmlRefColFtFonePer{a_}{b_}", three(ca[tr][key]["f1_population"]["PeriodicVar"]))
-        aps_ = [x["ap"] for x in ft_.values()]
+                ft_[a_ + b_] = AE(ca[tr][key])
+                cmd(f"bmlRefColFtAp{a_}{b_}", three(ft_[a_ + b_]["ap"]))
+                cmd(f"bmlRefColFtFonePer{a_}{b_}", three(ft_[a_ + b_]["f1"]["PeriodicVar"]))
+        fin_ = {}
+        for tr, a_ in (("finetuned_on_train_trained_final_epoch", "T"), ("finetuned_on_train_colour_final_epoch", "A")):
+            need(tr in ca, f"referee_round.json lacks {tr}")
+            for key, b_ in (("test_f002", "T"), ("test_colour", "A")):
+                fin_[a_ + b_] = AE(ca[tr][key])
+                cmd(f"bmlRefColFtFonePer{a_}{b_}Final", three(fin_[a_ + b_]["f1"]["PeriodicVar"]))
+        aps_ = [x["ap"] for x in list(ft_.values()) + list(fin_.values())]
         cmd("bmlRefColFtApLo", three(min(aps_))); cmd("bmlRefColFtApHi", three(max(aps_)))
-        per = lambda k: ft_[k]["f1_population"]["PeriodicVar"]
-        need(max(aps_) - min(aps_) < 0.005 and per("AA") - per("TA") > 0.02 and per("AT") < per("TT") - 0.1,
-             "colour fine-tunes no longer show AP unchanged and periodic-variable F1 tied to the training calibration")
-    st = RR["mixed_class_stream"]
-    cmd("bmlRefStreamN", f"{st['n_events']:,}")
-    cmd("bmlRefStreamAlertsDay", two(st["alerts_per_1000_events_per_day"]["population_weighted"]))
-    cmd("bmlRefStreamPurity", pct0(st["streaming_purity_nonpspl"]["population_weighted"]))
-    for c, nm in (("Flat", "Flat"), ("PSPL", "Pspl"), ("NonPSPL", "Nonpspl"), ("PeriodicVar", "Per"), ("LongPeriodVar", "Lpv"), ("Eruptive", "Erupt")):
-        cmd(f"bmlRefStreamAlert{nm}", pct(st["by_class"][c]["alert_frac_per_season"]))
-    sh_ = st["alert_share_by_class_population_weighted"]
-    cmd("bmlRefStreamShareNonpspl", pct0(sh_["NonPSPL"]))
-    cmd("bmlRefStreamSharePspl", pct0(sh_["PSPL"]))
-    cmd("bmlRefStreamPrev", pct(st["simulated_prevalence_population_weighted"]))
-    cmd("bmlRefStreamPurOne", pct0(st["at_prevalence"]["0.01"]["purity"])); cmd("bmlRefStreamPurTenth", pct0(st["at_prevalence"]["0.001"]["purity"]))
-    cmd("bmlRefStreamAlertsDayOne", two(st["at_prevalence"]["0.01"]["alerts_per_1000_events_per_day"]))
-    dm = st["pspl_alerts_from_demoted_binaries"]
-    cmd("bmlRefStreamDemotedK", str(dm["k"])); cmd("bmlRefStreamDemotedN", str(dm["n"])); cmd("bmlRefStreamDemoted", pct0(dm["population_weighted"]))
-    need(dm["k"] >= 0.8 * dm["n"] and dm["population_weighted"] >= 0.8, "single-lens stream alerts are no longer 'nearly all' demoted binaries")
-    if CG:                                     # "RMDC26's single lenses alert several times as often"
-        need(CG_SINGLE_ALERT > 3 * st["by_class"]["PSPL"]["alert_frac_per_season"],
-             "RMDC26 single-lens alert fraction is no longer several times the in-house one")
+        per = lambda d, k: d[k]["f1"]["PeriodicVar"]
+        need(max(aps_) - min(aps_) < 0.005, "the colour fine-tunes' AP now differs by 0.005 or more")
+        need(per(ft_, "AT") < per(ft_, "TT") - 0.05 and per(fin_, "AT") < per(fin_, "TT") - 0.05 and cf(ft_["AT"], 0, 3) > 3 * cf(ft_["TT"], 0, 3),
+             "the audited fine-tune no longer drops on the old photometry, at the kept and the last epoch, by calling flat sources periodic")
+        need(abs(per(ft_, "AA") - per(ft_, "TA")) > 0.02 and abs(per(fin_, "AA") - per(fin_, "TA")) < 0.01,
+             "the two fine-tunes on the audited photometry: 'differ at the kept epoch but not at the last' no longer holds")
+    for tag, st, pre in (("all", RR["mixed_class_stream"], "bmlRefStream"), ("f146", RR.get("mixed_class_stream_f146"), "bmlRefStreamF")):
+        if not need(st is not None, f"referee_round.json lacks the {tag} mixed-class stream"):
+            continue
+        cmd(f"{pre}N", f"{st['n_events']:,}")
+        cmd(f"{pre}AlertsDay", two(st["alerts_per_1000_events_per_day"]["population_weighted"]))
+        cmd(f"{pre}Purity", pct0(st["streaming_purity_nonpspl"]["population_weighted"]))
+        for c, nm in (("PSPL", "Pspl"), ("NonPSPL", "Nonpspl")):
+            cmd(f"{pre}Alert{nm}", pct(st["by_class"][c]["alert_frac_per_season"]))
+        cmd(f"{pre}AlertPsplW", pct(st["by_class"]["PSPL"]["alert_frac_population_weighted"]))
+        cmd(f"{pre}Prev", pct(st["simulated_prevalence_population_weighted"]))
+        cmd(f"{pre}PurOne", pct0(st["at_prevalence"]["0.01"]["purity"])); cmd(f"{pre}PurTenth", pct0(st["at_prevalence"]["0.001"]["purity"]))
+        dm = st["pspl_alerts_from_demoted_binaries"]; og = st["single_lens_alerts_by_origin"]
+        cmd(f"{pre}DemotedK", str(dm["k"])); cmd(f"{pre}DemotedN", str(dm["n"])); cmd(f"{pre}Demoted", pct0(dm["population_weighted"]))
+        g_ = og["generated_single_lens"]
+        cmd(f"{pre}GenK", str(g_["k"])); cmd(f"{pre}GenN", f"{g_['n']:,}"); cmd(f"{pre}GenPct", pct(g_["k"] / g_["n"]))
+        cmd(f"{pre}VarAlerts", str(sum(int(round(st["by_class"][c]["alert_frac_per_season"] * st["by_class"][c]["n"]))
+                                       for c in ("Flat", "PeriodicVar", "LongPeriodVar", "Eruptive"))))
+        need(dm["k"] >= 0.8 * dm["n"] and dm["population_weighted"] >= 0.8, f"{tag} stream: single-lens alerts are no longer 'nearly all' demoted binaries")
+        tn = st["timing_nonpspl"]
+        cmd(f"{pre}Elig", f"{tn['n_eligible']:,}"); cmd(f"{pre}Det", pct0(tn["detected_frac"]))
+        cmd(f"{pre}Prem", pct(tn["premature_frac"])); cmd(f"{pre}PremLo", pct(tn["premature_ci95"][0]))
+        cmd(f"{pre}PremHi", pct(tn["premature_ci95"][1])); cmd(f"{pre}Lag", f"{tn['median_lag_nonpremature_days']:+.1f}")
+    st = RR["mixed_class_stream"]; stf = RR.get("mixed_class_stream_f146")
+    if stf:                                    # "The colour bands do much of this work"
+        g3, g1 = st["single_lens_alerts_by_origin"]["generated_single_lens"], stf["single_lens_alerts_by_origin"]["generated_single_lens"]
+        need(stf["streaming_purity_nonpspl"]["population_weighted"] < st["streaming_purity_nonpspl"]["population_weighted"] - 0.1
+             and g1["k"] > 3 * max(g3["k"], 1), "F146 alone is no longer clearly worse than three bands in the every-class scan")
     need(all(st["by_class"][c]["alert_frac_per_season"] == 0 for c in ("Flat", "PeriodicVar", "LongPeriodVar", "Eruptive")),
-         "a flat source or variable star alerted in the mixed-class scan; the cascade paragraph says none did")
-    tn = st["timing_nonpspl"]
-    cmd("bmlRefStreamElig", f"{tn['n_eligible']:,}"); cmd("bmlRefStreamDet", pct0(tn["detected_frac"]))
-    cmd("bmlRefStreamPrem", pct(tn["premature_frac"])); cmd("bmlRefStreamPremLo", pct(tn["premature_ci95"][0]))
-    cmd("bmlRefStreamPremHi", pct(tn["premature_ci95"][1])); cmd("bmlRefStreamLag", f"{tn['median_lag_nonpremature_days']:+.1f}")
+         "a flat source or variable star alerted in the three-band scan; the cascade paragraph says none did")
     # "close to the three-band row of Table policy": the in-house eligible-binary scan, all three bands
-    mb_ = json.load(open(os.path.join(REPO, "validation", "cascade_reproduce_result.json")))["sensitivity"]["bands"]["all_three_bands"]
-    need(abs(tn["premature_frac"] - mb_["premature_rate_of_eligible"]) < 0.01 and abs(tn["median_lag_nonpremature_days"] - mb_["median_lag_non_premature_days"]) <= 1.0,
+    mb_ = (load(os.path.join(os.pardir, "cascade_reproduce_result.json")) or {"sensitivity": {"bands": {"all_three_bands": {}}}})["sensitivity"]["bands"]["all_three_bands"]
+    tn = st["timing_nonpspl"]
+    need(bool(mb_) and abs(tn["premature_frac"] - mb_["premature_rate_of_eligible"]) < 0.01 and abs(tn["median_lag_nonpremature_days"] - mb_["median_lag_non_premature_days"]) <= 1.0,
          "mixed-class timing is no longer close to the three-band row of Table policy")
-
+    sr = RR.get("single_lens_stream_recommended_f146")
+    if need(sr is not None, "referee_round.json lacks the like-for-like single-lens scan with the recommended checkpoint"):
+        cmd("bmlRefRecSingleK", str(sr["alerts_at_frozen_threshold"])); cmd("bmlRefRecSingleN", f"{sr['n_generated_single_lenses']:,}")
+        cmd("bmlRefRecSinglePct", pct(sr["alert_frac_frozen"])); cmd("bmlRefRecSingleOwnPct", pct(sr["alert_frac_own"]))
+        if CG:                                 # same checkpoint, band and threshold: RMDC26's single lenses alert several times as often
+            need(CG_SINGLE_ALERT > 2 * sr["alert_frac_frozen"], "RMDC26's single lenses no longer alert several times as often as ours (like for like)")
 # ------------------------------------------------------------------ legacy augmentation labels against the stored truth
 TI = load(os.path.join(os.pardir, "truth_relabel_impact.json"))  # validation/truth_relabel_impact.json (our simulator)
 if TI:
     R_ = TI["results"]
-    need(not R_["full_window_inconsistent"], "truth rule does not reproduce the stored labels on full windows")
+    need(not R_["full_window_inconsistent"], "truth rule does not reproduce the stored labels from the generator class on full windows")
     cmd("bmlTruthN", f"{TI['n_events']:,}"); cmd("bmlTruthReps", str(TI["reps"]))
-    fr = lambda aug, c: R_[aug]["disagree_frac_by_class"][c]
-    cmd("bmlTruthSeasonsOn", pct(fr("measured_seasons", "NonPSPL"))); cmd("bmlTruthSeasonsOff", pct(fr("measured_seasons_relabel_off", "NonPSPL")))
-    cmd("bmlTruthGapsOn", pct(fr("random_gaps", "NonPSPL"))); cmd("bmlTruthGapsOff", pct(fr("random_gaps_relabel_off", "NonPSPL")))
+    tru = R_["truncation"]
     for c, nm in (("PSPL", "Pspl"), ("LongPeriodVar", "Lpv"), ("PeriodicVar", "Per"), ("Eruptive", "Erupt")):
-        cmd(f"bmlTruthTrunc{nm}", pct(fr("truncation", c)))
-    if need("truncation_vs_prefix_rule" in R_, "truth_relabel_impact.json lacks the prefix-rule check (--onset-ref)"):
-        pr = R_["truncation_vs_prefix_rule"]
-        dp = pr["disagree_with_prefix_rule"]
-        cmd("bmlTruthTruncNonLegacy", pct(dp["legacy"])); cmd("bmlTruthTruncNonResid", pct(dp["full_season_residuals"]))
-        cmd("bmlTruthTruncNonOnset", pct(dp["floors_plus_onset_7p2"]))
-        need(dp["floors_plus_onset_0p5"] == 0, "the fixed truncation rule no longer reproduces the prefix rule at 0.5-d onsets")
-        late = pr["transitions"].get("legacy PSPL / rule NonPSPL", 0)
-        need(late > 0.5 * pr["disagree_counts"]["legacy"], "legacy truncation errors are no longer mostly late PSPL labels")
+        cmd(f"bmlTruthTrunc{nm}", pct(tru["disagree_k_by_class"][c] / tru["presentations"][c]))     # counts, rounded once
+    if need("refit_reference" in R_, "truth_relabel_impact.json lacks the refit reference (rerun the script)"):
+        RR_ = R_["refit_reference"]
+        need(RR_["full_window_reference_not_binary"] == 0, "the rebuilt-curve refit no longer reproduces the stored binary labels")
+
+        def k_(aug, prefix):                     # stable disagreements of one method with the refit reference
+            return sum(v for key, v in RR_[aug]["counts"].items() if key.startswith(prefix + " ") and "unstable" not in key)
+        def kd(aug, key):                        # one direction
+            return RR_[aug]["counts"].get(key, 0)
+        nT = RR_["truncation"]["presentations"]; nS = RR_["measured_seasons"]["presentations"]
+        leg = k_("truncation", "legacy"); late = kd("truncation", "legacy PSPL / refit NonPSPL")
+        cmd("bmlTruthTruncNonLegacy", pct(leg / nT)); cmd("bmlTruthTruncNonLate", pct0(late / leg))
+        need(0.4 <= late / leg <= 0.6, "the legacy truncation errors are no longer 'about half' late PSPL labels")
+        cmd("bmlTruthTruncNonFixed", pct(k_("truncation", "floors_onset_0p5") / nT))
+        cmd("bmlTruthTruncNonOnsetSeven", pct(k_("truncation", "floors_onset_7p2") / nT))
+        cmd("bmlTruthTruncNonResid", pct(k_("truncation", "full_season_residuals") / nT))
+        cmd("bmlTruthUnstable", pct(RR_["truncation"]["counts"].get("legacy: reference unstable", 0) / nT))
+        on = kd("measured_seasons", "legacy_relabel_on PSPL / refit NonPSPL"); off = kd("measured_seasons", "legacy_relabel_off NonPSPL / refit PSPL")
+        cmd("bmlTruthSeasonsOn", pct(on / nS)); cmd("bmlTruthSeasonsOff", pct(off / nS))
+        need(on >= 0.9 * k_("measured_seasons", "legacy_relabel_on") and off == k_("measured_seasons", "legacy_relabel_off"),
+             "the pause-relabel errors are no longer (almost) all in the directions the text states")
+        need(k_("truncation", "floors_onset_0p5") < k_("truncation", "floors_onset_7p2") < leg < k_("truncation", "full_season_residuals"),
+             "the order of the truncation rules against the refit reference changed")
 
 # ------------------------------------------------------------------ seed replicates of the recommended recipe
-# Two further training seeds of REC (same pool, recipe and code; trained after the choice). Their range is the rule the
-# text applies to every comparison between single training runs; the paired event-bootstrap intervals do not cover it.
+# Two further training seeds of REC (same pool and recipe; the seed also sets the 80/10/10 split and hence the kept
+# epoch; trained after the choice). Their range is a rough scale for every comparison between single training runs:
+# the text reads a smaller difference as unresolved and a larger one as indicative, per budget and weighting
+# (Table tab:seeds). The paired event-bootstrap intervals do not cover training noise.
 SEEDS = [REC, f"{REC}_s2", f"{REC}_s3"]
 if need(T and all(m in T["models"] for m in SEEDS), f"seed replicates {SEEDS} missing from transfer_tradeoff_all.json"):
-    M = T["models"]; PD = T["paired_differences"]["pairs"]
-    at52 = lambda blk: next(a for a in blk["recall_at_matched_fa"] if abs(a["fa_target"] - 0.052) < 1e-9)
-    rec_ = lambda m: ratio(at52(M[m])["recall_1S2L_k_n"])                               # exact counts, rounded once
-    recw_ = lambda m: at52(M[m]["weighted"])["recall_1S2L"]                             # full precision
-    recs = [rec_(m) for m in SEEDS]; recw = [recw_(m) for m in SEEDS]
-    fas = [ratio(M[m]["frozen_threshold"]["fa_1S1L_k_n"]) for m in SEEDS]
-    rng_, rngw = max(recs) - min(recs), max(recw) - min(recw)
+    M = T["models"]; PD = T["paired_differences"]["pairs"]; B3 = (budgets[0], mid, budgets[3])
+    atb = lambda blk, t: next(a for a in blk["recall_at_matched_fa"] if abs(a["fa_target"] - t) < 1e-9)
+
+    def row(m):
+        """[FA pts, R_lo, R_mid, R_hi, mean] per event (exact counts) and the same weighted (full precision)."""
+        x = M[m]; w = x["weighted"]
+        u = [100 * ratio(x["frozen_threshold"]["fa_1S1L_k_n"])] + [ratio(atb(x, t)["recall_1S2L_k_n"]) for t in B3] + [x["mean_recall_1S2L_fa_le_0p3_exact"]]
+        v = [100 * w["frozen_threshold"]["fa_1S1L"]] + [atb(w, t)["recall_1S2L"] for t in B3] + [w["mean_recall_1S2L_fa_le_0p3"]]
+        return u + v
+    V = {m: row(m) for m in SEEDS + ["ft_g08e12", "pspl5s_ctrl_g08", R3, "sched_rand_norelabel", "sched_sched_seasons"]}
+    RNG = [max(V[m][i] for m in SEEDS) - min(V[m][i] for m in SEEDS) for i in range(10)]
+    D = lambda a_, b_: [V[a_][i] - V[b_][i] for i in range(10)]
+    COMP = [("extra training (control $-$ gap aug.)", "pspl5s_ctrl_g08", "ft_g08e12"),
+            ("finite source $-$ control", R3, "pspl5s_ctrl_g08"),
+            ("measured pauses $-$ random gaps", "sched_sched_seasons", "sched_rand_norelabel")] + \
+           [(f"recommended recipe, seed {k + 1} $-$ finite source", m, R3) for k, m in enumerate(SEEDS)]
+    fmt = lambda i, v: (f"{v:+.1f}" if i in (0, 5) else f"{v:+.3f}")
+    lines = ["seed range (three seeds) & " + " & ".join((f"{v:.1f}" if i in (0, 5) else f"{v:.3f}") for i, v in enumerate(RNG)) + " \\\\"]
+    for lab_, a_, b_ in COMP:
+        d = D(a_, b_)
+        lines.append(lab_ + " & " + " & ".join(("\\textbf{%s}" % fmt(i, v)) if abs(v) > RNG[i] else fmt(i, v) for i, v in enumerate(d)) + " \\\\")
+    TABLES["gulls_seed_table.tex"] = "\n".join(lines) + "\n"
+    recs = [V[m][2] for m in SEEDS]; recw = [V[m][7] for m in SEEDS]; fas = [V[m][0] / 100 for m in SEEDS]
     cmd("bmlSeedN", str(len(SEEDS)))
     cmd("bmlSeedRecLo", three(min(recs))); cmd("bmlSeedRecHi", three(max(recs)))
     cmd("bmlSeedRecWLo", three(min(recw))); cmd("bmlSeedRecWHi", three(max(recw)))
     cmd("bmlSeedFaLo", pct(min(fas))); cmd("bmlSeedFaHi", pct(max(fas)))
-    cmd("bmlSeedRangeRec", three(rng_)); cmd("bmlSeedRangeRecW", three(rngw))
-    d_ = PD[f"{REC}_s2-{REC}"]["unweighted"]["recall_1S2L_at_0.052"]
-    cmd("bmlDiffSeedRec", three(d_["diff"])); cmd("bmlDiffSeedRecLo", three(d_["ci95"][0])); cmd("bmlDiffSeedRecHi", three(d_["ci95"][1]))
-    need(d_["ci95"][1] < 0 or d_["ci95"][0] > 0, "the seed-2 vs seed-1 event-bootstrap interval now includes zero; the text says it excludes it")
-    trail = [rec_(m) - rec_(R3) for m in SEEDS[1:]]
-    cmd("bmlSeedTrailLo", three(-max(trail))); cmd("bmlSeedTrailHi", three(-min(trail)))
-    need(max(trail) < 0 and all(abs(recw_(m) - recw_(R3)) < rngw for m in SEEDS[1:]),
-         "seeds 2-3 no longer trail the finite-source checkpoint per event and tie it weighted")
-    held = [K_["arms"]["rmdc26_gapped"]["our_heldout"]["ap"] for K_ in (load(f"gapped_threshold_{m}_seasons.json") for m in SEEDS) if K_]
+    cmd("bmlSeedRangeRec", three(RNG[2])); cmd("bmlSeedRangeRecW", three(RNG[7]))
+    for pair, nm in ((f"{REC}_s2-{REC}", ""), (f"{REC}_s3-{REC}_s2", "ThreeTwo")):
+        need(pair in PD, f"paired difference {pair} missing (add it to --pairs)")
+        d_ = PD[pair]["unweighted"]["recall_1S2L_at_0.052"]
+        cmd(f"bmlDiffSeedRec{nm}", ("+" if d_["diff"] >= 0 else "") + three(d_["diff"]))
+        cmd(f"bmlDiffSeedRec{nm}Lo", three(d_["ci95"][0])); cmd(f"bmlDiffSeedRec{nm}Hi", three(d_["ci95"][1]))
+    # "they can exclude zero (seed 2 - seed 1 ...; seed 3 - seed 2 ...)": the first pair excludes zero
+    need(PD[f"{REC}_s2-{REC}"]["unweighted"]["recall_1S2L_at_0.052"]["ci95"][1] < 0, "seed 2 - seed 1 no longer excludes zero")
+    lead = [V[m][2] - V[R3][2] for m in SEEDS]; leadw = [V[m][7] - V[R3][7] for m in SEEDS]
+    sg = lambda v: ("+" if v >= 0 else "") + three(v)
+    cmd("bmlSeedLeadLo", sg(min(lead))); cmd("bmlSeedLeadHi", sg(max(lead)))
+    cmd("bmlSeedLeadWLo", sg(min(leadw))); cmd("bmlSeedLeadWHi", sg(max(leadw)))
+    cmd("bmlSeedTrailLo", three(-max(lead[1:]))); cmd("bmlSeedTrailHi", three(-min(lead[1:])))
+    need(max(lead[1:]) < 0 and all(abs(v) < RNG[7] for v in leadw[1:]), "seeds 2-3 no longer trail the finite-source run per event and tie it weighted")
+    need(leadw[0] > RNG[7] and all(abs(v) < RNG[2] for v in lead), "'only the released seed's weighted lead exceeds the range' no longer holds")
+    # the verdicts of the seed paragraph, per budget and weighting (indices: 0 FA, 1-3 R, 4 mean; +5 weighted)
+    ex = lambda d, i: abs(d[i]) > RNG[i]
+    dt, dp, dm = D("pspl5s_ctrl_g08", "ft_g08e12"), D(R3, "pspl5s_ctrl_g08"), D("sched_sched_seasons", "sched_rand_norelabel")
+    need(all(ex(dm, i) and dm[i] > 0 for i in (1, 2, 3, 4, 6, 7, 8, 9)), "the measured pauses no longer lead in recall at every budget and in mean recall, both weightings")
+    need(ex(dt, 0) and ex(dt, 1) and ex(dt, 2) and not ex(dp, 0) and not ex(dp, 1) and not ex(dp, 2),
+         "'most of the gain in false alarms and at the low budgets is the extra training' no longer holds per event")
+    need(ex(dp, 3) and ex(dp, 4) and not ex(dt, 3) and not ex(dt, 4), "'the physics accounts for the gain at the high budget and in mean recall' no longer holds per event")
+    need(not any(ex(dp, i) for i in range(5, 10)), "the physics now resolves something weighted; the text says it resolves nothing")
+    bins = lambda m: [x["k"] / x["n"] for x in M[m]["fa_1S1L_by_rho_over_u0"]]
+    for i in range(6):
+        sr = max(bins(m)[i] for m in SEEDS) - min(bins(m)[i] for m in SEEDS)
+        drop = bins("pspl5s_ctrl_g08")[i] - bins(R3)[i]
+        need((drop > sr) == (i in (4, 5)), f"rho/|u0| bin {i}: the physics' false-alarm drop vs the seed spread no longer matches the text")
+    neff = [x["kish_n_eff"] for x in M[R3]["weighted"]["fa_1S1L_by_rho_over_u0"]]
+    cmd("bmlGullsNeffRhoMid", f"{round(neff[4], -1):.0f}"); cmd("bmlGullsNeffRhoHi", f"{round(neff[5], -1):.0f}")
+    # the recommended run is the best seed in planetary recall at every table budget (both weightings) and at its
+    # own threshold; another seed flags fewer single lenses at the frozen threshold
+    need(all(V[SEEDS[0]][i] == max(V[m][i] for m in SEEDS) for i in (1, 2, 3, 6, 7, 8)), "the released run is no longer the best seed at every table budget")
+    need(min(fas) < fas[0], "no other seed flags fewer single lenses at the frozen threshold any more")
+    # abstract: fine-tuning "raises planetary recall ... from <shipped> to <seed range>", in both weightings
+    need(V_ship_ok := (ratio(atb(M["shipped"], mid)["recall_1S2L_k_n"]) < min(recs) and atb(M["shipped"]["weighted"], mid)["recall_1S2L"] < min(recw)),
+         "a seed of the recommended recipe no longer beats the shipped weights at the 5.2% budget")
+    # "at the 5.2% budget by more for 2S2L": the weighted 2S2L lead exceeds the weighted 1S2L lead (released seed)
+    pw = PD[f"{REC}-{R3}"]["weighted"]
+    need(pw["recall_2S2L_at_0.052"]["diff"] > pw["recall_1S2L_at_0.052"]["diff"], "the weighted 2S2L lead is no longer larger than the 1S2L lead")
+    need(fas[0] - ratio(M[R3]["frozen_threshold"]["fa_1S1L_k_n"]) > 0 and fas[0] - ratio(M[R3]["frozen_threshold"]["fa_1S1L_k_n"]) < max(fas) - min(fas)
+         and all(bins(REC)[i] > bins(R3)[i] for i in range(6)), "the combined arm's extra false alarms: sign, size against the seed spread, or 'every bin' changed")
+    held, heldc, own_rc, own_rcw = [], [], [], []
+    for m in SEEDS:
+        K_ = load(f"gapped_threshold_{m}_seasons.json")
+        if K_:
+            held.append(K_["arms"]["rmdc26_gapped"]["our_heldout"]["ap"]); heldc.append(K_["arms"]["clean"]["our_heldout"]["ap"])
+            o = K_["arms"]["rmdc26_gapped"]["gulls_at_full_pool_threshold"]; own_rc.append(o)
     if need(len(held) == len(SEEDS), "a seed replicate lacks its measured-season calibration"):
-        cmd("bmlSeedHeldApLo", three(min(held))); cmd("bmlSeedHeldApHi", three(max(held)))
         K3 = load(f"gapped_threshold_{R3}_seasons.json")
-        need(min(held) >= K3["arms"]["rmdc26_gapped"]["our_heldout"]["ap"], "a seed no longer matches the finite-source checkpoint on our own held-out")
-        own = [load(f"gapped_threshold_{m}_seasons.json")["arms"]["rmdc26_gapped"]["gulls_at_full_pool_threshold"] for m in SEEDS]
-        ofa = [o["fa_1S1L_k"] / o["fa_1S1L_n"] for o in own]; orc = [o["recall_1S2L_k"] / o["recall_1S2L_n"] for o in own]
+        cmd("bmlSeedHeldApLo", three(min(held))); cmd("bmlSeedHeldApHi", three(max(held)))
+        cmd("bmlSeedHeldApCleanLo", three(min(heldc))); cmd("bmlSeedHeldApCleanHi", three(max(heldc)))
+        need(min(held) >= K3["arms"]["rmdc26_gapped"]["our_heldout"]["ap"] and max(heldc) <= K3["arms"]["clean"]["our_heldout"]["ap"] + 5e-4,
+             "the seeds no longer 'tie or exceed' the finite-source run with pauses and sit 'at or just below' it clean")
+        ofa = [o["fa_1S1L_k"] / o["fa_1S1L_n"] for o in own_rc]; orc = [o["recall_1S2L_k"] / o["recall_1S2L_n"] for o in own_rc]
         cmd("bmlSeedOwnFaLo", pct(min(ofa))); cmd("bmlSeedOwnFaHi", pct(max(ofa)))
         cmd("bmlSeedOwnRecLo", three(min(orc))); cmd("bmlSeedOwnRecHi", three(max(orc)))
-    # the verdicts the text draws with this rule (difference of single runs vs the seed range, same weighting)
-    dif = lambda pair, wt: PD[pair][wt]["recall_1S2L_at_0.052"]["diff"]
-    need(dif("pspl5s_ctrl_g08-ft_g08e12", "unweighted") > rng_ and dif("pspl5s_ctrl_g08-ft_g08e12", "weighted") > rngw,
-         "the extra-training gain no longer exceeds the seed range")
-    need(dif("sched_sched_seasons-sched_rand_norelabel", "unweighted") > rng_ and dif("sched_sched_seasons-sched_rand_norelabel", "weighted") > rngw,
-         "the measured-pause gain no longer exceeds the seed range")
-    need(abs(dif("fspl5s_g08-pspl5s_ctrl_g08", "unweighted")) < rng_ and abs(dif("fspl5s_g08-pspl5s_ctrl_g08", "weighted")) < rngw,
-         "the physics recall gain now exceeds the seed range; the text calls it unresolved")
-    bins = lambda m: [x["k"] / x["n"] for x in M[m]["fa_1S1L_by_rho_over_u0"]]
-    for i in (4, 5):                                                                    # rho/|u0| 1-3 and > 3
-        sr = max(bins(m)[i] for m in SEEDS) - min(bins(m)[i] for m in SEEDS)
-        need(bins("pspl5s_ctrl_g08")[i] - bins(R3)[i] > sr, f"the physics false-alarm drop in rho/|u0| bin {i} no longer exceeds the seed range")
-    cmd("bmlSeedBinRangeMax", three(max(max(bins(m)[i] for m in SEEDS) - min(bins(m)[i] for m in SEEDS) for i in (4, 5))))
-    need(recs[0] == max(recs) and recw[0] == max(recw), "the recommended run is no longer the best of its seeds in both weightings")
-    fa_rng = max(fas) - min(fas)
-    faw = [M[m]["weighted"]["frozen_threshold"]["fa_1S1L"] for m in SEEDS]
-    need(fas[0] - ratio(M[R3]["frozen_threshold"]["fa_1S1L_k_n"]) < fa_rng, "the combined arm's extra false alarms now exceed the seed range")
-    need(abs(PD["fspl5s_g08-pspl5s_ctrl_g08"]["weighted"]["fa_frozen"]["diff"]) < max(faw) - min(faw) and
-         abs(dif("fspl5s_g08-pspl5s_ctrl_g08", "weighted")) < rngw, "the weighted physics differences now exceed the seed range")
-    at_ = lambda m, t: ratio(next(a for a in M[m]["recall_at_matched_fa"] if abs(a["fa_target"] - t) < 1e-9)["recall_1S2L_k_n"])
-    seed_rng_min = min(max(at_(m, t) for m in SEEDS) - min(at_(m, t) for m in SEEDS) for t in (0.02, 0.052, 0.117))
-    pool = max(abs(at_("sched_rand", t) - at_("ft_g08e12", t)) for t in (0.02, 0.052, 0.117))
-    need(pool < seed_rng_min, "the pool spread is no longer within the seed range at every budget")
+        ow = [M[m]["at_own_calibrated_threshold"]["recall_1S2L"]["weighted"] for m in SEEDS]
+        need(orc[0] == max(orc) and ow[0] == max(ow), "the released run is no longer the best seed at its own threshold")
+    # the pool spread (two runs of one recipe on different pools) is within the seed range at every table budget
+    pool = [abs(ratio(atb(M["sched_rand"], t)["recall_1S2L_k_n"]) - ratio(atb(M["ft_g08e12"], t)["recall_1S2L_k_n"])) for t in B3]
+    need(all(pool[k] < RNG[1 + k] for k in range(3)), "the pool spread is no longer within the seed range at every budget")
 
 # ------------------------------------------------------------------ write everything at once, only now
 names = [x.split("}")[0].split("\\")[-1] for x in L]

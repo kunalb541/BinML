@@ -100,9 +100,8 @@ Per-class F1 (population-weighted, selection-corrected):
 - **Cascade ablation:** the matched 400-event comparison is an exploratory risk–coverage curve.
   Its thresholds and paired outcomes were selected on the same events, so its conditional
   McNemar values are descriptive and do not support confirmatory population-level inference.
-- **Streaming scope:** the prefix scan contains eligible binaries only and reuses a threshold
-  selected on complete seasons. It measures conditional detection timing, not sequential false
-  alerts, streaming purity, or broker workload on Flat/PSPL/variable contaminants.
+- **Streaming scope:** the 1,000-event prefix scan contains eligible binaries only and measures conditional
+  detection timing. An every-class scan of the same two shards (`validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: STREAMPLACE The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested.
 - **Stress testing:** the full suite contains 14.9 million events, but the reported macro-F1
   reproduction applies to its **4.5-million-event same-prior subset**. Separate deliberately
   out-of-distribution arms expose substantial failures; they are diagnostics, not evidence of
@@ -236,11 +235,12 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   RMDC26 also guided the diagnosis and the choice of this checkpoint, so these numbers are optimistic for it. Under our own label policy 44-46% of the selected RMDC26 planetary
   events carry no anomaly the policy would claim within one season; on those with one, recall at 0.956
   is 0.41 / 0.48. The shipped weights are unchanged so that the submitted numbers stay exact. Full
-  account, including what did not work and what two verification passes corrected, in
+  account, including what did not work and what three verification passes corrected, in
   [`paper/REVISION.md`](paper/REVISION.md) §1½, [`docs/VERIFICATION_2026-09-11.md`](docs/VERIFICATION_2026-09-11.md)
-  and [`docs/VERIFICATION_2026-09-12.md`](docs/VERIFICATION_2026-09-12.md); every number regenerates
-  from the scripts under `validation/gulls/` (from a clone: `gulls_summary_tables.py --scores
-  validation/gulls/rmdc26_scores.csv.gz`).
+  [`docs/VERIFICATION_2026-09-12.md`](docs/VERIFICATION_2026-09-12.md) and
+  [`docs/VERIFICATION_2026-09-12b.md`](docs/VERIFICATION_2026-09-12b.md); every number regenerates
+  from the scripts under `validation/gulls/` (from a clone, without the curve cache: the `command_from_clone` field of
+  `validation/gulls/transfer_tradeoff_all.json` is the exact `gulls_summary_tables.py --scores` invocation).
 - **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
   faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
   sub-day tE (few epochs on the peak).
@@ -252,8 +252,7 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   simulator's F087 and F213 zeropoints are optimistic by about 0.10 and 0.14 mag, respectively;
   its F087 saturation limit was carried from a longer exposure and is too faint (at equal exposure
   F087 saturates ~1.2 mag brighter than F146, not fainter), and its colour-band
-  background ratios do not reproduce the published thermal backgrounds. The effect on contaminant
-  rejection is unquantified, and the released model has not been retrained with corrected values.
+  background ratios do not reproduce the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750). The released model has not been retrained with corrected values.
 - **Provide `m_base_ref`.** The model input is baseline-relative; give the F146 quiescent
   magnitude when you have it (a catalogue value). The faint-tail estimate is only reliable for
   short, well-sampled events.

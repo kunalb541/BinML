@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased — third verification of the revision work (2026-09-13)
+
+Seven verifiers, seven adversarial checkers and a completeness critic re-checked everything added since the second
+pass (record: `docs/VERIFICATION_2026-09-12b.md`). What changed:
+- **Seed rule restated.** The three seeds of the recommended recipe are a rough scale, not a test (two runs of one recipe
+  exceed a three-run range about a third of the time), applied per budget and weighting in a new table (Table tab:seeds).
+  The first version's verdicts were partly wrong: the released run's weighted lead over `ft_fspl5s_g08.pt` (0.024) does
+  exceed the weighted range (0.022), and the extra training does not lead at every budget. Now: the measured pauses lead
+  at every budget in both weightings; the extra training carries false alarms and the low budgets, the finite-source
+  physics the 11.7% budget, mean recall and the largest rho/|u0| bins, per event; weighted the physics resolves nothing;
+  the recommended recipe's lead is not established. "Best of three seeds" narrowed to planetary recall.
+- **Truth-label measurements redone against the generator's own rule** (a single-lens refit on the surviving epochs of
+  each binary's rebuilt noise-free curve). The first measurement used the first-detectable onset as reference, which the
+  fixed truncation rule matches by construction; now: released labels wrong for 10.8% of truncated binaries, the fixed
+  rule 2.4% with the half-day onset; pause relabel 9.4% (was 10.5%, both directions), relabel off 2.5% (was 1.4%); LPV
+  16.3% (was 16.4%, double rounding). Truth binning fixed (4% of epochs one bin early); mixing truth and no-truth
+  caches now refused; truth relabelling refuses a cache made at another floor and warns about the 7.2-d onset.
+- **Referee round:** the floor arms are partly overlapping draws (a fifth / a twentieth of events shared), not
+  independent; shards 90-91 are held-out-pool shards with ~15% threshold-selection rows; AP and F1 now on every event;
+  the colour effect is lower variable-class precision (more flat sources called periodic), not worse rejection of
+  variables; the colour fine-tunes are single runs and support only the collapse on mismatched photometry; the
+  every-class stream also run with F146 only; single-lens stream alerts split into generated single lenses and
+  demoted binaries; per-event inputs archived in `validation/referee_round_archive/`.
+- **Paper:** stale Table 5 note (the Paczynski fit is at full cadence), a fourth contribution in the Introduction,
+  within-season pauses in the list of schedule differences, the non-monotone onset partly numerical, the abstract
+  and Conclusion no longer call the three-band scan "the same way", weightings and units labelled in the RMDC26 alert
+  burden, "no deployed operating threshold", detection comparison flagged as mixing checkpoint and simulator.
+- CI and tooling: the paper-build workflow checks both macro files; generator inputs all go through `load()` and are
+  checked against the manifest by a test; fail-closed tests now perturb values, not only delete keys.
+
 ## Unreleased — referee-round items, seed replicates, RMDC26 section merged (2026-09-12, afternoon)
 
 - **Referee round on our own simulator** (`validation/referee_round_local.py` -> `validation/referee_round.json`;

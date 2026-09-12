@@ -37,17 +37,23 @@ def test_truth_bins_reproduce_the_label_statistics():
 
 
 def test_full_window_truth_reproduces_every_label():
-    """With every bin observed the truth rule must give back the label the generator assigned (the check that
-    caught vis_amp being F146-only while the label rule takes the maximum over bands)."""
+    """With every bin observed the truth rule, started from the GENERATOR class, must give back the label the
+    generator assigned (the check that caught vis_amp being F146-only while the label rule takes the maximum over
+    bands). Starting from the stored label instead could not catch a rule that fails to demote: the rule only
+    ever demotes, so an identity function would pass."""
+    from pipeline.classes import CLASS_NAMES
     from pipeline.train import _truth_relabel
     full = np.ones(864, bool)
+    demoted = 0
     for c in ("Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"):
-        for sd in range(12):
+        for sd in range(40):
             ev = simulate_event(c, np.random.default_rng(100 + sd), CFG)
             if ev is None:
                 continue
             t = ev.truth; tj = (t["vis_amp"], t["anom_amp"], t["anom_chi2"], t["event_chi2"])
-            assert _truth_relabel(ev.label_index, full, tj) == ev.label_index, (c, sd, ev.label)
+            assert _truth_relabel(CLASS_NAMES.index(c), full, tj) == ev.label_index, (c, sd, ev.label)
+            demoted += CLASS_NAMES.index(c) != ev.label_index
+    assert demoted > 0                                                              # the demotion branches were exercised
 
 
 def _out(nb=864):
@@ -84,7 +90,8 @@ def test_gaps_and_truncation_use_truth():
                        relabel_anomaly=False) == I_NON
     sched2 = np.zeros(nb, bool); sched2[100:108] = True
     assert _apply_gaps(_out(), I_NON, np.random.default_rng(0), schedule=sched2, truth=(vis, aa, ac)) == I_NON
-    # truncation: find a draw that cuts before bin 600 and one after
+    # truncation with no onset recorded (no params): the fallback to the full-season residuals; the onset rule
+    # itself is test_truncation_takes_the_anomaly_from_the_onset_not_the_full_season_residuals
     labs = {}
     for s in range(200):
         o = _out(); lab = _apply_truncation(o, I_NON, np.random.default_rng(s), truth=(vis, aa, ac))
@@ -144,3 +151,29 @@ def test_truncation_takes_the_anomaly_from_the_onset_not_the_full_season_residua
         o = _out(); f = float(np.random.default_rng(s).uniform(0.03, 1.0))
         if f * 864 < 690:
             assert _apply_truncation(o, I_NON, np.random.default_rng(s), params, pf_idx, truth=(quiet, aa, ac)) == I_FLAT
+
+
+def test_truth_bins_use_the_cache_grid():
+    """Truth bin k must hold exactly the reference epochs the cache pools into bin k (F146 epochs 8k..8k+7); the first
+    implementation's float floor sent 279 of 6,912 epochs one bin early. Colour epochs fall in the bin containing them."""
+    from pipeline.assemble import _epochs, _ref_bin
+    t = _epochs("F146", 72.0)
+    assert t.size == 6912
+    assert np.array_equal(_ref_bin(t, 864, 72.0), np.arange(6912) // 8)
+    tc = _epochs("F087", 72.0)
+    assert np.array_equal(_ref_bin(tc, 864, 72.0), (np.arange(tc.size) * 24) // 8)
+
+
+def test_memmap_refuses_to_mix_truth_and_no_truth_caches(tmp_path):
+    """Mixing caches with and without truth would leave all-zero truth rows that truth relabelling turns into Flat."""
+    import h5py
+    from pipeline.to_memmap import _check_truth_consistent
+    a, b = str(tmp_path / "a.h5"), str(tmp_path / "b.h5")
+    with h5py.File(a, "w") as f:
+        f.create_group("truth")
+    with h5py.File(b, "w") as f:
+        f.attrs["n_events"] = 0
+    _check_truth_consistent([a, a])
+    _check_truth_consistent([b, b])
+    with pytest.raises(ValueError, match="truth"):
+        _check_truth_consistent([a, b])

@@ -22,6 +22,8 @@ From a clone (no curve cache, no RMDC26 metadata): --scores validation/gulls/rmd
 labels, rho, u0 and season from the committed per-event table; name=value pairs then name its COLUMNS:
   python validation/gulls/gulls_summary_tables.py --scores validation/gulls/rmdc26_scores.csv.gz \\
       --models shipped=shipped ft_g08e12=ft_g08e12 fspl5s_g08=fspl5s_g08 --f146 fspl5s_g08=fspl5s_g08_f146only --by-season
+The committed transfer_tradeoff_all.json records the exact invocation that regenerates it from a clone
+(command_from_clone: every model, the F146-only columns, the pairs and the bootstrap size).
 """
 from __future__ import annotations
 
@@ -134,7 +136,8 @@ def summarise_weighted(p, lab, ratio, w, te):
     wf = lambda sel, t: float(w[sel][p[sel] >= t].sum() / w[sel].sum()) if sel.any() else None
     out = {"frozen_threshold": {"fa_1S1L": wf(s1, FROZEN), "recall_1S2L": wf(s2, FROZEN), "recall_2S2L": wf(s3, FROZEN)},
            "fa_1S1L_by_rho_over_u0": [{"bin": [lo, None if hi == float("inf") else hi],
-                                       "fa": wf(s1 & (ratio >= lo) & (ratio < hi), FROZEN)} for lo, hi in BINS],
+                                       "fa": wf(s1 & (ratio >= lo) & (ratio < hi), FROZEN),
+                                       "kish_n_eff": _kish(w[s1 & (ratio >= lo) & (ratio < hi)])} for lo, hi in BINS],
            "recall_at_matched_fa": [], "mean_recall_1S2L_fa_le_0p3": float(_trapz(r2[o][k], fa[o][k]) / 0.3),
            "mean_recall_2S2L_fa_le_0p3": float(_trapz(r3[o][k], fa[o][k]) / 0.3)}
     for tgt in BUDGETS:
@@ -147,6 +150,11 @@ def summarise_weighted(p, lab, ratio, w, te):
         out["fa_1S1L_by_tE"].append({"tE_days": [lo, hi], "n": int(sel.sum()), "fa_weighted": wf(sel, FROZEN),
                                      "fa_unweighted": float((p[sel] >= FROZEN).mean()) if sel.any() else None})
     return out
+
+
+def _kish(ww):
+    """Kish effective sample size of a weighted subsample (sum w)^2 / sum w^2."""
+    return float(ww.sum() ** 2 / (ww ** 2).sum()) if ww.size else 0.0
 
 
 def _point(p, lab, w, budgets=(0.02, 0.052, 0.117)):
@@ -249,6 +257,12 @@ def main(argv=None):
         P = {name: np.array([d[i][1] for i in common]) for name, d in models.items()}
         trade["paired_differences"] = paired_bootstrap(P, lab, w, [tuple(x.split(":", 1)) for x in args.pairs], args.boot, 20260912)
     trade["command"] = " ".join(sys.argv)
+    # the same reduction from the committed per-event table alone (no curve cache, no RMDC26 metadata): every
+    # checkpoint is a column of rmdc26_scores.csv.gz named as here, its F146-only run as <name>_f146only
+    trade["command_from_clone"] = ("validation/gulls/gulls_summary_tables.py --scores validation/gulls/rmdc26_scores.csv.gz --models "
+                                   + " ".join(f"{n}={n}" for n in models) + (" --f146 " + " ".join(f"{n}={n}_f146only" for n in f146) if f146 else "")
+                                   + (" --by-season" if args.by_season else "") + (" --pairs " + " ".join(args.pairs) if args.pairs else "")
+                                   + f" --boot {args.boot} --out-dir validation/gulls")
     json.dump(trade, open(os.path.join(args.out_dir, "transfer_tradeoff_all.json"), "w"), indent=1)
     print(f"matched dense events: {len(common)}")
     print(f"{'model':12s} {'FA@frozen':>9} {'rec 1S2L':>9} {'rec 2S2L':>9} {'rec@5.2%FA':>11} {'mean rec<=0.3':>13}   FA by rho/|u0| bins")

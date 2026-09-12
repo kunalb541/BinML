@@ -32,8 +32,7 @@ approximately 12-min F146 sampling, 66-s exposures, staggered colour visits, and
 An audit against the current calibration also found F087/F213 zeropoints optimistic by about
 0.10/0.14 mag, an F087 saturation limit carried from a longer exposure (too faint: at equal
 exposure F087 saturates ~1.2 mag brighter than F146), and colour-band background
-ratios inconsistent with the published thermal backgrounds. The resulting effect on contaminant
-rejection is unquantified; the checkpoint has not been retrained with corrected photometry.
+ratios inconsistent with the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750). The released model has not been retrained with corrected values.
 
 ## Evaluation
 The evaluation pool contains 450,589 events: 90,117 fix the operating threshold and the
@@ -50,9 +49,8 @@ planetary perturbation. The matched 400-event cascade comparison is exploratory 
 thresholds and outcomes use the same events, so its conditional McNemar values are not
 confirmatory population-level inference.
 
-The prefix scan contains only already-eligible binaries and uses the complete-season operating
-threshold. It does not measure repeated-score false alerts, streaming purity, or alert burden on
-Flat, PSPL, demoted-binary, and variable-star prefixes. A repeat on RMDC26 with single lenses included
+The 1,000-event prefix scan contains only already-eligible binaries. An every-class scan of the same two shards (`validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: STREAMPLACE The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested.
+A repeat on RMDC26 with single lenses included
 (`validation/gulls/cascade_gulls.json`; recommended gap-aware checkpoint, F146 only) measures the
 single-lens part: 6.2% of single lenses raise an alert at some point in the season at the frozen threshold
 (3.2% at 0.956), so if 1% of events were planetary about one alert in twenty would come from a claimable

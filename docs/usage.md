@@ -58,8 +58,9 @@ r = clf.predict(t146, m146, m_base_ref=22.1)
 `predict_evolution` returns probability traces as a season is progressively revealed; it does not
 implement an alert threshold, persistence rule, or broker. Its default `n_steps=16` samples every
 4.5 days. The paper's 1.6% premature-crossing result instead used 144 half-day cuts, a frozen
-threshold, and a separate event-level reduction. That scan contains eligible binaries only, so it
-does not establish streaming purity or false-alert burden on contaminants:
+threshold, and a separate event-level reduction. That scan contains eligible binaries only; the
+alert burden over every class is a separate scan (paper §4, `validation/referee_round.json`), on our simulator
+and at the complete-season threshold:
 
 ```python
 days, probs = clf.predict_evolution({"F146": (t146, m146)}, m_base_ref=22.1, n_steps=144)

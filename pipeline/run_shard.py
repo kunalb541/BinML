@@ -362,6 +362,9 @@ def main(argv=None) -> int:
     if args.min_amplitude_mag is not None:
         import dataclasses
         cfg = dataclasses.replace(cfg, min_amplitude_mag=float(args.min_amplitude_mag))
+    if args.truth_bins and (args.onset_resolution_days is None or args.onset_resolution_days > 0.5):
+        print("WARNING: --truth-bins without --onset-resolution-days 0.5: truncated binaries will be relabelled by the "
+              "legacy 7.2-day onset (pipeline.train._apply_truncation keeps the recorded onset for the anomaly)", flush=True)
     if args.truth_bins:
         import dataclasses
         cfg = dataclasses.replace(cfg, store_truth_bins=True)

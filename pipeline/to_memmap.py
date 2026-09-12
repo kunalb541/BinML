@@ -62,6 +62,19 @@ def _copy_truth(f, truth_mm: dict, out_dir: str, n_out: int, src, dst) -> None:
         truth_mm[k][dst] = a[:][src]
 
 
+def _check_truth_consistent(paths) -> None:
+    """Refuse to mix caches with and without per-bin truth: _copy_truth would leave all-zero truth rows for the
+    events of the truth-less caches while meta.json advertises truth, and pipeline.train --truth-relabel auto
+    would then relabel every augmented presentation of those events Flat (vis_amp 0 < floor)."""
+    has = {}
+    for p in paths:
+        with h5py.File(p, "r") as f:
+            has[p] = "truth" in f
+    if any(has.values()) and not all(has.values()):
+        raise ValueError("some caches carry truth bins and others do not: "
+                         + ", ".join(f"{os.path.basename(p)}={'truth' if v else 'no truth'}" for p, v in has.items()))
+
+
 def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720) -> dict:
     os.makedirs(out_dir, exist_ok=True)
     paths = sorted(cache_paths)
@@ -70,6 +83,7 @@ def convert(cache_paths, out_dir: str, max_events: int = 0, seed: int = 20260720
     for p in paths:
         with h5py.File(p, "r") as f:
             counts.append(int(f.attrs["n_events"]))
+    _check_truth_consistent(paths)
     total = sum(counts)
     n_out = min(max_events, total) if max_events else total
 
@@ -185,6 +199,7 @@ def convert_selected(cache_paths, keep_masks, out_dir: str, seed: int = 20260721
         m = np.asarray(keep_masks[p], dtype=bool)
         assert m.shape == (counts[-1],), f"mask/shard length mismatch for {p}"
         keeps.append(m)
+    _check_truth_consistent(paths)
     n_out = int(sum(int(m.sum()) for m in keeps))
 
     rng = np.random.default_rng(seed)
