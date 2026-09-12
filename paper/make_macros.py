@@ -5,6 +5,8 @@ Every number in paper.tex is a \\bml* macro defined here, so the manuscript can 
 from the evaluation artifact. Run after make_figures.py:  python make_macros.py
 """
 import json, os
+
+import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 cn = json.load(open(os.path.join(HERE, "canonical_numbers.json")))
@@ -186,14 +188,58 @@ cmd("bmlStressLongp", three(sr["longp_per_recall"]))
 cmd("bmlStressShortte", three(sr["shortte_pspl_recall"]))
 cmd("bmlStressFaintPspl", three(sr["faint_pspl_recall"]))
 cmd("bmlStressFaintPrec", three(sr["faint_np_prec"]))
+# The suite above was scored with the STAGE-5 checkpoint (aws/ud_bineval.sh), the released model's predecessor.
+# validation/stress_rescore_local.py regenerates the first shards of each quoted tier with the suite's seeds and
+# scores the same events with stage 5 and with the released checkpoint (third verification, 2026-09-13).
+_srl_path = os.path.join(os.path.dirname(HERE), "validation", "stress_rescore_local.json")
+if not os.path.exists(_srl_path):
+    raise SystemExit(f"FATAL: {_srl_path} missing; run validation/stress_rescore_local.py")
+_srl = json.load(open(_srl_path))
+_q = _srl["quoted"]
+cmd("bmlStressRelMacroF", three(_q["natural_macro_f1"]["subset_released"]))
+cmd("bmlStressFiveSubMacroF", three(_q["natural_macro_f1"]["subset_stage5"]))
+cmd("bmlStressSubNat", f"{_srl['subset']['natural']['released']['n']:,}")
+cmd("bmlStressSubN", f"{sum(v['released']['n'] for v in _srl['subset'].values()):,}")
+for _k, _nm in (("natural_np_recall", "NatNp"), ("natural_np_prec", "NatNpPrec"), ("planetary_np_recall", "PlanetNp"),
+                ("planetary_np_prec", "PlanetPrec"), ("widesep_np_recall", "Widesep"), ("longp_per_recall", "Longp"),
+                ("shortte_pspl_recall", "Shortte"), ("faint_pspl_recall", "FaintPspl"), ("faint_np_prec", "FaintPrec")):
+    cmd(f"bmlStressRel{_nm}", three(_q[_k]["subset_released"]))
+    cmd(f"bmlStressFiveSub{_nm}", three(_q[_k]["subset_stage5"]))
+    cmd(f"bmlStressRel{_nm}N", f"{_q[_k]['n_subset']:,}")
+# how well the regenerated subset stands in for the suite: stage 5 on the subset vs stage 5 on the suite
+_dev = [abs(_q[k]["subset_stage5"] - _q[k]["suite_stage5"]) for k in _q]
+cmd("bmlStressSubDiffMax", three(max(_dev)))
+cmd("bmlStressSubDiffMed", three(float(np.median(_dev))))
+# PSPL recall by generator class: the suite's per-label PSPL recalls mix swept single lenses with demoted binaries
+for _t, _nm in (("oor_pspl_shortte", "Shortte"), ("oor_flat_faint", "Faint")):
+    _g = {c: _srl["subset"][_t][c]["pspl_label_by_generator_class"] for c in ("released", "stage5")}
+    cmd(f"bmlStressRel{_nm}Single", three(_g["released"]["single_lenses"]["recall"]))
+    cmd(f"bmlStressFiveSub{_nm}Single", three(_g["stage5"]["single_lenses"]["recall"]))
+    cmd(f"bmlStressRel{_nm}SingleN", f"{_g['released']['single_lenses']['n']:,}")
+    cmd(f"bmlStressRel{_nm}Demoted", three(_g["released"]["demoted_binaries"]["recall"]))
+    cmd(f"bmlStressRel{_nm}DemotedN", f"{_g['released']['demoted_binaries']['n']:,}")
+    cmd(f"bmlStress{_nm}DemotedShare", f"{100 * _g['released']['demoted_binaries']['weighted_share_of_label']:.0f}")
+# anomaly calls: weighted prevalence and false-positive rate, and precision at the natural prevalence (prior shift)
+_pn = _srl["precision_at_natural_prevalence"]
+cmd("bmlStressNatPrev", f"{100 * _pn['natural_prevalence_w']:.1f}")
+for _t, _nm in (("natural", "Nat"), ("planetary", "Planet"), ("oor_flat_faint", "Faint"), ("oor_np_widesep", "Widesep")):
+    _r = _srl["subset"][_t]["released"]["nonpspl_rates"]
+    cmd(f"bmlStress{_nm}PrevW", f"{100 * _r['prevalence_w']:.1f}")
+    cmd(f"bmlStressRel{_nm}Fpr", f"{100 * _r['fpr_w']:.1f}")
+    if _t in _pn:
+        cmd(f"bmlStressRel{_nm}PrecNat", three(_pn[_t]["released"]))
 # Support behind each quoted OOR number = the swept class's per-class n in that regime, read from
 # the stress report itself. The regime TOTALS (~82k) are mostly in-distribution filler: the OOR
 # shard mix had a duplicate-key bug (run_shard.py) that left the swept class at 500-1,000 per
-# shard instead of 9,000, so the recalls rest on far fewer events than the totals suggest.
+# shard instead of 9,000, so the recalls rest on far fewer events than the totals suggest. The
+# per-label PSPL recalls also mix swept single lenses with demoted binaries (run_shard.py comment);
+# the paper quotes the single-lens split from stress_rescore_local.json.
 _srep = json.load(open(os.path.join(HERE, "results", "stress_report.json")))
 _regs = _srep.get("regimes") or _srep
 def _swept_n(regime, cls):
     return int(_regs[regime]["per_class"][cls]["n"])
+cmd("bmlStressNatNpN", f"{_swept_n('natural', 'NonPSPL'):,}")
+cmd("bmlStressPlanetNpN", f"{_swept_n('planetary', 'NonPSPL'):,}")
 cmd("bmlStressWidesepN", f"{_swept_n('oor_np_widesep', 'NonPSPL'):,}")
 cmd("bmlStressLongpN", f"{_swept_n('oor_per_longp', 'PeriodicVar'):,}")
 cmd("bmlStressShortteN", f"{_swept_n('oor_pspl_shortte', 'PSPL'):,}")
@@ -379,6 +425,10 @@ cmd("bmlTrainDevice", ia["train_device"])
 cmd("bmlTrainEps", f"{ia['train_events_per_sec']:,}")
 cmd("bmlTrainBatch", str(ia["train_batch"]))
 cmd("bmlTrainHours", str(ia["train_hours"]))
+cmd("bmlTrainStages", str(ia["train_stages"]))
+cmd("bmlTrainFinalEvents", f"{ia['train_final_stage_events'] / 1e6:.1f}")
+cmd("bmlTrainBaseEvents", f"{ia['train_base_events']:,}")
+cmd("bmlTrainBatchBench", str(ia["train_batch_benchmark"]))
 cmd("bmlTrainEpochs", str(ia["train_epochs_effective"]))
 
 sl = cn["slices"]

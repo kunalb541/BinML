@@ -34,6 +34,16 @@ recipe as `fspl5s_seasons_g08`; only `--seed` differs (20260910, 20260911 agains
 1c4234f-dirty (s3; scored on RMDC26 at fa91bc7-dirty); `pipeline/train.py` differs between those commits only in
 comments and truth-gated branches that caches without truth bins never enter.
 
+Which checkpoint scored what (2026-09-13, from the third verification): the 14.9M-event stress suite
+(`paper/results/stress_report.json`) was scored with the stage-5 checkpoint (`aws/ud_bineval.sh`,
+`v5runs/binml_v5_stage5.pt`, sha256 4e7a5a85...), not the released `binml.pt` (= stage 6, 897a9aec...);
+`validation/stress_rescore_local.py` re-scores regenerated shards of the quoted tiers with both. The frozen
+evaluation arrays (`paper/results/`) are stage 6 (`meta.json`). The pre-RMDC26 artifacts that record no checkpoint
+hash (`baselines_result.json`, `gap_matched_result.json`, `latency_gaps_result.json`, `prevalence_result.json`,
+`cadence_result.json`, `cascade_events.json`) were all committed on or after 2026-08-04, after stage 6 shipped
+(2026-07-26), so stage 6 is likely but not recorded; `prevalence_result.json` is computed from the stage-6 frozen
+arrays.
+
 Label-policy fragility, measured (2026-09-13, `validation/truth_relabel_impact.json`): rebuilding the 858 binaries of
 the truth shard and refitting the full window, 5 give a different anomaly decision when the refit's seed is perturbed
 at the 1e-7 level (in one, dchi2 is 72,931 at the generator's seed and 0.7 at a perturbed one, so a single-lens model

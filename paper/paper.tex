@@ -863,11 +863,14 @@ going to \texttt{NonPSPL} and \texttt{PeriodicVar}. The remedy is an augmentatio
 blanking one to eight contiguous runs of 1--12~h in every band during a 12-epoch warm-start fine-tune of
 the shipped weights raises held-out average precision under the measured pauses from
 $\bmlGapApShipped$ to $\bmlGapApRand$, while clean-data average precision falls only from
-$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does better still,
+$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does at least as well,
 provided they are the right pauses: drawing one of RMDC26's six measured seasons per training example gives
 $\bmlGapApSeasons$ under the measured pauses against $\bmlGapApRandNorelabel$ for random gaps, with clean
 average precision $\bmlGapApCleanSeasons$ against $\bmlGapApCleanRandNorelabel$, whereas training on a single season's
-pauses scores only $\bmlGapApFirstSeason$ across the six seasons, its own included. Both schedule arms
+pauses scores only $\bmlGapApFirstSeason$ across the six seasons, its own included. The first two
+differences are smaller than the spread of held-out average precision across three training seeds of one
+recipe ($\bmlSeedHeldApRange$, \S\ref{sec:gulls:results}), so on our own seasons the measured and random pauses
+are not separated; on RMDC26 the measured pauses lead by more than that seed range. Both schedule arms
 train with the caustic-in-gap relabel off. That rule relabels a binary as \texttt{PSPL} when the bins
 around its recorded onset are blanked, but the onset records when the anomaly first becomes detectable,
 not where the caustic is; with a fixed mask and the legacy 7.2-day onset grid it made
@@ -1650,22 +1653,26 @@ throughput of about $\bmlSimEps$ events per second across the fleet, the full se
 roughly $\bmlSimHours$~hours. Storage use and cloud price vary with provider, region, and date and
 are not reconstructed here.
 
-\paragraph{Training recipe.} The production model was trained with AdamW (learning rate
-$3\times10^{-4}$, weight decay $0.01$), batch size $\bmlTrainBatch$, cross-entropy loss with the
-selection weights of \S\ref{sec:eval} and an additional factor $2$ on the anomaly class, and the
-truncation augmentation applied to half of all training examples. Seeds are fixed
-($\bmlSeedTrain$) and the data loader is seeded per worker. The recorded production run completed
-$\bmlTrainEpochs$ epochs; the released checkpoint is zero-based epoch 4, selected by the highest
-validation-set \texttt{NonPSPL} F1. Fine-tuning runs also keep their best epoch by validation
-\texttt{NonPSPL} F1; the stage fine-tunes and the colour-calibration fine-tunes of \S\ref{sec:limits} use a
-learning rate of $5\times10^{-5}$, the RMDC26 fine-tunes of \S\ref{sec:gulls} $10^{-4}$.
+\paragraph{Training recipe.} The released checkpoint is the last of $\bmlTrainStages$ warm-started
+stages, each keeping its epoch with the highest validation \texttt{NonPSPL} F1. A base model was trained
+from scratch on $\bmlTrainBaseEvents$ natural-prior events with AdamW (learning rate $3\times10^{-4}$,
+weight decay $0.01$, batch size 512) and cross-entropy loss with the selection weights of \S\ref{sec:eval}
+and an additional factor $2$ on the anomaly class. Stage 2 restarted from its fourth epoch without that
+factor (learning rate $1.2\times10^{-4}$); stage 3 added the truncation augmentation, applied to half of all
+training examples (learning rate $3\times10^{-5}$); stage 4 added targeted hard-regime pools (learning rate
+$5\times10^{-5}$, batch size 384, as in every later stage); stage 5 applied the detectability floor to truncated
+periodic classes and admitted truncations from the first days of the season; and stage 6 applied the
+truncation relabelling to every class and added pools that widen the separation, timescale and faint-source
+coverage, $\bmlTrainFinalEvents$ million events in all, for $\bmlTrainEpochs$ epochs. The released checkpoint
+is stage 6's zero-based epoch 4. Seeds are fixed ($\bmlSeedTrain$) and the data loader is seeded per worker.
+The fine-tunes of \S\ref{sec:limits} and \S\ref{sec:gulls} warm-start from the released weights (or from the
+gap-augmented checkpoint) and keep their best epoch the same way; the colour-calibration fine-tunes use a
+learning rate of $5\times10^{-5}$, the RMDC26 fine-tunes $10^{-4}$.
 
-\paragraph{Training (local).} The network is small enough that it was
-trained end to end on a personal computer, on the \bmlTrainDevice, at a batch size of
-$\bmlTrainBatch$. A benchmark of the training step (forward and backward pass on a full batch)
-sustains about $\bmlTrainEps$ events per second, which puts a full training run of a few passes
-over the $\bmlSimEvents$-million-event set at roughly $\bmlTrainHours$~hours of wall-clock, and the
-production model was trained in this range. On local hardware no compute is rented, so the marginal
+\paragraph{Training (local).} The network is small enough that every stage was trained on a personal
+computer, on the \bmlTrainDevice. A benchmark of the training step (forward and backward pass on a full batch
+of $\bmlTrainBatchBench$) sustains about $\bmlTrainEps$ events per second; the $\bmlTrainStages$ stages took
+about $\bmlTrainHours$~hours of wall-clock in total. On local hardware no compute is rented, so the marginal
 training cost is local electricity; we did not estimate it. The compactness of the network
 (\S\ref{sec:model}) is what
 keeps both training and survey-scale inference within reach of a single workstation rather than

@@ -450,7 +450,7 @@ cover it.
 | 18 | Rate weighting and the timescale mismatch (2026-09-12 re-verification) | Every RMDC26 number had been per simulated event without saying so. The unweighted sample over-represents short single lenses: 38% of scored 1S1L have t_E < 3 d (16% weighted by `final_weight`; 1.8% of our prior's mass; medians 4.3 d for 1S1L, 13.5 d for 1S2L), and false alarms rise with timescale (recommended checkpoint 5.3% at 1-3 d to 11.7% at 30-300 d). `gulls_summary_tables.py` now writes rate-weighted blocks (Kish n_eff 8,309 single / 2,841 1S2L), each checkpoint at its own threshold, and paired bootstrap differences (400 class-stratified replicates over events; not training variance). What changes under weighting: `fspl5s` over g08e12 +0.047 instead of +0.095 at 5.2%; physics over the control unresolved; combined over `fspl5s` +0.024 instead of +0.001; measured seasons over random gaps +0.048 instead of +0.072 (robust). The draft states which conclusions depend on the weighting and gives both in Table gulls. | `transfer_tradeoff_all.json` (`sample`, `weighted`, `at_own_calibrated_threshold`, `paired_differences`), `rmdc26_scores.csv.gz` (full-precision t_E and weight) | ✅ |
 | 19 | Second verification pass (2026-09-12) | Five verifiers, five adversarial checkers and a completeness critic on the corrected state: 74 findings (6 critical, 22 major, 46 minor), none refuted. Critical: the combined arm's false-alarm localisation (row 14), the physics attribution (row 13), undisclosed per-event weighting (row 18). Also: the macro generator was not fail-closed (tables written before later checks, four silent fallbacks), two values double-rounded, the checkpoint count excluded five scored arms, the "seed spread" was a pool spread, the paper's own single-slice threshold (0.931 for `fspl5s`) was not disclosed, the cascade compared a whole-population three-band number with planetary strata, the Discussion said "recovers most" of the between-season events, and several code paths (cascade/between-season caches keyed by name, a stale-output bug in the fine-tune runner, the onset window end, generation settings lost at caching). Record and dispositions: `docs/VERIFICATION_2026-09-12.md`. | `docs/verification/2026-09-12_findings.json`, `docs/verification/dispositions_2026_09_12.py` | ✅ addressed |
 | 20 | Seed replicates of the recommended recipe (2026-09-12; verdicts corrected by the third verification) | `fspl5s_seasons_g08` retrained with seeds 20260910 and 20260911 (same pool and recipe; the seed also sets the 80/10/10 split and so the kept epoch, 9 / 5 / 11; `pipeline/train.py` differs between the three runs' commits only in comments and truth-gated code). 1S2L recall at 5.2% per event 0.391 / 0.349 / 0.358 (weighted 0.407 / 0.386 / 0.385); frozen-threshold FA 6.3 / 4.7 / 7.3%; own held-out AP with the pauses 0.893 / 0.876 / 0.894 (clean 0.929 / 0.919 / 0.931); own threshold → RMDC26 FA 2.4 / 2.6 / 3.0%, recall 0.294 / 0.259 / 0.278. Event-bootstrap intervals CAN exclude zero between seeds (s2 − s1 −0.042, −0.049 to −0.033; s3 − s2 +0.009, −0.001 to +0.016), so they do not bound recipe differences. **How the paper uses the range (rewritten after the third verification):** a rough scale, not a test — two runs of one recipe exceed a three-run range about a third of the time — applied per budget and weighting (Table tab:seeds): differences smaller than the range are unresolved, larger ones indicative. Measured pauses vs random gaps: ahead in recall at every budget and in mean recall, both weightings. Extra training: most of the gain in false alarms and at the low budgets. Finite-source physics: the gain at 11.7% and in mean recall and the false-alarm drop in the rho/\|u0\| 1-3 and >3 bins, all per event; weighted it resolves nothing (those bins hold ~100 and ~50 effective single lenses). Recommended vs finite-source recipe: not established — its seeds differ from `fspl5s` by −0.041 to +0.001 per event and +0.002 to +0.024 weighted at 5.2%, only the released seed's weighted lead exceeding the range. (The first version of this row said the weighted lead 'does not pass' although 0.024 > 0.022, and that the extra training 'passes' at every budget; both wrong.) Decision unchanged: seed 1 stays `binml-gapaware.pt`, stated as the best of the three seeds in planetary recall at every table budget and at its own threshold (seed 2 flags fewer single lenses at the frozen threshold). | `fspl_finetune_fspl5s_seasons_g08_s{2,3}.json`, `transfer_full{,_reduced}_fspl5s_seasons_g08_s{2,3}.json`, `gapped_threshold_fspl5s_seasons_g08_s{2,3}_seasons.json`, `transfer_tradeoff_all.json` (models `_s2`, `_s3`; pairs incl. s3−s2), `rmdc26_scores.csv.gz`, weights `ft_fspl5s_seasons_g08_s{2,3}.pt` | ✅ in paper (§gulls, Table tab:seeds) |
-| 21 | Referee-round items on our own simulator (2026-09-12) | See §2: floor (label side), colour calibration (shipped model + short fine-tunes), mixed-class sequential scan. Seed sweep of the shipped model not possible (training set on S3, AWS unavailable). | `validation/referee_round.json` | ✅ in paper |
+| 21 | Referee-round items on our own simulator (2026-09-12; re-run 2026-09-13) | See §2: floor (label side; partly overlapping draws), colour calibration (precision, not recall; fine-tunes with the last epoch), every-class stream with three bands and with F146 alone, like-for-like single-lens comparison with RMDC26. Seed sweep of the shipped model not possible (training set on S3, AWS unavailable). | `validation/referee_round.json`, `validation/referee_round_archive/` | ✅ in paper |
 | 22 | Legacy augmentation labels against stored truth (audit findings 8-10; rewritten 2026-09-13 with a refit reference) | One natural-prior shard regenerated with `--truth-bins` (7,403 events × 4 presentations; truth binning fixed 2026-09-13, 4% of epochs had landed one bin early) and its 0.5-d-onset twin. Reference for binaries: the generator's own rule — a single-lens refit on the surviving epochs of the noise-free curve rebuilt from the stored parameters (it reproduces all 858 stored binary labels; 5 are unstable under 1e-7 seed perturbations). Truncation: released labels wrong for 10.8% of truncated binary presentations (about half still PSPL after the anomaly is detectable), and against the rule's thresholds for 16.3% LPV, 8.7% periodic, 5.0% PSPL, 3.1% eruptive presentations. Floors from the truth + 0.5-d onset: 2.4% (the non-monotone cases); + 7.2-d onset 6.4%; full-season residuals 15.2%. Measured pauses: caustic-in-gap relabel on gives PSPL to 9.4% although the anomaly survives; off keeps 2.5% NonPSPL unsupported; truth bins 1.9%. Random gaps 1.5% / 0.8% / 0.4%. Cadence thinning: legacy 41%, truth bins 10%. **Corrections the same day:** (1) the first truth rule for truncation used full-season-fit residuals and taught premature NonPSPL (now floors + onset); (2) the first version of this row and of the paper measured against the first-detectable onset, a reference the fixed rule matches by construction ('0 disagreement'), and quoted 10.5% for the pause relabel (both directions; 10.4% one way) and 16.4% for LPV (double rounding). Nothing released was trained with truth relabelling. | `validation/truth_relabel_impact.json` (refit_reference), `tests/test_truth_relabel.py` | ✅ in paper (§training, §limits) |
 
 ### Superseded ledger (2026-09-09 to 09-11), kept for the predictions made before each run
@@ -482,40 +482,42 @@ what remains. Three are done, four are open. Costs are wall-clock on the M5 (10 
 ## 2. Deferred items from the pre-submission referee round
 
 Scored 7.5/10 Major Revision (likely accept). Three of the four items were run locally on our own
-simulator on 2026-09-12 (`validation/referee_round_local.py` -> `validation/referee_round.json`, macros
-`\bmlRef*`, text in §limits and §cascade); the fourth cannot be run.
+simulator on 2026-09-12 and re-run after the third verification on 2026-09-13
+(`validation/referee_round_local.py` -> `validation/referee_round.json`, per-event inputs archived with hashes in
+`validation/referee_round_archive/`; macros `\bmlRef*`, text in §limits and §cascade); the fourth cannot be run.
+Shards 90-91 are held-out-pool shards: disjoint from training, but 15% of their events are among the rows the
+frozen threshold 0.904 was chosen on.
 
-- **Sensitivity to the 0.02 mag detectability floor — label side done.** Test shards 90-91 regenerated at
-  0.01 / 0.02 / 0.05 mag and scored by the shipped model at the frozen threshold 0.904. The floor changes
-  which generated events are kept (the byproduct keep draw), so the three arms are independent draws of
-  15,206 / 15,016 / 14,636 events, not the same events (the runner's first docstring said otherwise;
-  corrected). Population-weighted NonPSPL prevalence 6.5% / 5.5% / 4.2%; completeness 0.808
-  [0.791, 0.825] / 0.891 [0.876, 0.905] / 0.948 [0.935, 0.959]; purity 0.961 / 0.913 / 0.766; AP 0.942 /
-  0.957 / 0.934; macro-F1 0.889 / 0.911 / 0.773 (the floor also moves the Flat/variable boundaries: Flat F1
-  0.874 / 0.971 / 0.748). Reading: the ranking survives, the operating point does not. Retraining under
-  another floor is NOT done (it needs a new training set) and stays listed as open in the Conclusion.
-- **Colour-band calibration ablation — done.** The same 15,016 events with the audited F087/F213
-  zeropoints, backgrounds and saturation (`--band-set colour_audited`; F146, exposure and cadence
-  unchanged; parameters identical row for row, 25 labels change). Shipped model at the frozen threshold:
-  completeness 0.888 vs 0.891, purity 0.919 vs 0.913, AP 0.956 vs 0.957; F1 PeriodicVar 0.948 vs 0.968,
-  Eruptive 0.873 vs 0.893 — the anomaly channel barely moves and contaminant rejection degrades, as the
-  paper predicted. Fine-tunes of the shipped weights on training shards 0-1 generated with each calibration
-  (3 epochs, lr 5e-5, two training shards): AP 0.957-0.958 whichever calibration the fine-tune and the test
-  use; periodic-variable F1 on the audited photometry 0.955 after the audited fine-tune against 0.918 after
-  the trained-calibration one, and the audited fine-tune falls to 0.749 on the old photometry. Contaminant
-  rejection is tied to the training calibration; the anomaly channel is not. The 66-s exposure of the current design is not tested (the
-  audited set keeps our 46.8 s).
-- **Mixed-class sequential evaluation — done.** Every event of the two adopted-floor test shards (15,016, all six
-  classes, all three bands) revealed in 144 half-day prefixes, scored at 0.904 with the shipped model. No Flat
-  or variable-star event alerts at any point; 0.7% of PSPL and 89.9% of NonPSPL do. 0.77 alerts per 1,000
-  events per day at the simulated mixture (5.5% prevalence, reweighted), 89% of them anomalies; by prior
-  shift 58% at 1% and 12% at 0.1% prevalence. 29 of 32 single-lens alerts (98% reweighted) are binaries whose
-  anomaly fails the detectability policy. Timing on 1,753 NonPSPL: 0.7% premature [0.4, 1.2] against the
-  0.5-d onset, median lag +6.5 d, detection 90% — close to the in-house three-band scan (1.0%, +7.0 d, 91%).
-- **Seed sweep of the shipped model (3 seeds, stage-5 recipe) — not possible here.** Its 1.9M-event
-  training set is on S3 and AWS is unavailable (unpaid bill, 2026-09-12); regenerating it locally is days of
-  compute. Seed spread is measured instead for the gap-aware recipe (three seeds of `fspl5s_seasons_g08`,
-  §1½ row 20) and the paper says the shipped model's seed spread is unmeasured.
+- **Sensitivity to the 0.02 mag detectability floor — label side done.** Shards 90-91 regenerated at 0.01 / 0.02 /
+  0.05 mag and scored by the shipped model at the frozen threshold. The floor changes which generated events are
+  kept (the byproduct keep draw offsets the random stream, which later re-synchronises), so the arms are partly
+  overlapping draws: 15,206 / 15,016 / 14,636 events, of which 22% / 5% of the adopted-floor events recur in the
+  0.01 / 0.05-mag arms. Population-weighted NonPSPL prevalence 6.5% / 5.5% / 4.2%; completeness 0.808 [0.791, 0.825] /
+  0.891 [0.876, 0.905] / 0.948 [0.935, 0.959] (Wilson); purity 0.961 / 0.913 / 0.766; on every event AP 0.943 / 0.958 /
+  0.934 and macro-F1 0.891 / 0.915 / 0.770. The ranking survives, the operating point does not. Retraining under
+  another floor is not done.
+- **Colour-band calibration ablation — done.** The same 15,016 events with the audited F087/F213 zeropoints,
+  backgrounds and saturation (F146, exposure and cadence unchanged; identical events, 25 labels change). Shipped model:
+  AP 0.958 vs 0.957, completeness 0.891 vs 0.888; the variable classes lose precision, not recall (periodic 0.949 ->
+  0.908, eruptive 0.806 -> 0.776; F1 0.970 -> 0.949, 0.891 -> 0.871) because more flat sources are called periodic and
+  more single lenses eruptive; no more variables are sent to microlensing. Fine-tunes on each calibration (up to three
+  epochs, one seed, best epoch kept): AP 0.958-0.960 in every combination; the audited fine-tune drops to periodic F1
+  0.750 on the old photometry (0.872 at its last epoch) against 0.961 (0.972) for the old-calibration fine-tune; on
+  the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967).
+  The 66-s exposure is not tested.
+- **Mixed-class sequential evaluation — done.** All 15,016 events revealed in 144 half-day prefixes at the frozen
+  threshold, with three bands and with F146 alone. Three bands: no Flat or variable alert; 0.77 alerts per 1,000
+  events per day, 89% detectable anomalies at the simulated 5.5% prevalence (58% at 1%, 12% at 0.1%, prior shift with the
+  non-anomalous mix held fixed); single-lens alerts 1.0% after reweighting (32 of 4,391 stored), 29 of them demoted
+  binaries, 3 of 1,759 generated single lenses. F146 alone: 0.98 per day, 67% (26% at 1%); 51 generated single lenses and
+  4 eruptive variables alert. Timing on 1,753 NonPSPL: three bands 0.7% premature [0.4, 1.2], lag +6.5 d, detection 90%
+  (the in-house three-band scan: 1.0%, +7.0 d, 91%); F146 alone 1.0%, +5.0 d, 86%. Like for like with the RMDC26
+  cascade (recommended checkpoint, F146, frozen threshold), 31 of the 1,759 generated single lenses alert (1.8%)
+  against RMDC26's 6.2%.
+- **Seed sweep of the shipped model (3 seeds, stage-5 recipe) — not possible here.** Its 1.9M-event training set is on
+  S3 and AWS is unavailable (unpaid bill, 2026-09-12); regenerating it locally is days of compute. Seed spread is
+  measured instead for the gap-aware recipe (three seeds of `fspl5s_seasons_g08`, §1½ row 20) and the paper says
+  the shipped model's seed spread is unmeasured.
 
 ## 3. Administrative
 

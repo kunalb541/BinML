@@ -245,8 +245,13 @@ def _config_for(regime: Optional[str], cfg: SurveyConfig):
         # context classes after it, so Python's last-duplicate-wins rule silently reset the swept
         # class to its context value (500-1,000). Every OOR shard in the shipped stress suite was
         # generated that way: the swept class was a minority in its own regime (e.g. 438
-        # NonPSPL-labelled events in oor_np_widesep, not 9,000/shard). The recalls are unbiased
-        # but their support is what stress_report.json's per-class n says, not the regime total.
+        # NonPSPL-labelled events in oor_np_widesep, not 9,000/shard), so the support is what
+        # stress_report.json's per-class n says, not the regime total. The per-LABEL recalls also
+        # mix populations where the swept class shares its label with others: in oor_pspl_shortte
+        # the PSPL-labelled events include binaries of natural timescale demoted to PSPL by the
+        # detectability policy (37% of the weighted label mass under the legacy mix), so the
+        # suite's 0.524 is not a sub-day single-lens recall (validation/stress_rescore_local.py
+        # splits them by generator class).
         mix = {"Flat": 1500, "PSPL": 1000, "NonPSPL": 500,
                "PeriodicVar": 500, "LongPeriodVar": 500, "Eruptive": 500}
         if LEGACY_OOR_MIX:

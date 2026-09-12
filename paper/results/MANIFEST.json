@@ -62,8 +62,8 @@
   },
   "files": {
     "paper/canonical_numbers.json": {
-      "sha256": "d0a591adb6fdc40d0ea64bcc18b76db180fcd8bba5873072515b5737b4ada303",
-      "_note": "hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67... | 2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 4c868405c630a120... | 2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 2cd1fa6b142372bb..."
+      "sha256": "1b92e0634c32e57149d42062ec10c5770a60421d8bfc634b31432dc5114327f2",
+      "_note": "2026-09-13: infra training recipe corrected to the six-stage chain (third verification); previous sha d0a591adb6fdc40d... | hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67... | 2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 4c868405c630a120... | 2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 2cd1fa6b142372bb..."
     },
     "paper/results/metrics.json": {
       "sha256": "a69add24bfa5f3bda8d800269f541700ee7a18c749578935962124499a42c73c"
@@ -133,12 +133,12 @@
       "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/gulls/transfer_tradeoff_all.json": {
-      "sha256": "ae5e56c1446b9be8b77dbb3ecf0c176aaa9840accf9266cba9a64b93be004d0b",
-      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+      "sha256": "79177f4b5c824f22a8bf9d5413d6f1cc3af86d916ea5e7168b59566b81a94df4",
+      "_note": "2026-09-13: regenerated with the seed-3 vs seed-2 pair and Kish n_eff per weighted rho bin; previous sha ae5e56c1446b9be8... | 2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/gulls/transfer_colour_ablation.json": {
-      "sha256": "9448967c9f5ec4b83b58e168105dde689bf7455cdfb93458c55552eb3238baff",
-      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+      "sha256": "da5d89fa301637038491d701e8a1808e67058ef10b6efaf2f8fabff9f211bfce",
+      "_note": "2026-09-13: same run as transfer_tradeoff_all.json (command line only); previous sha 9448967c9f5ec4b8... | 2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/gulls/transfer_detectability_relabel.json": {
       "sha256": "8bf82f1eb09723dae41abf943d073c8d8d5aab256d5dc9b36b8ae97b57878f93",
@@ -189,12 +189,12 @@
       "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/referee_round.json": {
-      "sha256": "2d20adf6f95ffe750604816414d76a88b647666a3731d690f160cab7a2c6e642",
-      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+      "sha256": "ee79bc215878efbd5789512cbb31b4d91ec8ef91aec86dc478de46a114622bb5",
+      "_note": "2026-09-13: rerun at 8a8bd4b (all-event metrics, floor overlap, F146 stream, recommended-checkpoint single-lens scan, final-epoch fine-tunes); previous sha 2d20adf6f95ffe75... | 2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/truth_relabel_impact.json": {
-      "sha256": "3ca1fd5e15e75fbc542926e54496ba0482bd1a668db5f5ba772e2652f8b40bfa",
-      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+      "sha256": "2d25312f902228dc6cd57ee82e5b7613b3e9b2e719385ec2750b0860b8823899",
+      "_note": "2026-09-13: rerun at 218e3f1 (counts, refit-based reference, two-sided self-check); previous sha 3ca1fd5e15e75fbc... | 2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/gulls/gapped_threshold_fspl5s_seasons_g08_s2_seasons.json": {
       "sha256": "aad890a38a0dccac8ac63c52d823007a8c3c447e4ec0ea3126903a9922ba1417",

@@ -592,7 +592,8 @@ if RR:
         cmd(f"{pre}GenK", str(g_["k"])); cmd(f"{pre}GenN", f"{g_['n']:,}"); cmd(f"{pre}GenPct", pct(g_["k"] / g_["n"]))
         cmd(f"{pre}VarAlerts", str(sum(int(round(st["by_class"][c]["alert_frac_per_season"] * st["by_class"][c]["n"]))
                                        for c in ("Flat", "PeriodicVar", "LongPeriodVar", "Eruptive"))))
-        need(dm["k"] >= 0.8 * dm["n"] and dm["population_weighted"] >= 0.8, f"{tag} stream: single-lens alerts are no longer 'nearly all' demoted binaries")
+        if tag == "all":                       # the three-band paragraph says "nearly all"; the F146 sentence gives counts only
+            need(dm["k"] >= 0.8 * dm["n"] and dm["population_weighted"] >= 0.8, f"{tag} stream: single-lens alerts are no longer 'nearly all' demoted binaries")
         tn = st["timing_nonpspl"]
         cmd(f"{pre}Elig", f"{tn['n_eligible']:,}"); cmd(f"{pre}Det", pct0(tn["detected_frac"]))
         cmd(f"{pre}Prem", pct(tn["premature_frac"])); cmd(f"{pre}PremLo", pct(tn["premature_ci95"][0]))
@@ -732,6 +733,14 @@ if need(T and all(m in T["models"] for m in SEEDS), f"seed replicates {SEEDS} mi
     if need(len(held) == len(SEEDS), "a seed replicate lacks its measured-season calibration"):
         K3 = load(f"gapped_threshold_{R3}_seasons.json")
         cmd("bmlSeedHeldApLo", three(min(held))); cmd("bmlSeedHeldApHi", three(max(held)))
+        cmd("bmlSeedHeldApRange", three(max(held) - min(held)))
+        SF = load("schedule_finetune.json")        # "the first two differences are smaller than the seed spread"
+        if SF:
+            he = SF["heldout_eval"]
+            ap_ = lambda arm, blk: he[arm][blk]["ap"]
+            need(abs(ap_("sched_seasons", "rmdc26_seasons") - ap_("rand_norelabel", "rmdc26_seasons")) < max(held) - min(held)
+                 and abs(ap_("sched_seasons", "clean") - ap_("rand_norelabel", "clean")) < max(held) - min(held),
+                 "the in-house pauses-vs-random-gaps AP differences now exceed the seed spread")
         cmd("bmlSeedHeldApCleanLo", three(min(heldc))); cmd("bmlSeedHeldApCleanHi", three(max(heldc)))
         need(min(held) >= K3["arms"]["rmdc26_gapped"]["our_heldout"]["ap"] and max(heldc) <= K3["arms"]["clean"]["our_heldout"]["ap"] + 5e-4,
              "the seeds no longer 'tie or exceed' the finite-source run with pauses and sit 'at or just below' it clean")

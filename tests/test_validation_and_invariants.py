@@ -307,7 +307,8 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
     ok = run()
     assert ok.returncode == 0, f"make_macros must succeed with the artifact present:\n{ok.stderr}"
 
-    payload = _json.loads(art.read_text())
+    orig_text = art.read_text()
+    payload = _json.loads(orig_text)
     art.unlink()
     missing = run()
     assert missing.returncode != 0, "make_macros must fail when the cascade artifact is absent"
@@ -320,6 +321,14 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
     assert drifted.returncode != 0, \
         "make_macros must fail when the cascade artifact loses a required key"
     assert "median_lag_non_premature_days" in (drifted.stdout + drifted.stderr)
+
+    # The released checkpoint's stress numbers (third verification: the suite was scored with stage 5) must not
+    # silently fall back to the suite's stage-5 values.
+    art.write_text(orig_text)
+    (root / "validation" / "stress_rescore_local.json").unlink()
+    nostress = run()
+    assert nostress.returncode != 0, "make_macros must fail without validation/stress_rescore_local.json"
+    assert "stress_rescore_local" in (nostress.stdout + nostress.stderr)
 
 
 def test_frozen_evaluation_manifest_is_enforced(tmp_path):

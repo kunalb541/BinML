@@ -27,8 +27,16 @@ pass (record: `docs/VERIFICATION_2026-09-12b.md`). What changed:
   within-season pauses in the list of schedule differences, the non-monotone onset partly numerical, the abstract
   and Conclusion no longer call the three-band scan "the same way", weightings and units labelled in the RMDC26 alert
   burden, "no deployed operating threshold", detection comparison flagged as mixing checkpoint and simulator.
-- CI and tooling: the paper-build workflow checks both macro files; generator inputs all go through `load()` and are
-  checked against the manifest by a test; fail-closed tests now perturb values, not only delete keys.
+- **Two errors older than the revision, found by the completeness critic.** (1) The 14.9M-event stress suite was scored
+  with the stage-5 checkpoint, the released model's predecessor; the paper had quoted its numbers as the released
+  model's. `validation/stress_rescore_local.py` regenerates the first shards of each quoted tier with the suite's seeds
+  (and its original out-of-range class mix, `run_shard --legacy-oor-mix`) and scores the same events with both
+  checkpoints; the paper now quotes the released checkpoint on that subset and says which model scored the suite.
+  (2) The appendix training recipe described the base run's defaults (batch 256, factor 2 on the anomaly class, 5
+  epochs); it now describes the six-stage warm-start chain from the stage logs (`paper/canonical_numbers.json` infra).
+- CI and tooling: the paper-build workflow checks both macro files and compares the regenerated macros, tables and
+  rendered draft with the committed ones; generator inputs all go through `load()` and are checked against the manifest
+  by a test; fail-closed tests now perturb values, not only delete keys.
 
 ## Unreleased — referee-round items, seed replicates, RMDC26 section merged (2026-09-12, afternoon)
 

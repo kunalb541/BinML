@@ -49,7 +49,7 @@
    "colour_audited"
   ]
  },
- "code": "submitted-ac-2026-08-15-47-gfa91bc7afb90-dirty",
+ "code": "submitted-ac-2026-08-15-51-g8a8bd4b981da",
  "floor_sensitivity": {
   "0.01": {
    "completeness_at_purity": 0.8760429082240763,
@@ -70,6 +70,7 @@
     "Eruptive": 0.8883013911437658
    },
    "n_events": 15206,
+   "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
    "prevalence": {
     "raw": 0.1355386031829541,
     "population_weighted": 0.06519882477624342,
@@ -88,6 +89,85 @@
     ],
     "purity_population_weighted": 0.961338720306988,
     "false_flag_rate_nonnonpspl_population_weighted": 0.0022673434637790063
+   },
+   "all_events": {
+    "n": 15206,
+    "ap": 0.9428177630997888,
+    "f1": {
+     "Flat": 0.8724304899709928,
+     "PSPL": 0.9404651078835602,
+     "NonPSPL": 0.8475701815427106,
+     "PeriodicVar": 0.9636940430031724,
+     "LongPeriodVar": 0.825903234424846,
+     "Eruptive": 0.8961162012182504
+    },
+    "macro_f1": 0.8910298763405887,
+    "recall": {
+     "Flat": 0.9837159971226882,
+     "PSPL": 0.8988729769443363,
+     "NonPSPL": 0.9082969432314411,
+     "PeriodicVar": 0.9460207612456747,
+     "LongPeriodVar": 0.7906553398058253,
+     "Eruptive": 0.9813278008298755
+    },
+    "precision": {
+     "Flat": 0.7837649775018012,
+     "PSPL": 0.9860930349428698,
+     "NonPSPL": 0.7944546672702725,
+     "PeriodicVar": 0.9820402298850575,
+     "LongPeriodVar": 0.8644405169973208,
+     "Eruptive": 0.8245206324918718
+    },
+    "confusion": [
+     [
+      5255.666609181315,
+      35.333332008785725,
+      0.0,
+      25.0,
+      16.0,
+      10.666666401757144
+     ],
+     [
+      1037.9999618530321,
+      17679.332698610826,
+      481.3333153194856,
+      0.0,
+      187.3333264456857,
+      282.3333232667714
+     ],
+     [
+      3.0,
+      179.0,
+      1872.0,
+      0.0,
+      0.0,
+      7.0
+     ],
+     [
+      78.0,
+      0.0,
+      0.0,
+      1367.0,
+      0.0,
+      0.0
+     ],
+     [
+      324.0,
+      19.0,
+      0.0,
+      0.0,
+      1303.0,
+      2.0
+     ],
+     [
+      7.0,
+      16.0,
+      3.0,
+      0.0,
+      1.0,
+      1419.0
+     ]
+    ]
    }
   },
   "0.02": {
@@ -109,6 +189,7 @@
     "Eruptive": 0.8931962059011799
    },
    "n_events": 15016,
+   "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
    "prevalence": {
     "raw": 0.11674214171550347,
     "population_weighted": 0.05462817865364875,
@@ -127,6 +208,85 @@
     ],
     "purity_population_weighted": 0.9125608599718091,
     "false_flag_rate_nonnonpspl_population_weighted": 0.004933523726286989
+   },
+   "all_events": {
+    "n": 15016,
+    "ap": 0.9578919750573852,
+    "f1": {
+     "Flat": 0.9708446340601039,
+     "PSPL": 0.9614495192958784,
+     "NonPSPL": 0.8207779468786719,
+     "PeriodicVar": 0.9701217263002582,
+     "LongPeriodVar": 0.8776539617260865,
+     "Eruptive": 0.8905905835054838
+    },
+    "macro_f1": 0.9152397286277472,
+    "recall": {
+     "Flat": 0.9534817353970773,
+     "PSPL": 0.9368061192067727,
+     "NonPSPL": 0.9509412435824302,
+     "PeriodicVar": 0.9917043740573153,
+     "LongPeriodVar": 0.978806907378336,
+     "Eruptive": 0.994378074490513
+    },
+    "precision": {
+     "Flat": 0.9888516181493662,
+     "PSPL": 0.987424473843906,
+     "NonPSPL": 0.721957565087297,
+     "PeriodicVar": 0.9494584837545126,
+     "LongPeriodVar": 0.7954497175193844,
+     "Eruptive": 0.8064209782448226
+    },
+    "confusion": [
+     [
+      6681.999905427344,
+      127.33332882987143,
+      6.666666401757145,
+      70.0,
+      76.0,
+      45.99999841054287
+     ],
+     [
+      57.33333121405717,
+      18085.666015519786,
+      634.333308961658,
+      0.0,
+      243.66665765974284,
+      284.6666560702857
+     ],
+     [
+      0.0,
+      82.0,
+      1667.0,
+      0.0,
+      0.0,
+      4.0
+     ],
+     [
+      11.0,
+      0.0,
+      0.0,
+      1315.0,
+      0.0,
+      0.0
+     ],
+     [
+      7.0,
+      15.0,
+      0.0,
+      0.0,
+      1247.0,
+      5.0
+     ],
+     [
+      0.0,
+      6.0,
+      1.0,
+      0.0,
+      1.0,
+      1415.0
+     ]
+    ]
    }
   },
   "0.05": {
@@ -148,6 +308,7 @@
     "Eruptive": 0.8498760958675926
    },
    "n_events": 14636,
+   "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
    "prevalence": {
     "raw": 0.09169171904892047,
     "population_weighted": 0.0420883175317608,
@@ -166,6 +327,85 @@
     ],
     "purity_population_weighted": 0.7662650672111337,
     "false_flag_rate_nonnonpspl_population_weighted": 0.012703262964439794
+   },
+   "all_events": {
+    "n": 14636,
+    "ap": 0.9335312790409234,
+    "f1": {
+     "Flat": 0.7421737751504158,
+     "PSPL": 0.860521766465858,
+     "NonPSPL": 0.7165325606382161,
+     "PeriodicVar": 0.8243539202803328,
+     "LongPeriodVar": 0.627527921969773,
+     "Eruptive": 0.8466573702804099
+    },
+    "macro_f1": 0.769627885797501,
+    "recall": {
+     "Flat": 0.5901961933279218,
+     "PSPL": 0.9193636403314431,
+     "NonPSPL": 0.9731743666169895,
+     "PeriodicVar": 0.9978791092258749,
+     "LongPeriodVar": 0.984375,
+     "Eruptive": 0.9924528301886792
+    },
+    "precision": {
+     "Flat": 0.9995653433723747,
+     "PSPL": 0.808758908348524,
+     "NonPSPL": 0.5670043510549523,
+     "PeriodicVar": 0.7022388059701492,
+     "LongPeriodVar": 0.4605671262854605,
+     "Eruptive": 0.7382110833334341
+    },
+    "confusion": [
+     [
+      6898.999899069526,
+      3402.6665448082704,
+      40.99999841054287,
+      399.0,
+      668.9999992052715,
+      278.6666600439286
+     ],
+     [
+      1.0,
+      14601.332807488472,
+      956.3332962460034,
+      0.0,
+      138.66666163338573,
+      184.66666004392857
+     ],
+     [
+      0.0,
+      35.0,
+      1306.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     [
+      2.0,
+      0.0,
+      0.0,
+      941.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      9.0,
+      0.0,
+      0.0,
+      693.0,
+      2.0
+     ],
+     [
+      0.0,
+      6.0,
+      0.0,
+      0.0,
+      4.0,
+      1315.0
+     ]
+    ]
    }
   }
  },
@@ -190,6 +430,7 @@
      "Eruptive": 0.8931962059011799
     },
     "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
     "prevalence": {
      "raw": 0.11674214171550347,
      "population_weighted": 0.05462817865364875,
@@ -208,6 +449,85 @@
      ],
      "purity_population_weighted": 0.9125608599718091,
      "false_flag_rate_nonnonpspl_population_weighted": 0.004933523726286989
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9578919750573852,
+     "f1": {
+      "Flat": 0.9708446340601039,
+      "PSPL": 0.9614495192958784,
+      "NonPSPL": 0.8207779468786719,
+      "PeriodicVar": 0.9701217263002582,
+      "LongPeriodVar": 0.8776539617260865,
+      "Eruptive": 0.8905905835054838
+     },
+     "macro_f1": 0.9152397286277472,
+     "recall": {
+      "Flat": 0.9534817353970773,
+      "PSPL": 0.9368061192067727,
+      "NonPSPL": 0.9509412435824302,
+      "PeriodicVar": 0.9917043740573153,
+      "LongPeriodVar": 0.978806907378336,
+      "Eruptive": 0.994378074490513
+     },
+     "precision": {
+      "Flat": 0.9888516181493662,
+      "PSPL": 0.987424473843906,
+      "NonPSPL": 0.721957565087297,
+      "PeriodicVar": 0.9494584837545126,
+      "LongPeriodVar": 0.7954497175193844,
+      "Eruptive": 0.8064209782448226
+     },
+     "confusion": [
+      [
+       6681.999905427344,
+       127.33332882987143,
+       6.666666401757145,
+       70.0,
+       76.0,
+       45.99999841054287
+      ],
+      [
+       57.33333121405717,
+       18085.666015519786,
+       634.333308961658,
+       0.0,
+       243.66665765974284,
+       284.6666560702857
+      ],
+      [
+       0.0,
+       82.0,
+       1667.0,
+       0.0,
+       0.0,
+       4.0
+      ],
+      [
+       11.0,
+       0.0,
+       0.0,
+       1315.0,
+       0.0,
+       0.0
+      ],
+      [
+       7.0,
+       15.0,
+       0.0,
+       0.0,
+       1247.0,
+       5.0
+      ],
+      [
+       0.0,
+       6.0,
+       1.0,
+       0.0,
+       1.0,
+       1415.0
+      ]
+     ]
     }
    },
    "test_colour": {
@@ -229,6 +549,7 @@
      "Eruptive": 0.8732757547818407
     },
     "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
     "prevalence": {
      "raw": 0.11674214171550347,
      "population_weighted": 0.05462817865364875,
@@ -247,6 +568,85 @@
      ],
      "purity_population_weighted": 0.9194881918533211,
      "false_flag_rate_nonnonpspl_population_weighted": 0.004494011590664943
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9567724658031913,
+     "f1": {
+      "Flat": 0.9670613458709604,
+      "PSPL": 0.9612118307498967,
+      "NonPSPL": 0.8254151911412302,
+      "PeriodicVar": 0.9486166007905139,
+      "LongPeriodVar": 0.879646842747511,
+      "Eruptive": 0.8713948514922233
+     },
+     "macro_f1": 0.9088911104653891,
+     "recall": {
+      "Flat": 0.9465827252215517,
+      "PSPL": 0.9352109272148789,
+      "NonPSPL": 0.9498003422703936,
+      "PeriodicVar": 0.9932279909706546,
+      "LongPeriodVar": 0.9775367931835787,
+      "Eruptive": 0.9936797752808989
+     },
+     "precision": {
+      "Flat": 0.9884456398709824,
+      "PSPL": 0.988699842801165,
+      "NonPSPL": 0.7298363605525919,
+      "PeriodicVar": 0.9078404401650619,
+      "LongPeriodVar": 0.7995776178108362,
+      "Eruptive": 0.7759093463562518
+     },
+     "confusion": [
+      [
+       6615.666571034373,
+       105.33332962460001,
+       6.666666401757145,
+       134.0,
+       87.0,
+       40.333332008785725
+      ],
+      [
+       58.33333121405717,
+       18052.999349912756,
+       608.6666433546292,
+       0.0,
+       228.33332485622856,
+       355.3333200878571
+      ],
+      [
+       0.0,
+       81.0,
+       1665.0,
+       0.0,
+       0.0,
+       7.0
+      ],
+      [
+       9.0,
+       0.0,
+       0.0,
+       1320.0,
+       0.0,
+       0.0
+      ],
+      [
+       9.0,
+       14.0,
+       0.0,
+       0.0,
+       1262.0,
+       6.0
+      ],
+      [
+       1.0,
+       6.0,
+       1.0,
+       0.0,
+       1.0,
+       1415.0
+      ]
+     ]
     }
    }
   },
@@ -276,6 +676,7 @@
      "Eruptive": 0.9115259766719731
     },
     "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
     "prevalence": {
      "raw": 0.11674214171550347,
      "population_weighted": 0.05462817865364875,
@@ -294,6 +695,85 @@
      ],
      "purity_population_weighted": 0.9098548542076043,
      "false_flag_rate_nonnonpspl_population_weighted": 0.005186243205579513
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9595553447024076,
+     "f1": {
+      "Flat": 0.9608787103427261,
+      "PSPL": 0.9611640974207739,
+      "NonPSPL": 0.8404532146677837,
+      "PeriodicVar": 0.9612289685442577,
+      "LongPeriodVar": 0.8994068238487878,
+      "Eruptive": 0.9136924101192446
+     },
+     "macro_f1": 0.9228040374905957,
+     "recall": {
+      "Flat": 0.9778348552731272,
+      "PSPL": 0.9317816876347443,
+      "NonPSPL": 0.9520821448944666,
+      "PeriodicVar": 0.9909502262443439,
+      "LongPeriodVar": 0.9521193092621664,
+      "Eruptive": 0.9894588896697118
+     },
+     "precision": {
+      "Flat": 0.9445005980862071,
+      "PSPL": 0.992459908571424,
+      "NonPSPL": 0.7522536128649575,
+      "PeriodicVar": 0.9332386363636364,
+      "LongPeriodVar": 0.8522248284799702,
+      "Eruptive": 0.8487040430496582
+     },
+     "confusion": [
+      [
+       6852.666567060734,
+       28.66666560702858,
+       0.0,
+       94.0,
+       24.0,
+       8.666666401757144
+      ],
+      [
+       350.6666544808285,
+       17988.666017903968,
+       548.6666457388145,
+       0.0,
+       183.3333264456857,
+       234.33332485622856
+      ],
+      [
+       0.0,
+       82.0,
+       1669.0,
+       0.0,
+       0.0,
+       2.0
+      ],
+      [
+       12.0,
+       0.0,
+       0.0,
+       1314.0,
+       0.0,
+       0.0
+      ],
+      [
+       37.0,
+       18.0,
+       0.0,
+       0.0,
+       1213.0,
+       6.0
+      ],
+      [
+       3.0,
+       8.0,
+       1.0,
+       0.0,
+       3.0,
+       1408.0
+      ]
+     ]
     }
    },
    "test_colour": {
@@ -315,6 +795,7 @@
      "Eruptive": 0.8959744949512243
     },
     "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
     "prevalence": {
      "raw": 0.11674214171550347,
      "population_weighted": 0.05462817865364875,
@@ -333,6 +814,325 @@
      ],
      "purity_population_weighted": 0.9130434813319889,
      "false_flag_rate_nonnonpspl_population_weighted": 0.0049664871377684905
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9584418674970511,
+     "f1": {
+      "Flat": 0.9514599836539561,
+      "PSPL": 0.9595925356977105,
+      "NonPSPL": 0.8377947514697955,
+      "PeriodicVar": 0.9169273548835593,
+      "LongPeriodVar": 0.9019416312028293,
+      "Eruptive": 0.898914665734808
+     },
+     "macro_f1": 0.9111051537737764,
+     "recall": {
+      "Flat": 0.95965087948523,
+      "PSPL": 0.9288218128456218,
+      "NonPSPL": 0.9492298916143753,
+      "PeriodicVar": 0.9924755455229496,
+      "LongPeriodVar": 0.9535243996901627,
+      "Eruptive": 0.9887640449438202
+     },
+     "precision": {
+      "Flat": 0.9434077277868372,
+      "PSPL": 0.9924719078134997,
+      "NonPSPL": 0.7497747142789712,
+      "PeriodicVar": 0.8520671834625323,
+      "LongPeriodVar": 0.8556533867007194,
+      "Eruptive": 0.8240343398742384
+     },
+     "confusion": [
+      [
+       6706.999899864248,
+       22.999999205271436,
+       0.0,
+       229.0,
+       28.0,
+       2.0
+      ],
+      [
+       353.33332088258567,
+       17929.66602028815,
+       554.3333121405717,
+       0.0,
+       176.66666004392857,
+       289.6666560702857
+      ],
+      [
+       0.0,
+       86.0,
+       1664.0,
+       0.0,
+       0.0,
+       3.0
+      ],
+      [
+       10.0,
+       0.0,
+       0.0,
+       1319.0,
+       0.0,
+       0.0
+      ],
+      [
+       35.0,
+       19.0,
+       0.0,
+       0.0,
+       1231.0,
+       6.0
+      ],
+      [
+       4.0,
+       8.0,
+       1.0,
+       0.0,
+       3.0,
+       1408.0
+      ]
+     ]
+    }
+   }
+  },
+  "finetuned_on_train_trained_final_epoch": {
+   "test_f002": {
+    "completeness_at_purity": 0.9360341151385928,
+    "purity_achieved": 0.8239833215534028,
+    "threshold": 0.7586764097213745,
+    "completeness_ci95": [
+     0.9229241721629157,
+     0.9477106557126714
+    ],
+    "ap": 0.9595179038267392,
+    "macro_f1_population": 0.9235261876406572,
+    "f1_population": {
+     "Flat": 0.9711267607668019,
+     "PSPL": 0.962395278985639,
+     "NonPSPL": 0.8284157547798872,
+     "PeriodicVar": 0.9681881051175658,
+     "LongPeriodVar": 0.9056603793955307,
+     "Eruptive": 0.9053708467985191
+    },
+    "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.903593839132915,
+     "completeness_k_n": [
+      1584,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8888815537626816,
+      0.9165410865026674
+     ],
+     "purity_population_weighted": 0.9191489389960307,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.0045929018251094494
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9600484080246866,
+     "f1": {
+      "Flat": 0.9688897258967623,
+      "PSPL": 0.9631911643835532,
+      "NonPSPL": 0.834347649440236,
+      "PeriodicVar": 0.9718726868985936,
+      "LongPeriodVar": 0.9183063529098733,
+      "Eruptive": 0.9086989355692481
+     },
+     "macro_f1": 0.927551085849711,
+     "recall": {
+      "Flat": 0.9791666665934274,
+      "PSPL": 0.9365989261059979,
+      "NonPSPL": 0.9515116942384484,
+      "PeriodicVar": 0.9901960784313726,
+      "LongPeriodVar": 0.9646781789638933,
+      "Eruptive": 0.9873506676036542
+     },
+     "precision": {
+      "Flat": 0.958826269848044,
+      "PSPL": 0.9913375607702052,
+      "NonPSPL": 0.7428741165382736,
+      "PeriodicVar": 0.9542151162790697,
+      "LongPeriodVar": 0.8761882160718404,
+      "Eruptive": 0.8416533593073101
+     },
+     "confusion": [
+      [
+       6861.999900658977,
+       43.99999841054287,
+       0.0,
+       63.0,
+       37.0,
+       2.0
+      ],
+      [
+       259.66665765974284,
+       18081.66601472506,
+       576.3333113458433,
+       0.0,
+       133.66666163338573,
+       254.33332406149998
+      ],
+      [
+       0.0,
+       83.0,
+       1668.0,
+       0.0,
+       0.0,
+       2.0
+      ],
+      [
+       13.0,
+       0.0,
+       0.0,
+       1313.0,
+       0.0,
+       0.0
+      ],
+      [
+       19.0,
+       20.0,
+       0.0,
+       0.0,
+       1229.0,
+       6.0
+      ],
+      [
+       3.0,
+       11.0,
+       1.0,
+       0.0,
+       3.0,
+       1405.0
+      ]
+     ]
+    }
+   },
+   "test_colour": {
+    "completeness_at_purity": 0.9339019189765458,
+    "purity_achieved": 0.8197130437431634,
+    "threshold": 0.7481973171234131,
+    "completeness_ci95": [
+     0.9205964002901529,
+     0.9466313663577463
+    ],
+    "ap": 0.9585352992931044,
+    "macro_f1_population": 0.9203418745690887,
+    "f1_population": {
+     "Flat": 0.9668823531952779,
+     "PSPL": 0.960397920910811,
+     "NonPSPL": 0.8263546846556232,
+     "PeriodicVar": 0.9662100456621004,
+     "LongPeriodVar": 0.9046439647402614,
+     "Eruptive": 0.897562278250458
+    },
+    "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.9001711351968055,
+     "completeness_k_n": [
+      1578,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8852509991766709,
+      0.9133412017366044
+     ],
+     "purity_population_weighted": 0.9188664624621484,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.0045929018251094494
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9588398921972072,
+     "f1": {
+      "Flat": 0.965637850652683,
+      "PSPL": 0.9622207007420452,
+      "NonPSPL": 0.8327508783152036,
+      "PeriodicVar": 0.9667032564946945,
+      "LongPeriodVar": 0.9172489902073497,
+      "Eruptive": 0.9011832457021263
+     },
+     "macro_f1": 0.9242908203523502,
+     "recall": {
+      "Flat": 0.9743883243675,
+      "PSPL": 0.9343648012187024,
+      "NonPSPL": 0.9515116942384484,
+      "PeriodicVar": 0.9939804364183596,
+      "LongPeriodVar": 0.9659178931061193,
+      "Eruptive": 0.9894662921348315
+     },
+     "precision": {
+      "Flat": 0.9570431449543111,
+      "PSPL": 0.9917885550775326,
+      "NonPSPL": 0.7403462123721615,
+      "PeriodicVar": 0.9408831908831908,
+      "LongPeriodVar": 0.8732493026358382,
+      "Eruptive": 0.8273634812377464
+     },
+     "confusion": [
+      [
+       6809.999900658977,
+       37.333332008785725,
+       0.0,
+       83.0,
+       51.0,
+       7.666666401757145
+      ],
+      [
+       276.66665686501426,
+       18036.666016314513,
+       584.9999777476005,
+       0.0,
+       126.99999523162859,
+       278.3333232667714
+      ],
+      [
+       0.0,
+       83.0,
+       1668.0,
+       0.0,
+       0.0,
+       2.0
+      ],
+      [
+       8.0,
+       0.0,
+       0.0,
+       1321.0,
+       0.0,
+       0.0
+      ],
+      [
+       18.0,
+       20.0,
+       0.0,
+       0.0,
+       1247.0,
+       6.0
+      ],
+      [
+       3.0,
+       9.0,
+       0.0,
+       0.0,
+       3.0,
+       1409.0
+      ]
+     ]
     }
    }
   },
@@ -356,6 +1156,7 @@
      "Eruptive": 0.9227603259889652
     },
     "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
     "prevalence": {
      "raw": 0.11674214171550347,
      "population_weighted": 0.05462817865364875,
@@ -374,6 +1175,85 @@
      ],
      "purity_population_weighted": 0.9032319066236261,
      "false_flag_rate_nonnonpspl_population_weighted": 0.005625755341201555
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9590059436349405,
+     "f1": {
+      "Flat": 0.9020258552744359,
+      "PSPL": 0.9609450164951305,
+      "NonPSPL": 0.834804334310221,
+      "PeriodicVar": 0.7500709761302946,
+      "LongPeriodVar": 0.8925438622417036,
+      "Eruptive": 0.9253535043139243
+     },
+     "macro_f1": 0.877623924794285,
+     "recall": {
+      "Flat": 0.8662005312889142,
+      "PSPL": 0.9312291728228415,
+      "NonPSPL": 0.9532230462065031,
+      "PeriodicVar": 0.9962292609351433,
+      "LongPeriodVar": 0.9583987441130298,
+      "Eruptive": 0.988756148981026
+     },
+     "precision": {
+      "Flat": 0.9409424416853751,
+      "PSPL": 0.9926198580803797,
+      "NonPSPL": 0.742556665528199,
+      "PeriodicVar": 0.6014569743244742,
+      "LongPeriodVar": 0.8351573232812817,
+      "Eruptive": 0.8695920928428968
+     },
+     "confusion": [
+      [
+       6070.333235846667,
+       29.66666560702858,
+       0.0,
+       875.3333312140572,
+       25.0,
+       7.666666401757145
+      ],
+      [
+       341.9999880790714,
+       17977.99935150221,
+       578.3333113458433,
+       0.0,
+       212.99999205271428,
+       194.3333264456857
+      ],
+      [
+       0.0,
+       79.0,
+       1671.0,
+       0.0,
+       0.0,
+       3.0
+      ],
+      [
+       5.0,
+       0.0,
+       0.0,
+       1321.0,
+       0.0,
+       0.0
+      ],
+      [
+       31.0,
+       16.0,
+       0.0,
+       0.0,
+       1221.0,
+       6.0
+      ],
+      [
+       3.0,
+       9.0,
+       1.0,
+       0.0,
+       3.0,
+       1407.0
+      ]
+     ]
     }
    },
    "test_colour": {
@@ -395,6 +1275,7 @@
      "Eruptive": 0.9104900795918721
     },
     "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
     "prevalence": {
      "raw": 0.11674214171550347,
      "population_weighted": 0.05462817865364875,
@@ -413,8 +1294,331 @@
      ],
      "purity_population_weighted": 0.9026801022495042,
      "false_flag_rate_nonnonpspl_population_weighted": 0.005625755341201556
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9581928330770078,
+     "f1": {
+      "Flat": 0.9599136822581632,
+      "PSPL": 0.9597560213638869,
+      "NonPSPL": 0.8354493864387195,
+      "PeriodicVar": 0.9573310770894257,
+      "LongPeriodVar": 0.896576841373932,
+      "Eruptive": 0.9108932253650509
+     },
+     "macro_f1": 0.9199867056481964,
+     "recall": {
+      "Flat": 0.9759145322020685,
+      "PSPL": 0.9292535097479985,
+      "NonPSPL": 0.9509412435824302,
+      "PeriodicVar": 0.9932279909706546,
+      "LongPeriodVar": 0.9535243996901627,
+      "Eruptive": 0.9894662921348315
+     },
+     "precision": {
+      "Flat": 0.9444290602174354,
+      "PSPL": 0.9923289689888837,
+      "NonPSPL": 0.7449724487633207,
+      "PeriodicVar": 0.9239384042777136,
+      "LongPeriodVar": 0.8460481141246787,
+      "Eruptive": 0.843881018726755
+     },
+     "confusion": [
+      [
+       6820.666567060734,
+       29.66666560702858,
+       0.0,
+       108.66666640175714,
+       29.0,
+       1.0
+      ],
+      [
+       352.33332088258567,
+       17937.999353091665,
+       569.6666449440861,
+       0.0,
+       191.99999284744285,
+       251.66665765974284
+      ],
+      [
+       0.0,
+       84.0,
+       1667.0,
+       0.0,
+       0.0,
+       2.0
+      ],
+      [
+       9.0,
+       0.0,
+       0.0,
+       1320.0,
+       0.0,
+       0.0
+      ],
+      [
+       36.0,
+       18.0,
+       0.0,
+       0.0,
+       1231.0,
+       6.0
+      ],
+      [
+       4.0,
+       7.0,
+       1.0,
+       0.0,
+       3.0,
+       1409.0
+      ]
+     ]
     }
    }
+  },
+  "finetuned_on_train_colour_final_epoch": {
+   "test_f002": {
+    "completeness_at_purity": 0.9367448471926084,
+    "purity_achieved": 0.8405612296021787,
+    "threshold": 0.7776244282722473,
+    "completeness_ci95": [
+     0.9236195009179302,
+     0.9477255991431249
+    ],
+    "ap": 0.9592219006939456,
+    "macro_f1_population": 0.9026329996697599,
+    "f1_population": {
+     "Flat": 0.9464183294780507,
+     "PSPL": 0.9637639197496585,
+     "NonPSPL": 0.8280110942315566,
+     "PeriodicVar": 0.8625153298111085,
+     "LongPeriodVar": 0.8970565354708502,
+     "Eruptive": 0.918032789277334
+    },
+    "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.9041642897889333,
+     "completeness_k_n": [
+      1585,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8894871531777435,
+      0.9170738936462843
+     ],
+     "purity_population_weighted": 0.9086566055052768,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.005252170028542514
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9599834530150637,
+     "f1": {
+      "Flat": 0.9460667102395534,
+      "PSPL": 0.9645421504402429,
+      "NonPSPL": 0.8368012078104301,
+      "PeriodicVar": 0.8719700314614188,
+      "LongPeriodVar": 0.9091357435452294,
+      "Eruptive": 0.9192018342509517
+     },
+     "macro_f1": 0.9079529462913044,
+     "recall": {
+      "Flat": 0.9315544136220946,
+      "PSPL": 0.9393615001243466,
+      "NonPSPL": 0.9520821448944666,
+      "PeriodicVar": 0.9947209653092006,
+      "LongPeriodVar": 0.9646781789638933,
+      "Eruptive": 0.9873506676036542
+     },
+     "precision": {
+      "Flat": 0.9610383243718958,
+      "PSPL": 0.9911099773754358,
+      "NonPSPL": 0.7464221896317004,
+      "PeriodicVar": 0.7761867408659989,
+      "LongPeriodVar": 0.8596409454488194,
+      "Eruptive": 0.8598531253570981
+     },
+     "confusion": [
+      [
+       6528.3332366414015,
+       50.66666481230002,
+       0.0,
+       380.3333312140571,
+       40.0,
+       8.666666401757144
+      ],
+      [
+       234.66665845447142,
+       18134.99934593912,
+       565.9999785423289,
+       0.0,
+       157.66666083865715,
+       212.33332565095714
+      ],
+      [
+       0.0,
+       82.0,
+       1669.0,
+       0.0,
+       0.0,
+       2.0
+      ],
+      [
+       7.0,
+       0.0,
+       0.0,
+       1319.0,
+       0.0,
+       0.0
+      ],
+      [
+       20.0,
+       19.0,
+       0.0,
+       0.0,
+       1229.0,
+       6.0
+      ],
+      [
+       3.0,
+       11.0,
+       1.0,
+       0.0,
+       3.0,
+       1405.0
+      ]
+     ]
+    }
+   },
+   "test_colour": {
+    "completeness_at_purity": 0.9346126510305615,
+    "purity_achieved": 0.8261780159714116,
+    "threshold": 0.7559716701507568,
+    "completeness_ci95": [
+     0.9221422542394492,
+     0.9469924642292766
+    ],
+    "ap": 0.9586030216039371,
+    "macro_f1_population": 0.9232924477418841,
+    "f1_population": {
+     "Flat": 0.9681941338148257,
+     "PSPL": 0.9626201573832451,
+     "NonPSPL": 0.8257389211052093,
+     "PeriodicVar": 0.9640243903606918,
+     "LongPeriodVar": 0.9017608917052508,
+     "Eruptive": 0.9174161920820829
+    },
+    "n_events": 15016,
+    "evaluator_split_note": "ap, macro_f1_population and f1_population are pipeline.evaluate's values on its 80% test split; all_events holds them on every event of the arm",
+    "prevalence": {
+     "raw": 0.11674214171550347,
+     "population_weighted": 0.05462817865364875,
+     "n": 15016
+    },
+    "at_frozen_threshold": {
+     "threshold": 0.9042405486106873,
+     "completeness": 0.9001711351968055,
+     "completeness_k_n": [
+      1578,
+      1753
+     ],
+     "completeness_wilson95": [
+      0.8852509991766709,
+      0.9133412017366044
+     ],
+     "purity_population_weighted": 0.9153132280115887,
+     "false_flag_rate_nonnonpspl_population_weighted": 0.004812657892920471
+    },
+    "all_events": {
+     "n": 15016,
+     "ap": 0.9591686512144544,
+     "f1": {
+      "Flat": 0.9672720396344617,
+      "PSPL": 0.9642119079949201,
+      "NonPSPL": 0.834739044208606,
+      "PeriodicVar": 0.9670786930325009,
+      "LongPeriodVar": 0.9152791397919406,
+      "Eruptive": 0.9193601068581186
+     },
+     "macro_f1": 0.9279901552534248,
+     "recall": {
+      "Flat": 0.9754375923177285,
+      "PSPL": 0.9386126988434833,
+      "NonPSPL": 0.9503707929264119,
+      "PeriodicVar": 0.9909706546275395,
+      "LongPeriodVar": 0.965143299767622,
+      "Eruptive": 0.9887640449438202
+     },
+     "precision": {
+      "Flat": 0.9592420624644739,
+      "PSPL": 0.9912466260771178,
+      "NonPSPL": 0.7441929792283167,
+      "PeriodicVar": 0.9443116636592905,
+      "LongPeriodVar": 0.870314322035299,
+      "Eruptive": 0.8590604068500296
+     },
+     "confusion": [
+      [
+       6817.333234257219,
+       44.99999841054287,
+       0.0,
+       77.66666640175714,
+       48.0,
+       1.0
+      ],
+      [
+       255.66665765974284,
+       18118.666013135604,
+       572.6666449440861,
+       0.0,
+       134.66666163338573,
+       221.99999205271428
+      ],
+      [
+       0.0,
+       85.0,
+       1666.0,
+       0.0,
+       0.0,
+       2.0
+      ],
+      [
+       12.0,
+       0.0,
+       0.0,
+       1317.0,
+       0.0,
+       0.0
+      ],
+      [
+       19.0,
+       20.0,
+       0.0,
+       0.0,
+       1246.0,
+       6.0
+      ],
+      [
+       3.0,
+       10.0,
+       0.0,
+       0.0,
+       3.0,
+       1408.0
+      ]
+     ]
+    }
+   }
+  },
+  "finetune_checkpoints_sha256": {
+   "train_trained": "2d499cf80252f3b4b399f95da8a586513476786af6008f0a15407a7451a21bc4",
+   "train_colour": "c5b7f11aecb3454c603ba361672b12297d4cf91a360bc031e5e973d4ff98bf39"
   }
  },
  "mixed_class_stream": {
@@ -485,6 +1689,17 @@
    "n": 32,
    "population_weighted": 0.9847198635786701
   },
+  "single_lens_alerts_by_origin": {
+   "generated_single_lens": {
+    "k": 3,
+    "n": 1759
+   },
+   "demoted_binary": {
+    "k": 29,
+    "n": 2632
+   },
+   "note": "PSPL-labelled events by generator class; demoted binaries are subsampled at keep_prob 0.15, generated single lenses kept whole"
+  },
   "timing_nonpspl": {
    "n_eligible": 1753,
    "detected_frac": 0.899030233884769,
@@ -497,5 +1712,154 @@
    "onset": "t_anom on the 0.5-d first-detectable grid recorded at generation"
   }
  },
- "command": "validation/referee_round_local.py --workers 6 --finetune"
+ "floor_overlap": {
+  "n_ref": 15016,
+  "n_ref_nonpspl": 1753,
+  "test_f001": {
+   "n_shared": 3245,
+   "n_shared_nonpspl": 377,
+   "frac_shared": 0.21610282365476824
+  },
+  "test_f005": {
+   "n_shared": 682,
+   "n_shared_nonpspl": 74,
+   "frac_shared": 0.04541822056473095
+  }
+ },
+ "threshold_selection_overlap": {
+  "n": 15016,
+  "n_matched_to_pool": 11257,
+  "n_ambiguous": 16,
+  "n_threshold_selection_rows": 2182,
+  "frac_threshold_selection_rows": 0.14531166755460842
+ },
+ "mixed_class_stream_f146": {
+  "n_events": 15016,
+  "threshold": 0.9042405486106873,
+  "by_class": {
+   "Flat": {
+    "n": 4849,
+    "alert_frac_per_season": 0.0,
+    "alert_frac_population_weighted": 0.0
+   },
+   "PSPL": {
+    "n": 4391,
+    "alert_frac_per_season": 0.03529947620132089,
+    "alert_frac_population_weighted": 0.03855517374855521
+   },
+   "NonPSPL": {
+    "n": 1753,
+    "alert_frac_per_season": 0.8642327438676555,
+    "alert_frac_population_weighted": 0.8642327438676555
+   },
+   "PeriodicVar": {
+    "n": 1326,
+    "alert_frac_per_season": 0.0,
+    "alert_frac_population_weighted": 0.0
+   },
+   "LongPeriodVar": {
+    "n": 1274,
+    "alert_frac_per_season": 0.0,
+    "alert_frac_population_weighted": 0.0
+   },
+   "Eruptive": {
+    "n": 1423,
+    "alert_frac_per_season": 0.0028109627547434997,
+    "alert_frac_population_weighted": 0.0028109627547434997
+   }
+  },
+  "alerts_per_1000_events_per_day": {
+   "raw": 1.5483484283431008,
+   "population_weighted": 0.9796046157464436
+  },
+  "streaming_purity_nonpspl": {
+   "raw": 0.9050179211469535,
+   "population_weighted": 0.6693667239063836
+  },
+  "alert_share_by_class_population_weighted": {
+   "Flat": 0.0,
+   "PSPL": 0.32886597121201533,
+   "NonPSPL": 0.6693667239063836,
+   "PeriodicVar": 0.0,
+   "LongPeriodVar": 0.0,
+   "Eruptive": 0.001767304881601013
+  },
+  "alert_frac_nonnonpspl_population_weighted": 0.024667618683828874,
+  "at_prevalence": {
+   "0.01": {
+    "purity": 0.2613875595333542,
+    "alerts_per_1000_events_per_day": 0.4592120824398214
+   },
+   "0.001": {
+    "purity": 0.033881935000691366,
+    "alerts_per_1000_events_per_day": 0.354266441791843
+   }
+  },
+  "simulated_prevalence_population_weighted": 0.05462817865364876,
+  "pspl_alerts_from_demoted_binaries": {
+   "k": 104,
+   "n": 155,
+   "population_weighted": 0.9314823082565569
+  },
+  "single_lens_alerts_by_origin": {
+   "generated_single_lens": {
+    "k": 51,
+    "n": 1759
+   },
+   "demoted_binary": {
+    "k": 104,
+    "n": 2632
+   },
+   "note": "PSPL-labelled events by generator class; demoted binaries are subsampled at keep_prob 0.15, generated single lenses kept whole"
+  },
+  "timing_nonpspl": {
+   "n_eligible": 1753,
+   "detected_frac": 0.8642327438676555,
+   "premature_frac": 0.009697661152310326,
+   "premature_ci95": [
+    0.006063487476903448,
+    0.015476075338549009
+   ],
+   "median_lag_nonpremature_days": 5.0,
+   "onset": "t_anom on the 0.5-d first-detectable grid recorded at generation"
+  }
+ },
+ "single_lens_stream_recommended_f146": {
+  "checkpoint": "binml-gapaware.pt (recommended)",
+  "bands": "F146",
+  "n_generated_single_lenses": 1759,
+  "alerts_at_frozen_threshold": 31,
+  "alerts_at_own_threshold": 9,
+  "alert_frac_frozen": 0.01762364980102331,
+  "alert_frac_own": 0.00511654349061967,
+  "own_threshold": 0.9563422799110413
+ },
+ "command": "validation/referee_round_local.py --workers 5 --finetune --archive validation/referee_round_archive",
+ "archive": {
+  "dir": "validation/referee_round_archive",
+  "sha256": {
+   "stream_scan_all_00090.npz": "1b8e3b41e92ade011720c932deb8c996e9e7cf091aa2b72528045ce52704c980",
+   "stream_scan_f146_00090.npz": "0a7b23a6691833b1b04f3b01601470a51b7cc915287f6154011a4f3b2330741a",
+   "stream_scan_gapaware_f146_single_00090.npz": "376d941972850ac93cb5bd4cd635512c610fbcbf0181857e8ce0b103ff5fe2ff",
+   "stream_events_00090.npz": "31ad1cbda1e8be692fe6904ca080e8ab155cb4f34820184e9a969283a648d5b0",
+   "stream_scan_all_00091.npz": "a2e6f3082fed42760edaeba3f06c14a9a5abcee20be0d360dcd2ab798e9538dc",
+   "stream_scan_f146_00091.npz": "b15657130bf23cf05ee2b196bbfaeddeb08b01ca7aef9dd34035325f7b47f4f3",
+   "stream_scan_gapaware_f146_single_00091.npz": "06b4024807b984e1b7cf43996e2da9d762c11e837d7c1a4682d789f393a588aa",
+   "stream_events_00091.npz": "fa3255650972760fab2338b12d2a14568d72eb90957ea203c20e65630f804a07",
+   "eval_shipped_test_f001.npz": "a040dfcd62366cdd040b7c3adebac6fa82534dd688f8309939b6ca0a1149220e",
+   "eval_shipped_test_f002.npz": "5433498f34d5e35d9593e14902b919c52769330f637fd4864a35d629c68c8483",
+   "eval_shipped_test_f005.npz": "eb407cb40a48d9032da08621865baa4889a9bf9dbcb5995497695103263cee4f",
+   "eval_shipped_test_colour.npz": "d4747530ad4571071fea01afe1a2257bc0bce8638854f81b7460a2bb11edea41",
+   "eval_train_trained_test_f002.npz": "00cc0e2d235044ed1c497d27df02605e2b5bfb55a2f0d83988ee0791f0ec3139",
+   "eval_train_trained_test_colour.npz": "e6f3023f10de1f3a94690f3d5105fd38eef01e6c90ecfb1babe82a7c168d89b1",
+   "eval_train_trained_final_test_f002.npz": "c726dcb765b7d2d692228aaaec9c203ef4ba80b8d1d9574c8cf1fc9939cf1415",
+   "eval_train_trained_final_test_colour.npz": "dc36029a42206223f8487afe427f292fe070442aff46a772ec11af40a988ad71",
+   "eval_train_colour_test_f002.npz": "fcf9b010600c1e96525722e79526a5a6289cd425c86b3b14804fdbcca7513a6b",
+   "eval_train_colour_test_colour.npz": "9482401870c61e9d6f519e8f931fe12373ceef6a74e5df8c142453b222b63e28",
+   "eval_train_colour_final_test_f002.npz": "c3b590f0c0226904b4fcd12fc01fb97317323c1e1ac6a09fa3a3212b96177719",
+   "eval_train_colour_final_test_colour.npz": "ed129c9df59e4aa549ce5074eacf1208c48fef39c30467de67e3e75650cd0066",
+   "ft_train_trained.pt": "2d499cf80252f3b4b399f95da8a586513476786af6008f0a15407a7451a21bc4",
+   "ft_train_colour.pt": "c5b7f11aecb3454c603ba361672b12297d4cf91a360bc031e5e973d4ff98bf39"
+  }
+ }
 }

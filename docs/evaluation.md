@@ -96,7 +96,7 @@ augmented arm has fewer premature crossings through most, but not all, of the me
 a causal benefit is not established.
 
 The 1,000-event streaming scan is also conditional on binary eligibility: it contains no Flat,
-PSPL, demoted-binary, or variable-star prefix traces. An every-class scan of the same two shards (`validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: STREAMPLACE The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested. A deployment-style test
+PSPL, demoted-binary, or variable-star prefix traces. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses alert); with F146 alone 51 generated single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested. A deployment-style test
 still needs disjoint mixed-class prefix calibration.
 
 The stored scan also has provenance limits. The main trace was generated from a dirty source tree

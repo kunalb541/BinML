@@ -16,6 +16,12 @@ suite's recorded seed bases, regimes and (for the out-of-range tiers) its origin
 Metrics are pipeline.agg_stress's: argmax classes, per-class recall / precision / F1 with population weights
 (1/keep_prob) over every event of a tier; macro-F1 over the six classes for the natural tier.
 
+The suite's PSPL recalls are by LABEL. An out-of-range sweep perturbs only its swept generator class, so in
+oor_pspl_shortte the PSPL-labelled events are sub-day single lenses plus binaries of natural timescale whose anomaly
+fails the detectability policy (demoted to PSPL; population weight 1/keep_prob), and in oor_flat_faint faint single
+lenses plus faint demoted binaries. `pspl_label_by_generator_class` splits them, and `single_lens_recall` gives the
+number the paper quotes for single lenses (not available for the suite, whose per-event predictions are on S3).
+
 Usage:  python validation/stress_rescore_local.py [--workers 4]
 """
 from __future__ import annotations
@@ -107,9 +113,29 @@ def metrics(ev):
         if (y == c).sum():
             r, p, f = prf(y, pred, w, c)
             cls[name] = {"recall": float(r), "precision": float(p), "f1": float(f), "n": int((y == c).sum())}
-    out = {"n": int(y.size), "per_class": cls}
+    out = {"n": int(y.size), "per_class": cls,
+           "label_fractions": {n: float((y == c).mean()) for c, n in enumerate(CLASS_NAMES)}}
     if len(cls) == len(CLASS_NAMES):
         out["macro_f1"] = float(np.mean([cls[n]["f1"] for n in CLASS_NAMES]))
+    # PSPL-labelled events split by generator class (see the module docstring)
+    tc = np.load(os.path.join(ev, "true_class.npy")).astype(int)
+    ip, inp = CLASS_NAMES.index("PSPL"), CLASS_NAMES.index("NonPSPL")
+    lab = y == ip
+    by_gen = {}
+    for gname, gi in (("single_lenses", ip), ("demoted_binaries", inp)):
+        m = lab & (tc == gi)
+        if m.any():
+            by_gen[gname] = {"n": int(m.sum()), "recall": float((w[m] * (pred[m] == ip)).sum() / w[m].sum()),
+                             "weighted_share_of_label": float(w[m].sum() / w[lab].sum()),
+                             "argmax_fractions": {n: float(w[m & (pred == c)].sum() / w[m].sum()) for c, n in enumerate(CLASS_NAMES)}}
+    out["pspl_label_by_generator_class"] = by_gen
+    # anomaly-call rates, weighted: precision depends on the tier's anomaly prevalence, so keep the pieces
+    inon = CLASS_NAMES.index("NonPSPL")
+    pos, flag = y == inon, pred == inon
+    out["nonpspl_rates"] = {"prevalence_w": float(w[pos].sum() / w.sum()),
+                            "tpr_w": float(w[pos & flag].sum() / max(w[pos].sum(), 1e-12)),
+                            "fpr_w": float(w[~pos & flag].sum() / w[~pos].sum()),
+                            "n_flagged": int(flag.sum()), "n_false_flags": int((flag & ~pos).sum())}
     return out
 
 
@@ -131,6 +157,12 @@ def main(argv=None):
            "tiers": {t: {"seed_base": TIERS[t][0], "regime": TIERS[t][1], "shards": list(range(TIERS[t][2])),
                          "suite_n": report["regimes"][t]["n"]} for t in TIERS},
            "subset": {}, "quoted": {}}
+    # Shards, caches and evaluations are reused from WORK when present; keep the code state that produced them.
+    if os.path.exists(args.out):
+        prev = json.load(open(args.out))
+        res["code_generation_and_scoring"] = prev.get("code_generation_and_scoring", prev.get("code"))
+    else:
+        res["code_generation_and_scoring"] = code
     for t in TIERS:
         res["subset"][t] = {name: metrics(evaluate(name, t)) for name in CKPTS}
         log(f"{t}: " + json.dumps({k: {c: round(v['per_class'][c]['recall'], 3) for c in v['per_class']} for k, v in res['subset'][t].items()}))
@@ -142,6 +174,19 @@ def main(argv=None):
         res["quoted"][key] = {"suite_stage5": suite, "subset_stage5": res["subset"][t]["stage5"]["per_class"][c][m],
                               "subset_released": res["subset"][t]["released"]["per_class"][c][m],
                               "n_subset": res["subset"][t]["released"]["per_class"][c]["n"]}
+    res["single_lens_recall"] = {t: {name: res["subset"][t][name]["pspl_label_by_generator_class"]["single_lenses"]
+                                     for name in CKPTS} for t in ("oor_pspl_shortte", "oor_flat_faint", "natural")}
+    # the same tier's rates at the natural population's anomaly prevalence (prior shift)
+    pi = res["subset"]["natural"]["released"]["nonpspl_rates"]["prevalence_w"]
+    res["precision_at_natural_prevalence"] = {"natural_prevalence_w": pi}
+    for t in ("planetary", "oor_np_widesep", "oor_flat_faint"):
+        res["precision_at_natural_prevalence"][t] = {}
+        for name in CKPTS:
+            r = res["subset"][t][name]["nonpspl_rates"]
+            res["precision_at_natural_prevalence"][t][name] = r["tpr_w"] * pi / (r["tpr_w"] * pi + r["fpr_w"] * (1 - pi))
+    res["suite_label_fractions"] = {t: {c: v["n"] / (report["natural_population"] if t == "natural" else report["regimes"][t])["n"]
+                                        for c, v in (report["natural_population"] if t == "natural" else report["regimes"][t])["per_class"].items()}
+                                    for t in TIERS}
     json.dump(res, open(args.out, "w"), indent=1)
     log(f"wrote {args.out}")
     print(json.dumps(res["quoted"], indent=1))

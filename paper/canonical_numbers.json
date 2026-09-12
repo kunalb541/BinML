@@ -238,7 +238,7 @@
     "ap_fitted_pspl": 0.545
   },
   "infra": {
-    "_comment": "measured/recorded infrastructure numbers for the appendix",
+    "_comment": "measured/recorded infrastructure numbers for the appendix. 2026-09-13 (third verification): the training fields now describe the released checkpoint's six-stage warm-start chain from the stage logs (base ... stage6_20260726_0025.log): final stage 1,906,329 events (1,525,063 train), batch 384, 6 epochs, released = zero-based epoch 4; base 540,952 training events at batch 512; about 22 h of epochs in total. They had described the base run's defaults (batch 256, 5 epochs). train_events_per_sec is a step benchmark at batch 256 (train_batch_benchmark).",
     "sim_events_millions": 10.0,
     "sim_instances": 3,
     "sim_vcpus_each": 2,
@@ -247,9 +247,13 @@
     "sim_region": "eu-central-1",
     "train_device": "Apple M-series GPU (MPS)",
     "train_events_per_sec": 958,
-    "train_batch": 256,
-    "train_hours": 15,
-    "train_epochs_effective": 5
+    "train_batch": 384,
+    "train_hours": 22,
+    "train_epochs_effective": 6,
+    "train_stages": 6,
+    "train_final_stage_events": 1906329,
+    "train_base_events": 540952,
+    "train_batch_benchmark": 256
   },
   "model": {
     "n_params": 505479,
