@@ -1,6 +1,6 @@
 {
  "_doc": "The stress-test numbers for the RELEASED checkpoint -> validation/stress_rescore_local.json.",
- "code": "submitted-ac-2026-08-15-54-gcd85ee815466",
+ "code": "submitted-ac-2026-08-15-54-gb216d54d4a11",
  "command": "validation/stress_rescore_local.py --workers 4",
  "checkpoints": {
   "stage5": {

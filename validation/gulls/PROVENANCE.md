@@ -39,7 +39,7 @@ Which checkpoint scored what (2026-09-13, from the third verification): the 14.9
 `v5runs/binml_v5_stage5.pt`, sha256 4e7a5a85...), not the released `binml.pt` (= stage 6, 897a9aec...);
 `validation/stress_rescore_local.py` re-scores regenerated shards of the quoted tiers with both
 (`validation/stress_rescore_local.json`: 255,527 events; shards generated and scored at 6016bc6, metrics recomputed at
-cd85ee8; the raw shards were deleted after caching and regenerate from the seeds). Stage 5 on the subset reproduces
+b216d54; the raw shards were deleted after caching and regenerate from the seeds). Stage 5 on the subset reproduces
 the suite (macro-F1 0.927 vs 0.927; median difference 0.012 over the quoted numbers, largest 0.095 for the
 wide-separation recall on 60 events), so the subset stands in for the suite. The suite's PSPL recalls are per label,
 and in `oor_pspl_shortte` 38% of the weighted PSPL-labelled events are demoted binaries of natural timescale: the

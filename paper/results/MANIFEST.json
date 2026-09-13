@@ -213,7 +213,7 @@
       "_note": "2026-09-12: recommended gap-aware checkpoint (byte-identical to validation/gulls/weights/ft_fspl5s_seasons_g08.pt)"
     },
     "validation/stress_rescore_local.json": {
-      "sha256": "9c5a355e2c90ef4f9ce7ff2912c1e54aa61bc2e827da1c0564c36cf2d349512e",
+      "sha256": "a4b715a9b565c918202730609ba267947cb764ee41adecb929ceeedcc11e1516",
       "_note": "2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
     }
   }
