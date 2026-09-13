@@ -3,15 +3,18 @@
 
 The 14.9-million-event stress suite (paper/results/stress_report.json; aws/controller.sh) was scored in July 2026
 with the stage-5 checkpoint (v5runs/binml_v5_stage5.pt, sha256 4e7a5a85...), the predecessor of the released
-binml.pt (= stage 6: warm-started from stage 5 with the truncation relabel for every class and weak-spot coverage --
-wider s, short t_E, faint sources). The paper had quoted those numbers as the released model's. The full suite is
-on S3 and is not re-scored here; instead this regenerates the first shards of the tiers the paper quotes, with the
-suite's recorded seed bases, regimes and (for the out-of-range tiers) its original class mix (run_shard
---legacy-oor-mix), and scores the SAME events with both checkpoints:
+binml.pt (= stage 6). The paper had quoted those numbers as the released model's. The full suite is on S3 and is not
+re-scored here; instead this regenerates the first shards of the tiers the paper quotes, with the suite's seed bases
+and regimes, its out-of-range class mix (run_shard --legacy-oor-mix) and, for the out-of-range sweeps, its
+generator's t0 draw (run_shard --legacy-t0-pad; the July generator left ~20% of sub-day single lenses peaking outside
+the season), and scores the same events with both checkpoints:
 
-* stage 5 on the regenerated subset against the suite's full-population numbers checks that the subset (and the
-  regeneration) stands in for the suite;
-* the released checkpoint on the same events gives the numbers the paper should quote for it.
+* stage 5 on the regenerated subset against the suite's full-population numbers shows how close the subset is to the
+  suite. It is a new realisation, not the suite's events: the suite's cloud fleet ran an unpinned software
+  environment, and locally the same code labels ~2% fewer detectable anomalies in the natural tier, so comparisons
+  between the two checkpoints are made within the subset;
+* the released checkpoint on the same events gives the numbers the paper quotes for it;
+* `oor_pspl_shortte_current` is the sub-day tier with the current (fixed) t0 draw, the corrected population.
 
 Metrics are pipeline.agg_stress's: argmax classes, per-class recall / precision / F1 with population weights
 (1/keep_prob) over every event of a tier; macro-F1 over the six classes for the natural tier.
@@ -21,6 +24,12 @@ oor_pspl_shortte the PSPL-labelled events are sub-day single lenses plus binarie
 fails the detectability policy (demoted to PSPL; population weight 1/keep_prob), and in oor_flat_faint faint single
 lenses plus faint demoted binaries. `pspl_label_by_generator_class` splits them, and `single_lens_recall` gives the
 number the paper quotes for single lenses (not available for the suite, whose per-event predictions are on S3).
+The faint sweep's class mix is mostly flat sources (MIXES["flat"]), so its anomaly prevalence -- and hence its
+anomaly precision -- is set mostly by that mix; `pspl_label_false_anomaly_w` and `pspl_label_above_frozen_w` are the
+mix-independent false-anomaly rates among microlensing events without a detectable anomaly.
+
+Each tier's shards, caches and evaluations are stamped with the code state that made them (WORK/stamp_<tier>.txt,
+written when the tier's first shard is generated) and reused when present.
 
 Usage:  python validation/stress_rescore_local.py [--workers 4]
 """
@@ -43,10 +52,12 @@ sys.path.insert(0, REPO)
 WORK = os.path.expanduser("~/Desktop/Research/microlensing/stress_local_work")
 CKPTS = {"stage5": os.path.expanduser("~/Desktop/Research/microlensing/v5runs/binml_v5_stage5.pt"),
          "released": os.path.join(REPO, "binml", "weights", "binml.pt")}
-# tier: (seed base as in aws/controller.sh and aws/launch_stress.sh, regime, shards regenerated here)
-TIERS = {"natural": (900000000, None, 16), "planetary": (910000000, "planetary", 8),
-         "oor_np_widesep": (935000000, "oor_np_widesep", 4), "oor_per_longp": (938000000, "oor_per_longp", 4),
-         "oor_pspl_shortte": (931000000, "oor_pspl_shortte", 4), "oor_flat_faint": (945000000, "oor_flat_faint", 4)}
+# tier: (seed base as in aws/controller.sh and aws/launch_stress.sh, regime, shards regenerated here, run_shard flags)
+LEGACY = ["--legacy-oor-mix", "--legacy-t0-pad"]
+TIERS = {"natural": (900000000, None, 16, []), "planetary": (910000000, "planetary", 8, []),
+         "oor_np_widesep": (935000000, "oor_np_widesep", 4, LEGACY), "oor_per_longp": (938000000, "oor_per_longp", 4, LEGACY),
+         "oor_pspl_shortte": (931000000, "oor_pspl_shortte", 4, LEGACY), "oor_flat_faint": (945000000, "oor_flat_faint", 4, ["--legacy-oor-mix"]),   # a config regime: no t0 re-pad
+         "oor_pspl_shortte_current": (931000000, "oor_pspl_shortte", 4, ["--legacy-oor-mix"])}
 FROZEN = 0.9042405486106873     # the released model's complete-season operating threshold (paper/results/metrics.json)
 # the numbers the paper quotes: (tier, class, metric)
 QUOTED = {"natural_np_recall": ("natural", "NonPSPL", "recall"), "natural_np_prec": ("natural", "NonPSPL", "precision"),
@@ -68,16 +79,24 @@ def run(cmd):
     return r
 
 
-def gen(tier, shard):
-    seed, regime, _ = TIERS[tier]
+def stamp(tier, code):
+    """The code state that generated and scored a tier: written when its first shard is generated, read back after."""
+    p = os.path.join(WORK, f"stamp_{tier}.txt")
+    if not os.path.exists(p):
+        open(p, "w").write(code + "\n")
+    return open(p).read().strip()
+
+
+def gen(tier, shard, code):
+    seed, regime, _, flags = TIERS[tier]
     d = os.path.join(WORK, f"raw_{tier}"); os.makedirs(d, exist_ok=True)
     out = os.path.join(d, f"shard_{shard:05d}.h5")
     if not os.path.exists(out):
+        stamp(tier, code)
         cmd = [sys.executable, "-m", "pipeline.run_shard", "--shard", str(shard), "--n-shards", "600", "--out", d, "--seed-base", str(seed)]
         if regime:
             cmd += ["--regime", regime]
-        if regime and regime.startswith("oor_"):
-            cmd += ["--legacy-oor-mix"]
+        cmd += flags
         t0 = time.time(); run(cmd); log(f"  generated {tier} shard {shard} in {(time.time() - t0) / 60:.1f} min")
     return out
 
@@ -116,7 +135,8 @@ def metrics(ev):
             r, p, f = prf(y, pred, w, c)
             cls[name] = {"recall": float(r), "precision": float(p), "f1": float(f), "n": int((y == c).sum())}
     out = {"n": int(y.size), "per_class": cls,
-           "label_fractions": {n: float((y == c).mean()) for c, n in enumerate(CLASS_NAMES)}}
+           "label_fractions": {n: float((y == c).mean()) for c, n in enumerate(CLASS_NAMES)},
+           "label_fractions_w": {n: float(w[y == c].sum() / w.sum()) for c, n in enumerate(CLASS_NAMES)}}
     if len(cls) == len(CLASS_NAMES):
         out["macro_f1"] = float(np.mean([cls[n]["f1"] for n in CLASS_NAMES]))
     # PSPL-labelled events split by generator class (see the module docstring)
@@ -132,6 +152,12 @@ def metrics(ev):
                              "argmax_fractions": {n: float(w[m & (pred == c)].sum() / w[m].sum()) for c, n in enumerate(CLASS_NAMES)},
                              "frac_above_frozen_threshold": float(w[m & (score >= FROZEN)].sum() / w[m].sum())}
     out["pspl_label_by_generator_class"] = by_gen
+    # mix-independent false anomalies: microlensing events without a detectable anomaly (label PSPL) called anomalies
+    out["pspl_label_false_anomaly_w"] = float((w[lab] * (pred[lab] == inp)).sum() / w[lab].sum()) if lab.any() else None
+    out["pspl_label_above_frozen_w"] = float((w[lab] * (score[lab] >= FROZEN)).sum() / w[lab].sum()) if lab.any() else None
+    tcls = np.load(os.path.join(ev, "true_class.npy")).astype(int)
+    gb = tcls == inp
+    out["binary_detectable_fraction_w"] = float((w[gb] * (y[gb] == inp)).sum() / w[gb].sum()) if gb.any() else None
     # anomaly-call rates, weighted: precision depends on the tier's anomaly prevalence, so keep the pieces
     inon = CLASS_NAMES.index("NonPSPL")
     pos, flag = y == inon, pred == inon
@@ -148,24 +174,21 @@ def main(argv=None):
     ap.add_argument("--out", default=os.path.join(HERE, "stress_rescore_local.json"))
     args = ap.parse_args(argv)
     code = subprocess.run(["git", "describe", "--always", "--dirty", "--abbrev=12"], cwd=REPO, capture_output=True, text=True).stdout.strip()
+    if not code:
+        raise SystemExit("FATAL: git describe returned nothing (disk stall?); rerun -- an artifact must record its code")
     os.makedirs(WORK, exist_ok=True)
     jobs = [(t, s) for t in TIERS for s in range(TIERS[t][2])]
     log(f"generating {len(jobs)} shards with {args.workers} workers")
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
-        list(ex.map(lambda x: gen(*x), jobs))
+        list(ex.map(lambda x: gen(*x, code), jobs))
     report = json.load(open(os.path.join(REPO, "paper", "results", "stress_report.json")))
     res = {"_doc": __doc__.split("\n")[0], "code": code, "command": " ".join(sys.argv),
            "checkpoints": {k: {"path": os.path.relpath(v, REPO) if v.startswith(REPO) else v,
                                "sha256": hashlib.sha256(open(v, "rb").read()).hexdigest()} for k, v in CKPTS.items()},
            "tiers": {t: {"seed_base": TIERS[t][0], "regime": TIERS[t][1], "shards": list(range(TIERS[t][2])),
-                         "suite_n": report["regimes"][t]["n"]} for t in TIERS},
+                         "run_shard_flags": TIERS[t][3], "code_generation_and_scoring": stamp(t, code),
+                         "suite_n": report["regimes"][TIERS[t][1] or "natural"]["n"]} for t in TIERS},
            "subset": {}, "quoted": {}}
-    # Shards, caches and evaluations are reused from WORK when present; keep the code state that produced them.
-    if os.path.exists(args.out):
-        prev = json.load(open(args.out))
-        res["code_generation_and_scoring"] = prev.get("code_generation_and_scoring", prev.get("code"))
-    else:
-        res["code_generation_and_scoring"] = code
     for t in TIERS:
         res["subset"][t] = {name: metrics(evaluate(name, t)) for name in CKPTS}
         log(f"{t}: " + json.dumps({k: {c: round(v['per_class'][c]['recall'], 3) for c in v['per_class']} for k, v in res['subset'][t].items()}))
@@ -178,7 +201,7 @@ def main(argv=None):
                               "subset_released": res["subset"][t]["released"]["per_class"][c][m],
                               "n_subset": res["subset"][t]["released"]["per_class"][c]["n"]}
     res["single_lens_recall"] = {t: {name: res["subset"][t][name]["pspl_label_by_generator_class"]["single_lenses"]
-                                     for name in CKPTS} for t in ("oor_pspl_shortte", "oor_flat_faint", "natural")}
+                                     for name in CKPTS} for t in ("oor_pspl_shortte", "oor_pspl_shortte_current", "oor_flat_faint", "natural")}
     # the same tier's rates at the natural population's anomaly prevalence (prior shift)
     pi = res["subset"]["natural"]["released"]["nonpspl_rates"]["prevalence_w"]
     res["precision_at_natural_prevalence"] = {"natural_prevalence_w": pi}
@@ -187,8 +210,8 @@ def main(argv=None):
         for name in CKPTS:
             r = res["subset"][t][name]["nonpspl_rates"]
             res["precision_at_natural_prevalence"][t][name] = r["tpr_w"] * pi / (r["tpr_w"] * pi + r["fpr_w"] * (1 - pi))
-    res["suite_label_fractions"] = {t: {c: v["n"] / (report["natural_population"] if t == "natural" else report["regimes"][t])["n"]
-                                        for c, v in (report["natural_population"] if t == "natural" else report["regimes"][t])["per_class"].items()}
+    res["suite_label_fractions"] = {t: {c: v["n"] / report["regimes"][TIERS[t][1] or "natural"]["n"]
+                                        for c, v in report["regimes"][TIERS[t][1] or "natural"]["per_class"].items()}
                                     for t in TIERS}
     json.dump(res, open(args.out, "w"), indent=1)
     log(f"wrote {args.out}")

@@ -30,24 +30,101 @@
     "median_lag_nonpremature_days": 6.5,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.875,
+     "detected_ci95": [
+      0.69,
+      0.9566
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 6.5
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.7987,
+     "detected_ci95": [
+      0.7271,
+      0.8552
+     ],
+     "premature_frac": 0.0134,
+     "premature_ci95": [
+      0.0037,
+      0.0476
+     ],
+     "median_lag_nonpremature_days": 5.0
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.6574,
+     "detected_ci95": [
+      0.6244,
+      0.689
+     ],
+     "premature_frac": 0.0254,
+     "premature_ci95": [
+      0.0167,
+      0.0386
+     ],
+     "median_lag_nonpremature_days": 6.5
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.5075,
+     "detected_ci95": [
+      0.4696,
+      0.5452
+     ],
+     "premature_frac": 0.021,
+     "premature_ci95": [
+      0.0125,
+      0.0349
+     ],
+     "median_lag_nonpremature_days": 7.5
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.0617,
+     "alert_frac_ci95": [
+      0.0536,
+      0.0708
+     ],
      "alert_frac_weighted": 0.0891,
-     "alerts_per_1000_events_per_day": 0.856
+     "alerts_per_1000_events_per_day": 0.856,
+     "full_window_flag_frac": 0.048
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.434,
+     "alert_frac_ci95": [
+      0.4091,
+      0.4592
+     ],
      "alert_frac_weighted": 0.5215,
-     "alerts_per_1000_events_per_day": 6.028
+     "alerts_per_1000_events_per_day": 6.028,
+     "full_window_flag_frac": 0.3633
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.4793,
+     "alert_frac_ci95": [
+      0.4541,
+      0.5046
+     ],
      "alert_frac_weighted": 0.5063,
-     "alerts_per_1000_events_per_day": 6.657
+     "alerts_per_1000_events_per_day": 6.657,
+     "full_window_flag_frac": 0.384
     }
    },
    "streaming_purity": {
@@ -88,24 +165,101 @@
     "median_lag_nonpremature_days": 8.0,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.75,
+     "detected_ci95": [
+      0.551,
+      0.88
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 7.25
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.6711,
+     "detected_ci95": [
+      0.5922,
+      0.7414
+     ],
+     "premature_frac": 0.0134,
+     "premature_ci95": [
+      0.0037,
+      0.0476
+     ],
+     "median_lag_nonpremature_days": 6.25
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.5278,
+     "detected_ci95": [
+      0.4937,
+      0.5617
+     ],
+     "premature_frac": 0.0145,
+     "premature_ci95": [
+      0.0083,
+      0.0252
+     ],
+     "median_lag_nonpremature_days": 8.0
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.4072,
+     "detected_ci95": [
+      0.3706,
+      0.4449
+     ],
+     "premature_frac": 0.012,
+     "premature_ci95": [
+      0.0061,
+      0.0235
+     ],
+     "median_lag_nonpremature_days": 9.75
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.0317,
+     "alert_frac_ci95": [
+      0.026,
+      0.0386
+     ],
      "alert_frac_weighted": 0.045,
-     "alerts_per_1000_events_per_day": 0.44
+     "alerts_per_1000_events_per_day": 0.44,
+     "full_window_flag_frac": 0.0227
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.3207,
+     "alert_frac_ci95": [
+      0.2975,
+      0.3447
+     ],
      "alert_frac_weighted": 0.3918,
-     "alerts_per_1000_events_per_day": 4.454
+     "alerts_per_1000_events_per_day": 4.454,
+     "full_window_flag_frac": 0.256
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.372,
+     "alert_frac_ci95": [
+      0.3479,
+      0.3968
+     ],
      "alert_frac_weighted": 0.3999,
-     "alerts_per_1000_events_per_day": 5.167
+     "alerts_per_1000_events_per_day": 5.167,
+     "full_window_flag_frac": 0.2993
     }
    },
    "streaming_purity": {
@@ -146,24 +300,101 @@
     "median_lag_nonpremature_days": 11.5,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.875,
+     "detected_ci95": [
+      0.69,
+      0.9566
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 11.0
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.7987,
+     "detected_ci95": [
+      0.7271,
+      0.8552
+     ],
+     "premature_frac": 0.0201,
+     "premature_ci95": [
+      0.0069,
+      0.0575
+     ],
+     "median_lag_nonpremature_days": 7.75
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.6199,
+     "detected_ci95": [
+      0.5863,
+      0.6523
+     ],
+     "premature_frac": 0.0097,
+     "premature_ci95": [
+      0.0049,
+      0.019
+     ],
+     "median_lag_nonpremature_days": 11.75
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.4925,
+     "detected_ci95": [
+      0.4548,
+      0.5304
+     ],
+     "premature_frac": 0.0105,
+     "premature_ci95": [
+      0.0051,
+      0.0215
+     ],
+     "median_lag_nonpremature_days": 14.0
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.0613,
+     "alert_frac_ci95": [
+      0.0533,
+      0.0705
+     ],
      "alert_frac_weighted": 0.0917,
-     "alerts_per_1000_events_per_day": 0.852
+     "alerts_per_1000_events_per_day": 0.852,
+     "full_window_flag_frac": 0.0583
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.4253,
+     "alert_frac_ci95": [
+      0.4005,
+      0.4505
+     ],
      "alert_frac_weighted": 0.5372,
-     "alerts_per_1000_events_per_day": 5.907
+     "alerts_per_1000_events_per_day": 5.907,
+     "full_window_flag_frac": 0.418
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.4613,
+     "alert_frac_ci95": [
+      0.4362,
+      0.4866
+     ],
      "alert_frac_weighted": 0.5119,
-     "alerts_per_1000_events_per_day": 6.407
+     "alerts_per_1000_events_per_day": 6.407,
+     "full_window_flag_frac": 0.4527
     }
    },
    "streaming_purity": {
@@ -204,24 +435,101 @@
     "median_lag_nonpremature_days": 15.0,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.75,
+     "detected_ci95": [
+      0.551,
+      0.88
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 14.25
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.698,
+     "detected_ci95": [
+      0.6201,
+      0.766
+     ],
+     "premature_frac": 0.0134,
+     "premature_ci95": [
+      0.0037,
+      0.0476
+     ],
+     "median_lag_nonpremature_days": 9.5
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.4831,
+     "detected_ci95": [
+      0.4491,
+      0.5171
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.0046
+     ],
+     "median_lag_nonpremature_days": 14.5
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.3683,
+     "detected_ci95": [
+      0.3325,
+      0.4055
+     ],
+     "premature_frac": 0.0045,
+     "premature_ci95": [
+      0.0015,
+      0.0131
+     ],
+     "median_lag_nonpremature_days": 17.5
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.0247,
+     "alert_frac_ci95": [
+      0.0197,
+      0.0309
+     ],
      "alert_frac_weighted": 0.0494,
-     "alerts_per_1000_events_per_day": 0.343
+     "alerts_per_1000_events_per_day": 0.343,
+     "full_window_flag_frac": 0.0237
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.314,
+     "alert_frac_ci95": [
+      0.291,
+      0.3379
+     ],
      "alert_frac_weighted": 0.4108,
-     "alerts_per_1000_events_per_day": 4.361
+     "alerts_per_1000_events_per_day": 4.361,
+     "full_window_flag_frac": 0.3067
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.3327,
+     "alert_frac_ci95": [
+      0.3093,
+      0.3569
+     ],
      "alert_frac_weighted": 0.3918,
-     "alerts_per_1000_events_per_day": 4.62
+     "alerts_per_1000_events_per_day": 4.62,
+     "full_window_flag_frac": 0.3227
     }
    },
    "streaming_purity": {
@@ -262,24 +570,101 @@
     "median_lag_nonpremature_days": 6.5,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.9167,
+     "detected_ci95": [
+      0.7415,
+      0.9768
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 7.0
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.7584,
+     "detected_ci95": [
+      0.6837,
+      0.8201
+     ],
+     "premature_frac": 0.0268,
+     "premature_ci95": [
+      0.0105,
+      0.067
+     ],
+     "median_lag_nonpremature_days": 5.0
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.6053,
+     "detected_ci95": [
+      0.5716,
+      0.6381
+     ],
+     "premature_frac": 0.0254,
+     "premature_ci95": [
+      0.0167,
+      0.0386
+     ],
+     "median_lag_nonpremature_days": 6.5
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.4701,
+     "detected_ci95": [
+      0.4325,
+      0.508
+     ],
+     "premature_frac": 0.018,
+     "premature_ci95": [
+      0.0103,
+      0.0311
+     ],
+     "median_lag_nonpremature_days": 7.5
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.0573,
+     "alert_frac_ci95": [
+      0.0496,
+      0.0662
+     ],
      "alert_frac_weighted": 0.0742,
-     "alerts_per_1000_events_per_day": 0.796
+     "alerts_per_1000_events_per_day": 0.796,
+     "full_window_flag_frac": 0.0433
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.4073,
+     "alert_frac_ci95": [
+      0.3827,
+      0.4324
+     ],
      "alert_frac_weighted": 0.5078,
-     "alerts_per_1000_events_per_day": 5.657
+     "alerts_per_1000_events_per_day": 5.657,
+     "full_window_flag_frac": 0.3353
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.4373,
+     "alert_frac_ci95": [
+      0.4124,
+      0.4626
+     ],
      "alert_frac_weighted": 0.4643,
-     "alerts_per_1000_events_per_day": 6.074
+     "alerts_per_1000_events_per_day": 6.074,
+     "full_window_flag_frac": 0.36
     }
    },
    "streaming_purity": {
@@ -320,24 +705,101 @@
     "median_lag_nonpremature_days": 8.75,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.7917,
+     "detected_ci95": [
+      0.5953,
+      0.9076
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 11.0
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.6443,
+     "detected_ci95": [
+      0.5647,
+      0.7167
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.0251
+     ],
+     "median_lag_nonpremature_days": 7.0
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.4358,
+     "detected_ci95": [
+      0.4024,
+      0.4699
+     ],
+     "premature_frac": 0.0097,
+     "premature_ci95": [
+      0.0049,
+      0.019
+     ],
+     "median_lag_nonpremature_days": 8.5
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.3413,
+     "detected_ci95": [
+      0.3064,
+      0.3781
+     ],
+     "premature_frac": 0.0105,
+     "premature_ci95": [
+      0.0051,
+      0.0215
+     ],
+     "median_lag_nonpremature_days": 10.0
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.022,
+     "alert_frac_ci95": [
+      0.0173,
+      0.0279
+     ],
      "alert_frac_weighted": 0.0275,
-     "alerts_per_1000_events_per_day": 0.306
+     "alerts_per_1000_events_per_day": 0.306,
+     "full_window_flag_frac": 0.0157
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.2693,
+     "alert_frac_ci95": [
+      0.2475,
+      0.2924
+     ],
      "alert_frac_weighted": 0.3165,
-     "alerts_per_1000_events_per_day": 3.741
+     "alerts_per_1000_events_per_day": 3.741,
+     "full_window_flag_frac": 0.2133
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.3027,
+     "alert_frac_ci95": [
+      0.2799,
+      0.3264
+     ],
      "alert_frac_weighted": 0.3144,
-     "alerts_per_1000_events_per_day": 4.204
+     "alerts_per_1000_events_per_day": 4.204,
+     "full_window_flag_frac": 0.2467
     }
    },
    "streaming_purity": {
@@ -378,24 +840,101 @@
     "median_lag_nonpremature_days": 11.25,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.8333,
+     "detected_ci95": [
+      0.6415,
+      0.9332
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 9.75
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.7315,
+     "detected_ci95": [
+      0.6552,
+      0.7962
+     ],
+     "premature_frac": 0.0201,
+     "premature_ci95": [
+      0.0069,
+      0.0575
+     ],
+     "median_lag_nonpremature_days": 7.75
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.5508,
+     "detected_ci95": [
+      0.5168,
+      0.5845
+     ],
+     "premature_frac": 0.0133,
+     "premature_ci95": [
+      0.0075,
+      0.0237
+     ],
+     "median_lag_nonpremature_days": 11.0
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.4506,
+     "detected_ci95": [
+      0.4133,
+      0.4885
+     ],
+     "premature_frac": 0.0135,
+     "premature_ci95": [
+      0.0071,
+      0.0254
+     ],
+     "median_lag_nonpremature_days": 13.5
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.0463,
+     "alert_frac_ci95": [
+      0.0394,
+      0.0545
+     ],
      "alert_frac_weighted": 0.0793,
-     "alerts_per_1000_events_per_day": 0.644
+     "alerts_per_1000_events_per_day": 0.644,
+     "full_window_flag_frac": 0.044
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.3973,
+     "alert_frac_ci95": [
+      0.3729,
+      0.4223
+     ],
      "alert_frac_weighted": 0.5156,
-     "alerts_per_1000_events_per_day": 5.519
+     "alerts_per_1000_events_per_day": 5.519,
+     "full_window_flag_frac": 0.3867
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.424,
+     "alert_frac_ci95": [
+      0.3992,
+      0.4492
+     ],
      "alert_frac_weighted": 0.4661,
-     "alerts_per_1000_events_per_day": 5.889
+     "alerts_per_1000_events_per_day": 5.889,
+     "full_window_flag_frac": 0.408
     }
    },
    "streaming_purity": {
@@ -436,24 +975,101 @@
     "median_lag_nonpremature_days": 14.5,
     "median_onset_day": 35.0
    },
+   "timing_by_mass_ratio": {
+    "stellar": {
+     "n_eligible": 24,
+     "frac_of_eligible": 0.0144,
+     "detected_frac": 0.6667,
+     "detected_ci95": [
+      0.4671,
+      0.8203
+     ],
+     "premature_frac": 0.0,
+     "premature_ci95": [
+      0.0,
+      0.138
+     ],
+     "median_lag_nonpremature_days": 18.5
+    },
+    "giant": {
+     "n_eligible": 149,
+     "frac_of_eligible": 0.0894,
+     "detected_frac": 0.5839,
+     "detected_ci95": [
+      0.5036,
+      0.66
+     ],
+     "premature_frac": 0.0134,
+     "premature_ci95": [
+      0.0037,
+      0.0476
+     ],
+     "median_lag_nonpremature_days": 10.0
+    },
+    "neptune": {
+     "n_eligible": 826,
+     "frac_of_eligible": 0.4955,
+     "detected_frac": 0.3923,
+     "detected_ci95": [
+      0.3595,
+      0.426
+     ],
+     "premature_frac": 0.0012,
+     "premature_ci95": [
+      0.0002,
+      0.0068
+     ],
+     "median_lag_nonpremature_days": 14.0
+    },
+    "lowmass": {
+     "n_eligible": 668,
+     "frac_of_eligible": 0.4007,
+     "detected_frac": 0.2904,
+     "detected_ci95": [
+      0.2573,
+      0.326
+     ],
+     "premature_frac": 0.0045,
+     "premature_ci95": [
+      0.0015,
+      0.0131
+     ],
+     "median_lag_nonpremature_days": 17.5
+    }
+   },
    "burden": {
     "RMDC26_1S1L_ML": {
      "n": 3000,
      "alert_frac_per_season": 0.0147,
+     "alert_frac_ci95": [
+      0.0109,
+      0.0196
+     ],
      "alert_frac_weighted": 0.0247,
-     "alerts_per_1000_events_per_day": 0.204
+     "alerts_per_1000_events_per_day": 0.204,
+     "full_window_flag_frac": 0.0137
     },
     "RMDC26_1S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.2627,
+     "alert_frac_ci95": [
+      0.241,
+      0.2855
+     ],
      "alert_frac_weighted": 0.3527,
-     "alerts_per_1000_events_per_day": 3.648
+     "alerts_per_1000_events_per_day": 3.648,
+     "full_window_flag_frac": 0.2567
     },
     "RMDC26_2S2L_ML": {
      "n": 1500,
      "alert_frac_per_season": 0.2753,
+     "alert_frac_ci95": [
+      0.2533,
+      0.2985
+     ],
      "alert_frac_weighted": 0.3363,
-     "alerts_per_1000_events_per_day": 3.824
+     "alerts_per_1000_events_per_day": 3.824,
+     "full_window_flag_frac": 0.264
     }
    },
    "streaming_purity": {
@@ -508,7 +1124,33 @@
     "median_lag_non_premature_days": 4.5
    }
   },
-  "note": "in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; RMDC26 anomalies are all planetary, so compare with the giant/neptune strata"
+  "by_mass_ratio_three_band": {
+   "stellar": {
+    "n_eligible": 805,
+    "detection_fraction": 0.924,
+    "premature_rate_of_eligible": 0.011,
+    "median_lag_non_premature_days": 7.0
+   },
+   "giant": {
+    "n_eligible": 138,
+    "detection_fraction": 0.913,
+    "premature_rate_of_eligible": 0.007,
+    "median_lag_non_premature_days": 6.0
+   },
+   "neptune": {
+    "n_eligible": 48,
+    "detection_fraction": 0.688,
+    "premature_rate_of_eligible": 0.0,
+    "median_lag_non_premature_days": 5.5
+   }
+  },
+  "n_by_mass_ratio": {
+   "stellar": 805,
+   "giant": 138,
+   "neptune": 48,
+   "lowmass": 9
+  },
+  "note": "in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; compare stratum by stratum with results[...]['timing_by_mass_ratio']"
  },
- "command": "validation/gulls/cascade_gulls.py --reduce --ckpt fspl5s_seasons_g08=validation/gulls/weights/ft_fspl5s_seasons_g08.pt fspl5s_g08=validation/gulls/weights/ft_fspl5s_g08.pt"
+ "command": "validation/gulls/cascade_gulls.py --reduce --ckpt fspl5s_seasons_g08=validation/gulls/weights/ft_fspl5s_seasons_g08.pt fspl5s_g08=validation/gulls/weights/ft_fspl5s_g08.pt --meta-cache /Users/kunalbhatia/.cache/binml/rmdc26/rmdc26_meta_a338d5ba.parquet"
 }

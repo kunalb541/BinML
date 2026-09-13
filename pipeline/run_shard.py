@@ -249,14 +249,17 @@ def _config_for(regime: Optional[str], cfg: SurveyConfig):
         # stress_report.json's per-class n says, not the regime total. The per-LABEL recalls also
         # mix populations where the swept class shares its label with others: in oor_pspl_shortte
         # the PSPL-labelled events include binaries of natural timescale demoted to PSPL by the
-        # detectability policy (38% of the weighted label mass under the legacy mix), so the
-        # suite's 0.524 is not a sub-day single-lens recall (validation/stress_rescore_local.py
+        # detectability policy (about 40% of the weighted label mass under the suite's generator),
+        # so the suite's 0.524 is not a sub-day single-lens recall (validation/stress_rescore_local.py
         # splits them by generator class).
         mix = {"Flat": 1500, "PSPL": 1000, "NonPSPL": 500,
                "PeriodicVar": 500, "LongPeriodVar": 500, "Eruptive": 500}
         if LEGACY_OOR_MIX:
-            # reproduce the shipped stress suite bit for bit: the swept class keeps the key position of the
-            # original literal (first) and the context value (validation/stress_rescore_local.py)
+            # reproduce the shipped stress suite's class mix: the swept class keeps the key position of the
+            # original literal (first) and the context value (validation/stress_rescore_local.py). With
+            # --legacy-t0-pad the July generator's t0 draw is reproduced as well. The suite's events are still
+            # not reproduced exactly: its cloud fleet ran an unpinned software environment, and the same code
+            # locally labels ~2% fewer detectable anomalies in the natural tier (fourth verification, 2026-09-13).
             legacy = {tgt: None}
             legacy.update(mix)
             mix = legacy
@@ -351,8 +354,12 @@ def main(argv=None) -> int:
                     help="detectability floor for the labels (SurveyConfig.min_amplitude_mag; default 0.02, every released "
                          "shard). The floor-sensitivity sweep of the referee round regenerates one shard at 0.01 and 0.05.")
     ap.add_argument("--legacy-oor-mix", action="store_true",
-                    help="OOR regimes: the shipped stress suite's class mix (the swept class at its context count), "
-                         "to regenerate those shards exactly")
+                    help="OOR regimes: the shipped stress suite's class mix (the swept class at its context count). "
+                         "With --legacy-t0-pad also its generator's t0 draw; the suite's events are not reproduced exactly "
+                         "(see _config_for)")
+    ap.add_argument("--legacy-t0-pad", action="store_true",
+                    help="reproduce the July 2026 stress suite's generator: out-of-range tE sweeps keep the t0 drawn for "
+                         "the unperturbed timescale (pipeline.assemble.LEGACY_T0_PAD); for validation/stress_rescore_local.py only")
     ap.add_argument("--truth-bins", action="store_true",
                     help="store per-bin noise-free truth (signal deviation, binary anomaly residual) for truth-based "
                          "relabelling in training augmentations (pipeline.train --truth-relabel); off for released shards")
@@ -383,6 +390,9 @@ def main(argv=None) -> int:
     if args.legacy_oor_mix:
         global LEGACY_OOR_MIX
         LEGACY_OOR_MIX = True
+    if args.legacy_t0_pad:
+        from . import assemble as _assemble
+        _assemble.LEGACY_T0_PAD = True
     if args.truth_bins and (args.onset_resolution_days is None or args.onset_resolution_days > 0.5):
         print("WARNING: --truth-bins without --onset-resolution-days 0.5: truncated binaries will be relabelled by the "
               "legacy 7.2-day onset (pipeline.train._apply_truncation keeps the recorded onset for the anomaly)", flush=True)
@@ -418,6 +428,8 @@ def main(argv=None) -> int:
             w.set_run_attrs(shard=s, byproduct_keep_prob=BYPRODUCT_KEEP,
                             gen_counts=gen_counts, dropped=dropped)
             w._h5.attrs["regime"] = args.regime or "none"
+            w._h5.attrs["legacy_oor_mix"] = bool(args.legacy_oor_mix)
+            w._h5.attrs["legacy_t0_pad"] = bool(args.legacy_t0_pad)
             # generation settings that change labels or photometry, so shards made under different
             # settings are distinguishable (2026-09-11 verification: they were not)
             cfg_eff, _, _ = _config_for(args.regime, cfg)

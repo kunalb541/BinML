@@ -302,15 +302,19 @@ def main(argv=None):
 
     # ---- stratification ------------------------------------------------------------------------
     q = params[:, fields.index("q")]
-    strat = {"by_mass_ratio": {}, "by_onset_third": {}}
+    # counts of every stratum, and the strata with all three bands revealed too (2026-09-13: the RMDC26 cascade is
+    # compared with these stratum by stratum, validation/gulls/cascade_gulls.py)
+    strat = {"by_mass_ratio": {}, "by_mass_ratio_three_band": {}, "n_by_mass_ratio": {}, "by_onset_third": {}}
     for name, lo, hi in Q_REGIMES:
         m = (q > lo) & (q <= hi)
+        strat["n_by_mass_ratio"][name] = int(m.sum())
         if m.sum() >= 20:
-            s = summarise(base[m], onset_first[m])
-            strat["by_mass_ratio"][name] = {k: s[k] for k in
-                                            ("n_eligible", "detection_fraction",
-                                             "premature_rate_of_eligible",
-                                             "median_lag_non_premature_days")}
+            for key, alerts in (("by_mass_ratio", base), ("by_mass_ratio_three_band", a_multi)):
+                s = summarise(alerts[m], onset_first[m])
+                strat[key][name] = {k: s[k] for k in
+                                    ("n_eligible", "detection_fraction",
+                                     "premature_rate_of_eligible",
+                                     "median_lag_non_premature_days")}
     edges = np.quantile(onset_first[np.isfinite(onset_first)], [0, 1 / 3, 2 / 3, 1])
     for i, name in enumerate(("early", "middle", "late")):
         m = ((onset_first >= edges[i]) & (onset_first <= edges[i + 1]) if i == 2 else

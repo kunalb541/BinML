@@ -31,6 +31,12 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from .classes import CLASS_REGISTRY, label_of
+
+# run_shard --legacy-t0-pad: reproduce the generator the July 2026 stress suite was made with (before ef6b0bd,
+# 2026-07-28). Its re-pad was `params.setdefault("t0", rng.uniform(...))`: the draw was made (so the random stream
+# is the same) but the t0 drawn for the unperturbed timescale was kept, so out-of-range sweeps of tE left ~20% of
+# sub-day single lenses peaking outside the season. Never use it for anything but reproducing that suite.
+LEGACY_T0_PAD = False
 from .priors import DEFAULT_PRIORS
 from .generators import GENERATORS, pspl_magnification
 from .photometry import (ROMAN_BANDS, BulgeExtinction, observe,
@@ -334,7 +340,9 @@ def simulate_event(true_class: str, rng: np.random.Generator,
             pad = min(cfg.t0_pad_tE * params["tE"], cfg.t0_pad_max_frac * cfg.window_days)
             # unconditional: t0 was already drawn above, so setdefault was a no-op and the
             # t0 pad never tracked an overridden tE (corrupted tE-sweep OOR populations).
-            params["t0"] = float(rng.uniform(-pad, cfg.window_days + pad))
+            t0_repad = float(rng.uniform(-pad, cfg.window_days + pad))
+            if not LEGACY_T0_PAD:
+                params["t0"] = t0_repad
 
     # An ACHROMATIC signal is evaluated ONCE on the finest grid and indexed down to the
     # coarser bands, making "identical in every band" structural rather than a consequence

@@ -22,6 +22,11 @@ mapped to exactly one issue and that each issue's severity is its worst finding'
 * **Referee round:** the floor arms are partly the same events; the colour effect is lower variable-class
   precision; the colour fine-tune contrast depended on the kept epoch; the every-class scan is also reported with
   F146 alone, where purity is much lower; the per-event inputs are archived.
+* **Two errors older than the revision (critic):** the 14.9M-event stress suite was scored with the stage-5
+  checkpoint, not the released model; a regenerated subset scored with both now gives the released model's numbers
+  (Table tab:stress), and shows that the suite's sub-day 'PSPL recall' mixed in demoted binaries: most sub-day
+  single lenses are called anomalies. The appendix training recipe described the base run's defaults; it now
+  gives the six-stage chain.
 * **Paper:** a stale Table 5 note, the Introduction, the Conclusion's account of open tests, and a dozen smaller
   wording and labelling fixes; every new directional sentence has a fail-closed guard, and the guards are tested.
 

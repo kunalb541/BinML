@@ -52,6 +52,7 @@ PREVALENCES = (0.01, 0.05)
 # 3,000:3,000 scan sample (30.7%, the value the first version of this reducer used).
 SCORED_PLANET_FRAC_WEIGHTED = 0.2207
 INHOUSE = os.path.join(os.path.dirname(HERE), "cascade_reproduce_result.json")
+from cascade_reduce import Q_REGIMES                               # noqa: E402  (the in-house scan's mass-ratio strata)
 
 
 def wilson(k, n, z=1.96):
@@ -306,7 +307,9 @@ def reduce(args):
     if missing:
         raise SystemExit(f"no scan for {missing}; run --scan with --ckpt first")
     rows = {e: r for e, r in rows.items() if all(f"p|{n}|f146" in r for n in CKPT)}
-    w = {int(e): float(x) for e, x in zip(*pq.read_table(args.meta_cache, columns=["event_id", "final_weight"]).to_pydict().values())}
+    _m = pq.read_table(args.meta_cache, columns=["event_id", "final_weight", "Planet_q"]).to_pydict()
+    w = {int(e): float(x) for e, x in zip(_m["event_id"], _m["final_weight"])}
+    planet_q = {int(e): (float(x) if x is not None else np.nan) for e, x in zip(_m["event_id"], _m["Planet_q"])}
     cuts = np.arange(1, N_CUTS + 1) * STEP
     calib = {}
     for name in CKPT:
@@ -334,6 +337,18 @@ def reduce(args):
                                  "premature_frac": round(float(prem.mean()), 4) if n else None, "premature_ci95": wilson(int(prem.sum()), n),
                                  "median_lag_nonpremature_days": round(float(np.median(lag)), 2) if lag.size else None,
                                  "median_onset_day": round(float(np.median(onset)), 2) if n else None}
+                # the same numbers in the in-house scan's mass-ratio strata (validation/cascade_reduce.py Q_REGIMES), so the
+                # comparison with our simulator is stratum by stratum (fourth verification, 2026-09-13)
+                qq = np.array([planet_q.get(int(r["id"][0]), np.nan) for r in elig])
+                res["timing_by_mass_ratio"] = {}
+                for qn, lo, hi in Q_REGIMES:
+                    m = (qq > lo) & (qq <= hi)                  # the in-house convention
+                    k = int(m.sum()); lag_m = first[m & det & ~prem] - onset[m & det & ~prem]
+                    res["timing_by_mass_ratio"][qn] = {
+                        "n_eligible": k, "frac_of_eligible": round(k / n, 4) if n else None,
+                        "detected_frac": round(float(det[m].mean()), 4) if k else None, "detected_ci95": wilson(int(det[m].sum()), k),
+                        "premature_frac": round(float(prem[m].mean()), 4) if k else None, "premature_ci95": wilson(int(prem[m].sum()), k),
+                        "median_lag_nonpremature_days": round(float(np.median(lag_m)), 2) if lag_m.size else None}
                 # burden per class: alerts per event per season, per 1,000 events per day; rate-weighted
                 burden = {}
                 for L in (L1, L2, L3):
@@ -341,8 +356,11 @@ def reduce(args):
                     if not rs:
                         continue
                     al = np.array([np.any(r[f"p|{name}|{variant}"] >= thr) for r in rs]); ww = np.array([w[int(r["id"][0])] for r in rs])
-                    burden[L] = {"n": len(rs), "alert_frac_per_season": round(float(al.mean()), 4), "alert_frac_weighted": round(float(ww[al].sum() / ww.sum()), 4),
-                                 "alerts_per_1000_events_per_day": round(float(al.mean() / gt.WINDOW_D * 1000), 3)}
+                    full = np.array([bool(r[f"p|{name}|{variant}"][-1] >= thr) for r in rs])   # flagged on the complete window
+                    burden[L] = {"n": len(rs), "alert_frac_per_season": round(float(al.mean()), 4), "alert_frac_ci95": wilson(int(al.sum()), len(rs)),
+                                 "alert_frac_weighted": round(float(ww[al].sum() / ww.sum()), 4),
+                                 "alerts_per_1000_events_per_day": round(float(al.mean() / gt.WINDOW_D * 1000), 3),
+                                 "full_window_flag_frac": round(float(full.mean()), 4)}
                 res["burden"] = burden
                 # streaming purity at a stated planetary prevalence: alerts from detectable-anomaly binaries / all alerts.
                 # RMDC26 contains no Flat or variable-star contaminants, so this counts single-lens contamination only;
@@ -378,8 +396,10 @@ def reduce(args):
                                     "detection_fraction": ih.get("detection_fraction"),
                                     "median_lag_non_premature_days": ih.get("median_lag_non_premature_days"),
                                     "by_mass_ratio": ih.get("stratified", {}).get("by_mass_ratio"),
+                                    "by_mass_ratio_three_band": ih.get("stratified", {}).get("by_mass_ratio_three_band"),
+                                    "n_by_mass_ratio": ih.get("stratified", {}).get("n_by_mass_ratio"),
                                     "note": ("in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; "
-                                             "RMDC26 anomalies are all planetary, so compare with the giant/neptune strata")}
+                                             "compare stratum by stratum with results[...]['timing_by_mass_ratio']")}
     out["command"] = " ".join(sys.argv)
     json.dump(out, open(args.out, "w"), indent=1)
     print("scanned", out["n_scanned"])

@@ -30,7 +30,7 @@
   },
   "reduction_provenance": {
     "input_trace_sha256": "deff0f0438dd7f9a118cb3651daec4061722b405e6448aa9abd7c3ba0d7dd2e6",
-    "reducer_sha256": "241891403bbe5c37d286de8694a9b62049b34de68239e704e4f4d7bbe6813598",
+    "reducer_sha256": "ba30eb7ce059434d5c10583da0668f74d5e31360764866a93f657b053334944f",
     "threshold_source": "paper/results/metrics.json:headline.threshold",
     "threshold_source_sha256": "a69add24bfa5f3bda8d800269f541700ee7a18c749578935962124499a42c73c"
   },
@@ -438,6 +438,32 @@
         "premature_rate_of_eligible": 0.042,
         "median_lag_non_premature_days": 4.5
       }
+    },
+    "by_mass_ratio_three_band": {
+      "stellar": {
+        "n_eligible": 805,
+        "detection_fraction": 0.924,
+        "premature_rate_of_eligible": 0.011,
+        "median_lag_non_premature_days": 7.0
+      },
+      "giant": {
+        "n_eligible": 138,
+        "detection_fraction": 0.913,
+        "premature_rate_of_eligible": 0.007,
+        "median_lag_non_premature_days": 6.0
+      },
+      "neptune": {
+        "n_eligible": 48,
+        "detection_fraction": 0.688,
+        "premature_rate_of_eligible": 0.0,
+        "median_lag_non_premature_days": 5.5
+      }
+    },
+    "n_by_mass_ratio": {
+      "stellar": 805,
+      "giant": 138,
+      "neptune": 48,
+      "lowmass": 9
     },
     "by_onset_third": {
       "early": {
