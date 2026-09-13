@@ -47,6 +47,7 @@ CKPTS = {"stage5": os.path.expanduser("~/Desktop/Research/microlensing/v5runs/bi
 TIERS = {"natural": (900000000, None, 16), "planetary": (910000000, "planetary", 8),
          "oor_np_widesep": (935000000, "oor_np_widesep", 4), "oor_per_longp": (938000000, "oor_per_longp", 4),
          "oor_pspl_shortte": (931000000, "oor_pspl_shortte", 4), "oor_flat_faint": (945000000, "oor_flat_faint", 4)}
+FROZEN = 0.9042405486106873     # the released model's complete-season operating threshold (paper/results/metrics.json)
 # the numbers the paper quotes: (tier, class, metric)
 QUOTED = {"natural_np_recall": ("natural", "NonPSPL", "recall"), "natural_np_prec": ("natural", "NonPSPL", "precision"),
           "planetary_np_recall": ("planetary", "NonPSPL", "recall"), "planetary_np_prec": ("planetary", "NonPSPL", "precision"),
@@ -107,6 +108,7 @@ def metrics(ev):
     from pipeline.agg_stress import prf
     from pipeline.classes import CLASS_NAMES
     y = np.load(os.path.join(ev, "label.npy")).astype(int); pred = np.load(os.path.join(ev, "logits.npy")).argmax(1)
+    score = np.load(os.path.join(ev, "score_nonpspl.npy")).astype(np.float64)
     w = 1.0 / np.clip(np.load(os.path.join(ev, "keep_prob.npy")).astype(np.float64), 1e-3, 1.0)
     cls = {}
     for c, name in enumerate(CLASS_NAMES):
@@ -127,7 +129,8 @@ def metrics(ev):
         if m.any():
             by_gen[gname] = {"n": int(m.sum()), "recall": float((w[m] * (pred[m] == ip)).sum() / w[m].sum()),
                              "weighted_share_of_label": float(w[m].sum() / w[lab].sum()),
-                             "argmax_fractions": {n: float(w[m & (pred == c)].sum() / w[m].sum()) for c, n in enumerate(CLASS_NAMES)}}
+                             "argmax_fractions": {n: float(w[m & (pred == c)].sum() / w[m].sum()) for c, n in enumerate(CLASS_NAMES)},
+                             "frac_above_frozen_threshold": float(w[m & (score >= FROZEN)].sum() / w[m].sum())}
     out["pspl_label_by_generator_class"] = by_gen
     # anomaly-call rates, weighted: precision depends on the tier's anomaly prevalence, so keep the pieces
     inon = CLASS_NAMES.index("NonPSPL")
