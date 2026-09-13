@@ -40,6 +40,10 @@ bibtex paper            >>build.log 2>&1 || { tail -40 build.log; exit 1; }
 # aasjournalv7.bst leaves a space inside the label of corporate authors ("{ {Roman ...}"), which natbib prints as
 # "( Roman ..."; drop it
 sed -i.bak 's/\\bibitem\[{ {/\\bibitem[{{/' paper.bbl && rm -f paper.bbl.bak
-pdflatex -interaction=nonstopmode -halt-on-error paper.tex >>build.log 2>&1 || { tail -40 build.log; exit 1; }
-pdflatex -interaction=nonstopmode -halt-on-error paper.tex >>build.log 2>&1 || { tail -40 build.log; exit 1; }
+# Rerun until cross-references settle: from a clean tree (CI) the floats need a third pass after bibtex, and
+# two fixed passes left "Label(s) may have changed" in the log (2026-09-13, after Table tab:stress was added).
+for pass in 1 2 3 4; do
+  pdflatex -interaction=nonstopmode -halt-on-error paper.tex >>build.log 2>&1 || { tail -40 build.log; exit 1; }
+  grep -q "Label(s) may have changed\|There were undefined references" paper.log || break
+done
 echo "done -> paper.pdf ($("$PYTHON_BIN" -c "import os;print(f'{os.path.getsize(\"paper.pdf\")/1024:.0f} kB')"))"
