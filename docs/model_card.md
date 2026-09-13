@@ -32,7 +32,7 @@ approximately 12-min F146 sampling, 66-s exposures, staggered colour visits, and
 An audit against the current calibration also found F087/F213 zeropoints optimistic by about
 0.10/0.14 mag, an F087 saturation limit carried from a longer exposure (too faint: at equal
 exposure F087 saturates ~1.2 mag brighter than F146), and colour-band background
-ratios inconsistent with the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750). The released model has not been retrained with corrected values.
+ratios inconsistent with the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. Short fine-tunes on each calibration (one seed each) keep AP; the audited-calibration fine-tune falls to periodic-variable F1 0.750 on the old photometry (0.872 at its last epoch), against 0.961 (0.972) for the old-calibration fine-tune; on the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967). The released model has not been retrained with corrected values.
 
 ## Evaluation
 The evaluation pool contains 450,589 events: 90,117 fix the operating threshold and the
@@ -49,7 +49,7 @@ planetary perturbation. The matched 400-event cascade comparison is exploratory 
 thresholds and outcomes use the same events, so its conditional McNemar values are not
 confirmatory population-level inference.
 
-The 1,000-event prefix scan contains only already-eligible binaries. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses alert); with F146 alone 51 generated single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested.
+The 1,000-event prefix scan contains only already-eligible binaries. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses with a PSPL label alert); with F146 alone 51 of those single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested.
 A repeat on RMDC26 with single lenses included
 (`validation/gulls/cascade_gulls.json`; recommended gap-aware checkpoint, F146 only) measures the
 single-lens part: 6.2% of single lenses raise an alert at some point in the season at the frozen threshold
@@ -57,7 +57,7 @@ single-lens part: 6.2% of single lenses raise an alert at some point in the seas
 anomaly (about one in thirteen at 0.956). RMDC26 contains no variable stars or flat sources, so a real
 stream would be less pure.
 
-The 14.9-million-event stress suite (a 4.5-million-event same-prior subset and 10.4 million targeted cases) was
+The 14.9-million-event stress suite (a 4.5-million-event same-prior subset, 8.7 million events in targeted regimes and 1.7 million in out-of-range sweeps) was
 scored with the stage-5 checkpoint, the released model's predecessor; its 0.927 macro-F1 is stage 5's. On the
 first shards of each quoted regime, regenerated with the same seeds (255,527 events), the released model reaches
 macro-F1 0.919 on the same-prior part, equal to its held-out value
@@ -80,8 +80,8 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   the measured RMDC26 pauses; 68% slice range 0.947-0.965); the shipped threshold does not apply to it. On
   RMDC26 it flags 2.4% of single lenses at that threshold (3.5% weighted by event rate), with planetary
   recall 0.29 / 0.33; two further training seeds of the recipe, calibrated the same way, give 2.6% / 3.0%
-  and 1S2L recall 0.26 / 0.28 (the released run is the best of three on RMDC26). See `paper/REVISION.md` §1½
-  and `docs/VERIFICATION_2026-09-1{1,2}.md`.
+  and 1S2L recall 0.26 / 0.28 (the released run has the highest planetary recall of the three). See `paper/REVISION.md` §1½
+  and `docs/VERIFICATION_2026-09-1{1,2}.md`, `docs/VERIFICATION_2026-09-12b.md`.
 - **Partial bin occupancy.** Survey schedules in which colour visits displace F146 exposures leave
   bins partly filled (RMDC26: one of eight epochs in about 35% of bins), which training never
   contains; on RMDC26 the recommended gap-aware checkpoint reads it as mild evidence of an anomaly
@@ -91,14 +91,15 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   (38% have t_E < 3 d, 16% weighted by event rate, against 1.8% of our prior's mass), and the gap-aware
   checkpoints' false-alarm rate rises with timescale, so per-event and rate-weighted rates differ
   (`validation/gulls/transfer_tradeoff_all.json`, `weighted` blocks).
-- **Faint sources (m = 25-27.5):** noise-dominated; NonPSPL precision 0.026, mostly because detectable anomalies
-  are rare there (0.19% of events by weight); at the natural prevalence the same rates would give 0.44, and the
-  false-anomaly rate rises from 2.1% to 5.4% of non-anomalous events.
-- **Sub-day single lenses (tE 0.2-1 d):** only 0.27 of the detectable ones are classified PSPL; 71% are called
-  anomalies (37% above the frozen threshold). The suite's per-label 0.52 mixed in demoted binaries. Stage 6 had
-  trained on tE down to 0.3 d.
-- **Wide caustics (s = 5-12):** anomaly recall 0.42 on the 60 detectable ones in the regenerated subset (stage 5:
-  0.22 on the suite's 438).
+- **Faint sources (m = 25-27.5):** noise-dominated; among microlensing events without a detectable anomaly the
+  false-anomaly rate rises from 3.3% to 26% (0.9% to 12% above the operating threshold). The sweep's NonPSPL
+  precision (0.026) is set mostly by its class mix (4% binaries by weight); at the natural prevalence the same rates
+  would give 0.44.
+- **Sub-day single lenses (tE 0.2-1 d):** only 0.29 of the detectable ones are classified PSPL; 69% are called
+  anomalies (35% above the operating threshold; 71% and 37% with the corrected peak-time draw). The suite's
+  per-label 0.52 mixed in demoted binaries (43% of the weighted PSPL labels). Stage 6 had trained on tE down to 0.3 d.
+- **Wide caustics (s = 5-12):** anomaly recall 0.33 on the 64 detectable ones in the regenerated subset (stage 5:
+  0.28 on the same events).
 - **Cadence:** trained on a legacy one-season Roman-like schedule; not validated on the current
   multi-season survey design or sparse ground-survey sampling.
 - **Oracle baseline:** evaluation supplies the true simulated baseline magnitude; performance with

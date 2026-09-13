@@ -62,8 +62,8 @@
   },
   "files": {
     "paper/canonical_numbers.json": {
-      "sha256": "1b92e0634c32e57149d42062ec10c5770a60421d8bfc634b31432dc5114327f2",
-      "_note": "2026-09-13: infra training recipe corrected to the six-stage chain (third verification); previous sha d0a591adb6fdc40d... | hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67... | 2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 4c868405c630a120... | 2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 2cd1fa6b142372bb..."
+      "sha256": "70749d76cd852caee62558e98d67f0d26e643012d3c3451439bc50c3c9ac9de8",
+      "_note": "2026-09-13 (fourth verification): infra per-epoch training throughput; sim_* fields flagged as the v4 run; previous sha 1b92e0634c32e571... | 2026-09-13: infra training recipe corrected to the six-stage chain (third verification); previous sha d0a591adb6fdc40d... | hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67... | 2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 4c868405c630a120... | 2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 2cd1fa6b142372bb..."
     },
     "paper/results/metrics.json": {
       "sha256": "a69add24bfa5f3bda8d800269f541700ee7a18c749578935962124499a42c73c"
@@ -81,7 +81,8 @@
       "sha256": "a2b2d87b843031003ade6781a3877c3b6b1b091474acc72ed862977ca55b210e"
     },
     "validation/cascade_reproduce_result.json": {
-      "sha256": "02d0307853f271ac198af75380578aca7a39cc7259cf1f36f0004ef127e2baa2"
+      "sha256": "8ab58be2f8f1c5ea6e4b3d004b6877ab17594c3b8e46013ecbe10ec549612f60",
+      "_note": "2026-09-13 (fourth verification): stratification adds three-band strata and stratum counts (all earlier values unchanged); previous sha 02d0307853f271ac..."
     },
     "validation/cascade_matched_result.json": {
       "sha256": "84196247288d43937e716391f323cc04a688985f94fe1db46a6ae5b7c49ed972"
@@ -185,8 +186,8 @@
       "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/gulls/cascade_gulls.json": {
-      "sha256": "9538e729f70e9e7b173ef6437efb2fd8b6cf028a82a1264adb9f6d070d03c209",
-      "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+      "sha256": "8908d2a424c5b3bc2dee4cfca459e083ea4363b9fce059ca83ff4385d4ef486d",
+      "_note": "2026-09-13 (fourth verification): RMDC26 timing by mass-ratio stratum, single-lens alert CI and full-window flag rate (all earlier values unchanged); previous sha 9538e729f70e9e7b... | 2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/referee_round.json": {
       "sha256": "ee79bc215878efbd5789512cbb31b4d91ec8ef91aec86dc478de46a114622bb5",
@@ -213,8 +214,12 @@
       "_note": "2026-09-12: recommended gap-aware checkpoint (byte-identical to validation/gulls/weights/ft_fspl5s_seasons_g08.pt)"
     },
     "validation/stress_rescore_local.json": {
-      "sha256": "a4b715a9b565c918202730609ba267947cb764ee41adecb929ceeedcc11e1516",
-      "_note": "2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
+      "sha256": "92b8a9a5237a4b54b79ab319ef59173cfb32f9c031c76ff6852302c513fab7b7",
+      "_note": "2026-09-13 (fourth verification): sweeps regenerated with --legacy-t0-pad, corrected sub-day tier, per-tier stamps, mix-independent rates; previous sha a4b715a9b565c918... | 2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
+    },
+    "validation/inference_benchmark_result.json": {
+      "sha256": "da148cd004933ba5e2dd710cab5ea86d43a19901d1fabb5fa6e4cf853126d4db",
+      "_note": "2026-09-13 (fourth verification): input of paper/make_macros.py that had not been hashed"
     }
   }
 }

@@ -125,8 +125,8 @@ of scored 2S2L events, and both planetary classes are pre-selected by GULLS' own
 ($\bmlGullsDetCut$ or more for every such event). RMDC26 ships no pure binary-source class, so the
 \citet{Gaudi1998} degeneracy of \S\ref{sec:sims} remains untested, and a \texttt{NonPSPL} call on a 2S2L
 event may respond to its second source rather than its planet. RMDC26's anomalies are all planetary,
-whereas $\bmlOursNonpsplStellarPct\%$ of our \texttt{NonPSPL} evaluation events are
-stellar-mass-ratio binaries (median $q = \bmlOursNonpsplQmed$), so transfer recall is not comparable to
+whereas $\bmlDetStellarPct\%$ of the detectable anomalies of our test set are
+stellar-mass-ratio binaries (median $q = \bmlDetQmed$), so transfer recall is not comparable to
 the in-distribution completeness of \S\ref{sec:results}.
 
 Selection uses catalogue parameters, never the model's output, and is applied identically to the
@@ -498,9 +498,11 @@ recommended checkpoint less often than in-support single lenses ($\bmlGullsSubda
 $\bmlGullsSubdayN$ unweighted and $\bmlGullsSubdayFaW\%$ weighted by event rate, against
 $\bmlGullsFaCombined\%$ and $\bmlGullsFaWCombined\%$), and their most probable class is mostly
 \texttt{PeriodicVar} ($\bmlGullsSubdayPerLo$--$\bmlGullsSubdayPerHi\%$ across checkpoints), with
-$\bmlGullsSubdayMl\%$ read as microlensing of either kind. They are mostly shorter (median $t_{\rm E}$
-$\bmlGullsSubdayTe$~d) than the $0.2$--$1$~d single lenses of our own sweep, most of which the released model calls
-anomalies (\S\ref{sec:limits}); a model for free-floating planets needs sub-day timescales in its prior, not a
+$\bmlGullsSubdayMl\%$ read as microlensing of either kind. They are mostly shorter than the $0.2$--$1$~d single lenses of our
+own sweep (median $t_{\rm E}$ $\bmlGullsSubdayTe$~d), but timescale alone does not explain why that sweep fails
+(\S\ref{sec:limits}): at $0.25$--$1$~d the released model sends $\bmlGullsSubdayShippedMatchedFa\%$ of RMDC26's
+single lenses ($\bmlGullsSubdayShippedMatchedN$) above its frozen threshold, against
+$\bmlStressRelShortteSingleAlert\%$ in our sweep, whose schedule, source brightness and blending all differ; a model for free-floating planets needs sub-day timescales in its prior, not a
 threshold change.
 
 % ---------------------------------------------------------------- [D] Discussion paragraph
@@ -510,7 +512,7 @@ of planetary events, and those peaking in low-cadence seasons, $\bmlGullsLowcadS
 $\bmlGullsLowcadPlanetLo$--$\bmlGullsLowcadPlanetHi\%$ (the release concentrates events in the high-cadence
 seasons: $\bmlGullsTzeroDenseLo$--$\bmlGullsTzeroDenseHi\%$ of its catalogue peaks fall in them, although
 they span $\bmlGullsDenseSpanPct\%$ of the mission). Scoring the high-cadence seasons around a gap makes
-most of the former scorable at a false-alarm cost below one percent, but at the frozen threshold flags only
+most of the former scorable at a false-alarm cost of about one percent ($\bmlMsFa\%$, at most $\bmlMsFaHi\%$ at 95\% confidence), but at the frozen threshold flags only
 $\bmlMsRecGenPlanet\%$ of their planetary events; a claimable anomaly survives in a wing for fewer planetary
 events than in-season, and the operating point would have to be set separately (\S\ref{sec:gulls:seasons}).
 Low-cadence seasons are outside the model's support. A whole-mission model, taking the full light curve, would address both and let the

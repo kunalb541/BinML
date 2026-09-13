@@ -180,6 +180,15 @@ def fig_efficiency_plane():
                 Cc[i, j] = (ww[dcell] * rec[dcell]).sum() / nd
     stats["eff_cond_recall_median"] = round(float(np.nanmedian(Cc)), 3)
     stats["eff_cond_recall_min"] = round(float(np.nanmin(Cc)), 3)
+    # where the plane's recall falls (fourth verification): the widest-separation column at stellar mass ratios
+    # (q >= 1e-2) is well populated and lower than most of the plane; the minimum itself sits at log q < -4
+    stel = [i for i in range(n_q) if qe[i] >= -2 - 1e-9]
+    wc = [Cc[i, n_s - 1] for i in stel if np.isfinite(Cc[i, n_s - 1])]
+    stats["eff_cond_recall_wide_stellar_lo"] = round(float(min(wc)), 3)
+    stats["eff_cond_recall_wide_stellar_hi"] = round(float(max(wc)), 3)
+    stats["eff_nd_wide_stellar_min"] = int(min(Nd[i, n_s - 1] for i in stel if np.isfinite(Cc[i, n_s - 1])))
+    imin = np.unravel_index(np.nanargmin(Cc), Cc.shape)
+    stats["eff_cond_recall_min_logq_hi"] = round(float(qe[imin[0] + 1]), 1)
 
     fig, axes = plt.subplots(1, 3, figsize=(7.8, 2.9), sharey=True)
     logNd = np.log10(np.where(Nd > 0, Nd, np.nan))
@@ -371,6 +380,38 @@ def derived_prose_numbers():
     cnj = json.load(open(os.path.join(HERE, "canonical_numbers.json")))
     stats["no_f087_pct"] = round(100 * cnj["slices"]["no_blue_band"]["n"]
                                  / cnj["per_class_support"]["NonPSPL"], 1)
+
+    # Where the misses sit (fourth verification, 2026-09-13: the prose said "at the lowest evidence strengths" and
+    # "just above the detectability floor"; the artifact says wide separations). All weighted, final-test rows.
+    dch = load("dchi2_anomaly.npy").astype(np.float64)[_ti]
+    thr_op = json.load(open(os.path.join(RES, "metrics.json")))["headline"]["threshold"]
+    s_ = params[:, PARAM_FIELDS.index("s")]; q_ = params[:, PARAM_FIELDS.index("q")]
+    S_TOP = 10 ** (np.log10(0.2) + 5 * (np.log10(5.0) - np.log10(0.2)) / 6)      # the top separation bin of Fig. plane
+    det_ = y == NONP_
+    miss = det_ & (pred != NONP_); np_ps = det_ & (pred == PSPL_)
+    wide = np.isfinite(s_) & (s_ > S_TOP)
+    wsum = lambda m: float(w[m].sum())
+    stats["s_top_bin"] = round(float(S_TOP), 2)
+    stats["miss_dchi2_gt_1e4_pct"] = round(100 * wsum(miss & (dch > 1e4)) / wsum(miss), 1)
+    stats["miss_dchi2_median"] = round(float(np.median(dch[miss])), -2)
+    stats["miss_wide_pct"] = round(100 * wsum(miss & wide) / wsum(miss), 1)
+    stats["np_to_pspl_wide_pct"] = round(100 * wsum(np_ps & wide) / wsum(np_ps), 1)
+    stats["det_wide_pct"] = round(100 * wsum(det_ & wide) / wsum(det_), 1)
+    stats["recall_wide"] = round(wsum(det_ & wide & (pred == NONP_)) / wsum(det_ & wide), 3)
+    stats["recall_not_wide"] = round(wsum(det_ & ~wide & (pred == NONP_)) / wsum(det_ & ~wide), 3)
+    sc_ = P[:, NONP_]
+    stats["comp_wide"] = round(wsum(det_ & wide & (sc_ >= thr_op)) / wsum(det_ & wide), 3)
+    stats["comp_not_wide"] = round(wsum(det_ & ~wide & (sc_ >= thr_op)) / wsum(det_ & ~wide), 3)
+    lo_ev = det_ & (dch < 500)
+    stats["recall_weakest_not_wide"] = round(wsum(lo_ev & ~wide & (pred == NONP_)) / wsum(lo_ev & ~wide), 3)
+    # the two diagnostics of NonPSPL false positives, each with its own denominator
+    fp = (pred == NONP_) & (y != NONP_)
+    stats["fp_demoted_binary_pct"] = round(100 * wsum(fp & (y == PSPL_) & (tc == NONP_)) / wsum(fp), 1)
+    ps_np = (y == PSPL_) & (pred == NONP_)
+    stats["pspl_to_np_demoted_pct"] = round(100 * wsum(ps_np & (tc == NONP_)) / wsum(ps_np), 1)
+    # our detectable anomalies' mass ratios (the RMDC26 section compares with them)
+    stats["det_q_median"] = round(float(np.median(q_[det_ & np.isfinite(q_)])), 3)
+    stats["det_stellar_pct"] = round(100 * wsum(det_ & (q_ >= 1e-2)) / wsum(det_ & np.isfinite(q_)), 1)
 
 
 def fig_prior_sensitivity():

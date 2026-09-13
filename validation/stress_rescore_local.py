@@ -184,7 +184,15 @@ def main(argv=None):
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
         list(ex.map(lambda x: gen(*x, code), jobs))
     report = json.load(open(os.path.join(REPO, "paper", "results", "stress_report.json")))
-    res = {"_doc": __doc__.split("\n")[0], "code": code, "command": " ".join(sys.argv),
+    # the suite's fleet did not record its package versions (it installed them unpinned); record ours
+    import importlib.metadata as _md
+    env = {"python": sys.version.split()[0]}
+    for _pkg in ("numpy", "scipy", "h5py", "VBBinaryLensing", "torch"):
+        try:
+            env[_pkg] = _md.version(_pkg)
+        except _md.PackageNotFoundError:
+            env[_pkg] = None
+    res = {"_doc": __doc__.split("\n")[0], "code": code, "command": " ".join(sys.argv), "environment": env,
            "checkpoints": {k: {"path": os.path.relpath(v, REPO) if v.startswith(REPO) else v,
                                "sha256": hashlib.sha256(open(v, "rb").read()).hexdigest()} for k, v in CKPTS.items()},
            "tiers": {t: {"seed_base": TIERS[t][0], "regime": TIERS[t][1], "shards": list(range(TIERS[t][2])),

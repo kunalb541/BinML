@@ -8,7 +8,7 @@ The v5 data (`pipeline/`) makes leakage structurally hard:
   `seed = seed_base + shard*7919`. Training used shards **0–89** and the evaluation pool used
   shards **90–149**. (The `cache` and `cache2` S3 prefixes are the *same* events at a given
   index — a re-bin, not a second population — so independence is by **index**, never by prefix.)
-- **Separate stress streams.** The 10.4M targeted out-of-distribution arms use seed bases
+- **Separate stress streams.** The 10.4M targeted arms (8.7M in enriched regimes, 1.7M in out-of-range sweeps) use seed bases
   **≥900M**, at least 1M apart per regime, versus training's base `20260720`; the 4.5M same-prior
   arm is also generated separately. `--seed-base` exposes this protocol.
 - **The network never sees the labels' inputs.** The model forward (`model.py`) consumes only

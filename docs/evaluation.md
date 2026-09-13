@@ -96,7 +96,7 @@ augmented arm has fewer premature crossings through most, but not all, of the me
 a causal benefit is not established.
 
 The 1,000-event streaming scan is also conditional on binary eligibility: it contains no Flat,
-PSPL, demoted-binary, or variable-star prefix traces. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses alert); with F146 alone 51 generated single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested. A deployment-style test
+PSPL, demoted-binary, or variable-star prefix traces. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses with a PSPL label alert); with F146 alone 51 of those single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested. A deployment-style test
 still needs disjoint mixed-class prefix calibration.
 
 The stored scan also has provenance limits. The main trace was generated from a dirty source tree
@@ -128,30 +128,36 @@ that turning truncation augmentation off **also** changes full-season macro-F1, 
 cascade at no full-season cost" is not established. Read this table as a description of the
 lineage, not as a causal claim.
 
-## 5. Stress testing — separate same-prior and out-of-distribution arms
+## 5. Stress testing — same-prior, targeted and out-of-range arms
 
-The full suite contains 14.9 million events: a 4.5-million-event same-prior subset plus 10.4
-million events in targeted regimes. It was scored in July 2026 with the **stage-5 checkpoint**, the released
-model's predecessor (`paper/results/stress_report.json`; its macro-F1 0.927 is stage 5's). For the released model,
-`validation/stress_rescore_local.py` regenerates the first shards of each quoted regime with the suite's seeds
-and class mix (255,527 events) and scores the same events with both checkpoints. Stage 5 on this subset
-reproduces its suite numbers (macro-F1 0.927 vs 0.927; median difference 0.012, largest 0.095 on 60 wide-separation
-binaries). The released model reproduces its held-out macro-F1 on the same-prior part (0.919 vs 0.919).
+The full suite contains 14.9 million events: a 4.5-million-event same-prior subset, 8.7 million events in 12
+targeted regimes (mostly enriched pools also used in training, drawn afresh) and 1.7 million in 17 out-of-range
+sweeps. It was scored in July 2026 with the **stage-5 checkpoint**, the released model's predecessor
+(`paper/results/stress_report.json`; its macro-F1 0.927 is stage 5's). For the released model,
+`validation/stress_rescore_local.py` regenerates the first shards of each quoted regime with the suite's seeds,
+class mix and (for the sweeps) its generator's peak-time draw, and scores the same events with both checkpoints.
+The regenerated events are a new realisation, not the suite's own: the suite's cloud fleet ran an unpinned
+software environment, and the regenerated natural tier labels 2.3% fewer detectable anomalies. Stage 5 gives the
+suite's macro-F1 on the subset (0.927 vs 0.927) and differs from its other quoted numbers by 0.007 at the median
+(at most 0.060, for the wide-separation and faint-source recalls); checkpoint comparisons are made within the
+subset. The released model reproduces its held-out macro-F1 on the same-prior part (0.919 vs 0.919).
 
 The targeted arms expose failures at faint magnitudes, wide separations, long periods and sub-day timescales:
-sub-day single lenses (tE 0.2-1 d) are classified PSPL only 0.27 of the time and called anomalies 71% of the time
-(37% above the frozen threshold); the suite's per-label PSPL recall (0.52) mixed in binaries of natural timescale
-demoted to PSPL. Faint-source anomaly precision (0.026) is low mostly because anomalies are rare there. Stage 6
-trained on the edges of three of these regimes (s 3-8, tE 0.3-10 d, m 23.5-25) and the low-q regime is a
-stage-4 training pool, so for the released model they measure how far targeted coverage carries. They test
+sub-day single lenses (tE 0.2-1 d) are classified PSPL only 0.29 of the time and called anomalies 69% of the time
+(35% above the frozen threshold); the suite's per-label PSPL recall (0.52) mixed in binaries of natural timescale
+demoted to PSPL. Among faint microlensing events without a detectable anomaly the false-anomaly rate rises from
+3.3% to 26%; the faint sweep's anomaly precision (0.026) is set mostly by its class mix. The low-q and faint-source
+regimes were training pools from stage 4, and stage 6 added pools overlapping the wide-separation and sub-day
+sweeps (s 3-8, tE 0.3-10 d), so for the released model these measure how far targeted coverage carries. They test
 sensitivity to chosen stressors; they do not define their prevalence in the Roman population.
 
 ## 6. Baselines are sanity checks
 
 The classical and learned comparators are useful reference points, not matched contests. The
-neural model was trained on millions of events and receives the supplied true baseline magnitude;
+neural model was trained on up to 1.9 million events per stage and receives the supplied true baseline magnitude;
 the gradient-boosted and logistic baselines use a much smaller event set and eight summary
-features, while the fitted-PSPL baseline is limited to 800 of 6,912 F146 epochs. These differences
+features. Every method, the fitted-PSPL residual included, sees all 6,912 F146 epochs (the residual's AP is 0.545
+after the 2026-09-09 full-cadence rescore; an earlier version thinned it to 800 epochs). These differences
 in budget and oracle inputs prevent attributing score gaps to architecture alone. Treat all such
 comparisons as sanity checks.
 
@@ -168,4 +174,4 @@ The cadence and photometry are also legacy assumptions rather than the current s
 The released model uses one 72-day season, 15-min F146 sampling, 46.8-s exposures, and
 non-staggered colour grids. Current planning uses approximately 12-min F146, 66-s exposures,
 staggered colour visits, and multiple seasons. The released F087/F213 zeropoints, F087 saturation,
-and colour-band background ratios have known discrepancies from the current calibration. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750). The released model has not been retrained with corrected values.
+and colour-band background ratios have known discrepancies from the current calibration. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. Short fine-tunes on each calibration (one seed each) keep AP; the audited-calibration fine-tune falls to periodic-variable F1 0.750 on the old photometry (0.872 at its last epoch), against 0.961 (0.972) for the old-calibration fine-tune; on the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967). The released model has not been retrained with corrected values.

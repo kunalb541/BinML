@@ -1,0 +1,911 @@
+{
+ "findings": [
+  {
+   "id": "cascade-1",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1402-1409 (mirrored in paper/draft_gulls_section.tex:440-447; paper/REVISION.md:442)",
+   "claim": "RMDC26 premature/lag/detection for all 1,667 eligible events are set against the in-house giant and Neptune strata, called \"the only strata comparable with RMDC26's planetary anomalies\". The text says \"Alerts come later: ... +6.5 d, against +4.5 d in-house. Detection is lower: 61% (59-64%) ... against 89% and 73% in-house (a different checkpoint on a different simulator, so the difference mixes the two)\". REVISION row 10 says \"alerts come about two days later\".",
+   "evidence": "The comparison is not like for like in mass ratio. I binned RMDC26's eligible events with the in-house bins (cascade_reduce.Q_REGIMES, lo < q <= hi) using planet_q from rows_full_fspl5s_g08.json (scratch strata.py). Of 1,667 eligible events, 668 (40%) have q <= 1e-4, 826 fall in (1e-4, 1e-3], 149 in (1e-3, 1e-2] and 24 above 1e-2. The in-house scan has only 9 events with q <= 1e-4, and reports none because the stratum is under 20. Recommended checkpoint, F146 only, frozen threshold, per stratum: giant det 79.9% [72.7, 85.5], premature 2/149 = 1.3%, lag +5.0 d (bootstrap 95% 4.5-6.5). Neptune det 65.7% [62.4, 68.9], premature 21/826 = 2.5%, lag +6.5 d [6.0, 7.25]. q <= 1e-4: det 50.7%, lag +7.5 d. In-house, reproduced from validation/cascade_trace.npz (inhouse_strata.py): giant 89.1%, 1.4%, +4.5 d [4.0, 5.5]; Neptune 72.9%, 4.2%, +4.5 d [2.5, 6.5]. Like for like, the detection gap is about 9 and 7 points, not 28 and 12. The giant-stratum lag differs by only 0.5 d and the intervals overlap. So the headline 'later' and part of 'lower' come from RMDC26's many planets with q <= 1e-4, which the parenthesis does not mention. Paper l.1086 gives RMDC26's median q as 1.4e-4 / 1.2e-4, and l.1485-1486 says in-house detection falls at low q. Both are consistent with this being a composition effect.",
+   "fix": "Stratify the RMDC26 timing numbers by the in-house q bins in cascade_gulls.py (planet_q is in the rows) and add \\bmlCg macros for them. Compare giant with giant (80% / 1.3% / +5.0 d vs 89% / 1.4% / +4.5 d) and Neptune with Neptune (66% / 2.5% / +6.5 d vs 73% / 4.2% / +4.5 d). State that 40% of RMDC26's eligible anomalies have q <= 1e-4, a regime the in-house scan samples with 9 events. Add mass-ratio composition to the 'mixes the two' clause, and qualify 'Alerts come later' (clear for Neptune-like and lower-q events; within 0.5 d for giants). Update REVISION.md row 10 ('about two days later', 'detection does not transfer') to match.",
+   "verdict": "real",
+   "verdict_note": "I reproduced it from the 82 scan_v2 files (6,000 events, both models) and the planet_q values in rows_full_fspl5s_g08.json, using the Q_REGIMES bins. The 1,667 eligible events split 24 / 149 / 826 / 668 (q<=1e-4 is 40.1%). Recommended checkpoint, F146, frozen threshold, per stratum: giant 79.9% [72.7, 85.5], 2/149 premature, lag +5.0 d (bootstrap 4.5-6.5); Neptune 65.7% [62.4, 68.9], 21/826 premature, +6.5 d (6.0-7.25); q<=1e-4 50.7%, +7.5 d. In-house, reproduced from cascade_trace.npz: giant 89.1% / 1.4% / +4.5 d (4.0-5.5); Neptune 72.9% / 4.2% / +4.5 d (2.5-6.5); only 9 in-house events have q<=1e-4. paper.tex 1402-1409 and the draft mirror at 440-447 read as quoted, and the 09-12b disposition I40 addressed only the checkpoint/simulator confound, not composition. Extra tests make the case stronger. Like for like, giant detection differs at Fisher p=0.035 and Neptune at p=0.35 (not significant). The giant lag difference is not significant (Mann-Whitney p=0.19); the Neptune one is marginal (p=0.05). So most of the headline gaps (6.5 vs 4.5 d, 61% vs 89/73%) come from composition. Major is defensible. Two fixes to the proposed wording: do not call the Neptune lag difference 'clear' (the intervals touch at 6.0-6.5 d), and 'later for lower-q events' cannot be claimed against in-house data (6 in-house lags at q<=1e-4, median +8.5 d)."
+  },
+  {
+   "id": "cascade-2",
+   "severity": "major",
+   "file": "validation/gulls/cascade_gulls.py",
+   "line": "309, 401 (and paper/paper.tex:1659-1667)",
+   "claim": "Data availability: \"the other ablations and auxiliary experiments from their own archived JSON artifacts, each with the script that produced it. Re-deriving any reported statistic from these requires only the reduction scripts\". For RMDC26 only the tables are said to regenerate from rmdc26_scores.csv.gz.",
+   "evidence": "cascade_gulls.json holds aggregates only. The per-event inputs of every \\bmlCg number are not in the repository or any archive: 82 scan_v2_*.npz files (31 MB; P(NonPSPL) traces and the onset arrays) and truth_*.npz (172 MB). Both live only in ~/Desktop/Research/microlensing/gulls_cascade_cache. 'git ls-files' has no cascade traces, and paper/results/MANIFEST.json hashes only cascade_gulls.json. rmdc26_scores.csv.gz holds full-season scores, not half-day traces or onsets. The committed reducer also cannot run on a fresh machine: reduce() calls pq.read_table(args.meta_cache) directly (l.309, default /tmp/rmdc26_meta.parquet, l.401) with no gt._fetch fallback, unlike extract(). Running 'cascade_gulls.py --reduce --ckpt ... --out <scratch>' here fails with FileNotFoundError: /tmp/rmdc26_meta.parquet. The artifact records only 'command': no code commit, checkpoint hash (kept only in the out-of-repo scan_models.json) or input hashes. PROVENANCE.md covers only the superseded pre-2026-09-11 version. This round archived the in-house stream inputs (validation/referee_round_archive/) but not these.",
+   "fix": "Archive the recommended checkpoint's scan_v2 traces (id, lab, p|<model>|{f146,threeband}, onset_detectable, about 15 MB per model), plus the per-event final_weight and planet_q, under validation/gulls/ with hashes in MANIFEST.json. Or state in Data availability that the RMDC26 cascade can be regenerated only by re-running --extract/--scan. Make reduce() fetch the pinned meta parquet via gt._fetch (or read weights from the rows files). Record the code commit, checkpoint sha256 and trace hashes in cascade_gulls.json, and add the current artifact to PROVENANCE.md.",
+   "verdict": "partly",
+   "verdict_note": "The gaps are real. git ls-files has no scan_v2_* files (31 MB) or truth_*.npz (172 MB); they exist only in ~/Desktop/Research/microlensing/gulls_cascade_cache. MANIFEST.json hashes only cascade_gulls.json. That JSON's keys are only _doc/protocol/n_scanned/results/inhouse_reference/command: no commit, checkpoint or input hashes. PROVENANCE.md covers only the superseded 'before 2026-09-11 evening' version. I ran 'cascade_gulls.py --reduce --ckpt ... --out <scratch>' and it fails with 'FileNotFoundError: /tmp/rmdc26_meta.parquet' (l.309, no gt._fetch fallback). rmdc26_scores.csv.gz has full-season scores only. But major overstates it. The quoted Data availability sentence is not contradicted: cascade_gulls.json and cascade_gulls.py are both committed, every \\bmlCg macro re-derives from that JSON through make_gulls_macros.py, and the paper never claims the RMDC26 cascade's per-event inputs are archived. The /tmp failure only hits a standalone --reduce: extract() fetches the pinned meta to the same default path, so the documented extract->scan->reduce order works. The scan's checkpoint is not in doubt: scan_models.json b2c4c24ca33f9d0d is the prefix of sha256(ft_fspl5s_seasons_g08.pt) = sha256(binml-gapaware.pt). final_weight is also in the committed csv 'weight' column (it reproduces 0.0891). Severity should be minor: an undisclosed provenance gap plus a missing fetch fallback."
+  },
+  {
+   "id": "cascade-3",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1412-1415 (draft 450-453; REVISION.md:442)",
+   "claim": "\"The in-house scan measured three bands only for its whole population, mostly stellar binaries (...), so its planetary strata cannot be compared on this point.\" REVISION row 10: \"three-band in-house numbers exist only for the whole, mostly stellar, scan\".",
+   "evidence": "The committed trace validation/cascade_trace.npz stores p_multi (three bands, 1000x144) for every event, next to params (q). Only the reduction did not stratify it. My reduction (inhouse_strata.py) reproduces the published whole-population three-band row exactly (91.0%, 1.0%, +7.0 d) and the F146 strata exactly. Three-band per stratum: giant premature 1.4% -> 0.7%, lag +4.5 -> +6.0 d, detection 89.1% -> 91.3%. Neptune (n=48): premature 4.2% -> 0.0%, lag +4.5 -> +5.5 d, detection 72.9% -> 68.8%. The planetary strata can be compared, and they move the same way as RMDC26 on premature alerts and lag.",
+   "fix": "Replace the sentence with the stratified in-house three-band values, reduced from cascade_trace.npz and added to cascade_reduce.py's stratified block with macros. Note the small counts (1 and 0 premature events). Correct REVISION row 10.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. cascade_trace.npz stores p_multi (1000x144; cascade_trace.py fills it with all bands revealed at every cut, with >=10 F146 points) next to params[:, q]. Only cascade_reduce.py leaves it unstratified (stratification uses base = F146 only, l.309). I used cascade_reduce's own alert_times/summarise. The whole population reproduces the published 91.0% / 1.0% / +7.0 d. Three bands, giant: premature 1.4% -> 0.7% (1/138), lag +4.5 -> +6.0 d, detection 89.1% -> 91.3%. Neptune: 4.2% -> 0.0% (0/48), +4.5 -> +5.5 d, 72.9% -> 68.8%. So 'measured three bands only for its whole population ... cannot be compared' (paper 1412-1415, draft 450-453) and REVISION row 10 are inaccurate. Premature and lag move the same way as RMDC26 (2.2 -> 1.1%, +6.5 -> +11.5 d). Minor is right; the counts are small."
+  },
+  {
+   "id": "cascade-4",
+   "severity": "minor",
+   "file": "paper/make_gulls_macros.py",
+   "line": "468-502 (text: paper/paper.tex:1405-1412, 1426-1429)",
+   "claim": "Directional sentences: \"Alerts come later\" (Lag > InGiantLag), \"Detection is lower\" (new in 218e3f1), \"Revealing all three bands lowers premature alerts ..., lengthens the lag ... and lowers detection\", \"purity at 1% rises ... and the lag grows\", and \"The cascade's low premature-alert rate therefore holds on another simulator\".",
+   "evidence": "The cascade block of make_gulls_macros.py has only presence checks, need(key in R_). The one directional guard is l.618, for 'several times as often', and it tests only > 2x; the current ratio is 3.5x (0.0617 vs 0.01762). tests/test_macros_fail_closed.py has no value-perturbation case for any cascade guard. VERIFICATION_2026-09-12b.md:26 says every new directional sentence has a fail-closed guard, and 'Detection is lower' was introduced by this round's commit 218e3f1 without one. The three-band and calibrated directions hold today, and I checked them. The three-band changes are paired-significant: detection 118 vs 77 discordant events (exact McNemar p=0.004), premature 23 vs 4 (p=3e-4). Calibrated alerts are a subset of frozen alerts (0 exceptions), so 'alerts fall', 'detection falls' and 'premature falls' are guaranteed by construction. 'Purity rises' and 'lag grows' are not, and none of these is guarded against a regenerated artifact.",
+   "fix": "Add need() guards: CgLag > InGiantLag and > InNeptuneLag; CgDet < InNeptuneDet; PremThree < Prem, LagThree > Lag and DetThree < Det; PurOneCal > PurOne and LagCal > Lag; and a bound for 'stays rare' (e.g. PremHi < 5%). Raise the 'several times' guard to >= 3x or reword it. Add perturbation cases to tests/test_macros_fail_closed.py.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. The cascade block of make_gulls_macros.py (468-502) has only presence checks (l.470, l.486). The only directional guard is l.618, CG_SINGLE_ALERT > 2x; the current ratio is 0.0617/0.01762 = 3.50x. tests/test_macros_fail_closed.py has cascade cases only for missing artifact and missing block, with no value perturbation. git log -S shows 218e3f1 rewrote 'Detection does not transfer' as 'Detection is lower' with no guard. VERIFICATION_2026-09-12b.md at HEAD l.26 says 'every new directional sentence has a fail-closed guard'. Every direction holds today. I reproduced the paired counts: detection 118 vs 77 (exact p=0.0041), premature 23 vs 4 (p=3.1e-4). Calibrated alerts and premature alerts are subsets of the frozen ones with 0 exceptions, as construction requires. The calibrated lag (6.5 -> 8.0) and purity rise are not guaranteed by construction. Minor."
+  },
+  {
+   "id": "cascade-5",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1395, 1417-1422",
+   "claim": "\"The high-cadence season of 3,000 single lenses and 3,000 binaries was revealed ...\"; \"6.2% of single lenses per simulated event (8.9% weighted by event rate) raise an alert ...\"; purity 5% / 21% / 49%.",
+   "evidence": "The scanned events are the lowest event ids of each class (sample_ids: sorted dense scored ids, first 3,000 / 1,500 / 1,500). Scanned ids equal that set exactly. The paper does not say this, although §gulls:labels does say 'first'. Single-lens ids 3022-30078 cover the bottom 9% of the 3022-306453 range. The sample is not quite representative for the headline variant. Its full-season F146 flag rate with the recommended checkpoint (rows_full_fspl5s_seasons_g08_f146only.json, which equals the scan's last cut to 4 dp for all 6,000 events) is 4.80% [4.1, 5.6], against 5.84% for the other 30,353 dense single lenses (z=2.34, p=0.019). Three-band and calibrated variants are consistent (p=0.32-0.92). Post-stratifying the sample's any-cut alert rate on the last-cut flag gives about 7.1% (weighted 9.9%) for all 33,353 dense single lenses, against the quoted 6.2% (8.9%) (poststrat.py). With that rate, purity at 5% would be about 19% (quoted 21%) and at 22% about 47% (quoted 49%). The 185/3000 binomial interval, 5.4-7.1%, is not quoted.",
+   "fix": "Say 'the first 3,000 scored single lenses and the first 1,500 of each planetary class (by event id)'. Quote a 95% interval for the single-lens alert rate. Either add the post-stratified (full-population) estimate or note that the sample's full-season single-lens flag rate is about 1 point below the population's, so burden and purity are slightly optimistic.",
+   "verdict": "real",
+   "verdict_note": "Reproduced exactly. For each class the scanned ids equal sorted(dense scored ids)[:3000/1500/1500]. The single-lens sample spans ids 3022-30078 of a 3022-306453 range. In rows_full_fspl5s_seasons_g08_f146only.json (which matches the scan's last cut within 1e-4 for all 6,000), the sample flags 4.80% [4.09, 5.62] against 5.84% for the other 30,353 (z=2.34, p=0.019). Three-band and calibrated tests give p=0.32-0.92. Post-stratified on the last-cut flag, the any-cut alert rate is 7.10% (9.91% weighted), against 6.17% (8.91%). Rerunning the reducer's purity formula with those rates gives 18.9% at 5% (quoted 21%) and 47.3% at 22% (quoted 49%). The Wilson interval for 185/3000 is 5.36-7.08%. The non-representativeness evidence is marginal: only one of four variants is significant, and not after a 4-way correction. The planetary samples also lean flaggable (1S2L 36.3% vs 34.0%, p=0.08), which pushes purity the same optimistic way. The proposed fix (state 'first by id', add an interval, note the lean) is the right size. Minor."
+  },
+  {
+   "id": "cascade-6",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1423",
+   "claim": "\"RMDC26 contains no variable stars or flat sources (our synthetic ones rarely alert, \\S\\ref{sec:cascade}, but real variables are untested)\" -- in a paragraph about the recommended gap-aware checkpoint.",
+   "evidence": "The §cascade every-class stream (referee_round.json mixed_class_stream and mixed_class_stream_f146) was scored with the SHIPPED checkpoint: referee_round_local.py _init defaults to SHIPPED, and stream_scan uses it. With F146 alone it still lets 4 flat or variable events alert. The only in-house streaming scan with the recommended checkpoint is single_lens_stream_recommended_f146, which covers generated single lenses only. No streaming measurement of the recommended checkpoint on synthetic flat or variable prefixes exists.",
+   "fix": "Write 'our synthetic ones rarely alert for the shipped checkpoint (\\S\\ref{sec:cascade}); the recommended checkpoint was not scanned on them'. Or scan the stream set's Flat and variable events with binml-gapaware.pt, F146 only, as the single-lens scan did.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. In referee_round_local.py, _init(weights=SHIPPED) (l.213) is the initializer stream_scan uses with no initargs (l.270), so both mixed_class_stream blocks are the shipped checkpoint. In the F146 block, Eruptive alert_frac 0.00281 x 1423 = 4 events, matching bmlRefStreamFVarAlerts=4. The only recommended-checkpoint streaming scan is single_lens_scan_recommended, which selects label==PSPL & true_class==PSPL only. No artifact scans flat or variable prefixes with binml-gapaware.pt, and §cascade (l.491-513) never names a checkpoint, so the parenthesis at l.1423 applies a shipped-model result to the recommended one. Minor."
+  },
+  {
+   "id": "cascade-7",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1424-1426 (and validation/referee_round_local.py:291, 300)",
+   "claim": "\"On our own simulator, with continuous seasons and the same checkpoint, band and threshold, 31 of 1,759 generated single lenses alert (1.8%)\"",
+   "evidence": "The stream set holds 2,000 generated single lenses (true_class PSPL, 1,000 per shard; stream_events_0009{0,1}.npz). 241 of them carry the Flat label (below the detectability policy), and the scan excludes them because it selects label==PSPL & true_class==PSPL (l.291). The artifact key n_generated_single_lenses=1759 has the same mislabel. RMDC26's side includes single lenses that our rule calls Flat (26 of the first 1,600, 1.6%). I recomputed 31/1759 = 1.762% (9 at 0.956) from referee_round_archive. The conclusion does not change: 31/2000 = 1.55% if the Flat-labelled ones never alert (the shipped F146 stream shows 0 Flat alerts), and restricting RMDC26 to single lenses we label PSPL gives 92/1574 = 5.84%. The ratio stays 3.3-4.0x.",
+   "fix": "Write '31 of the 1,759 generated single lenses labelled PSPL' (or scan all 2,000), and rename the artifact key (e.g. n_generated_single_lenses_labelled_pspl).",
+   "verdict": "real",
+   "verdict_note": "Confirmed from referee_round_archive. stream_events_0009{0,1}.npz each hold 1,000 true_class PSPL events (label PSPL 896+863 = 1,759; label Flat 104+137 = 241). The gap-aware scan rows equal flatnonzero(label==PSPL & true_class==PSPL); 31/1759 = 1.762%, and 31/2000 = 1.55%. The shipped F146 stream has 0/241 Flat-labelled generated single lenses alerting. On the RMDC26 side, truth cache v2 has 26/1600 single lenses labelled Flat (0 alert), and the PSPL-labelled ones alert 92/1574 = 5.84%. The ratio stays 3.3-4.0x, so the conclusion stands. The same count, labelled 'generated single lenses' (bmlRefStreamGenN = bmlRefStreamFGenN = 1,759), also appears in §cascade l.505-507, so the rewording should cover it too. Minor."
+  },
+  {
+   "id": "ledger-referee-archive-untracked",
+   "severity": "major",
+   "file": "paper/REVISION.md",
+   "line": "453 (row 21 artifacts), 488 (section 2); also paper/paper.tex 1662-1664, CHANGELOG.md 25",
+   "claim": "Section 2: 'per-event inputs archived with hashes in validation/referee_round_archive/'. Row 21 lists validation/referee_round_archive/ as an artifact. The paper's Data availability says the per-event inputs 'are archived with their hashes in validation/referee_round_archive/'. CHANGELOG: 'per-event inputs archived in validation/referee_round_archive/'.",
+   "evidence": "`git ls-tree -r --name-only HEAD | grep -c referee_round_archive` returns 0: the directory is not in the pushed commit 9c04593. `git check-ignore -v` shows it is excluded by .gitignore:43 (`*.npz`) and .gitignore:68 (`*.pt`). Locally the directory holds 22 files (25 MB), and every sha256 matches referee_round.json['archive']. No test or CI step checks that the archive is present; CI builds from `git archive HEAD`. The runner's docstring (validation/referee_round_local.py:40-42) says the archive lets 'the JSON be re-reduced without this machine's work directory', which a clone cannot do. So the fix recorded for major issue I29 in VERIFICATION_2026-09-12b ('Referee-round per-event inputs not distributed') has no effect in the published repository. By contrast, the fine-tune weights in validation/gulls/weights were force-added.",
+   "fix": "Commit the directory (`git add -f validation/referee_round_archive`, or add a `!validation/referee_round_archive/**` negation to .gitignore). Add a test that every file named in referee_round.json['archive']['sha256'] is tracked and matches its hash. If the archive is meant to be hosted elsewhere, change the paper, section 2, row 21 and the CHANGELOG to say where.",
+   "verdict": "real",
+   "verdict_note": "Reproduced; major is the right severity. HEAD is now 943b171, which equals origin/main and only adds a build.sh change. `git ls-tree -r --name-only` finds 0 referee_round_archive paths at HEAD, at 9c04593 and at origin/main. `git status --ignored` lists `!! validation/referee_round_archive/`. `git check-ignore -v` puts all 20 .npz files under .gitignore:43 and both .pt fine-tunes under :68. .gitignore:63-64 already whitelists cascade_trace.npz and matched_traces.npz, but nothing whitelists this archive. Locally there are 22 files (25 MB), and all 22 sha256 values in referee_round.json['archive']['sha256'] match. Nothing in tests/ or .github checks the archive, and the paper-build workflow extracts `git archive HEAD`. So paper.tex:1661-1663 is false for any clone: it says the per-event inputs 'and the two colour fine-tunes' are archived with their hashes in validation/referee_round_archive/. REVISION.md:453/488 and CHANGELOG.md:25 are false in the same way. validation/gulls/PROVENANCE.md:25 is worse: it says the inputs are 'committed under validation/referee_round_archive/'. The proposed fix stands, and PROVENANCE.md:25 should be corrected too."
+  },
+  {
+   "id": "ledger-row7-stale-colour",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "439 (row 7)",
+   "claim": "'Removing F087/F213 lowers 1S2L recall at the matched 5.2% budget by 0.042 (g08e12), 0.067 (fspl_g08), 0.068 (fspl5s); 9.1-9.5% of frozen-threshold decisions flip. Reading withdrawn: on binaries with a policy-detectable F146 anomaly colour changes recall only 0.534 -> 0.539; on those without one it raises the flag rate 0.170 -> 0.270.'",
+   "evidence": "transfer_colour_ablation.json has a fourth checkpoint, fspl5s_seasons_g08 (the recommended one): its recall drop at 5.2% is 0.3914-0.3295 = 0.062, and frac_decisions_flipped_at_frozen = 0.0894, which is outside '9.1-9.5%'. The paper (paper.tex:1276-1281) uses \\bmlGullsNcolour = 4 and quotes the recommended checkpoint's split from the colour_ablation block of transfer_detectability_relabel.json: 0.546 -> 0.575 on detectable anomalies (+0.029, against fspl5s' +0.006) and 0.174 -> 0.248 on the rest. The row's 0.534 -> 0.539 and 0.170 -> 0.270 are fspl5s' values. The status table at the top of the file (line 29) already says four checkpoints.",
+   "fix": "Add the recommended checkpoint (drop 0.062, 8.9% of decisions flip, so the range becomes 8.9-9.5%). Quote its 0.546 -> 0.575 and 0.174 -> 0.248 as the paper does, keep the fspl5s values labelled as such, and drop 'only'.",
+   "verdict": "real",
+   "verdict_note": "Recomputed from transfer_colour_ablation.json at the 5.2% budget (three-band minus F146-only 1S2L recall): g08e12 0.0424, fspl_g08 0.0671, fspl5s 0.0681, and the recommended fspl5s_seasons_g08 0.0619 (4457 against 3752 of 11388). frac_decisions_flipped_at_frozen is 0.0939, 0.0945, 0.0912 and 0.0894. The fourth checkpoint is missing from row 7, and its 8.9% falls outside the row's '9.1-9.5%'. The row's 0.042-0.068 range is still correct, because 0.062 lies inside it. Row 7's split figures are the fspl5s ones from the colour_ablation block of transfer_detectability_relabel.json (budget_0.052 detectable 0.5336->0.5394, undetectable 0.1695->0.2699), and the row does not say so. The recommended checkpoint's split, 0.5464->0.5748 and 0.1743->0.2482, is what gulls_macros.tex:368-371 feeds to paper.tex:1277-1281. Minor; the fix is correct."
+  },
+  {
+   "id": "ledger-rows6-11-not-updated",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "438 (row 6), 443 (row 11); claim in 446 (row 14)",
+   "claim": "Row 14 says the downstream analyses are 'now rerun for the recommended checkpoint (rows 3, 9, 10, 11, 15, sub-day)'. Row 6 still says 'fspl5s flags 0.7% (unweighted) / 3.1% (rate-weighted)'. Row 11 still says 'fspl5s flags 40% of floor-vetoed planetary events ... (38-47%), 16-20% with F146 alone; it also flags 10 of 20 single lenses ... (95% 30-70%)'.",
+   "evidence": "The reruns are in the artifacts and the paper quotes them; the two rows were never updated. Sub-day: transfer_subday.json fspl5s_seasons_g08 frozen fa 0.0159, weighted 0.057, which the paper quotes as \\bmlGullsSubdayFa 1.6 and \\bmlGullsSubdayFaW 5.7 (paper.tex:1450-1453). Floor: transfer_detectability_relabel.json fspl5s_seasons_g08 flags 361/963 = 37.5% of floor-vetoed events; the sub-floor bins are 0.395/0.353/0.380; F146 only gives 0.158/0.197/0.246; single lenses with a significant sub-floor misfit are 5/20 (Wilson 11-47%). The paper quotes these (paper.tex:1355-1362: 37%, 35-40%, 16-25%, 5 of 20, 11-47%). The rows' fspl5s values are correct for fspl5s. Row 11's 'not planet-specific' rests on 50% against 40%; for the paper's checkpoint it is 25% [11, 47] against 37%.",
+   "fix": "Add the recommended checkpoint's values to rows 6 and 11, marked as the numbers the paper quotes.",
+   "verdict": "real",
+   "verdict_note": "Row 14 (REVISION.md:446) says the downstream analyses were rerun for the recommended checkpoint in 'rows 3, 9, 10, 11, 15, sub-day'. Rows 3, 9, 10 and 15 carry its values; rows 6 and 11 carry only fspl5s values. Those fspl5s values are correct: sub-day 0.0072 / 0.0314; floor 384/963 = 39.9%; sub-floor bins 0.465/0.382/0.378; F146 only 0.158/0.185/0.198; single lenses 10/20, Wilson 0.30-0.70. The recommended checkpoint's values, which the paper quotes, are absent. Sub-day: 0.0159 / 0.057, i.e. \\bmlGullsSubdayFa 1.6 and \\bmlGullsSubdayFaW 5.7. Floor: 361/963 = 37.5%; sub-floor bins 0.395/0.353/0.380 (35-40%); F146 only 0.158/0.197/0.246 (16-25%); single lenses 5/20, Wilson 0.112-0.469. These match gulls_macros.tex:357-365. Minor; the fix is correct."
+  },
+  {
+   "id": "ledger-row10-stale-wording",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "442 (row 10)",
+   "claim": "'single-lens alerts 6.2% of events per season (0.86 per 1,000 events per day); purity ... 5% at 1% planetary prevalence, 21% at 5%' and the bold conclusion '... detection does not transfer (as the full-season recall) ...'",
+   "evidence": "In cascade_gulls.json, alerts_per_1000_events_per_day = 0.856 sits under burden.RMDC26_1S1L_ML, so its denominator is single lenses. The paper (paper.tex:1418-1421) now says 'per 1,000 single lenses per day', labels 6.2% 'per simulated event (8.9% weighted)' (alert_frac_weighted 0.0891), and marks the purities 'per simulated event' (disposition I28). paper.tex:1406-1409 replaced 'Detection does not transfer' with 'Detection is lower ... (a different checkpoint on a different simulator, so the difference mixes the two)' (I40; CHANGELOG line 29). 'does not transfer' no longer appears in paper.tex or the draft.",
+   "fix": "Relabel the unit (per 1,000 single lenses per day), add the 8.9% weighted figure and the 'per simulated event' labels, and replace 'detection does not transfer' with the paper's hedged wording.",
+   "verdict": "real",
+   "verdict_note": "In cascade_gulls.json, results['fspl5s_seasons_g08|f146|frozen'].burden.RMDC26_1S1L_ML is {n: 3000, alert_frac_per_season: 0.0617, alert_frac_weighted: 0.0891, alerts_per_1000_events_per_day: 0.856}. 0.0617 over 72 d (144 half-day cuts) x 1000 gives 0.86, so the denominator is single lenses. Purities are 0.0519, 0.2092 and 0.4931, labelled unweighted, unweighted and final_weight-weighted. The row's numbers are therefore right; only its labels are stale. The c4bf5f3..HEAD diff of paper.tex shows 'Detection does not transfer' replaced by 'Detection is lower ... (a different checkpoint on a different simulator, so the difference mixes the two)' at 1406-1409. It also shows 'per 1,000 events per day' replaced by 'per 1,000 single lenses per day', with the per-simulated-event and weighted labels added at 1418-1422 (dispositions I28, I40). grep finds 'does not transfer' in neither paper.tex nor the draft; row 10 (REVISION.md:442) keeps both old wordings. Minor; the fix is correct."
+  },
+  {
+   "id": "ledger-row9-host-visible-rounding",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "441 (row 9)",
+   "claim": "'host-visible subset 50% / 37%'",
+   "evidence": "In transfer_multiseason.json (by_class, 1S2L), n_detectable_anomaly_host_visible / n_host_visible = 302/598 = 50.50%, which rounds to 51%. The artifact's 3-decimal field 0.505 double-rounds to 50. make_gulls_macros.py:450 computes from the counts and writes \\bmlMsDetHostPlanet = 51. The macro is not used in paper.tex, so only the ledger is affected.",
+   "fix": "Change to '51% / 37%'.",
+   "verdict": "real",
+   "verdict_note": "In transfer_multiseason.json, by_class.RMDC26_1S2L_ML has n_detectable_anomaly_host_visible 302 and n_host_visible 598. 302/598 = 50.502%, which pct0 (f'{100*x:.0f}') renders as 51, so gulls_macros.tex:466 has \\bmlMsDetHostPlanet{51}. The 2S2L value is 230/624 = 36.9%, so 37 is correct. The stored field frac_detectable_anomaly_of_host_visible = 0.505 is the source of the ledger's '50%'. grep finds the macro in neither paper.tex nor the draft, so only REVISION.md:441 is affected. Minor (one point); the fix '51% / 37%' is correct."
+  },
+  {
+   "id": "ledger-row22-section-label",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "454 (row 22 status); also 25 and CHANGELOG.md 68",
+   "claim": "'✅ in paper (§training, §limits)'",
+   "evidence": "paper.tex has no training section. Its sections are intro, sims, model, cascade, eval, results, limits, gulls, discussion, conclusion and app:infra. The truncation truth-label paragraph is in §cascade ('Partial-light-curve evaluation', paper.tex:374-386), and the pause paragraph is in §limits (930-937). The status table at line 25 ('stated in §training', text at paper.tex:361-366) and the 09-12 CHANGELOG entry use the same label.",
+   "fix": "Cite §cascade and §limits (sec:cascade, sec:limits).",
+   "verdict": "real",
+   "verdict_note": "The \\section/\\label list of paper.tex has intro, sims (with subsection detcond), model, cascade, eval, results, limits, gulls (with subsections), discussion (with ablations), conclusion and app:infra. There is no training section. The \\bmlTruth* macros appear only at paper.tex:375-386, in §cascade 'Partial-light-curve evaluation', and at 933-936, in §limits. The 7.2-day t_anom text (361-366) is also in §cascade. So '§training' at REVISION.md:25 and :454 and at CHANGELOG.md:68 names a section that does not exist. docs/AUDIT_2026-09-09.md:29 uses the same label and should be fixed as well. Minor; the fix is correct."
+  },
+  {
+   "id": "ledger-header-counts-stale",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "418-421 (section 1.5 intro); 42; 23; 32",
+   "claim": "The section 1.5 intro attributes the rows as 'rows 18-19 by the 2026-09-12 re-verification, rows 20-22 by the referee round ...' and never mentions row 23. Line 42: 'the 22 rows of the ledger in §1½'. Status table: 'OOR swept-class support (e.g. widesep NonPSPL n = 438) ... ✅ via \\bmlStress*N' (line 23) and '25 pages' (line 32).",
+   "evidence": "The ledger now has 23 rows; row 23 was added by the third verification's completeness critic. The released model's wide-separation number in the paper rests on \\bmlStressRelWidesepN = 60 (Table tab:stress); 438 appears only in the stage-5 full-set column. paper/build.log (2026-09-13) ends 'Output written on paper.pdf (28 pages ...)', and paper/results/MANIFEST.json lists 42 files, not the 41 the table cites.",
+   "fix": "Cite row 23 and its origin in the section 1.5 intro, change '22 rows' to 23, and refresh the stress-support and build rows of the status table.",
+   "verdict": "partly",
+   "verdict_note": "Two parts are real. The §1½ intro (REVISION.md:418-421) attributes rows only up to 22 and never mentions row 23, which was added by the third verification's completeness critic. Line 42 still says '22 rows', but the ledger has 23 (grep: rows at lines 433-455). Two parts are overstated. The stress-support status item (line 23) is not wrong: 438 is still quoted, as the stage-5 full-set support at paper.tex:781 and 823 via \\bmlStressWidesepN, which is read from stress_report.json. It is only incomplete now that the released model's number rests on \\bmlStressRelWidesepN = 60. The build row (line 32) is an explicitly dated 2026-09-12 record. MANIFEST.json had 41 files at c4bf5f3, 6e969e1, 218e3f1 and aa68c99, and 42 only from 9c04593, so '41' was right on that date. The 28 pages come from an untracked local build.log written 2026-09-13. Keep the row-count and row-23 fixes; refreshing the other two items is optional."
+  },
+  {
+   "id": "ledger-subday-sentence-unlogged",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1455-1457 (draft_gulls_section.tex 493-495)",
+   "claim": "'They are mostly shorter (median tE 0.13 d) than the 0.2–1 d single lenses of our own sweep, most of which the released model calls anomalies (§limits)'",
+   "evidence": "This sentence is new in this round, and no ledger row (neither 6 nor 23) records it. Placed next to the recommended checkpoint's 1.6% flag rate on RMDC26's sub-day lenses, it reads as saying timescale explains the contrast with our sweep. The data contradict that at overlapping timescales. The same released model (binml.pt, 'shipped' in transfer_subday.json fa_frozen_by_te) flags 2.3% (0.25-0.5 d, n=222) and 6.1% (0.5-1 d, n=245) of RMDC26's sub-day single lenses above the frozen threshold. On our 0.2-1 d sweep it flags 36.6% of 2,740 (stress_rescore_local.json single_lens_recall.oor_pspl_shortte.released; argmax NonPSPL 71%). On RMDC26 its argmax is PeriodicVar 93% and NonPSPL 6.4%. The sentence also compares two different checkpoints.",
+   "fix": "Either give the matched-timescale comparison (released model at 0.25-1 d: 2-6% on RMDC26 against 37% on our sweep) or remove the implied explanation. Record the comparison in row 6 or row 23.",
+   "verdict": "real",
+   "verdict_note": "Recomputed from ~/Desktop/Research/microlensing/gulls_curve_cache_subday/rows_subday_*.json, the 1385 common dense 1S1L that subday_summary.py uses. The released binml.pt ('shipped') on RMDC26 sub-day single lenses: at 0.2<=tE<1 d (n=549), 3.8% are above the frozen 0.904, argmax NonPSPL is 14% and PeriodicVar 85%. At 0.25-1 d (n=467) it is 4.3% and 16%; the per-bin values are 0.25-0.5 d 2.25% and 0.5-1 d 6.1%, as in transfer_subday.json. The recommended checkpoint on 0.2-1 d gives 4.0% and 30%. On our 0.2-1 d sweep, stress_rescore_local.json oor_pspl_shortte.released (n=2740) gives 36.6% above threshold and 71% argmax NonPSPL. The sentence's literal facts hold: median tE 0.133 d, 836/1385 = 60% below 0.2 d, and 71% called anomalies. The contrast it implicitly explains by timescale persists at matched timescales, though. The sentence is new since c4bf5f3 (diff) and appears in neither row 6, row 23 nor the CHANGELOG. make_gulls_macros.py:350-358 has no guard for it. Minor is defensible because nothing is stated causally."
+  },
+  {
+   "id": "ledger-unlogged-paper-changes",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "434 (row 2); CHANGELOG.md 26-29",
+   "claim": "The ledger and the CHANGELOG's third-verification entry are the record of this round's changes; row 2 reports 'held-out AP under the measured pauses 0.921 vs 0.911 (clean 0.948 vs 0.952)' with status '✅ positive (rerun)'.",
+   "evidence": "Some paper changes in 218e3f1..9c04593 have neither a ledger row nor a CHANGELOG mention. (a) paper.tex:919-926: 'does better still' became 'does at least as well', and the in-house held-out AP differences are now 'not separated' because they are smaller than the 0.018 seed spread (disposition I06). Row 2 still gives 0.921 vs 0.911 without that qualifier. (b) paper.tex:1614-1623: the Conclusion's open-tests list was rewritten ('the submitted version listed as open'; a streaming threshold calibrated on disjoint prefixes restored; I37). Checked against the submitted 08337ed: the rewrite is accurate. (c) paper.tex:1668-1670: new disclosure that the RMDC26 fine-tunes ran from uncommitted working trees (I29). The CHANGELOG's 'Paper:' bullet lists other wording fixes but none of these three.",
+   "fix": "Add the seed-spread qualifier to row 2's held-out numbers. Mention (a)-(c) in the CHANGELOG entry, or add a ledger row for the third verification's paper-only fixes, as row 19 does for the second.",
+   "verdict": "partly",
+   "verdict_note": "Items (a)-(c) exist in paper.tex as stated. At 919-926, 'does at least as well' and 'not separated' refer to 0.921 vs 0.911 and 0.948 vs 0.952, both inside \\bmlSeedHeldApRange 0.018. At 1614-1623 the Conclusion's open-tests list was rewritten, and 1668-1670 carries the dirty-tree disclosure. None of the three is in REVISION.md or in the CHANGELOG's 'Paper:' bullet. They are logged, however, in the third-verification record, which the CHANGELOG entry (line 6) and the §1½ intro both cite. docs/VERIFICATION_2026-09-12b.md has dispositions I06 (line 37), I37 (68) and I29 (60), completeness item 7 names the 0.921/0.911 qualifier, and the summary says 'the Conclusion's account of open tests'. So there is no logging or provenance gap. What remains is minor: row 2 (REVISION.md:434) still lists 0.921 vs 0.911 without the seed-spread qualifier the paper now carries. Adding that qualifier is the only needed fix; the extra CHANGELOG or ledger row is optional."
+  },
+  {
+   "id": "ledger-verification-addendum-missing",
+   "severity": "minor",
+   "file": "docs/VERIFICATION_2026-09-12b.md",
+   "line": "95, 97, 102 (generated from docs/verification/dispositions_2026_09_12b.py:151-158)",
+   "claim": "'Addressed: after the fixes the final state was checked again by a fourth, smaller verification (addendum below)'. Completeness items 6 and 11 (item 11 is 'Row-by-row dispositions in paper/REVISION.md §1.5 (rows 1-22) and §2') say 'Included in the fourth verification.'",
+   "evidence": "The file ends at line 109 with 'Left open'. `grep addendum` finds only this forward reference, and no fourth-verification record exists at 9c04593. Neither the ledger (section 1.5 intro) nor the CHANGELOG mentions a fourth verification, so at HEAD the doc states in the past tense a check that is not recorded.",
+   "fix": "After this round, append the fourth verification's record through dispositions/build_doc and regenerate; until then, reword the text to 'to be checked in a fourth verification'.",
+   "verdict": "real",
+   "verdict_note": "At HEAD (943b171 = origin/main), docs/VERIFICATION_2026-09-12b.md is 109 lines and ends with 'Left open'. 'fourth' occurs only at lines 95, 97 and 102, generated from dispositions_2026_09_12b.py:151, 153 and 158; 'addendum' occurs only in line 95's forward reference, and no addendum exists. Neither REVISION.md nor CHANGELOG.md mentions a fourth verification. The working tree has uncommitted edits to this doc and its builder (a new 'Two errors older than the revision' bullet) but still no addendum. This is the in-progress state of the current round and goes away once its record is appended and regenerated. Until then the doc states in the past tense a check that has no record. Minor; the fix is correct."
+  },
+  {
+   "id": "stress-01",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "765-770, 790-794, 808-809 (also pipeline/run_shard.py:252,258; validation/gulls/PROVENANCE.md:44-45; paper/REVISION.md:455; CHANGELOG.md:32-37)",
+   "claim": "The first shards of each tier were 'regenerated ... with the set's seeds and class mix'; 'Stage 5 on this subset reproduces its full-set numbers'; 'under that set's class mix 38% of the weighted PSPL-labelled events are binaries of ordinary timescale'. run_shard.py says --legacy-oor-mix reproduces 'the shipped stress suite bit for bit'.",
+   "evidence": "For oor_pspl_shortte the regeneration is not the suite's population. Commit ef6b0bd (2026-07-28, after the 2026-07-22 suite) changed pipeline/assemble.py:333-337 from `params.setdefault(\"t0\", ...)`, which drew a value but never assigned it, to an actual re-pad of t0 for the overridden sub-day tE. Among generated sub-day single lenses, 99.4% now peak inside the 72-d window, against 79.5% before. The RNG stream also diverges: kept events differ from index 277 of shard 0. PSPL label fraction: suite 14.75% (12,122/82,180), repo regeneration 18.14% (2,987/16,466). I regenerated the same 4 shards with that one line reverted (scratch copy of pipeline/, same seeds, --legacy-oor-mix) and scored them with both checkpoints. That run reproduces the suite: PSPL fraction 14.79%. Stage-5 metrics, July-t0 run vs suite: PSPL recall 0.532 vs 0.524; Flat precision 0.977 vs 0.979; NonPSPL precision 0.110 vs 0.110; Eruptive precision 0.825 vs 0.823. The repo subset gives 0.484 / 0.970 / 0.098 / 0.802. So the 0.040 stage-5 shortte gap (about 3.4 bootstrap SE) comes from the generator change, not from sampling. Under the suite's generator the demoted-binary weighted share is 43.1%, not 38% (the repo subset gives 37.5%). The released model's per-label PSPL recall is 0.564 there, not the tabulated 0.521. Its single-lens numbers would be 0.285 PSPL, 69% argmax NonPSPL and 35% above the frozen threshold (n=2,185), against the quoted 0.274 / 71% / 37%. The qualitative conclusion is unchanged. The legacy mix itself does reproduce the July dict literal exactly (checked for PSPL, NonPSPL, PeriodicVar, LPV and Eruptive swept classes).",
+   "fix": "Either add a legacy t0-pad switch and regenerate the shortte tier as the suite had it (then quote 43% and recompute the shortte subset columns), or say explicitly that the shortte subset uses the corrected t0 pad, is a different sub-day population from the full set, and is excluded from the 'reproduces' comparison. Change '38% ... under that set's class mix' to the suite-generator value (43%). Correct the 'bit for bit' and '38% ... under the legacy mix' comments in run_shard.py, and the same statements in PROVENANCE, REVISION row 23 and CHANGELOG. Add a make_macros _need comparing subset and suite label fractions per tier within binomial tolerance; it would have failed here (z about +12 for PSPL).",
+   "verdict": "real",
+   "verdict_note": "I reproduced this independently in scratch/verify4/adv_stress. I copied pipeline/, changed only assemble.py:337 back to params.setdefault(\"t0\", ...) (the July form, confirmed at ef216e2 and e25e4d6 sim_v5/assemble.py:258), then regenerated oor_pspl_shortte shards 0-3 (seed 931000000, --legacy-oor-mix) and scored them with both checkpoints. The suite finished 2026-07-22 and ef6b0bd landed 07-28. Results: PSPL label fraction 14.79%, against 14.75% in the suite and 18.14% in the repo subset (label-fraction z = +12.3 for PSPL, -8.4 for Flat). Stage-5 PSPL recall is 0.532 against the suite's 0.524. For precision (July-generator run vs suite): Flat 0.977 vs 0.979, NonPSPL 0.110 vs 0.110, Eruptive 0.826 vs 0.823. The repo subset gives 0.484 / 0.970 / 0.098 / 0.802. Its stage-5 gap (0.040) is 3.1 bootstrap SE (finding: 3.4), and the July-generator run's gap is 0.5 SE. Under the suite's generator the demoted-binary weighted share is 43.07% (repo macro 38 = 37.5%). Released model on the July-generator events: per-label PSPL recall 0.5635; single lenses 0.285 PSPL, 69.3% argmax NonPSPL, 35.3% above the frozen threshold, n=2,185. The share of sub-day single lenses with t0 in [0,72] is 79.45% (legacy) against 99.38% (current). Kept events first differ in true_class/tE at index 277 of shard 0; labels already differ from index 3 because of t0. The 'bit for bit' (run_shard.py:258) and '38% ... under the legacy mix' (run_shard.py:252) comments are wrong. So are PROVENANCE:42-45, REVISION row 23 and CHANGELOG:32-37. One addition: even widesep/longp are not bit for bit, because current code redraws t0 for every microlensing event in any param_override tier. That draw has the same distribution when tE is unchanged, so those populations are only statistically, not event-wise, equivalent. The qualitative conclusion ('most' called anomalies) survives, and major (reproducibility break plus a wrong number for 'that set') is justified."
+  },
+  {
+   "id": "stress-02",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "767-770 (also validation/gulls/PROVENANCE.md:42-44; docs/evaluation.md:137-139; paper/REVISION.md:455; paper/make_macros.py:247)",
+   "claim": "'Stage 5 on this subset reproduces its full-set numbers: ... a median difference of 0.012 over the quoted numbers, the largest (0.095) for the wide-separation recall, which rests on 60 events'. PROVENANCE: 'so the subset stands in for the suite'.",
+   "evidence": "The regenerated natural tier has systematically fewer detectable anomalies than the suite: 13,896 NonPSPL labels in 16 shards against 14,285 expected from the suite's 535,700/600 (binomial z ~ -3.4). The other five classes agree within |z| <= 1.3. Stage-5 anomaly recall is 0.9558 on the subset against 0.9412 on the suite. The bootstrap SE on the subset is 0.0018, so the gap is about 8 SE, far larger than any other natural per-class recall difference (|z| < 0.7). The arithmetic reconciles if the suite's extra ~24 anomalies per shard are marginal detections with recall ~0.42. Wide separation shows the same pattern: 60 retained binaries in 4 shards against 87.6 expected from the suite's 438 over 20 shards (z ~ -3.0), so the 0.095 widesep gap is not purely a small-N effect. The cause is not repo code. The committed July generator (e25e4d6 pipeline/sim_v5) regenerates natural shards 0-1 identically to the local caches (label counts and tE sequences equal). The fleet installed unpinned `numpy scipy h5py VBBinaryLensing` (aws/ud_gentest2.sh:6). Locally: numpy 2.2.6, scipy 1.16.0 (whose least_squares does the anomaly refit), VBBinaryLensing 3.7.0. The July versions are unrecorded, so the suite cannot be regenerated as it was. The only guard (median |diff| <= 0.02) cannot detect an 8-SE shift.",
+   "fix": "State that the regenerated natural and wide-separation tiers label about 3% and 30% fewer detectable anomalies than the suite, probably through the (unrecorded, unpinned) generator environment. Say that stage 5's natural anomaly recall differs by 0.015 (about 8 SE), so released-vs-stage-5 comparisons must be made within the subset (0.962 vs 0.956), not against the full set (0.941). Drop 'stands in for the suite' and the implication that the largest difference is sampling noise. Replace the median guard with per-quantity checks in SE units plus a label-fraction check. Pin and record library versions for generation.",
+   "verdict": "partly",
+   "verdict_note": "The core evidence reproduces. Natural NonPSPL labels: 13,896 against the suite's rate. By fraction z = -2.9; by count (535,700/600 x 16 = 14,285, per-shard SD about 27) z = -3.6. The other five natural classes have |z| <= 1.2. Stage-5 natural anomaly recall is 0.9558 against 0.9412. My event bootstrap SE is 0.0016 (finding: 0.0018), so z = +8.9; the other classes' recall differences are |z| <= 0.7. Widesep has 60 retained binaries against 87.6 expected (z = -2.95). The generator code is not the cause: ef216e2 (2026-07-21, before the suite) sim_v5 regenerates natural shard 0 identically to the local cache (7,516 events, labels, true classes and tE all equal). The fleet installed unpinned numpy/scipy/h5py/VBBinaryLensing (ud_gentest2.sh:6). The only closeness guards (macro-F1 <= 0.005, median |diff| <= 0.02, make_macros.py:246-251) cannot catch the shift. So 'reproduces' and 'stands in for the suite' are overstated for the natural anomaly population. Where the finding goes wrong: the widesep recall gap (0.317 vs 0.222 at n=60) is only 1.6 binomial SE. It is consistent with sampling noise, so 'not purely a small-N effect' is not shown. The fix's instruction to drop the implication that the largest difference is noise is also unsupported; 'rests on 60 events' is accurate. Severity is closer to minor for the natural tier: the shift is 0.015 in recall and 0.006 in precision, with no change in macro-F1, and every released-model number is labelled and compared within the subset. The one real cross-population comparison is widesep 0.417 (subset) against 0.222 (full set) at paper.tex:803-804 and in the model card. That supports making comparisons within the subset."
+  },
+  {
+   "id": "stress-03",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "35-36 (abstract), 795-800 (also README.md:247; docs/model_card.md:94-96; docs/evaluation.md:144; paper/REVISION.md:455; CHANGELOG.md:37-38; paper/make_macros.py:255-256)",
+   "claim": "Faint-source anomaly precision falls to 0.026 'mostly because detectable anomalies are rare among faint sources (0.19% of events by weight, against 5.5% in the natural population): at the natural prevalence the same rates would give 0.440'. The abstract cites 'anomaly precision 0.026' as the faint-source failure.",
+   "evidence": "The 0.19% is mainly set by the tier's class mix, not by faintness. oor_flat_faint uses MIXES['flat'] (run_shard.py:139,186): 500 binaries out of 16,000 generated per shard. Generated binaries are 3.96% of the faint tier by weight against 67.6% in the natural tier. Faintness itself lowers the detectable fraction of binaries only from 8.11% to 4.88%. So the 28x prevalence gap is about 17x from the mix and about 1.7x from faintness. The tier's 5.4% false-anomaly rate is diluted by Flat (81% of the tier, FPR 2.7%). Faint single lenses are falsely flagged 19.8% of the time and faint demoted binaries 17.1% (natural: 1.5% and 3.0%). Mix-controlled comparison restricted to microlensing-generated events (released model): natural prevalence 7.4%, FPR 2.9%, precision 0.727; faint prevalence 2.6%, FPR 18.4%, precision 0.095. The prior-shift split then gives log(0.242/0.095)=0.94 for prevalence and log(0.727/0.242)=1.10 for rates. Re-weighting the faint per-class rates to the natural class mix gives prevalence 3.3%, FPR 14.0% and precision ~0.15. So with the mix held fixed, false calls contribute at least as much as prevalence, and 0.026 mostly reflects the tier design. The _need at make_macros.py:256 accepts 'mostly' only because it uses the tier's mix-dependent FPR. The low-q analogue ('only through prevalence') is fine: same mix as natural, and FPR is lower there in every stratum.",
+   "fix": "Say that the tier's 0.19% prevalence is set mainly by the Flat-heavy mix of the faint sweep, while faintness lowers the detectable fraction of binaries from 8% to 5%. Say that among microlensing events the false-anomaly rate rises from 2.9% to 18.4% (faint single lenses ~20%). In the abstract, quote a mix-independent measure (e.g. the false-anomaly rate on faint single lenses) or qualify 0.026 as a property of that tier's mix. Replace the guard with a mix-controlled decomposition. Mirror the change in README, model card, evaluation.md, REVISION and CHANGELOG.",
+   "verdict": "real",
+   "verdict_note": "All numbers reproduce from stress_local_work/eval_released_{natural,oor_flat_faint}. oor_flat_faint uses MIXES['flat'] (run_shard.py:186, 16,000 generated per shard, 500 binaries). Generated binaries are 3.96% of the faint tier by weight against 67.63% in the natural tier (about 17x). The detectable fraction of binaries is 4.88% against 8.11% (about 1.7x). Prevalence is 0.194% against 5.49%. Per generated class, faint false-flag rates are single lenses 19.75% and demoted binaries 17.11%, against natural 1.48% and 3.04%. Microlensing-only: natural prevalence 7.42%, FPR 2.90%, precision 0.727; faint 2.56%, 18.40%, 0.095. Faint rates at 7.42% prevalence give 0.242, i.e. log parts 0.94 (prevalence) and 1.10 (rates). Faint per-class rates reweighted to the natural class mix give prevalence 3.30%, FPR 14.04% and precision 0.152. The paper never says the faint tier is Flat-heavy, so 'rare among faint sources' puts a tier-design effect down to faintness. The guard at make_macros.py:256 uses the mix-diluted tier FPR. One small slip: '81% of the tier, FPR 2.7%' mixes the Flat label share (81%; weighted FPR 3.55%) with the generated-Flat FPR (2.73%). This does not change the conclusion. Major is defensible given the abstract headline."
+  },
+  {
+   "id": "stress-04",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1450-1457 (mirrored in paper/draft_gulls_section.tex:493-495)",
+   "claim": "RMDC26 sub-day single lenses (flagged 1.6%, mostly PeriodicVar) 'are mostly shorter (median tE 0.13 d) than the 0.2-1 d single lenses of our own sweep, most of which the released model calls anomalies'.",
+   "evidence": "The numbers are right (median 0.133 d < 0.2 d; PeriodicVar argmax 60-93%; 1.6% / 5.7% vs 6.3% / 8.4%). But the implied reconciliation, that timescale explains why RMDC26 sub-day lenses are not called anomalies, fails at matched timescales. For RMDC26 single lenses with tE 0.2-1 d (n=549, gulls_curve_cache_subday/rows_subday_shipped.json), the released binml.pt gives argmax NonPSPL 14.2%, above the frozen threshold 3.8%, argmax PeriodicVar 85.1%. On our 0.2-1 d sweep it gives 71% and 37%. transfer_subday.json fa_frozen_by_te for 'shipped' agrees: 2.25% (0.25-0.5 d) and 6.1% (0.5-1 d). The sentence also compares threshold flags of the recommended checkpoint with argmax 'calls' of the released model. None of 'less often', 'mostly PeriodicVar' or 'mostly shorter' has a need() guard; all hold today.",
+   "fix": "Replace the clause with the matched-timescale comparison: at tE 0.2-1 d the released model calls 14% of RMDC26 single lenses anomalies (argmax), against 71% in our sweep, so timescale alone does not explain the difference (cadence gaps, faintness and blending differ). Or drop the implied explanation. Add guards for the three directional words.",
+   "verdict": "real",
+   "verdict_note": "This is the dense in-season 1S1L rows_subday_shipped.json, filtered as subday_summary.py filters it (n=1,385, median tE 0.133 d, 60.4% below 0.2 d). For tE 0.2-1 d (n=549) the released binml.pt gives argmax NonPSPL 14.2%, above the frozen threshold 3.8% and argmax PeriodicVar 85.1%. transfer_subday.json 'shipped' fa_frozen_by_te gives 2.25% (0.25-0.5 d) and 6.12% (0.5-1 d). Our sweep gives 71% argmax and 37% above threshold. The 1.6% / 5.7% belong to the recommended fspl5s_seasons_g08 (threshold flags), while the sweep's 'calls' are released-model argmax. make_gulls_macros.py:350-358 has no guard for 'less often', 'mostly PeriodicVar' or 'mostly shorter'; all three hold today. Minor severity is right."
+  },
+  {
+   "id": "stress-05",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "35-37",
+   "claim": "Abstract: sub-day single lenses, 'most of which it calls anomalies'.",
+   "evidence": "'Most' holds only for argmax (71% on the regenerated population; 69% under the suite's generator, see stress-01). At the paper's own operating point, the frozen complete-season threshold used for every other abstract number, 37% (35%) are flagged, a minority. The body (790-791) and the table caption define 'called anomalies' as argmax, but the abstract does not.",
+   "fix": "Write 'most of which it ranks as anomalies (argmax; 37% at the operating threshold)', or quote the threshold fraction.",
+   "verdict": "real",
+   "verdict_note": "This is borderline wording, but it is correct as stated. Argmax is 71.0% on the repo subset and 69.3% with the July generator. Above the frozen threshold it is 36.6% and 35.3%, a minority. The body (paper.tex:790-791) and the table caption define 'called anomalies' as argmax; the abstract (line 37) does not, and the abstract's other operating-point numbers use the frozen threshold. Minor is right. The paper's own usage ('called' = argmax) is consistent, so this is a clarity fix, not an error."
+  },
+  {
+   "id": "stress-06",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "773-777 (also docs/evaluation.md:144-146; docs/model_card.md:98-99; paper/REVISION.md:455; CHANGELOG.md:38; appendix 1721-1723)",
+   "claim": "'stage 6, trained after the stage-5 stress results, added pools at the edges of three of the sweeps: s = 3-8 ..., 0.3-10 d ... and source magnitudes 23.5-25'.",
+   "evidence": "A 23.5-25 pool predates stage 6. aws/launch_binhard.sh:9 lists 'faint' (CONFIG_REGIMES faint: m_base 23.5-25) and 'reddened' (22.5-25) among the 12 hard regimes. With the 3 wave-3 contaminant regimes they make the '15 hard regimes' of v5runs/stage4_20260721_2007.log. So stages 4 and 5, including the stage-5 model scored on the suite, had already trained on 23.5-25 sources. 'At the edges' also understates two of the overlaps. Sampling the stage-6 pools with pipeline.priors: 47.7% of 'wider' events have s >= 5, inside the 5-12 sweep. 24.1% of 'shortte' events have tE <= 1 d, inside the 0.2-1 d sweep. Together they cover 54% and 75% of those sweeps' log ranges.",
+   "fix": "Say that the faint 23.5-25 (and reddened 22.5-25) pools entered at stage 4 and that stage 6 added more faint data (if it did). Replace 'at the edges' with the overlap: s 5-8 of the 5-12 sweep, tE 0.3-1 of the 0.2-1 d sweep.",
+   "verdict": "real",
+   "verdict_note": "aws/launch_binhard.sh:9 lists 12 hard regimes, including faint (m 23.5-25, run_shard.py:120) and reddened (22.5-25). With the three wave-3 regimes they give the '15 hard regimes' of v5runs/stage4_20260721_2007.log:2. Stage 5 was initialised from stage 4 (stage5 log). So stage 5 had already trained on 23.5-25 sources. Stage 6 did add faint m>23.5 coverage (stage6 log line 4), so 'added' is literally true but leaves out the earlier pool. Overlap, recomputed from pipeline.priors: 'wider' is log-uniform in s 3-8, so P(s>=5) = 47.9%. 'shortte' is a truncated lognormal (median 2, 0.45 dex, 0.3-10), so P(tE<=1) = 24.1%. These cover 53.7% and 74.8% of the 5-12 and 0.2-1 d sweep log ranges. The parenthetical ranges let a careful reader see this, but 'at the edges' understates it. Minor."
+  },
+  {
+   "id": "stress-07",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "784-787",
+   "claim": "'PeriodicVar examples whose period exceeds the season are recovered as PeriodicVar only 0.039 of the time ... since within one window they are not observably periodic'.",
+   "evidence": "The sweep draws P log-uniform in 60-200 d; the season is 72 d. Of the 1,474 PeriodicVar-labelled events in eval_released_oor_per_longp, 15.5% have P = 60-72 d, i.e. shorter than the season. Their recall is 0.057 (0.036 for P >= 72 d), so the failure stands but the description is inexact. The table row correctly says 60-200 d.",
+   "fix": "Say 'whose period is comparable to or longer than the 72-d season (60-200 d)'.",
+   "verdict": "real",
+   "verdict_note": "In eval_released_oor_per_longp, all 1,474 PeriodicVar-labelled events have P in 60.01-199.9 d. 229 (15.5%) have P < 72 d, with recall 0.057; the 1,245 with P >= 72 d have recall 0.036; overall recall is 0.039. So 'whose period exceeds the season' is inexact, though the failure stands. Minor wording."
+  },
+  {
+   "id": "stress-08",
+   "severity": "minor",
+   "file": "README.md",
+   "line": "183 (also docs/evaluation.md:131 heading)",
+   "claim": "'The full stress suite has 10.4M targeted out-of-distribution events plus a 4.5M same-prior subset'.",
+   "evidence": "From paper/results/stress_report.json, 8,734,486 of the 10.44M are in the 12 targeted regimes: planetary, wide, close, longte, planet_wide, planet_res, boundary, boundary2, flatrich, lpvhard, erupthard, perhard. All of these were stage-4 training pools (aws/launch_binhard.sh:9, aws/launch_wave3.sh). Only 1,703,705 are out-of-range sweeps. The paper (762-763) correctly calls the targeted regimes 'enriched pools that were also used in training, drawn afresh'.",
+   "fix": "Write '8.7M events in targeted (training-pool) regimes and 1.7M in out-of-range sweeps', and retitle evaluation.md section 5 to match.",
+   "verdict": "real",
+   "verdict_note": "In stress_report.json the 12 targeted regimes total 8,734,486 and the 17 OOR sweeps 1,703,705 (natural 4,502,855; total 14,941,046). All 12 targeted regimes are among the 15 stage-4 training pools (launch_binhard.sh plus launch_wave3.sh). The lens ones are sub-ranges inside the natural prior support (q 1e-6 to 1, s 0.2-5). README.md:183 calls all 10.4M 'targeted out-of-distribution', which contradicts paper.tex:762-763. The docs/evaluation.md:131 heading ('out-of-distribution arms') has the same problem; its body line 133 says 'targeted regimes'. Minor."
+  },
+  {
+   "id": "text-stress-subset-not-the-set",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "765-770, 792, 809 (Table tab:stress caption); guard paper/make_macros.py:250-256; pipeline/run_shard.py:258",
+   "claim": "\"For the released model we regenerated the first shards of each tier quoted here with the set's seeds and class mix ... Stage 5 on this subset reproduces its full-set numbers: macro-F1 0.927 against 0.927, and a median difference of 0.012 ... the largest (0.095) for the wide-separation recall, which rests on 60 events.\" Caption: \"'subset' is its first shards regenerated with the same seeds and class mix\". Also 792: \"under that set's class mix 38% of the weighted PSPL-labelled events are binaries\".",
+   "evidence": "The regenerated subset is not the set's population, and for the sub-day tier the code that generated it is different. (1) Sub-day tier class mix: subset PSPL-label share 18.1% (2,987/16,466) against 14.75% in the full set (12,122/82,180), about 12 SE; Flat 55.8% against 59.1% (about -8 SE). Per shard that is roughly 141 more PSPL labels and 128 fewer Flat labels (stress_rescore_local.json label_fractions against suite_label_fractions). (2) The cause: commit ef6b0bd (2026-07-28) changed assemble.simulate_event so t0 is re-padded for an overridden tE ('setdefault was a no-op, corrupting tE-sweep OOR sets'). The suite was generated and scored 2026-07-21 to 07-22 (HANDOFF.md, STRESS_TEST_RESUME.md 'paused 2026-07-22'). Under the old code, t0 used the natural-tE pad (0.5 tE, median tE 16.3 d), which puts 20.9% of sub-day peaks outside the window, so the predicted single-lens pass rate is 0.685 x 0.791 = 0.542. The suite implies (12,122 - 247x82,180/16,466)/(1000x82,180/16,466) = 0.545; the regenerated subset has 2,740/4,000 = 0.685. In the regenerated tier, t0 of sub-day single lenses lies in [-0.38, 72.4] d (99.4% inside the window). (3) Natural tier: stage-5 anomaly recall is 0.956 on the subset (13,896 anomalies, bootstrap SE 0.0017) against 0.941 on the full set, about 8 SE. Sub-day PSPL recall is 0.484 against 0.524 (about -2.7 SE); faint PSPL recall 0.550 against 0.491 (about +2 SE). Only macro-F1 and the median are guarded. (4) The 38% demoted-binary share comes from the regenerated tier. On the set's own mix (about 10,890 single lenses, about 1,233 demoted binaries at keep 0.15) it would be about 43%. (5) The run_shard.py comment says the legacy mix reproduces 'the shipped stress suite bit for bit'; it does not for tE-sweep tiers. Script: scratchpad verify4/text/stress_boot.py.",
+   "fix": "Say that the subset was regenerated with the current generator, which differs from the one that made the set: the tE-sweep t0 padding was fixed on 2026-07-28, and labels changed for some events. The sub-day tier is therefore a corrected population, not the set's first shards. Replace 'reproduces its full-set numbers' with the per-quantity comparison: macro-F1 matches, but the natural anomaly recall differs by 0.015 (about 8 SE) and sub-day PSPL recall by 0.040. State the 38% as measured on the regenerated tier, or give about 43% for the set. Either add a per-quantity guard (for example |stage5 subset - suite| < 3 SE) or drop the word 'reproduces'. Correct the run_shard.py comment.",
+   "verdict": "real",
+   "verdict_note": "Reproduced. Sub-day tier label shares: PSPL 18.14% in the subset against 14.75% in the set (z=+12.3), Flat 55.85% against 59.07% (z=-8.4). Cause confirmed independently. I copied pipeline/ to scratch and reverted only assemble.py:337 to the pre-ef6b0bd setdefault. Shard 2 of oor_pspl_shortte then gives 15.1% PSPL labels, t0 in [-35,102] d and 80% of peaks in the window. The current code gives 18.3% PSPL labels, t0 in [-0.3,72.2] d and 99% in the window. Across 4 July-t0 shards: PSPL share 14.8%, single-lens pass rate 0.546, stage-5 PSPL-label recall 0.532, against the set's 0.524 and the current subset's 0.484. Demoted-binary weighted share 43.1% against the quoted 38%; demoted recall is unchanged at 0.931. The single-lens figures barely move on the July population (released 0.285 PSPL, 69% argmax NonPSPL, 35% above threshold), so those conclusions stand. Natural tier: my bootstrap gives stage-5 anomaly recall 0.9558 (SE 0.0018) against 0.9412, z=+8.1. All 16 per-shard recalls lie between 0.947 and 0.967, so every shard is above the set's value. The gap is not the t0 fix: HEAD regenerates natural shards 0-1 row for row identically to the July e25e4d6 code. It may come from the AWS-vs-local refit differences described under text-regeneration-not-bit-identical. The guards cover only macro-F1, the median and the location of the max. The run_shard.py:258 'bit for bit' comment is false for tE-sweep tiers. Nit: in the implied pass-rate formula the denominator should be 4000 x 82,180/16,466, not 1000 x; the 0.545 result is right. Guard lines are make_macros.py:243-247."
+  },
+  {
+   "id": "text-subday-reconciliation-unsupported",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1450-1457 (draft_gulls_section.tex 488-495)",
+   "claim": "\"Sub-day single lenses ... are flagged as anomalies by the recommended checkpoint less often than in-support single lenses ... They are mostly shorter (median tE 0.13 d) than the 0.2--1 d single lenses of our own sweep, most of which the released model calls anomalies (Sec. limits)\"",
+   "evidence": "The sentence implies that timescale explains why RMDC26 sub-day single lenses are rarely flagged while ours mostly are. The binned artifact contradicts that at matched timescales. In validation/gulls/transfer_subday.json fa_frozen_by_te, the recommended checkpoint flags 2.25% (n=222) at 0.25-0.5 d and 6.94% (n=245) at 0.5-1 d, 4.7% combined. The shipped (released) model flags 2.25% and 6.12%, 4.3% combined, with argmax PeriodicVar for 93.4% of all sub-day events. In our own 0.2-1 d sweep the released model puts 37% above the same frozen threshold and 71% by argmax (stress_rescore_local.json). At overlapping timescales the flag rate differs by about 8x, so shorter tE does not account for the contrast. The sentence's own directional words have no need() guards in make_gulls_macros.py:351-356: 'mostly shorter' (median 0.133 < 0.2), 'less often than in-support' (1.6 < 6.3, 5.7 < 8.4) and 'mostly PeriodicVar' (min 60%).",
+   "fix": "State that the contrast persists at matched timescales: at 0.25-1 d, 4-5% of RMDC26 single lenses are flagged against 37% in our sweep. It therefore reflects the simulator, schedule or selection rather than timescale alone. Otherwise remove the implied explanation. Add guards for median < 0.2, sub-day FA < in-support FA (both weightings) and min(PeriodicVar share) > 0.5.",
+   "verdict": "real",
+   "verdict_note": "Reproduced from transfer_subday.json. 'Shipped' is binml.pt, the same file as the 'released' model (transfer_full_shipped.json). On RMDC26 at 0.25-1 d the frozen-threshold flag rate is 2.25% (n=222) and 6.12% (n=245) for shipped, 4.3% combined. For the recommended checkpoint it is 2.25% and 6.94%, 4.7% combined. On our sweep, the same released model at the same threshold flags 33.4% of detectable single lenses restricted to 0.25-1 d (23% of all generated single lenses there). Argmax NonPSPL is 67%. Use about 33% for the matched comparison; the fix's 37% is the full 0.2-1 d value. The tE trends are opposite. RMDC26 flag rates rise with tE: 0%, 0.3%, 2.3%, then 6-7%. Ours fall with tE: 60% at 0.2-0.25 d, 44% at 0.25-0.5 d, 24% at 0.5-1 d. So 'mostly shorter' cannot reconcile the two. The directional words are unguarded: make_gulls_macros.py:348-356 has only a presence check for PeriodicVar. Median 0.133<0.2, 1.6<6.3, 5.7<8.4 and min PeriodicVar 60% all hold today."
+  },
+  {
+   "id": "text-regeneration-not-bit-identical",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1012-1013 (changed colour paragraph); 1689-1690 (Data availability, unchanged)",
+   "claim": "\"we regenerated two shards of the held-out pool (15,016 events, disjoint from training; 15% of them are among the rows the frozen threshold was chosen on)\"; Data availability: the training set \"can also be regenerated from the released simulation code, since each shard is seeded deterministically by its index\".",
+   "evidence": "validation/referee_round.json threshold_selection_overlap: only 11,257 of 15,016 regenerated events match a frozen-pool event (15 parameters plus m_base, float32). My recomputation on referee_local_work/raw_test_f002 gives 2,533 unmatched of 7,479 in shard 90 and 1,226 of 7,537 in shard 91. The unmatched events come in contiguous runs of 4-130 events, and 2,147 of the 2,533 share no m_base value with any pool event, so they are different draws. Among the matched events, 9 labels differ from the pool's. So the current generator reproduces about 75% of the July shards, and label changes propagate through the label-dependent keep draw. The 15% share is diluted by events that are not pool events: among matched events the threshold-row share is 19.4% (2,182/11,257), the pool's own 20%. This is the same generator drift that affects the stress subset (text-stress-subset-not-the-set).",
+   "fix": "Say that the regenerated shards reproduce 75% of the held-out pool's events at the current code. The rest are new draws because a few labels changed since July and the keep draw shifts the stream. Add that 19% of the reproduced events are threshold-selection rows. Qualify the Data-availability sentence: regeneration at HEAD is statistically equivalent, not event-identical, to the released training and test shards. Otherwise pin the generator commit used for them.",
+   "verdict": "partly",
+   "verdict_note": "The counts reproduce (adv_text/pool_match.py): 2,533 of 7,479 and 1,226 of 7,537 unmatched; 2,147 unmatched in shard 90 share no m_base with the pool; 9 label differences among matched events; threshold-selection rows are 19.4% of matched and 14.5% of all. Unmatched runs span 1-856 events, not 4-130. The cause is wrong. I regenerated shard 90 (seed 20260720) with sim_v5 from ef216e2 (Jul 21) and from e25e4d6 (Jul 28). Both are identical to HEAD's raw_test_f002 shard 90 in params, m_base and labels, and they match the pool on the same 4,946 events. So nothing changed in the generator since July. The mismatch is between the AWS-generated pool and local regeneration. dchi2_event is identical for every matched event, so the magnifications agree. dchi2_anomaly differs by more than 10% for about 2% of matched binaries. The label flips are local PSPL (dchi2 0-285) against pool NonPSPL (dchi2 1e4-9e4), which points to the LM single-lens refit being environment-dependent; each flip shifts the keep-draw stream. 'Pin the generator commit' would not help, and 'labels changed since July' is incorrect. The paper's 15% is correct as stated. The valid part of the fix is to qualify Data availability: regeneration off the original environment is statistically equivalent but only about 75% event-identical. That is a real reproducibility caveat (major-ish). The colour-paragraph wording is minor, since both arms use the same local events. It is not the same mechanism as the stress t0 drift."
+  },
+  {
+   "id": "text-abstract-subday-and-faint-wording",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "35-37",
+   "claim": "\"beyond the natural priors it fails, notably on faint sources (anomaly precision 0.026) and on sub-day single lenses, most of which it calls anomalies.\"",
+   "evidence": "'most' holds only for the argmax class: 71% of detectable sub-day single lenses have NonPSPL as most probable class, but 37% are above the frozen threshold. Elsewhere the abstract's 'flags ... as anomalous' refers to that threshold. The make_macros guard tests only argmax > 0.5. For faint sources the body (796-800) says the 0.026 is low 'mostly because detectable anomalies are rare' (0.440 at the natural prevalence). The classifier's own degradation is the false-anomaly rate rising from 2.1% to 5.4%.",
+   "fix": "Write 'most of which it classifies as anomalies (37% above the operating threshold)', or 'many of which'. For faint sources, quote the false-anomaly rate (2.1% to 5.4%), or add 'at their low anomaly prevalence' to the 0.026.",
+   "verdict": "partly",
+   "verdict_note": "The facts are right: 71% argmax NonPSPL, 37% above threshold, faint precision 0.026, 0.440 at natural prevalence, FPR 2.1% to 5.4%. However, the body (paper.tex:786-788) explicitly defines 'called anomalies' as the argmax fraction and gives the threshold fraction separately. The guard tests exactly that. The abstract uses 'calls' for argmax and 'flags' for the threshold, consistently. So the sub-day half is at most an optional clarification. The faint half is a fair minor point: the body attributes the low precision mostly to prevalence (0.19% against 5.5%)."
+  },
+  {
+   "id": "text-abstract-length",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "24-57",
+   "claim": "Abstract length after this round.",
+   "evidence": "Plain-text word count with macros expanded (scratchpad verify4/text/abscount.py): 382 words at HEAD, against 353 at c4bf5f3 and 265 in the submitted version (tag submitted-ac-2026-08-15). This round added 29 words (the regenerated-stress sentence and the F146-only stream figures). The A&C limit is still unverified.",
+   "fix": "Trim before resubmission. Candidates: the F146-only parenthetical, and the fourth clause of the streaming sentence. Check A&C's word limit.",
+   "verdict": "partly",
+   "verdict_note": "Word counts reproduce exactly with my own expansion (adv_text/wc_abs.py): 265 submitted, 353 at c4bf5f3, 382 at HEAD. No A&C limit is established, though, so this is not an evidenced defect. It was already raised and flagged to the author as I39 / item 9 in docs/VERIFICATION_2026-09-12b.md. The only new fact is the +29 words this round. Advisory at most."
+  },
+  {
+   "id": "text-finite-size-cannot-matter",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1172-1173 (draft 210-211)",
+   "claim": "\"in the smaller bins, where finite size cannot matter, its reductions are within the training noise\"",
+   "evidence": "The 'smaller bins' include rho/|u0| = 0.3-1. For a uniform disc, the peak magnification ratio is 1.012 at rho/u0 = 0.3, 1.035 at 0.5, 1.077 at 0.7 and 1.27 at 1.0, i.e. 0.013-0.26 mag. That is above the paper's 0.02 mag floor for rho/|u0| of about 0.4 or more (numerical disc average, high-magnification limit). The physics drop there (0.208 to 0.154, 0.054) is close to that bin's seed spread (0.063).",
+   "fix": "Say 'in the bins below rho/|u0| of about 0.3, where finite size changes the peak by less than the floor', or 'in the smaller bins its reductions are within the training noise', without the physical claim.",
+   "verdict": "real",
+   "verdict_note": "The rho/|u0| bins are [0,0.03), [0.03,0.1), [0.1,0.3), [0.3,1), [1,3), [3,inf), so 'smaller bins' includes 0.3-1. My uniform-disc average gives peak ratios 1.0116 (0.3), 1.0346 (0.5), 1.077 (0.7) and 1.272 (1.0), i.e. 0.013-0.26 mag, independent of u0 at 0.01-0.3. The ctrl to fspl drop in [0.3,1) is 0.208 to 0.154 (0.054), against a seed spread of 0.063. Caveats: a refit absorbs part of the peak change, so '>0.02 mag from about 0.4' overstates detectability. Our own held-out data show no classifier effect in [0.3,1) (PSPL recall 0.904 control vs 0.911 fspl). The empirical clause holds; only the physical 'cannot' is wrong. Minor."
+  },
+  {
+   "id": "text-pauses-at-least-as-well",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "919-926 (draft 64-71)",
+   "claim": "\"Training on the pauses themselves does at least as well ... with clean average precision 0.948 against 0.952 ... on RMDC26 the measured pauses lead by more than that seed range.\"",
+   "evidence": "schedule_finetune.json heldout_eval: measured-season arm AP 0.921 against 0.911 under pauses, but 0.948 against 0.952 on clean data, so it is slightly worse on clean. The next sentence itself says the two are 'not separated'. 'That seed range' refers to the held-out AP spread (0.018). The RMDC26 lead is in recall, judged against the RMDC26 seed ranges of Table tab:seeds (0.041/0.042/0.029 per event).",
+   "fix": "Write 'does as well within the seed spread'. End with 'on RMDC26 the measured pauses lead in recall by more than the seed range of Table tab:seeds'.",
+   "verdict": "real",
+   "verdict_note": "Clean AP is 0.948 for the seasons arm against 0.952 for random gaps without relabel, so it is not 'at least as well' on clean data, although within the 0.018 spread, which the next sentence concedes. 'That seed range' refers to the held-out AP spread. The guard (make_gulls_macros.py:703) instead compares the RMDC26 recall leads with the RMDC26 per-quantity seed ranges. The leads (+0.046 to +0.072 per event, +0.028 to +0.048 weighted) exceed both 0.018 and the Table tab:seeds ranges, so the sentence's ending is literally true; only the referent is mismatched. Minor."
+  },
+  {
+   "id": "text-seed-table-display-ties",
+   "severity": "minor",
+   "file": "paper/outputs/gulls_seed_table.tex",
+   "line": "1-4 (caption paper.tex:1264)",
+   "claim": "Caption: \"entries in bold exceed [the seed range] at the same budget and weighting.\"",
+   "evidence": "At the displayed precision two entries look equal to the range yet are treated differently. 'measured pauses - random gaps' FA -2.7 is bold against a range shown as 2.7 (full precision -2.731 against 2.650). 'finite source - control' mean (w) +0.015 is not bold against a range shown as 0.015 (0.0146 against 0.0153). Recomputed from transfer_tradeoff_all.json; every bold cell otherwise matches.",
+   "fix": "Print FA to two decimals and recalls to four, or add to the caption 'compared at full precision'.",
+   "verdict": "real",
+   "verdict_note": "Recomputed with the generator's row() logic from transfer_tradeoff_all.json. The seed range is 2.6504 for FA and 0.0153 for mean(w). 'Measured pauses minus random gaps' FA is -2.7314, bold, but printed as -2.7 against a range printed as 2.7. 'Finite source minus control' mean(w) is +0.0146, not bold, but printed as +0.015 against 0.015. These are the only two display ties. Minor."
+  },
+  {
+   "id": "text-truncation-label-wording",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "366, 384-386",
+   "claim": "\"a conservative bias that almost always delays the label (it can advance it where detectability is not monotone ...)\"; \"the disagreement for binaries falls to 2.4%, the cases where detectability is not monotone in the revealed time\"",
+   "evidence": "truth_relabel_impact.json refit_reference.truncation, legacy anomaly-label disagreements: 181 PSPL/refit-NonPSPL plus 31 Flat/refit-NonPSPL delayed, against 29 NonPSPL/refit-PSPL advanced. That is 88% delays, and no need() guards the sentence. Of the residual 81 (2.4%) with the 0.5-d onset, 73 are NonPSPL/refit-PSPL (non-monotone). The other 8 are PSPL/refit-NonPSPL, which can only come from the half-day onset grid: the cut falls between the first detectable time and the next grid point.",
+   "fix": "Write 'usually (in 212 of 241 disagreeing presentations) delays' and add a guard. Write 'mostly the cases where detectability is not monotone (the rest are the half-day onset grid)'.",
+   "verdict": "real",
+   "verdict_note": "truth_relabel_impact.json refit_reference.truncation (n=3432) gives legacy delays of 181 PSPL/refit-NonPSPL plus 31 Flat/refit-NonPSPL, against 29 NonPSPL/refit-PSPL advances: 88% delays. The onset-only rule floors_onset_7p2 gives 188 against 32, 85% delays. Neither is 'almost always', and make_gulls_macros.py has no guard for it. The residual with the 0.5-d onset is 73 NonPSPL/refit-PSPL (non-monotone) plus 8 PSPL/refit-NonPSPL = 81 (2.4%). The 8 need the refit to detect at a cut before the first detectable half-day grid point, i.e. a sub-grid onset or bin rounding. So 'the cases where detectability is not monotone' covers about 90% of them. Minor."
+  },
+  {
+   "id": "text-stress-regime-descriptions",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "762-763, 784-785",
+   "claim": "\"out-of-range sweeps that redraw one parameter of one class beyond the natural priors\"; \"PeriodicVar examples whose period exceeds the season\"",
+   "evidence": "The faint sweep is a config regime (run_shard.py OOR_CONFIG oor_flat_faint: m_base 25-27.5 for every class, mix 'flat'). That is why the paper can quote faint single-lens recall and faint anomaly precision. The long-P sweep draws P log-uniform in 60-200 d, so 15% of it (60-72 d) does not exceed the 72-d season.",
+   "fix": "Write 'redraw one parameter beyond the natural priors (one class, or for source magnitude every class)'. Write 'whose period approaches or exceeds the season'.",
+   "verdict": "real",
+   "verdict_note": "run_shard.py:185-186: OOR_CONFIG oor_flat_faint sets m_base 25-27.5 for the whole shard with mix 'flat', i.e. every class. That is not 'one parameter of one class', and it is why faint single-lens recall and anomaly precision can be quoted. oor_per_longp draws P log-uniform in 60-200 d (run_shard.py:174), and log(72/60)/log(200/60) = 15.2% of events have a period shorter than the 72-d season. Minor."
+  },
+  {
+   "id": "text-appendix-xref-0p3d",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1100-1101 (draft 138-139)",
+   "claim": "\"the released model's last training stage also saw a short-timescale pool reaching 0.3 d, Appendix app:infra\"",
+   "evidence": "The appendix Training recipe (1712-1726) says only that stage 6 'added pools that widen the separation, timescale and faint-source coverage'. The 0.3-10 d range is stated in Sec. limits (773-775) and in the stage-6 log.",
+   "fix": "Point to Sec. limits (sec:limits), or add the ranges to the appendix.",
+   "verdict": "real",
+   "verdict_note": "paper.tex:1100-1101 cites Appendix app:infra for the 0.3-d pool. The Training recipe paragraph (1712-1726) says only that stage 6 'added pools that widen the separation, timescale and faint-source coverage'. The 0.3-10 d range appears only in Sec. limits (paper.tex:775-777). Minor."
+  },
+  {
+   "id": "text-conclusion-submitted-version",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1614",
+   "claim": "\"Of the tests the submitted version listed as open, two are now reported\"",
+   "evidence": "This is manuscript text, not a response letter. In the published article, 'the submitted version' has no referent. The substance checks out against submitted-ac-2026-08-15 (lines 978-981): the mixed-class scan and the floor (label side) are now reported.",
+   "fix": "Write 'Of the tests an earlier version of this work left open', or just list what is now reported and what remains.",
+   "verdict": "real",
+   "verdict_note": "paper.tex:1614 reads 'Of the tests the submitted version listed as open'. That phrase has no referent in a published article; the paper elsewhere uses 'an earlier version' (689, 886). The substance checks out: submitted-ac-2026-08-15 listed a mixed-class prefix scan and floor sensitivity as open, and both are now reported (the floor on the label side only). Minor wording."
+  },
+  {
+   "id": "code-1",
+   "severity": "major",
+   "file": "pipeline/run_shard.py",
+   "line": "258, 355 (also pipeline/assemble.py 333-337; paper/paper.tex 765, 792, 809; validation/stress_rescore_local.py 8-13; validation/gulls/PROVENANCE.md 40-45; paper/REVISION.md row 23)",
+   "claim": "`--legacy-oor-mix` is said to 'reproduce the shipped stress suite bit for bit' and 'regenerate those shards exactly'. The paper (765, table caption 809) calls the subset the stress set's first shards 'regenerated with the set's seeds and class mix'. Line 792 says that 'under that set's class mix 38% of the weighted PSPL-labelled events are' demoted binaries.",
+   "evidence": "ef6b0bd (2026-07-28) changed the t0 re-pad from `setdefault` to an unconditional assignment. That came after the 2026-07-22 suite, which aws/ud_gentest2.sh generated with pipeline/sim_v5. Whenever an out-of-range override is active, HEAD now uses the redrawn t0 for every event that has a tE: the swept class and the PSPL/NonPSPL context events alike. The July code drew the same number and threw it away.\n\nMethod: I generated shard 0 of each quoted tier with sim_v5 at e25e4d6 (run in scratch) and matched events against the cached regenerated subset in stress_local_work.\n- Identical: natural 7516/7516, planetary 6869/6869, oor_flat_faint 7952/7952.\n- Different: oor_np_widesep shares 2248/4088 events, oor_per_longp 2284/4106, oor_pspl_shortte 508/4116.\n- Cause confirmed: HEAD with that one line changed back to setdefault reproduces the July shard exactly (4116/4116, labels equal). Unmodified HEAD reproduces the cache exactly (4121/4121).\n\nFor the sub-day tier the population itself differs, not only the realisation:\n- Generated sub-day single lenses with t0 outside the season: 20.5% under the July generator (shards 0-3), 0.6% in the regenerated subset.\n- PSPL/Flat label fractions: July 0.148/0.594, suite 0.1475/0.5907, regenerated 0.181/0.559.\n- Weighted demoted-binary share of the PSPL label: July 43.1%, regenerated 37.5% (the quoted 38%).\n\nI scored the July shortte shards with HEAD's pipeline.cache and pipeline.evaluate (inference only):\n- Stage-5 PSPL recall 0.532 (suite 0.524; the regenerated subset's 0.484 is what creates most of the stage-5 subset-vs-suite gap on this row).\n- Released model PSPL recall 0.564 (Table: 0.521).\n- Single lenses, released: 0.285 PSPL, 69% called anomalies, 35% above the frozen threshold (paper: 0.274 / 71% / 37%).\n- Single lenses, stage 5: 0.230 / 53% / 20% (paper: 0.215 / 55% / 21%).\n\nEvery directional statement still holds. But the numbers attributed to the set's population are off by 0.01-0.05, and by 5 points for the demoted share.",
+   "fix": "Under --legacy-oor-mix, or a new --legacy-t0-pad, restore the July behaviour: draw the re-pad t0 but keep the original. Then regenerate the three override tiers (widesep, per_longp, shortte), rescore them with stress_rescore_local.py and rebuild the macros. Alternatively, drop 'bit for bit'/'exactly' from the code and docs, and say in the paper, table caption and PROVENANCE that these tiers were generated with the corrected t0 padding. They are then a different realisation of the suite, and a different population for sub-day timescales, so the 38% should not be attributed to the full set.",
+   "verdict": "real",
+   "verdict_note": "Reproduced in scratch/verify4/adv_code with a git-archive copy of e25e4d6 pipeline/sim_v5, HEAD, and HEAD with line 337 of assemble.py set back to setdefault.\n\nShard-level results:\n- Unmodified HEAD with --legacy-oor-mix matches the cached subset exactly for shard 0 of all six tiers.\n- HEAD with setdefault matches sim_v5 exactly.\n- Events shared between sim_v5 and the cache: shortte 508/4116, widesep 2249/4088 (the finding says 2248; the difference is key rounding), longp 2284/4106. Natural, planetary and faint shards are identical.\n\nPopulation:\n- sim_v5 shortte shards 0-3: PSPL/Flat 0.1479/0.5940. Suite: 0.1475/0.5907. Regenerated subset: 0.1814/0.5585 (z=+12).\n- All 20 suite shards with sim_v5: 12,149 PSPL labels (suite 12,122). HEAD gives 14,722.\n- Sub-day single lenses with t0 outside the season: 20.55% under sim_v5, 0.63% in the subset.\n\nScoring the July-generator shards with HEAD's evaluate reproduces every quoted number:\n- Stage 5: PSPL 0.532; single lenses 0.230 / 53.2% / 19.8%.\n- Released: PSPL 0.564; single lenses 0.285 / 69.3% / 35.3%.\n\nTwo refinements:\n1. Over all 20 shards the suite-population demoted share is 42.2%; 43.1% was the four-shard value. The paper's 38% (line 792, PROVENANCE, REVISION row 23) is therefore about 4 points low, not 5.\n2. The first fix alone will not give 'bit for bit'. Even e25e4d6's sim_v5 does not reproduce the suite's wide-separation population: 296 NonPSPL labels over 20 shards (HEAD 286) against the suite's 438; subset 0.0037 against 0.0053. That gap is not caused by t0 and its cause is unknown. Use the disclosure fix: drop 'bit for bit'/'exactly', and call the override tiers a new realisation (for sub-day tE, a different population), with the 38% attributed to the subset or about 42% quoted for the suite. Directional statements hold. Major is defensible because the reproducibility claim is false."
+  },
+  {
+   "id": "code-2",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1661-1664 (also validation/gulls/PROVENANCE.md 25; CHANGELOG.md 25; paper/REVISION.md 453, 488; docs/VERIFICATION_2026-09-12b.md I29; .gitignore 43, 68)",
+   "claim": "Data availability says the referee round's per-event inputs (probability traces, scores, labels, weights and the two colour fine-tunes) 'are archived with their hashes in validation/referee_round_archive/'. PROVENANCE says they are 'committed under validation/referee_round_archive/'. I29 (major) was closed on the strength of this archive.",
+   "evidence": "- `git ls-tree -r origin/main --name-only | grep -c referee_round_archive` returns 0, and `git log --all -- 'validation/referee_round_archive/*'` is empty.\n- `git check-ignore -v` shows the 22 .npz files are ignored by .gitignore:43 (`*.npz`) and the two .pt files by .gitignore:68 (`*.pt`). There is no `!` exception for the directory, unlike cascade_trace.npz and matched_traces.npz.\n- The 25 MB directory exists only on this laptop. Its files do match the sha256 values in referee_round.json, and I recomputed the stream purity (0.889223 and 0.669367) and the like-for-like 31/9 alert counts from it.\n- A clone or `git archive` therefore cannot re-derive the referee-round numbers as the paper claims.",
+   "fix": "Add `!validation/referee_round_archive/` and `!validation/referee_round_archive/*` exceptions to .gitignore, or force-add the files, and commit the 25 MB archive. Otherwise remove the 'archived/committed' claims from paper.tex, PROVENANCE, CHANGELOG and REVISION, and reopen I29.",
+   "verdict": "real",
+   "verdict_note": "HEAD and origin/main are both 943b171.\n- `git ls-tree -r` on HEAD and on origin/main finds 0 files under referee_round_archive, and `git log --all` for the path is empty.\n- `git check-ignore -v` shows the .npz files ignored by .gitignore:43 (`*.npz`) and the .pt files by .gitignore:68 (`*.pt`). There is no `!` exception for the directory (cascade_trace.npz and matched_traces.npz have one at lines 63-64).\n- The local directory holds 24 files (25 MB). All 22 sha256 values in referee_round.json's archive block match.\n- Nothing else distributes the archive: no Zenodo deposit, no release asset.\n\nSo paper.tex 1661-1664 ('archived with their hashes') and PROVENANCE.md 25 ('committed under') are false for a clone. I29 was closed on this basis. Major stands."
+  },
+  {
+   "id": "code-3",
+   "severity": "minor",
+   "file": "paper/make_macros.py",
+   "line": "432-440 (paper/results/MANIFEST.json)",
+   "claim": "Every generator input is hashed in paper/results/MANIFEST.json and checked by validate_artifacts.py.",
+   "evidence": "make_macros.py reads 11 inputs (read from the code): canonical_numbers.json, cascade_reproduce_result.json, prevalence_result.json, stress_rescore_local.json, stress_report.json, ablations_result.json, labelling_ablation_result.json, cascade_matched_result.json, cadence_result.json, inference_benchmark_result.json, plus the build-time figures_stats.json. All are in the manifest with matching sha256 except validation/inference_benchmark_result.json, which is absent. It supplies \\bmlInferEps, \\bmlInferMs, \\bmlInferCores, \\bmlInferCpu and \\bmlInferThreads. The 24 inputs from make_gulls_macros.py --list-inputs are all present with matching hashes. tests/test_macros_fail_closed.py::test_every_generator_input_is_in_the_manifest covers only make_gulls_macros.py, which is why this was missed.",
+   "fix": "Hash validation/inference_benchmark_result.json in MANIFEST.json. Give make_macros.py an input registry or a --list-inputs flag, and extend the manifest test to cover it.",
+   "verdict": "real",
+   "verdict_note": "make_macros.py reads validation/inference_benchmark_result.json at lines 432-440. The file is tracked (08337ed) but is not in MANIFEST.json's 42 'files'. Every other committed input of make_macros.py is in the manifest with a matching sha256. figures_stats.json is built at build time and rightly excluded.\n\nmake_macros.py has no --list-inputs flag, and test_every_generator_input_is_in_the_manifest runs only make_gulls_macros.py. The overstated claim is best anchored at CHANGELOG.md:42: 'generator inputs all go through `load()` and are checked against the manifest by a test'. Minor."
+  },
+  {
+   "id": "code-4",
+   "severity": "minor",
+   "file": "validation/stress_rescore_local.py",
+   "line": "163-168",
+   "claim": "`code_generation_and_scoring` records the code state that produced the reused shards, caches and evaluations.",
+   "evidence": "The value is copied from the existing output JSON (`prev.get('code_generation_and_scoring', prev.get('code'))`) whenever args.out exists, regardless of whether WORK holds any cached shards or evals. The JSON is committed, so a rerun from a fresh clone (empty WORK, everything regenerated at the current commit) would still stamp g6016bc6edb89. So would a rerun after WORK is partly deleted. The current value (6016bc6) happens to be right: raw shards and evals are timestamped 01:55-02:15 on 2026-09-13, after 6016bc6 at 01:18 and before aa68c99 at 02:17, and pipeline/ and binml/ differ from HEAD only in comments.",
+   "fix": "Write a stamp file into WORK when shards or evals are created, and read it back. Do not inherit the stamp from the output JSON.",
+   "verdict": "real",
+   "verdict_note": "stress_rescore_local.py lines 163-168: whenever args.out exists, the stamp is copied from it (`prev.get('code_generation_and_scoring', prev.get('code'))`). Nothing checks whether WORK holds any cached shards or evals. The JSON is committed, so a fresh-clone rerun with an empty WORK would regenerate and score everything at the current commit and still stamp g6016bc6edb89.\n\nThe current value is plausibly right. The first committed JSON (aa68c99) carries code=g6016bc6edb89 and no generator-class split, which fits the 6016bc6 script. Caches and evals are timestamped 01:55-02:15, between 6016bc6 (01:18) and aa68c99 (02:17). Minor."
+  },
+  {
+   "id": "code-5",
+   "severity": "minor",
+   "file": "validation/gulls/PROVENANCE.md",
+   "line": "28 (also validation/referee_round_local.py 438/446; docs/VERIFICATION_2026-09-12b.md I22)",
+   "claim": "referee_round.json and truth_relabel_impact.json 'were regenerated from a clean commit after the third verification'. referee_round.json stamps `code` = 8a8bd4b (clean).",
+   "evidence": "Only the reduction, the final-epoch checkpoints and evals, and the gap-aware single-lens scans were computed at 8a8bd4b. Everything else was reused from the cache in ~/Desktop/Research/microlensing/referee_local_work:\n- From runs on 2026-09-12 (08:47-12:31): raw shards, shipped-model evals, both colour fine-tunes and the three-band stream scans. The floor, colour and stream blocks are byte-identical to the c4bf5f3 artifact, which was stamped fa91bc7afb90-dirty.\n- From runs before 8a8bd4b was committed at 01:16:41: the F146 scans, written at 00:26 and 01:16. Shard 90's scan also predates 218e3f1 (00:42).\n\nThe JSON has no field recording this, unlike the stress artifact's code_generation_and_scoring. The known pipeline changes since fa91bc7 cannot change these arms: truth bins, the OOR switch, a to_memmap guard and a train.py truth guard. But the uncommitted patch of fa91bc7-dirty is unknown. (By contrast, I checked the truth shard raw_v2: it was written at 23:42, before 218e3f1, yet its first 500 events' truth bins are identical to HEAD's fixed binning, against 49/500 for the old binning.)",
+   "fix": "Record per-stage provenance in referee_round.json (a code stamp for shards, evals and fine-tunes, scans, and reduction), or reword PROVENANCE and I22: 're-reduced at a clean commit from intermediates generated 2026-09-12 at fa91bc7-dirty'.",
+   "verdict": "real",
+   "verdict_note": "referee_round.json stamps code=g8a8bd4b981da (clean). The script reuses every cached intermediate: gen, memmap and evaluate skip existing outputs, and the fine-tune skips when .done exists.\n\nTimestamps in referee_local_work:\n- Written on 09-12 (08:47-12:31): raw shards, shipped evals, ft_train_{trained,colour}.pt and the three-band scans.\n- F146 scans: 00:26:04, before 218e3f1 (00:42), and 01:16:09, before 8a8bd4b (01:16:41).\n- Final-epoch checkpoints and evals: 01:16:42-01:18.\n- Gap-aware scans: 01:24 and 01:30, after 6016bc6 was committed at 01:18. The run spanned commits.\n\nOne correction: the floor, colour and stream blocks are not byte-identical to c4bf5f3's (stamped fa91bc7-dirty). They gained 174, 682 and 5 new leaves. Every value present at c4bf5f3 is unchanged, which supports the reuse. PROVENANCE's 'regenerated from a clean commit' and I22 overstate this. Minor."
+  },
+  {
+   "id": "code-6",
+   "severity": "minor",
+   "file": "tests/test_macros_fail_closed.py",
+   "line": "70, 109 (paper/make_gulls_macros.py 717; paper/make_macros.py 236-272; docs/VERIFICATION_2026-09-12b.md 31)",
+   "claim": "The perturbation cases exercise the guards they are named for, and 'every new directional sentence has a fail-closed guard, and the guards are tested'.",
+   "evidence": "The parametrised test only asserts non-zero exit and 'FATAL' in the output. I ran each case and recorded the message:\n- 'seed 2 best weighted' trips 'seeds 2-3 no longer trail the finite-source run per event and tie it weighted' (line 698), not the best-seed guard at line 717 ('released run is no longer the best seed at every table budget').\n- The line-717 guard is live: raising seed 2's per-event 1S2L k at the 2% budget by 1 fires it. No test does this.\n- The other 16 cases fire their intended guard.\n- None of the 12 new directional `_need` guards for the stress sentences in make_macros.py has a value-perturbation test. The only stress test (test_validation_and_invariants.py:325-331) deletes stress_rescore_local.json, which exercises the missing-file guard only. That test does pass, in CI too (107 passed, 2 skipped: LaTeX and network).",
+   "fix": "Assert each case's expected message, not just 'FATAL'. Rename or re-target 'seed 2 best weighted' so it reaches line 717. Add value-perturbation cases for the make_macros stress guards, or qualify the VERIFICATION sentence.",
+   "verdict": "real",
+   "verdict_note": "I ran all 17 cases. 'seed 2 best weighted' exits with 'seeds 2-3 no longer trail the finite-source run per event and tie it weighted' (line 698), not the line-717 best-seed guard. The other 16 fire guards that match their names.\n\nThe line-717 guard is live: setting seed 2's per-event 1S2L k at the 2% budget to 3112/11388 (seed 1 has 3111) makes it fire. No test does this.\n\nmake_macros.py has 12 stress `_need` guards (lines 241-271). The only stress test, test_validation_and_invariants.py:325-331, deletes stress_rescore_local.json; grep finds no value perturbation of them. The 'guards are tested' sentence is line 26 of committed HEAD; line 31 is in the uncommitted working copy. Minor."
+  },
+  {
+   "id": "docs-01",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1714",
+   "claim": "\"A base model was trained from scratch on 540,952 natural-prior events with AdamW (learning rate 3x10^-4, weight decay 0.01, batch size 512)\". The 12b critic-#2 disposition, CHANGELOG:39-40 and REVISION row 23 also say the recipe now comes \"from the stage logs\".",
+   "evidence": "The base log (v5runs/train_20260721_0003.log) records only 'epochs=18 batch=512' and gives no learning rate. The base run's own optimizer and scheduler state is in v5runs/binml_v5_base.pt.last. Its history matches the log exactly (NonPSPL F1 0.682/0.821/0.824/0.844/0.799/0.589; best 0.8440 at epoch 3, the same value as binml_v5_base.pt). It shows param_groups max_lr=0.0004, initial_lr=1.6e-05 (=4e-4/25) and weight_decay 0.01. The OneCycleLR has total_steps 19,026 (18 epochs x 1,057 steps at batch 512), warm-up ending at step 2,853, and last lr 3.56e-4 at step 6,342. So the base run peaked at 4e-4 (about 3.9e-4 at the kept epoch 3); 3e-4 is only train.py's default. The other stages agree with the text: stage 2 max_lr 1.2e-4 (8,456 steps = 8x1,057, batch 512); stage 3 3e-5 (6,270 = 6x1,045, batch 512); stages 4-5 5e-5 (13,326 = 6x2,221, batch 384); stage 6 5e-5 (23,832 = 6x3,972, batch 384).",
+   "fix": "Change the base rate to 4x10^-4 (the peak of a one-cycle schedule). Correct the 12b critic-#2 disposition, CHANGELOG and REVISION row 23, which list 3e-4 'from the stage logs'. Consider writing the recipe numbers into the canonical_numbers.json infra block from the .last optimizer states, with a check.",
+   "verdict": "real",
+   "verdict_note": "Reproduced. v5runs/binml_v5_base.pt.last: param_groups max_lr=0.0004, initial_lr=1.6e-05, wd=0.01. OneCycle total_steps is 19,026 (18 x 1,057), warm-up ends at step 2,852.9 and last_epoch is 6,342. The history matches train_20260721_0003.log (best 0.84403 at ep 3). The log has only 'epochs=18 batch=512' and no LR, and no launch command with 4e-4 survives anywhere in the workspace. The stage-era train_v5.py (ef216e2) passes max_lr=args.lr unscaled, so the base run was launched at 4e-4, and 3e-4 is only the default. The other stages match the text: 1.2e-4 (8,456 steps), 3e-5 (6,270), 5e-5 (13,326 for stages 4-5, 23,832 for stage 6). The LR at the kept epoch 3 is about 3.93e-4. One correction to the fix: only the 12b critic-#2 disposition (dispositions_2026_09_12b.py:149) spells out 3e-4. CHANGELOG:39-40 and REVISION row 23 say only 'from the stage logs' and give no LR. Major (reproducibility) is defensible."
+  },
+  {
+   "id": "docs-02",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "690-691 (also 1702)",
+   "claim": "\"BinML was trained on roughly \\bmlSimEvents (=10) million simulated events\" (baselines paragraph). The Appendix says \"The training set of roughly 10 million events was generated on Amazon Web Services\" (1702).",
+   "evidence": "The appendix's own recipe and the stage logs give these training splits: base and stage 2 540,952; stage 3 534,924; stages 4-5 852,631 (cache 1,065,789, which includes the base's 'natural shards 0-89' per stage4_20260721_2007.log); stage 6 1,525,063 (cache 1,906,329, the '1.9 million events in all'). No stage trained on more than 1.53M events. Across all caches at most about 1.07M + 1.91M = about 3.0M distinct events ever entered training, so 10M cannot be the training set. The AWS figures (10.0M events, 3 instances x 2 vCPU, 90 ev/s, 30 h, eu-central-1) match the author's own run notes for a 2026-07-05 AWS run exactly. That run produced 401 x 25k-event shards in the earlier three-class v4.2 format, whereas the v5 shards hold about 7,513 events (676,191/90). I could not confirm which generation the paragraph describes.",
+   "fix": "Line 690: say the network was trained on at most about 1.5M events per stage (1.9M in the final stage's data), drawn from a larger simulated pool; the budget contrast with the 9,000-event baselines still holds. Line 1702: say 'simulated pool' rather than 'training set', and confirm that the AWS numbers describe the v5 six-class generation.",
+   "verdict": "real",
+   "verdict_note": "Confirmed in the stage logs. Training splits are 540,952 (base and stage 2), 534,924 (stage 3), 852,631 (stages 4-5, cache 1,065,789 = 15 hard regimes + natural shards 0-89) and 1,525,063 (stage 6, cache 1,906,329). No stage trained on more than 1.53M events, and at most about 3.0M distinct events entered training. The v5 natural pool is itself only about 400 shards x about 7,513 events (about 3.0M; shards 150-399 unused per the author's notes). The infra numbers (10.0M, 3 x 2 vCPU, 90 ev/s, 30 h, eu-central-1) were hand-entered in 27289e4 ('AWS Spot ~10M events in ~30h'). They match the 2026-07-05 v4.2 three-class run (401 x 25k shards) exactly. Both 'trained on roughly 10 million' (690-691) and 'The training set of roughly 10 million events' (1702) are unsupported for the v5 model."
+  },
+  {
+   "id": "docs-03",
+   "severity": "major",
+   "file": "README.md",
+   "line": "258 (same sentence in docs/model_card.md:35, docs/pipeline.md:174, docs/evaluation.md:171)",
+   "claim": "\"A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750).\"",
+   "evidence": "validation/referee_round.json colour_ablation, all_events PeriodicVar F1: audited fine-tune on audited photometry 0.957 at the kept epoch and 0.967 at the last; old-calibration fine-tune on audited photometry 0.917 kept and 0.967 last; shipped model 0.949 on audited and 0.970 on old; audited fine-tune on old photometry 0.750 kept and 0.872 last. The paper (1025-1035), REVISION section 2 (502-507) and 12b I26 withdrew the kept-epoch contrast: the audited-photometry difference disappears at the last epoch. The CHANGELOG top entry (22-23) itself says the fine-tunes 'support only the collapse on mismatched photometry'. 'Restores' is not supported, because the old-calibration fine-tune reaches the same 0.967. 'Collapses (0.750)' omits the last-epoch 0.872.",
+   "fix": "In all four docs use the paper's wording: the audited fine-tune falls to periodic F1 0.750 on the old photometry (0.872 at its last epoch), against 0.961 (0.972) for the old-calibration fine-tune; on the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967).",
+   "verdict": "real",
+   "verdict_note": "Recomputed from validation/referee_round.json colour_ablation all_events, PeriodicVar F1. Audited fine-tune on audited photometry: 0.957 kept, 0.967 last. Old-calibration fine-tune on audited: 0.917 kept, 0.967 last. Shipped model: 0.949 audited, 0.970 old. Audited fine-tune on old photometry: 0.750 kept, 0.872 last. Old-calibration fine-tune on old: 0.961 kept, 0.972 last. The paper (1025-1033) and REVISION section 2 (502-507) withdrew the audited-photometry contrast, and the I26 disposition says so. README:258, model_card:35, pipeline.md:174 and evaluation.md:171 still say 'restores ... (0.957) but collapses on the old one (0.750)', with no last-epoch value. The fix numbers are correct."
+  },
+  {
+   "id": "docs-04",
+   "severity": "major",
+   "file": "docs/evaluation.md",
+   "line": "154",
+   "claim": "\"the fitted-PSPL baseline is limited to 800 of 6,912 F146 epochs\"",
+   "evidence": "The paper (686-690, and the Table 5 note at 708-709) states that the Paczynski fit is evaluated at full cadence (6912 epochs) and that the 800-epoch thinning was an earlier version. The same correction appears in AUDIT finding 55, CHANGELOG 2026-09-09 (AP 0.261 -> 0.545), the canonical_numbers baselines _comment and validation/baselines.py:107-110. 12b I35 (critical) fixed this in the paper but not in this doc, which still makes the withdrawn claim.",
+   "fix": "Say that every method, the Paczynski residual included, sees all 6,912 F146 epochs, and that the fitted-residual AP is 0.545 after the 2026-09-09 full-cadence rescore.",
+   "verdict": "real",
+   "verdict_note": "docs/evaluation.md:154 still says 'the fitted-PSPL baseline is limited to 800 of 6,912 F146 epochs'. This contradicts paper 686-690 and the Table 5 note (full cadence), the validation/baselines.py:107-113 comment ('FULL CADENCE for the PSPL residual too'), and the canonical_numbers baselines _comment (AP 0.261 -> 0.545 at full cadence). The withdrawn handicap is stated as current, and it flatters BinML. Major is defensible for a user-facing doc."
+  },
+  {
+   "id": "docs-05",
+   "severity": "major",
+   "file": "README.md",
+   "line": "183 (also docs/leakage_audit.md:11, docs/evaluation.md:131 heading, CHANGELOG.md:257)",
+   "claim": "\"The full stress suite has 10.4M targeted out-of-distribution events plus a 4.5M same-prior subset\"",
+   "evidence": "paper/results/stress_report.json: natural 4,502,855; 12 enriched regimes (boundary, boundary2, close, erupthard, flatrich, longte, lpvhard, perhard, planet_res, planet_wide, planetary, wide) 8,734,486; 17 oor_* sweep shards 1,703,705. Inside the sweep shards the swept class is only 500-1,000 per shard (AUDIT finding 16). The paper (757-763, 773-778) describes the targeted regimes as 'most of them enriched pools that were also used in training, drawn afresh', separates them from the out-of-range sweeps, and says stage 6 trained on the edges of three sweeps. So about 1.7M events (a small fraction of them swept-class) are out of range, not 10.4M.",
+   "fix": "Describe the 10.4M as targeted regimes: 8.7M in enriched in-prior pools (mostly also used in training) and 1.7M in 17 out-of-range sweep shards. Make the same change in leakage_audit.md and the evaluation.md section 5 heading.",
+   "verdict": "real",
+   "verdict_note": "Summed from paper/results/stress_report.json: natural 4,502,855; 12 enriched regimes 8,734,486; 17 oor_* 1,703,705; total 14,941,046. The 12 enriched regimes (planetary, wide, close, longte, planet_wide, planet_res in HARD_REGIMES; boundary, boundary2, flatrich, lpvhard, erupthard, perhard in CONFIG_REGIMES) redraw inside the default prior support (q 1e-6..1, s 0.2..5, tE 1..300 d, m_base 20..25). They are the training-pool regimes of mix_finetune.py ('only for training'). Only the 1.7M oor_* sweeps go beyond the priors. README:183 and leakage_audit.md:11 still call all 10.4M 'out-of-distribution', and so does the evaluation.md section-5 heading. The paper (757-763) separates the two."
+  },
+  {
+   "id": "docs-06",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1720-1721",
+   "claim": "\"stage 6 applied the truncation relabelling to every class\"",
+   "evidence": "stage6_20260726_0025.log: 'FIX 1: truncation relabel now uses t_anom -> Flat->PSPL->NonPSPL cascade (no premature binary flags)'; cache 'ALL 211,906 NonPSPL have t_anom'. The stage-3-era code (git show ef216e2:pipeline/sim_v5/train_v5.py, _apply_truncation) already relabels truncated single and binary lenses to Flat by visible PSPL amplitude, and eruptives by start time. Stage 5 (log FIX 1) extended the floor to periodic classes. What stage 6 added is the binary-onset rule (binary -> PSPL before t_anom), which is the cascade that section 4 evaluates. The appendix never says when that mechanism entered training.",
+   "fix": "Replace with: 'stage 6 relabelled truncated binaries as PSPL until their recorded anomaly onset (the cascade of Sec. cascade) and added pools that ...'.",
+   "verdict": "real",
+   "verdict_note": "The stage-3-era _apply_truncation (ef216e2) already relabelled truncated PSPL/NonPSPL to Flat by visible PSPL amplitude, and eruptives by t_start. The stage-5/6 code (e25e4d6) added the periodic range-traversed amplitude, which the stage 5 log calls FIX 1. Stage 6's new element is the t_anom rule (NonPSPL -> PSPL before onset; stage 6 log FIX 1). So 'stage 6 applied the truncation relabelling to every class' misattributes the change, and the appendix never says when the onset cascade entered training. Minor."
+  },
+  {
+   "id": "docs-07",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1712-1727",
+   "claim": "The recipe gives single learning rates per stage, calls the model 'the last of six warm-started stages', and for the fine-tunes gives only learning rates ('colour-calibration 5e-5, RMDC26 1e-4').",
+   "evidence": "(a) Every stage uses OneCycleLR (pipeline/train.py:776-777; already in ef216e2). The quoted rates are peaks, reached after a 15% warm-up from lr/25, followed by a cosine anneal to about 1e-10 with beta1 cycling (all visible in the .last scheduler states). (b) The base run was scheduled for 18 epochs (log 'epochs=18'; total_steps 19,026) and stopped after 6; its kept epoch 3 sits just past the LR peak. (c) The fine-tunes were launched without --batch-size or --alpha-nonpspl (referee_round_local.py:378-379; fspl_finetune_local.py:228-231; schedule_finetune_local.py:69; modal_gap_finetune.py:97-100). They therefore trained at batch 256 with the factor 2 on the anomaly class (train.py:600, 603), the factor that stage 2 removed; a reader will assume the stage-4-6 settings. (d) The base stage was trained from scratch, not warm-started.",
+   "fix": "Add: 'peak rates of a one-cycle schedule (15% warm-up, cosine decay)'; 'the base run was scheduled for 18 epochs and stopped after six'; 'the fine-tunes use batch 256 and restore the factor 2 on the anomaly class'; 'the last of six stages, five of them warm-started'.",
+   "verdict": "real",
+   "verdict_note": "(a) Every .last state is OneCycle: pct_start 0.15, initial = max/25, cosine to max/1e5 (about 2e-10 final), beta1 cycling. (b) The base scheduled 18 epochs (total 19,026) and stopped after 6. Warm-up ends at epoch 2.70, so the kept epoch 3 is just past the peak. (c) The fine-tune launchers (referee_round_local.py:378, schedule_finetune_local.py COMMON, modal_gap_finetune.py:97, fspl_finetune_local.py:228; the train_extra stamps hold only gap flags) pass neither --batch-size nor --alpha-nonpspl. Their .last step counts confirm batch 256: referee 141/3 = 47 steps, schedule 3,372/12 = 281, about 71.9k/256. alpha defaults to 2.0 in every version. (d) The base is 'from scratch' in the same paragraph that says 'six warm-started stages'. Minor."
+  },
+  {
+   "id": "docs-08",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1723",
+   "claim": "\"Seeds are fixed (20260720) and the data loader is seeded per worker.\"",
+   "evidence": "Per-worker seeding (_seed_worker via worker_init_fn) was introduced in ef6b0bd on 2026-07-28 06:11, after every stage had finished (stage 6 ended 2026-07-26). The stage-era code (ef216e2 and e25e4d6 train_v5.py) has no worker_init_fn. Stages 3-6 loaded data in the main process: stage4_20260721_2046.log says 'num-workers 0 (4 workers caused the OOM; stage3 ran clean at 0)', and the stage 5 and 6 logs say 'workers 0'. The sentence describes later code, not the runs that produced the checkpoint.",
+   "fix": "Say that the stages loaded data in the main process (no workers), with the augmentation RNG seeded from the fixed seed, and that per-worker seeding was added to the code afterwards.",
+   "verdict": "real",
+   "verdict_note": "_seed_worker/worker_init_fn first appear in ef6b0bd (2026-07-28 06:11), after stage 6 finished (2026-07-26). The stage-era train_v5.py (ef216e2, e25e4d6) defaults num_workers to 0 and has no worker_init_fn. The stage 4 restart log says 'num-workers 0 ... stage3 ran clean at 0', and the stage 5 and 6 logs say 'workers 0'. The sentence describes later code. Minor."
+  },
+  {
+   "id": "docs-09",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1729-1730",
+   "claim": "\"A benchmark of the training step (forward and backward pass on a full batch of 256) sustains about \\bmlTrainEps (=958) events per second\"",
+   "evidence": "No script or artifact produces 958. A grep over the repo and ~/Desktop/Research/microlensing finds it only in paper/canonical_numbers.json infra, hand-entered since the submitted version (train_batch was 256 then). The inference benchmark, by contrast, has validation/inference_benchmark.py. The stage logs give 470, 565, 503, 596, 526 and 234 training events per second of epoch wall-clock for stages 1-6 (including validation passes and one 21,366-s stalled stage-6 epoch). No generator reads the logs for any value in the infra block.",
+   "fix": "Add a benchmark script and artifact, or quote the logged per-epoch throughput instead. Derive the infra block (events, batches, epochs, hours) from the stage logs and .last states.",
+   "verdict": "real",
+   "verdict_note": "'train_events_per_sec': 958 was hand-entered in 27289e4 (2026-07-29, 'Mac/MPS training ~958 ev/s'). No script or artifact produces it: grep finds only canonical_numbers.json and make_macros.py:455, whereas inference has inference_benchmark.py and its result. The logged epoch throughputs, which I recomputed, are 470/565/503/596/526/234 ev/s, and the epochs total 21.8 h. Provenance gap, minor."
+  },
+  {
+   "id": "docs-10",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1100-1101",
+   "claim": "\"(the released model's last training stage also saw a short-timescale pool reaching 0.3 d, Appendix~\\ref{app:infra}\"",
+   "evidence": "The appendix (1712-1727) says only 'pools that widen the separation, timescale and faint-source coverage' and gives no timescale range. The 0.3-10 d range appears in Sec. limits (775-777) and in the stage-6 log ('shortte tE0.3-10').",
+   "fix": "Cite Sec. limits, or add the three pool ranges (s 3-8, tE 0.3-10 d, m 23.5-25) to the appendix's stage-6 sentence.",
+   "verdict": "real",
+   "verdict_note": "paper.tex:1100-1101 and draft_gulls_section.tex:139 cite Appendix app:infra for 'a short-timescale pool reaching 0.3 d'. The appendix (1720-1722) gives no timescale range; the 0.3-10 d range is only in Sec. limits (775-777) and the stage-6 log. Minor."
+  },
+  {
+   "id": "docs-11",
+   "severity": "minor",
+   "file": "docs/VERIFICATION_2026-09-12b.md",
+   "line": "95, 97, 102 (HEAD 9c04593)",
+   "claim": "Critic #4: 'after the fixes the final state was checked again by a fourth, smaller verification (addendum below)'. Critic #6 and #11: 'Included in the fourth verification.'",
+   "evidence": "At HEAD the file ends with 'Left open' (105-109), and there is no addendum. dispositions_2026_09_12b.py:151, 153 and 158 state the check in the past tense. 'Left open' also omits critic #3 (training-cache disjointness, 'AUDIT finding 14 stays open') and #6/#11. During my check another process modified this file and build_doc_2026_09_12b.py in the working tree (10:30:11, +5 lines); no addendum was added.",
+   "fix": "Append this round's record, or reword to 'to be checked in a fourth verification' and list #3, #6 and #11 under 'Left open'.",
+   "verdict": "real",
+   "verdict_note": "The HEAD version (109 lines; 943b171 did not touch it) ends at 'Left open' with only I54, I39 and I55. Critic #4 says 'addendum below', but there is no addendum. Critics #6 and #11 say 'Included in the fourth verification' in the past tense, and the dispositions .py says the same. #3 ('AUDIT finding 14 stays open') is not under Left open. The working-tree diff adds 5 summary lines and no addendum. Minor."
+  },
+  {
+   "id": "docs-12",
+   "severity": "minor",
+   "file": "README.md",
+   "line": "236 (also docs/model_card.md:83, paper/REVISION.md:446)",
+   "claim": "README: 'the released run is the best of the three seeds'; model card: '(the released run is the best of three on RMDC26)'; REVISION row 14: 'the released run is the best of three'. README:232-234: 'the new one is ahead when events are weighted by rate and on our own held-out seasons'.",
+   "evidence": "The 12b I03 disposition says README and the model card were narrowed to planetary recall, but `git diff c4bf5f3 9c04593 -- README.md docs/model_card.md` leaves both sentences unchanged. The paper (1220-1223) limits the claim to planetary recall, 'although another seed flags fewer single lenses at the frozen threshold' (4.7% vs 6.3%). On the held-out set the new checkpoint is ahead with the pauses (AP 0.893 vs 0.874) but slightly behind clean (0.929 vs 0.931; paper 1206-1209). The I32 disposition says the pipeline docs point to the every-class scan, but pipeline.md:160-162 has no pointer. model_card.md:84 cites only VERIFICATION_2026-09-1{1,2}.",
+   "fix": "Narrow the three sentences as I03 states. Add '(with the pauses; clean 0.929 vs 0.931)' to README:233. Add the every-class-scan pointer to pipeline.md and cite the 12b record in the model card.",
+   "verdict": "real",
+   "verdict_note": "git diff c4bf5f3 9c04593 leaves README:236 ('best of the three seeds') and model_card:83 ('best of three on RMDC26') unchanged, although I03 says they were narrowed. The paper (1220-1223) limits the claim to planetary recall and notes that another seed flags fewer at the frozen threshold (bmlSeedFaLo 4.7 vs bmlGullsFaCombined 6.3). Held-out AP: 0.893 vs 0.874 with pauses, 0.929 vs 0.931 clean. pipeline.md:160-162 has no every-class-scan pointer (I32), and model_card:84 cites only VERIFICATION_2026-09-1{1,2}. The 'held-out seasons' clause is the weakest part, since it can be read as the paused seasons, where the claim holds. Minor."
+  },
+  {
+   "id": "docs-13",
+   "severity": "minor",
+   "file": "examples/01_classify_roman_event.ipynb",
+   "line": "289 (markdown cell 9)",
+   "claim": "\"Every table is regenerated by validation/gulls/gulls_summary_tables.py (from a clone: --scores validation/gulls/rmdc26_scores.csv.gz)\"",
+   "evidence": "Running `python3 validation/gulls/gulls_summary_tables.py --scores validation/gulls/rmdc26_scores.csv.gz` exits with 'error: the following arguments are required: --models' (argparse required=True at gulls_summary_tables.py:205). 12b I52 repointed README and REVISION to transfer_tradeoff_all.json['command_from_clone'] (the full --models/--f146/--pairs/--boot invocation), but not the notebook.",
+   "fix": "Use the same pointer as README:244-245.",
+   "verdict": "real",
+   "verdict_note": "Ran `python3 validation/gulls/gulls_summary_tables.py --scores validation/gulls/rmdc26_scores.csv.gz`. It fails with 'error: the following arguments are required: --models' (line 205, required=True), and no files changed. Notebook 01 cell 'ebafdb23' still documents this command, while README:244-245 points to command_from_clone. Minor."
+  },
+  {
+   "id": "docs-14",
+   "severity": "minor",
+   "file": "docs/AUDIT_2026-09-09.md",
+   "line": "29 (also CHANGELOG.md:68, paper/REVISION.md:25 and 454)",
+   "claim": "The truth-label measurement is 'reported in the paper (§training, §limits)'; the 7.2-day label resolution is 'stated in §training'.",
+   "evidence": "paper.tex has no training section. Its sections are intro, sims, model, cascade, eval, results, limits, gulls, discussion, conclusion and appendix app:infra. The measurement is in section 4, Partial-light-curve evaluation (sec:cascade, 369-386), and in Sec. limits (930-938). The 7.2-day resolution is stated at 362-368 in sec:cascade.",
+   "fix": "Replace '§training' with '§4 (sec:cascade)'.",
+   "verdict": "real",
+   "verdict_note": "paper.tex has no training section. The sections are intro, sims (with detcond), model, cascade, eval, results, limits, gulls, discussion, conclusion and app:infra. The 7.2-d resolution is at 362-368 and the truth-label measurement at 369-386, both in sec:cascade; the pause measurement is in Sec. limits at 932-936. '§training' appears in AUDIT:29, CHANGELOG:68, REVISION:25 and REVISION:454. Minor."
+  },
+  {
+   "id": "docs-15",
+   "severity": "minor",
+   "file": "docs/AUDIT_2026-09-09.md",
+   "line": "59",
+   "claim": "Finding 14 status: 'lineage notes + the 4.5M unseen-natural stress result argue against test contamination'.",
+   "evidence": "The 4.5M natural suite was scored with stage 5 (PROVENANCE.md:37-39; paper 763-764), so it speaks to the stage-4/5 cache, and that cache's log (v5runs/stage4_20260721_2007.log) already records '15 hard regimes + natural shards 0-89'. The released model's cache is stage 6's ('v5mm_mix6 (1,906,329 events ...)'), whose log records no shard range. For the released model the relevant evidence is the regenerated subset: natural macro-F1 0.919, equal to the held-out 0.919 (bmlStressRelMacroF, bmlMacroF).",
+   "fix": "Cite the stage-4 log for stages 4-5 and the regenerated-subset result for stage 6, and state that the open item is specifically the stage-6 cache's shard indices.",
+   "verdict": "real",
+   "verdict_note": "validation/gulls/PROVENANCE.md:37-39 confirms that the 14.9M suite (including the 4.5M natural subset) was scored with stage 5, so it bears on the stage-4/5 cache. stage4_20260721_2007.log records '15 hard regimes + natural shards 0-89', and its 36.6%-hard split of 1,065,789 implies a 676,191 natural part, the exact shard 0-89 count. The stage-6 log names cache v5mm_mix6 with no shard range. For the released model the relevant evidence is the regenerated subset (macro-F1 0.919 vs held-out 0.919). Minor."
+  },
+  {
+   "id": "docs-16",
+   "severity": "minor",
+   "file": "docs/training.md",
+   "line": "43-44",
+   "claim": "\"The shipped checkpoint followed a curriculum of targeted warm-starts (--init-weights) on harder data and then partial-season augmentation.\"",
+   "evidence": "The appendix and logs give the reverse order: truncation (partial-season) augmentation began at stage 3 (stage3 log 'truncation aug 0.5'), the hard-regime pools at stage 4, and the binary onset cascade at stage 6. The 'from scratch' quick-start commands also disagree with each other and with the base run: README.md:163 and training.md:23 use the default batch 256, pipeline.md:120 uses --batch-size 384, and the base ran at batch 512 (1,057 steps per epoch in its optimizer state) with a 4e-4 peak rate.",
+   "fix": "State the order as: base -> warm restart without the anomaly factor -> truncation augmentation -> hard-regime pools -> periodic floor -> onset cascade plus edge pools. Either call the commands illustrative or give the base run's settings.",
+   "verdict": "real",
+   "verdict_note": "The logs show truncation augmentation from stage 3 ('truncation aug 0.5'), hard pools at stage 4, the periodic floor at stage 5 and the onset cascade at stage 6. 'Targeted warm-starts on harder data and then partial-season augmentation' (training.md:43-44) reverses the first two. The quick-start commands disagree with each other: README:163 and training.md:23 use batch 256 (default), pipeline.md:120 uses 384, and the base ran at batch 512 with a 4e-4 peak. These are one-shard illustrative commands that don't claim to be the recipe, so that half is weak; the fix (label them illustrative) is appropriate. Minor."
+  },
+  {
+   "id": "docs-17",
+   "severity": "minor",
+   "file": "CHANGELOG.md",
+   "line": "65 (also 39, 164; paper/REVISION.md:518)",
+   "claim": "The 2026-09-12 entry says full-season-fit residuals 'taught 13.7% of truncated binary presentations NonPSPL'. The 2026-09-09 entry says gap-aware false alarms went '35.6% -> 11.7%'. The top entry says the old appendix 'described the base run's defaults (batch 256, ...)'. REVISION says 'Seed sweep of the shipped model (3 seeds, stage-5 recipe) ... Its 1.9M-event training set'.",
+   "evidence": "truth_relabel_impact.json refit_reference: full_season_residuals 520+3 of 3,432 = 15.2% (the train.py comment says 15%). The top entry lists the other superseded numbers (10.5->9.4, 1.4->2.5, 16.4->16.3) but not this one. The gap-aware rate is 11.6% after single rounding (bmlGullsFaGapaware); I23 updated the AUDIT ledger but not the CHANGELOG. The base log says batch=512, so 256 was train.py's default, not the base run's setting. The shipped model is stage 6, and the 1.9M set is stage 6's data.",
+   "fix": "Add '13.7% -> 15.2% (refit reference)' and '11.7% -> 11.6%' to the top entry's corrections; write 'train.py defaults'; change REVISION to 'stage-6 recipe'.",
+   "verdict": "partly",
+   "verdict_note": "Most of this reproduces. The refit_reference counts give 520 (+3 reverse) of 3,432 = 15.2%, against CHANGELOG:65's 13.7%. bmlGullsFaGapaware is 11.6, against CHANGELOG:164's 11.7% (a dated historical entry). REVISION:518 says 'stage-5 recipe' but '1.9M-event training set', which is stage 6's data. 'Base run's defaults (batch 256 ...)' is wrong, because the base ran at batch 512. The proposed wording 'train.py defaults' is also inaccurate: train.py's --epochs default is 30 in both the stage-era and current code, so '5 epochs' matched neither the defaults nor any stage. Better: 'values not from the stage logs (batch 256, factor 2 and 3e-4 are train.py defaults; 5 epochs matched no stage)'. Minor."
+  },
+  {
+   "id": "docs-18",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "914-915 (also paper/draft_gulls_section.tex:59-60; outside this slice, found while checking README:222)",
+   "claim": "\"one gap of 1-2 h placed at mid-season already lowers single-lens recall from 0.93 to 0.86 ..., the lost events going to NonPSPL and PeriodicVar\"",
+   "evidence": "validation/gulls/gap_sensitivity.json single_gap_by_length_h, PSPL argmax counts: no gap {PSPL 93, Eruptive 3, LPV 2, NonPSPL 1, Flat 1}; 1 h {PSPL 86, NonPSPL 8, Eruptive 3, LPV 2, Flat 1}; 2 h {PSPL 86, NonPSPL 9, Eruptive 3, Flat 1, LPV 1}. The lost single lenses go to NonPSPL, and PeriodicVar receives none (it first appears at 4 h, with 4). make_gulls_macros.py:81-87 has no guard on the direction.",
+   "fix": "Change to 'the lost events going to NonPSPL' and add a fail-closed guard.",
+   "verdict": "real",
+   "verdict_note": "validation/gulls/gap_sensitivity.json, PSPL argmax. No gap: PSPL 93, Eruptive 3, LPV 2, NonPSPL 1, Flat 1. 1 h: PSPL 86, NonPSPL 8, Eruptive 3, LPV 2, Flat 1. 2 h: PSPL 86, NonPSPL 9, Eruptive 3, Flat 1, LPV 1. PeriodicVar gets no single lens until 4 h (4 events), and Flat recall is 1.0 at 1-2 h. make_gulls_macros.py:81-87 asserts only the 0.5-h equality and has no direction guard. The same sentence is in draft_gulls_section.tex:59-60. Minor."
+  },
+  {
+   "id": "docs-19",
+   "severity": "minor",
+   "file": "docs/AUDIT_2026-09-09.md",
+   "line": "44",
+   "claim": "Finding 10: '(chi^2 < 500; 18 of the 344 single-lens cases fail the amplitude floor)'.",
+   "evidence": "validation/truth_relabel_impact.json stores only 'PSPL: legacy PSPL / truth Flat 344', with no split between amplitude-floor and event-chi2 failures. truth_relabel_impact.py does not compute or store one. The '18' (12b I15) has no artifact behind it.",
+   "fix": "Store the split in truth_relabel_impact.json, and generate the sentence from it, or drop the count.",
+   "verdict": "partly",
+   "verdict_note": "The provenance gap is real: validation/truth_relabel_impact.json stores only 'PSPL: legacy PSPL / truth Flat 344', and truth_relabel_impact.py computes no amplitude/chi2 split. But the 18 is not unsourced. It was computed by the 12b truth-relabel verifier and is recorded in docs/verification/2026-09-12b_findings.json (truth-relabel-7: '326 of the 344 ... fail only the event chi^2 < 500 test; 18 fail the amplitude floor'). So it is a verifier's recorded calculation that no committed script regenerates. The fix (store the split in the artifact and generate the sentence) stands. Minor."
+  }
+ ],
+ "coverage": {
+  "cascade": {
+   "checked": [
+    "Wrote my own reducer, not importing cascade_gulls.py (scratch verify4/cascade/load_scans.py, reduce_mine.py). It reads all 82 scan_v2*.npz files (6,000 events: 3,000 1S1L, 1,500 1S2L, 1,500 2S2L) and reproduces every number in all 8 result blocks of validation/gulls/cascade_gulls.json exactly: both checkpoints; F146 and three-band; frozen 0.904241 and calibrated 0.956342 / 0.956927.",
+    "Primary result (fspl5s_seasons_g08, F146, frozen): eligible 1,667; premature 37 = 2.22%, Wilson [1.61, 3.04] (Clopper-Pearson [1.57, 3.05]); median lag +6.5 d (n=985); detection 1022 = 61.3% [58.9, 63.6]; single lenses 185/3000 = 6.17%, weighted 8.91%, 0.857 per 1,000 per day; purity 5.19% / 20.92% / 49.31% (at 22.07%, weighted rates).",
+    "Calibrated threshold 0.9563: premature 22 = 1.32%, detection 49.6%, lag +8.0 d, single lenses 3.17%, purity at 1% 7.91%. Three-band frozen: premature 18 = 1.08%, detection 58.8%, lag +11.5 d, single lenses 6.13%.",
+    "All 34 \\bmlCg macros agree with the artifact after rounding. make_gulls_macros.py, regenerated in scratch, writes gulls_macros.tex byte-identical to the committed file. MANIFEST sha256 matches for cascade_gulls.json, referee_round.json, cascade_reproduce_result.json and gapped_threshold_fspl5s_seasons_g08_seasons.json.",
+    "The cascade paragraphs of paper.tex (1392-1432) and draft_gulls_section.tex (430-468) are textually identical.",
+    "Sample: scanned ids are exactly the first 3000 / 1500 / 1500 dense scored ids of rows_full_fspl5s_g08.json. Labels are consistent across files, and the onset arrays are identical in the canonical and tagged scan files.",
+    "Onset: I recomputed the per-cut label rule (dchi2 >= 160 and amplitude >= 0.02 via pipeline.assemble._pspl_refit_dchi2) from truth_*.npz for 80 binaries (all 37 premature plus 43 random): 0 differing cuts. Eligibility equals the full-season label_detect in gulls_truth_cache_v2 for all 3,000 binaries (1667 NonPSPL / 1333 PSPL). The in-house onset (_anomaly_onset_day) uses the same anomaly-only per-cut rule.",
+    "Traces: the last cut equals the full-season p_nonpspl in rows_full_{fspl5s_seasons_g08,fspl5s_g08}{,_f146only}.json for all 6,000 events (|diff| <= 6e-5, 4-dp rounding). I re-scored 8 events at all 144 cuts through Classifier.predict with ft_fspl5s_seasons_g08.pt: max |dp| 8e-6, same NaN pattern, same first crossings.",
+    "Checkpoint identity: ft_fspl5s_seasons_g08.pt = binml-gapaware.pt = scan_models.json entry (sha256[:16] b2c4c24ca33f9d0d). The calibrated threshold equals gapped_threshold full_pool = GAPAWARE_THRESHOLD = \\bmlSidecarThr.",
+    "Calibrated alerts are a subset of frozen alerts (0 exceptions). Paired McNemar for F146 vs three bands: detection p=0.004, premature p=3e-4.",
+    "22.07% is the rate-weighted planetary fraction of the 56,975 scored events (0.22069). The prevalence rescaling algebra is correct.",
+    "In-house references: I reproduced the by_mass_ratio strata and the three-band row from validation/cascade_trace.npz. single_lens_stream_recommended_f146 (31/1759, 9 at 0.956) reproduces from referee_round_archive. The 'several times' ratio is 3.5x.",
+    "'In line with' the full-season recall holds: per class the F146 cascade detects 57.2% (1S2L) and 65.6% (2S2L), against 0.543 / 0.621.",
+    "Labels in the text are correct: 'per simulated event' is unweighted and 'weighted by event rate' uses final_weight. Units: alerts per 1,000 single lenses per day = alert fraction / 72 x 1000.",
+    "The model card (lines 53-57: 6.2%, 3.2%, 'one in twenty', 'one in thirteen') and the numbers in REVISION.md row 10 match the artifact.",
+    "Per-day denominator: every season ends at 70.74 d (cuts 71.0-72.0 are identical for all 6,000 events), so dividing by the observed span gives 0.87 per 1,000 per day rather than 0.86. Not raised as a finding: the 2026-09-11 round (rederive-transfer-17) ruled dividing by the 72-d window defensible."
+   ],
+   "not_checked": [
+    "I did not re-scan all 6,000 events with the model; 8 were re-scored at every cut, and the last cut was compared for all 6,000.",
+    "Onsets were recomputed for 80 of the 3,000 binaries only.",
+    "final_weight was not read from the pinned meta parquet, which is absent from /tmp. I used 'weight' in the rows files (written as float(final_weight) by gulls_transfer.py), and it reproduces every weighted number in the artifact exactly.",
+    "Truth-curve extraction from the Hugging Face obs parquet (needs network); truth_*.npz was taken as given.",
+    "Whether the in-house trace (cascade_trace.npz) itself is correct; only its reduction was reproduced.",
+    "LaTeX build and PDF rendering of the section."
+   ]
+  },
+  "ledger": {
+   "checked": [
+    "Every numeric claim in section 1.5 rows 1-23 against the named artifacts. GULLS: transfer_tradeoff_all.json (all 17 models: frozen FA, budgets, weighted blocks, rho/|u0| bins, own thresholds, by-season, paired differences), schedule_finetune.json, transfer_detectability_relabel.json, the gapped_threshold_*_seasons.json files (full-pool thresholds, 68% slice ranges, 0.931 validation-slice threshold), gulls_noise_model.json, transfer_subday*.json, transfer_colour_ablation.json, transfer_multiseason.json, cascade_gulls.json, floor_sensitivity.json, occupancy_sensitivity.json, rmdc26_schedule.json, rmdc26_dataset_facts.json, fspl_finetune_fspl5s_seasons_g08{,_s2,_s3}.json. Own simulator: validation/referee_round.json, truth_relabel_impact.json, stress_rescore_local.json, canonical_numbers.json. Cross-checked against gulls_macros.tex and paper_macros.tex; all match except the items reported.",
+    "Independent recomputation from rmdc26_scores.csv.gz of frozen-threshold FA (per event and weighted) and 5.2%-budget 1S2L recall for 8 checkpoints: agrees with the artifact within threshold-tie handling (0.0006 or less).",
+    "Row 13 and 20 verdicts against Table tab:seeds (outputs/gulls_seed_table.tex), including per-bin physics differences against the seed range per event and weighted (weighted, nothing resolved; n_eff 96 and 52). Simulated the 'two runs exceed a three-run range about a third of the time' claim: 0.30-0.33 for normal, uniform and t3 draws.",
+    "Row 20's code claim: git diff 618aca3..1c4234f of pipeline/train.py shows only comments, help strings and truth-gated code. Kept epochs 9/5/11 confirmed from the out-of-repo fine-tune metrics files.",
+    "Row 23's appendix recipe against the stage logs in ../v5runs (base batch 512 on 540,952 events; stage-2 lr 1.2e-4 from base epoch 3; stage-3 lr 3e-5 with truncation 0.5; stage-4 lr 5e-5, batch 384; stage-5 fixes; stage 6 on 1,906,329 events, 6 epochs, best epoch 4; summed epoch time 21.8 h, matching 'about 22 h'). Subset size 255,527 and median |difference| 0.0116 recomputed.",
+    "Section 2 against referee_round.json: floor arms (N, overlap 21.6%/4.5%, prevalence, Wilson intervals, purity, all-event AP and macro-F1), colour (precision, recall and F1 per class and the confusion matrices; kept-epoch and final-epoch fine-tunes), stream with three bands and with F146 only, timing, the like-for-like 31/1,759, and the 14.5% threshold-selection overlap.",
+    "Paper and draft are identical (ignoring comments) for §gulls and for draft blocks A, B and D.",
+    "Withdrawn phrasings are absent from paper.tex and the draft ('anomalies are smaller', 'as if the floor', 'hides half', 'recovers most', 'mostly in the two largest', 'does not transfer', 'better still').",
+    "Every ledger-named artifact checked against git ls-tree HEAD (only validation/referee_round_archive/ is missing). binml-gapaware.pt is byte-identical to ft_fspl5s_seasons_g08.pt, and the binml.pt hash equals the 'released' checkpoint in stress_rescore_local.json.",
+    "Finding counts in docs/verification/2026-09-11, 09-12 and 09-12b findings JSON (row 19 and CHANGELOG: 74 = 6/22/46; 98 = 11/34/53).",
+    "CHANGELOG third-verification entry against ledger rows 20, 22, 23 and section 2 (consistent apart from the items reported); the Conclusion's 'submitted version listed as open' checked against 08337ed.",
+    "README, model_card.md and evaluation.md carry the stage-5/released stress wording claimed in row 23's status."
+   ],
+   "not_checked": [
+    "No experiment, fine-tune, stress regeneration, referee-round run or paper build was rerun (read-only; no compute).",
+    "Values derived from caches outside the repo (truth cache v2, multiseason cache v3, cascade scan_v2, curve caches) were checked only through their committed reductions.",
+    "Row 5's v2 noise recomputation (2.67x, 7.6x): no artifact holds it.",
+    "Row 14's ESPLMag accuracy claims (tests/test_fspl.py not run).",
+    "Row 17's 1e-14 perturbation flip (only PROVENANCE.md records it).",
+    "That the full 14.9M-event suite was scored with stage 5 (aws/ud_bineval.sh, S3); only the local subset was checked.",
+    "Section 2's statement that AWS is unavailable.",
+    "Directional-sentence guards in make_gulls_macros.py and the paper text outside the ledger slice; stuck floats noted in paper.log were not examined."
+   ]
+  },
+  "stress": {
+   "checked": [
+    "(1) Recomputed every number in validation/stress_rescore_local.json from the 12 eval dirs with independent code: argmax, weights 1/clip(keep_prob,1e-3,1), per-label recall, precision and F1, macro-F1, label_fractions, pspl_label_by_generator_class (n, recall, weighted share, argmax fractions, fraction above the frozen threshold using my own float64 softmax), nonpspl_rates, precision_at_natural_prevalence, and the quoted suite values against paper/results/stress_report.json. Maximum absolute difference 1.1e-16; all counts equal.",
+    "(2) Checkpoint hashes: v5runs/binml_v5_stage5.pt sha256 4e7a5a85...cbafe; binml/weights/binml.pt 897a9aec...c41c34, identical to v5runs/binml_v5_stage6.pt. The eval meta.json prefixes and paper/results/metrics.json (stage6, threshold 0.9042405486106873) match; aws/ud_bineval.sh passes the stage-5 key.",
+    "(3) Subset vs suite label fractions for all six tiers, per shard with z-scores: natural, planetary and faint agree; shortte PSPL is +3.4 pts (stress-01); natural and widesep NonPSPL are low (stress-02). The legacy mix switch reproduces the July dict literal (e25e4d6 run_shard.py:195) in key order and values for PSPL-, NonPSPL-, PeriodicVar-, LPV- and Eruptive-swept regimes; oor_flat_faint is unaffected (MIXES['flat']).",
+    "Regeneration from seeds reproduces the local caches: shortte shards 0-1 (labels, true_class, tE, t0), faint shard 0 and natural shards 0-1. The committed July generator (e25e4d6 sim_v5) gives identical natural shards 0-1.",
+    "Scored a 4-shard shortte regeneration with the pre-ef6b0bd t0 behaviour with both checkpoints (pipeline.evaluate, CPU, scratch only); it reproduces the suite's class mix and stage-5 metrics.",
+    "(4) Every macro in Sec. limits, Table tab:stress, the abstract and the Introduction against the JSON, with rounding. paper_macros.tex regenerates byte-identically (make_macros.py executed with writes redirected to scratch). Each _need guard was evaluated: all pass; the 'reproduces' guard is weak (stress-02) and the 'mostly' guard uses a mix-dependent FPR (stress-03). The low-q 'holds' and 'only through prevalence' claims are verified, including within microlensing-only strata.",
+    "(5) Training-regime claims against HARD_REGIMES/CONFIG_REGIMES, v5runs stage4/5/6 logs, RESULTS/analysis/STAGE6_SUMMARY.md, aws/launch_binhard.sh, launch_wave3.sh and launch_stress.sh. Stage-4 low-q pool and stage-6 wider/shortte/faint ranges confirmed; the faint pool already appears in stage 4 (stress-06). Stress report 2026-07-22 precedes stage 6 (2026-07-26).",
+    "(6) 71% and 37% are computed on label PSPL AND generated PSPL, tE 0.200-0.999 d, weight 1 (detectable sub-day single lenses), as described; under the suite's generator they would be 69% and 35%.",
+    "(7) GULLS sub-day sentence: macros against transfer_subday.json (REC = fspl5s_seasons_g08) and the per-event rows_subday_shipped.json, split by tE; draft_gulls_section.tex mirrors paper.tex.",
+    "README, model_card, evaluation.md section 5, PROVENANCE, REVISION row 23 and CHANGELOG checked for consistency with the JSON and the paper."
+   ],
+   "not_checked": [
+    "The suite's per-event predictions and raw shards (S3), so the regenerated events could not be compared one-to-one with the suite's; stress-02 rests on count and recall statistics.",
+    "The library versions of the July AWS generation fleet, and whether the tarball sim_v5_code.tgz differed from commit e25e4d6.",
+    "Composition of the stage-6 training cache v5mm_mix6 (S3): whether stage 6 added new faint shards or reused the stage-4 pool.",
+    "Stage 5's own complete-season operating threshold (not recorded locally), so the stage-5 '21% above the frozen threshold' uses the released model's threshold.",
+    "The LaTeX build and rendered layout of Table tab:stress.",
+    "Stress tiers not quoted in the paper (other OOR sweeps and targeted regimes)."
+   ]
+  },
+  "text": {
+   "checked": [
+    "git diff c4bf5f3..HEAD for paper/paper.tex (761 diff lines) and paper/draft_gulls_section.tex (300): every changed paragraph read. HEAD has since moved to 943b171, which changes only paper/build.sh.",
+    "Draft vs paper: all 32 draft paragraphs appear verbatim (whitespace-normalised) in paper.tex. The paper's Sec. gulls (lines 1067-1459) and the pauses paragraph are fully contained in the draft. paper/outputs/draft_gulls_rendered.txt is byte-identical to a fresh render into scratch.",
+    "Macros: all 655 \\bml names used in paper.tex, the draft and the tables are defined (1,024 macros, no duplicates). Typed numbers in added lines are method constants only: ranges, learning rates, batch sizes, epochs, the 0.5-d grid, 10^-7, 6912 epochs.",
+    "Seed table tab:seeds: all 70 cells and the bold pattern recomputed from validation/gulls/transfer_tradeoff_all.json. Also recomputed: SeedRec/RecW/Fa/Lead/Trail/DiffSeedRec*/NeffRho macros, rho/|u0| bin drops against seed spreads, recall at all five budgets (the 'low/higher budgets' wording holds), and budget slack of the seed-table models (at most 0.035 pts).",
+    "truth_relabel_impact.json: TruthTruncNonLegacy 10.8 (369/3432), NonLate 49 (181/369), NonFixed 2.4 (81/3432), Unstable 0.5 (18/3432), SeasonsOn 9.4 (322/3432), SeasonsOff 2.5 (87/3432), per-class 16.3/8.7/5.0/3.1.",
+    "referee_round.json: stream macros for three bands and F146 alone. Prior-shift purities recomputed (0.889 at the simulated prevalence, 0.584 at 1%). Also: floor arms, Wilson intervals, overlap 21.6%/4.5%, threshold-row share, colour ablation (precision down / recall flat, variables to microlensing 22 to 21, flat to periodic 70 to 134, PSPL to eruptive 285 to 355), colour fine-tune AP 0.958-0.960 and periodic F1 cells at the kept and last epochs.",
+    "stress_rescore_local.json: every StressRel/FiveSub/Suite macro, SubDiffMed 0.012, SubDiffMax 0.095, precision at natural prevalence recomputed (0.440, 0.816), FPRs and prevalences, demoted share. Bootstrap SEs from the per-event eval outputs in stress_local_work. Class-by-label cross-tabs.",
+    "Guards: the make_macros _need() stress guards and the make_gulls_macros need() guards (71) checked against the directional sentences of the changed paragraphs. Missing guards are reported in the relevant findings.",
+    "Appendix training recipe checked against the v5runs stage logs. Base: 540,952 events, batch 512. Stage 2: lr 1.2e-4 from ep3. Stage 3: lr 3e-5, truncation 0.5. Stages 4-6: lr 5e-5, batch 384. Stage 6: 1,906,329 events, 6 epochs, best zero-based epoch 4. Summed epoch time 78,397 s = 21.8 h. Fine-tune learning rates: colour 5e-5; RMDC26 1e-4, including g08e12.",
+    "Stage-6 pools (wider s 3-8, shortte tE 0.3-10 d, faint m 23.5-25) checked in the stage-6 log and run_shard.py.",
+    "'About a third of the time' checked by simulation: P(|X4-X5| > range of 3) = 0.31 for a normal distribution.",
+    "Abstract claims checked against their macros. Word counts: 265 (submitted), 353 (c4bf5f3), 382 (HEAD).",
+    "Conclusion and Discussion checked against Sec. cascade / Sec. limits / Sec. gulls: stream numbers, 'no synthetic variable alerts' (three bands), open-test list against the submitted version.",
+    "paper.log (built 10:12, after the last paper.tex change): no undefined references or citations, no overfull or underfull boxes. Three 'float is stuck' warnings resolved (Table 6 lands on p13 inside Sec. 7). paper.blg has 0 warnings."
+   ],
+   "not_checked": [
+    "The 14.9M-event suite's per-event predictions are on S3 (no cloud access). The suite's generation date and code are inferred from HANDOFF.md, STRESS_TEST_RESUME.md and the commit dates, plus the quantitative t0-pad reconstruction; the suite shards themselves were not inspected.",
+    "The exact mechanism behind the 25% event mismatch in the regenerated held-out shards: only its extent, its run structure and the 9 label differences were measured.",
+    "Whether stage 6 added new faint (23.5-25 mag) shards beyond the stage-4 'faint' pool. The stage-4 log counts 15 hard regimes, which appears to include it.",
+    "Did not rerun make_macros.py, make_gulls_macros.py, render_draft.py (except into scratch) or LaTeX (read-only rule). Relied on the generated macro files present in the working tree (paper_macros.tex is not committed).",
+    "Did not regenerate shards, re-score checkpoints or retrain anything.",
+    "Unchanged tables (tab:gulls cells, tab:gap) and figures were not recomputed, beyond the columns used by the changed text.",
+    "The A&C abstract word limit (offline)."
+   ]
+  },
+  "code": {
+   "checked": [
+    "Code diffs c4bf5f3..HEAD, re-read at the current HEAD 943b171. HEAD moved during the session; 943b171 only adds the build.sh LaTeX rerun loop.\n- assemble._ref_bin: tested in scratch; the old floor formula fails the new grid test.\n- to_memmap._check_truth_consistent.\n- The train.py truth-relabel floor guard, which compares gen_settings strings '0.02' correctly, and the onset warning.\n- run_shard LEGACY_OOR_MIX: it reproduces the original f7c9060 literal's key order and values.\n- referee_round_local.py (_all_events, floor/threshold overlaps, F146 scan, like-for-like scan, final-epoch checkpoint, archive).\n- truth_relabel_impact.py (refit reference, BIN mapping, tallies).\n- stress_rescore_local.py.\n- gulls_summary_tables.py (Kish n_eff, command_from_clone).\n- The make_macros.py and make_gulls_macros.py guards: all reachable.\n- build.sh and paper-build.yml.",
+    "Stress regeneration against the suite: shard 0 of all six tiers generated with the July generator (pipeline/sim_v5 @ e25e4d6, run in scratch) and matched event by event against the cached regenerated shards. Shortte shards 0-3 were also scored with both checkpoints (inference only).",
+    "Artifact stamps: all four git describe strings (8a8bd4b, 218e3f1, 6016bc6, b216d54) resolve. referee_round_local.py and truth_relabel_impact.py are identical at their stamps and at HEAD. stress_rescore_local.py is identical at b216d54 and HEAD. pipeline/ and binml/ differ between 6016bc6 and HEAD only in run_shard comments.",
+    "Stress JSON: recomputed metrics() from all 12 cached eval dirs; identical to the artifact. Eval checkpoint hashes match the recorded sha256.",
+    "Truth artifact: raw_v2 truth bins equal HEAD's generator for the first 500 events. All refit-reference percentages quoted in train.py, REVISION and paper macros re-derived (10.8, 49% late, 2.4, 6.4, 15.2, 9.4, 2.5, 1.9, 1.5/0.8/0.4).",
+    "Referee archive: local sha256 values match the JSON. Stream purity, PSPL alert fractions and like-for-like single-lens alerts (31/9 of 1759) recomputed from the archive and match. Fine-tune checkpoint hashes match.",
+    "python3 paper/validate_artifacts.py passes (8 arrays, 42 files, checkpoint, 2 trace reductions). make_gulls_macros.py --list-inputs: all 24 inputs are in MANIFEST with matching sha256. make_macros.py inputs read from the code.",
+    "transfer_tradeoff_all.json and transfer_colour_ablation.json regenerate exactly (excluding the command fields) from the recorded command_from_clone, run into scratch.",
+    "CI (gh run list): HEAD 943b171 is green for tests and paper build. The 9c04593 paper build failed on 'Label(s) may have changed'; 943b171's build.sh loop fixes it. CI tests: 107 passed, 2 skipped (LaTeX build, network).",
+    "pytest: test_truth_relabel.py, test_macros_fail_closed.py and test_cascade_macros_fail_closed_without_the_artifact give 28 passed. The full local suite gives 108 passed, 1 skipped (network). For every perturbation case I recorded which guard actually fired."
+   ],
+   "not_checked": [
+    "The suite's own per-event data are on S3. The July comparison assumes the S3 sim_v5 tarball equals pipeline/sim_v5 at e25e4d6; this is supported by label fractions matching the suite (0.1479 vs 0.1475 PSPL) and by stage-5 recall (0.532 vs 0.524).",
+    "widesep and per_longp were not scored on July-generator shards; only event identity was compared. Their populations should be equivalent in distribution.",
+    "The uncommitted patch behind fa91bc7-dirty, which produced the 2026-09-12 referee intermediates, cannot be recovered.",
+    "Not re-run: the colour fine-tunes (training not allowed) and pipeline.evaluate on the referee arms.",
+    "The truth shard was compared for only the first 500 events, not a full regeneration.",
+    "Out of scope for the manifest check: inputs of make_figures.py and make_data_figures.py.",
+    "Needs S3: whether the stage 4-6 training caches are disjoint from the test pool.",
+    "Paper/draft text consistency beyond the claims tied to code and artifacts.",
+    "Not reviewed: the working tree now has uncommitted edits to docs/VERIFICATION_2026-09-12b.md and docs/verification/build_doc_2026_09_12b.py, timestamped 10:30 and made by another process, not this verifier."
+   ]
+  },
+  "docs": {
+   "checked": [
+    "Appendix 'Training recipe' / 'Training (local)' against all six stage logs (v5runs/train_20260721_0003.log, stage2..stage6 logs incl. aborted starts), the five *.pt.metrics.json histories, seven checkpoints (epoch, val NonPSPL F1, seed 20260720) and six *.pt.last optimizer/scheduler states. Checked: kept epoch per stage (3, 7, 5, 5, 5, 4); stage-6 epoch 4 0.93228 > epoch 5 0.93214; the 'fourth epoch' restart; stage learning rates 1.2e-4/3e-5/5e-5/5e-5/5e-5 (match); base 4e-4 (does not match 3e-4); batch sizes from step counts (512, 512, 512, 384, 384, 384); epochs; event counts 540,952 and 1,906,329; summed epoch wall-clock 21.8 h, matching 'about 22 h'",
+    "binml/weights/binml.pt sha256 = v5runs/binml_v5_stage6.pt (897a9aec...); binml_v5_stage1_ep3.pt = binml_v5_base.pt; binml-gapaware.pt = validation/gulls/weights/ft_fspl5s_seasons_g08.pt (b2c4c24c...); GAPAWARE_THRESHOLD = full-pool threshold 0.95634",
+    "pipeline/train.py defaults at HEAD and at ef216e2/e25e4d6/f7c9060 (lr 3e-4, wd 0.01, alpha 2.0, batch 256, OneCycleLR); when per-worker seeding was introduced (ef6b0bd); the truncation relabel code at stage time",
+    "Fine-tune learning rates and launch arguments from the runners and artifacts (colour 5e-5 at referee_round_local.py:379; RMDC26 1e-4 in fspl recipes, schedule_finetune train_args and gap_finetune_g08e12; batch and alpha left at defaults)",
+    "paper/canonical_numbers.json infra block against paper_macros.tex (bmlTrain*, bmlSim*); bmlTrainBatch is defined but unused",
+    "README, model_card, evaluation, usage, pipeline and training docs against the final macros and artifacts. Checked: recommended checkpoint and threshold, slice range, FA 2.4/1.8-3.1/3.5%, recall 0.29/0.33, the earlier fspl5s numbers, seed own-threshold numbers 2.6/3.0% and 0.26/0.28 (recomputed from gapped_threshold_*_seasons.json), kept epochs 9/5/11; every-class stream numbers against referee_round.json (0.77, 89/58/12%, 0.98, 67/26%, 4 eruptive, 29/32, 3 and 51 of 1,759); stress, sub-day, faint and wide-separation numbers; occupancy; short single lenses; RMDC26 cascade 6.2/3.2%; per-class F1, ECE 0.0533, Brier 0.0209; cascade 89.0/1.6/+5.0; colour ablation numbers",
+    "AUDIT ledger and findings 8, 9, 10, 14, 16: every truth-relabel percentage recomputed from counts in truth_relabel_impact.json (10.8, 49%, 15.2, 6.4, 2.4, 0.5, 9.4, 2.5, 1.9, 1.5/0.8/0.4, 41/10, 16.3/8.7, 5.0/3.1, 1.1/0.3) - all match",
+    "VERIFICATION_2026-09-12b counts (98 findings; 11/34/53; 80/17/1; 55 issues; 12 gaps) recounted from the findings JSON; dispositions I03, I23, I26, I32, I35, I50, I52 and critic #1-#4 checked against the final docs",
+    "validation/gulls/PROVENANCE.md: stage-5 sha, stress-subset code stamps (6016bc6/b216d54), seed kept epochs, colour fine-tunes run on MPS",
+    "CHANGELOG top entry numbers (seed range 0.022 vs 0.024, floor overlap 21.6%/4.5%, truth numbers, stress numbers)",
+    "Stress suite composition tallied from paper/results/stress_report.json (4.50M natural, 8.73M in 12 enriched regimes, 1.70M in 17 oor_* regimes)",
+    "Notebook 00 markdown: seed 241 q = 3.77e-4 and t_anom 43.5 (re-simulated offline), crossing at 49.5, 'Section 2'. Notebook 01 markdown: 685/1,717 days, 0.47 mag, 43-44 h, quarter/tenth between seasons, section 8.4, event 315360 tE 9.4 d with t0 1.9 d before season 2 (from the local metadata cache); printed outputs match current artifacts",
+    "gap_sensitivity.json cells behind the README/paper gap sentence"
+   ],
+   "not_checked": [
+    "The Simulation (AWS) figures (10M events, 3 x 2 vCPU, 90 ev/s, 30 h): no local record of the v5 generation, and AWS/S3 was not accessed. They match the author's notes for a 2026-07-05 run in the earlier three-class format, so which run they describe is unconfirmed",
+    "Stage 3's anomaly-class factor (not in its log or checkpoint; validation-loss continuity suggests factor 1) and the base and stage-2 num_workers (not logged)",
+    "Shard indices of the stage-6 training cache (AUDIT finding 14): the cache is on S3",
+    "The 958 ev/s training-step benchmark was not re-run, because that would require a training step",
+    "evaluation.md section 4 matched-purity table (stage 5 vs stage 6): stage-5 logits are not local. My stage-6 recomputation from paper/results gives 0.885/0.870/0.832/0.795/0.715 against the table's 0.883/0.868/0.831/0.793/0.711. The differences are small and probably come from interpolation; the table has no artifact",
+    "paper/REVISION.md rows outside my topics (another slice); docs/architecture.md, data_format.md and glossary.md (only leakage_audit.md's stress line was read)",
+    "Notebook cells that need network access were not re-executed",
+    "Mid-check, another process modified docs/VERIFICATION_2026-09-12b.md and docs/verification/build_doc_2026_09_12b.py in the working tree (10:30:11, +5 lines each). All findings refer to HEAD 9c04593. I changed no repository files; only scratch outputs were written."
+   ]
+  }
+ },
+ "gaps": [
+  {
+   "target": "paper/paper.tex:593-595, 628-631 and 716-723 at 9c04593 (Sec. results and Fig. plane), which describe where the released model misses detectable anomalies",
+   "why": "None of the six slices looked at Sec. results this round. These three passages are hand-written prose with no macro or guard behind them, and they are the paper's only account of where the in-distribution failures sit. They also set up the stress section, which presents wide separation as an out-of-range failure.",
+   "result": "CONFIRMED DEFECT. (1) Lines 594-595 say the NonPSPL->PSPL misses are 'weak but detectable anomalies ... concentrated at the lowest evidence strengths'. (2) Lines 630-631 say the misses are 'concentrated just above the detectability floor where the anomaly signal is weakest'. (3) Lines 718-720 say conditional recall is 'high across most of the plane ... falls to ~0.5 only in the low-q, low-support corners at log q <~ -4'.\n\nEvidence: my own code on the tracked arrays in paper/results (label, logits, params, dchi2_anomaly, score_nonpspl, test_idx; 360,472 final-test rows; 42,805 detectable anomalies). Of the 2,207 argmax misses, the counts by Delta-chi2_anom bin are:\n- 160-500: 378 (17%)\n- 500-2k: 397 (18%)\n- 2k-10k: 414 (19%)\n- 1e4-1e5: 544 (25%)\n- >1e5: 474 (21%)\nSo 47% have Delta-chi2 above 1e4. The median Delta-chi2 of the misses is 6,932.\n\nThe dominant driver is separation, not evidence strength. 55% of all misses and 56% of the 2,093 NonPSPL->PSPL confusions are binaries with s > 2.92 (log s > 0.466, the top separation bin of the prior), although these are only 11% of detectable anomalies. Their miss rate is 22-30% in every Delta-chi2 bin; for s < 2.92 it is 11.6% at 160-500 and 0.4% above 1e5. Wide stellar-ratio binaries (s > 2.92, q > 0.01; 4,537 events) are recovered at 0.733 (argmax) and 0.592 at the frozen threshold, against 0.981 and 0.931 at s < 2.92. At the operating threshold 36% of the 5,179 misses are wide, and the misses are spread evenly across the Delta-chi2 bins (21/21/21/21/16%).\n\nThe efficiency-plane artifact itself (metrics.json) has conditional recall 0.715 and 0.690 in the two top-right cells (log q -1 to 0, log s 0.47-0.70), with effective detectable support of 1,298 and 2,595. These are among the best-populated cells in the plane, not low-support corners, and they are visible in the rendered Fig. 8.\n\nThe wide-separation weakness therefore starts inside the natural prior, despite stage 6's s = 3-8 pool, and the stress sweep at s = 5-12 extends it. No doc or verification round mentions it.\n\nFix: state the two sources of misses:\n- near-floor anomalies (for s < 3);\n- wide-separation binaries, missed about a quarter of the time whatever their strength, which make up about 55% of misses.\nAlso:\n- rewrite the Fig. 8 sentence to name the wide-s/high-q cells;\n- link this to the stress wide-separation result;\n- derive the numbers in make_figures/make_macros with a fail-closed guard.",
+   "severity": "major"
+  },
+  {
+   "target": "Core held-out numbers: abstract and Sec. results, Tables 3, 4 and 5, confusion, ECE/Brier, AP against the oracle, prior shift (Fig. 10), relabelling percentages, cadence and KMTNet gap tests, ablation directions",
+   "why": "These come from hand-copied canonical_numbers.json blocks plus figures_stats. validate_artifacts.py checks supports but not the labelling, slice or mass-ratio blocks. No slice recomputed them this round.",
+   "result": "Independently recomputed; FINE apart from two small items.\n\nReproduced:\n- supports; recall/precision/F1 for all six classes; macro-F1 0.9186\n- threshold 0.90424 from the validation rows; completeness 0.879 at purity 0.9079; bootstrap-width CI consistent\n- AP 0.9515 against oracle 0.9637; prevalence 5.58%\n- purity 0.627 at 1% and 0.143 at 0.1%; re-tuned completeness 0.735 and 0.513\n- NP->PSPL 4.89% (largest off-diagonal); PSPL->NP 3.48%; LPV->PSPL 0.0092\n- ECE 0.0533 (10, 15 or 20 bins); Brier 0.0209\n- Table 4: 0.887, 0.888, 0.797, 0.588 with the stated N\n- baselines from validation/baseline_data.npz: 0.843, 0.436, 0.371, 0.545 on 3,600 events\n- cadence maximum F1 difference 0.021\n- matched cascade: on < off from 0.50 to 0.90, reversal at 0.95, 0 on-only against 16 off-only at 0.60\n- median q 0.131; 82.2% stellar\n\nMinor defects:\n(a) paper.tex:260-263 says 'Across the test set'. The labelling block in canonical_numbers.json is hand-copied from the whole 450,589-event pool: nonpspl_kept 37.32% on the pool against 37.37% on the test set, so the macro prints 37.3 where the test set gives 37.4. The other three values agree. Fix: derive the block from the artifact on test_idx.\n(b) bmlNonpsplDemoted = 94.7 (lines 582 and 600) is the weighted share of all argmax NonPSPL false positives that were generated as binaries with any label. Line 582 defines it as binaries labelled PSPL, which is 94.4%. Line 600 applies it to the PSPL->NonPSPL errors, where the share is 95.0%. Fix: compute each from the artifact with its stated denominator.",
+   "severity": "minor"
+  },
+  {
+   "target": "paper/paper.tex:630, 646, 723, 740 and 838: metrics switch between argmax recall and completeness at the operating threshold without saying so",
+   "why": "Table 4, directly above, gives completeness at the fixed threshold. The adjacent sentences quote argmax recall for the same populations without a label, so the two sets of numbers appear to disagree.",
+   "result": "CONFIRMED (minor).\n- Line 723: 'q<10^-3 recovered at 0.892' is argmax; at the operating threshold it is 0.740, while Table 4 gives 0.797 and 0.588 for the two sub-bins.\n- Line 646: 0.905 near the break is argmax (threshold 0.751); 0.972 for the strongest anomalies is argmax (threshold 0.952).\n- Line 740: faint 0.943 is argmax (threshold 0.866).\n- Line 630: 'a detectable binary called a single lens ... at a rate of 0.052' is 1 minus argmax recall, which counts misses to any class. NP->PSPL alone is 0.049, and the miss rate at the operating threshold is 0.121.\nFix: label these as argmax (six-class) recall, or quote the threshold values next to Table 4.",
+   "severity": "minor"
+  },
+  {
+   "target": "paper/paper.tex:139 (Fig. 1 caption): 'Only bands with surviving epochs are plotted; all six examples here retain all three'",
+   "why": "Nobody examined the figures or their captions (the code slice put the make_figures and make_data_figures inputs out of scope).",
+   "result": "CONFIRMED (minor). I rebuilt the figures from a clean git archive and replayed make_data_figures.find_example with the same seeds and amplitude gates. The PeriodicVar example has F146 6,912 epochs, F087 0 and F213 287, and the rendered panel shows no F087. The Eruptive example keeps only 37 F087 epochs, all during the outburst; the other four keep all three bands. fig_gallery does not pass need_bands. The caption dates from 08337ed.\nFix: pass need_bands=('F087','F213') in fig_gallery, or say that five of the six keep all three bands.",
+   "severity": "minor"
+  },
+  {
+   "target": "LaTeX build, rendered layout (Table tab:stress, stuck floats), macro regeneration, test suite",
+   "why": "The stress and cascade slices did not build the paper. The ledger slice left the stuck floats unexamined. paper_macros.tex is untracked.",
+   "result": "CHECKED, FINE. I built from `git archive 943b171` in scratch with build.sh. It validated 8 arrays and 42 hashed files, drew all figures, wrote 350 plus 674 macros and produced a 28-page PDF. The regenerated paper_macros.tex, gulls_macros.tex and all four tables are byte-identical to the committed or working-tree copies. The log has no undefined references or citations. All 48 cited keys are in refs.bib, and none are unused. The PDF text has no 'nan', '??' or raw macros. The three 'float stuck' warnings (input lines 804, 871 and 1391) are harmless: every table and figure (Tables 1-9, Figures 1-11) is placed inside its own section, and Table 6 renders correctly on page 13. pytest on the clean copy, with the notebooks deselected: 105 passed, 2 skipped.",
+   "severity": "none"
+  },
+  {
+   "target": "Every-class stream numbers quoted in the abstract, Sec. cascade and the conclusion, and the in-house single-lens comparison in Sec. gulls:cascade",
+   "why": "The ledger slice reran no referee-round numbers. These are abstract-level figures.",
+   "result": "CHECKED, FINE. I recomputed them with my own code from the local validation/referee_round_archive npz files (untracked at 9c04593; committed in f79f073).\n- All bands: 0.767 alerts per 1,000 events per day; purity 0.889; 0.584 at 1% and 0.122 at 0.1%; prevalence 5.46%; PSPL alert rates 0.73% raw and 1.02% weighted; NonPSPL 89.9%; demoted 29 of 32 (98.5% weighted); 3 of 1,759 generated single lenses; 0 flat sources or variables; premature 0.68%, median lag +6.5 d.\n- F146 alone: 0.980 alerts per 1,000 per day; purity 0.669; 0.261 at 1%; 51 of 1,759 generated single lenses; 4 eruptives; premature 0.97%, lag +5.0 d.\n- Gap-aware checkpoint: 31 of 1,759 generated single lenses (1.8%).\nAll match the macros.",
+   "severity": "none"
+  },
+  {
+   "target": "Discussion and Sec. gulls:seasons prose without macros: paper.tex:1470-1472 (latency by mass ratio) and 1495-1496 ('scorable at a false-alarm cost below one percent')",
+   "why": "These are directional or threshold sentences with no guard.",
+   "result": "Mass-ratio latency: FINE. From cascade_reproduce_result.json at 9c04593, the median lags are 5.0, 4.5 and 4.5 d against the population's 5.0 d, and Neptune-stratum detection is 0.729 (n=48) against 0.89.\n'Below one percent' (line 1496, minor): it rests on the point estimate of 0.7% (bmlMsFa). Sec. gulls:seasons itself gives the 95% upper bound as 1.6% (bmlMsFaHi). Fix: 'about 1% (at most 1.6% at 95% confidence)'.",
+   "severity": "minor"
+  },
+  {
+   "target": "paper/paper.tex:1093: '82% of our NonPSPL evaluation events are stellar-mass-ratio binaries (median q = 0.12)'",
+   "why": "The macro is read from rmdc26_dataset_facts.json and not from the Sec. results artifact, which is the one the sentence compares against.",
+   "result": "MINOR PROVENANCE MISMATCH. our_nonpspl_q is computed on 'cadence_local_work/work15/mm_eval (natural prior, shards 100-103)', n = 3,443. On the frozen final test (42,805 detectable anomalies) the median q is 0.131 and the stellar fraction 82.2%. Fix: compute both from paper/results on test_idx.",
+   "severity": "minor"
+  },
+  {
+   "target": "paper/paper.tex:139 and 312-314 (F087 undetected for 21.6% of detectable anomalies) and 838 (no-blue-band recall 0.918)",
+   "why": "The Data availability section says the distributed per-event artifact supports every static result in Sec. results to Sec. limits.",
+   "result": "MINOR PROVENANCE GAP. Both numbers come from metrics.json slices['no_blue_band'] (n=9,243, recall 0.918). pipeline/evaluate.py:410 builds that slice from cols['n_kept_F087'], which it never saves; the saved arrays are label, true_class, keep_prob, dchi2_*, m_base_ref, a_ks and params. Neither number, nor the 'behind heavy dust' attribution, can therefore be re-derived from the release. Fix: save n_kept_F087 (or a boolean) in the artifact and its MANIFEST, or say these come from the archived metrics.json only.",
+   "severity": "minor"
+  },
+  {
+   "target": "paper/SUBMISSION_FIELDS.txt (plain-text abstract and highlights for the A&C form; untracked, dated Aug 15)",
+   "why": "The resubmission form needs a plain-text abstract. The only one on disk belongs to the original submission.",
+   "result": "STALE (minor; the file is untracked). It still says 'on faint sources anomaly precision falls to 0.033' (now 0.026, released model). It says 'A disjoint 4.5-million-event set ... reproduces this complete-season macro-F1' (that was stage 5). It omits the RMDC26 results. Fix: regenerate the plain-text abstract from the current abstract before resubmitting.",
+   "severity": "minor"
+  },
+  {
+   "target": "Sec. model and Table tab:simulation constants against the code; draft mirror; Table tab:gulls spot check",
+   "why": "These are hard-coded text numbers or mirrored text that no slice this round was assigned.",
+   "result": "CHECKED, FINE.\n- Model: shipped and gap-aware models both load with 505,479 parameters; 4 layers, d=96; 108 + 2x24 = 156 tokens; 96 colour bins.\n- Generator: tE median 16.3 and sigma 0.35 over 1-300 d; u0 U(0,2); q log-U(1e-6,1); s log-U(0.2,5); rho log-U(1e-4,1e-2); fs log-U(0.1,1); m_base U(20,25); A_Ks U(0.2,1.2); 0.001-mag floor; t0 pad min(0.5 tE, 36 d); data seed base 20260720 against 900000000. Prior mass below 3 d is 1.76%, printed as 1.8%.\n- Draft mirror: every draft paragraph appears verbatim in paper.tex at 9c04593; the abstract block is a substring.\n- Table tab:gulls from rmdc26_scores.csv.gz: FA 35.6 / 11.6 / 6.4 / 4.8 / 6.3 / 4.7 / 7.3%; gap-aware rho/|u0| bins rise monotonically from 0.046 to 0.674; recall 0.214 to 0.349-0.391 at the 5.2% budget; weighted 0.385-0.407.\nNot checkable offline: the literature claims in the Introduction, the 'three-magnitude excursion reduced to a third of a magnitude' pooling claim (no artifact), and the S3 stress suite.\nNote: HEAD moved during the check (943b171, 6865de1, f79f073, by another process). The flagged sentences at lines 139, 261, 597, 632, 722 and 1528 are still present in f79f073.",
+   "severity": "none"
+  }
+ ]
+}

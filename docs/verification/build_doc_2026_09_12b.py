@@ -59,6 +59,38 @@ L += ["", "## Left open", "",
       "* Rewriting published git history to remove an old AWS account id and e-mail address (I54) is the author's call.",
       "* The abstract is longer than submitted (I39); A&C's limit was not checked.",
       "* Absolute local paths in artifacts (I55) are kept as provenance."]
+# ---- addendum: the fourth verification of the final state (2026-09-13) --------------------------------------------
+import dispositions_2026_09_13 as D4                                    # noqa: E402
+R4 = json.load(open(os.path.join(HERE, "2026-09-13_fourth_findings.json")))
+ids4 = [f["id"] for f in R4["findings"]]
+assert set(ids4) == set(D4.DISPO) and len(ids4) == len(set(ids4)), "every fourth-verification finding needs one disposition"
+assert len(R4["gaps"]) == len(D4.GAPS4)
+c4 = {s_: sum(1 for f in R4["findings"] if f["severity"] == s_) for s_ in ("critical", "major", "minor")}
+v4 = {v: sum(1 for f in R4["findings"] if f["verdict"] == v) for v in ("real", "partly", "refuted")}
+L += ["", "## Addendum: fourth verification of the final state (2026-09-13)", "",
+      "Six verifiers (the released model's stress numbers, the RMDC26 cascade reduced independently, the revision ledger,",
+      "the changed manuscript text, code/artifacts/CI, the appendix and documentation), one adversarial checker per slice",
+      "and a completeness critic checked the state after the fixes above (commit 9c04593). Raw record:",
+      "`docs/verification/2026-09-13_fourth_findings.json`; dispositions: `docs/verification/dispositions_2026_09_13.py`.", "",
+      f"**{len(ids4)} findings: {c4['critical']} critical, {c4['major']} major, {c4['minor']} minor; adversarial verdicts "
+      f"{v4['real']} real, {v4['partly']} partly, {v4['refuted']} refuted.**", "",
+      "The main corrections: the regenerated stress subset had used a fixed generator for the sub-day sweep (now regenerated",
+      "with the July generator's peak-time draw, and described as a new realisation of the suite's populations, compared",
+      "within itself); the faint sweep's anomaly precision reflected its class mix (the paper now quotes mix-independent",
+      "false-anomaly rates); the RMDC26 cascade is compared with the in-house scan stratum by stratum; the referee round's",
+      "per-event archive had never been committed; the appendix had described an earlier simulation run and an unsourced",
+      "benchmark; Sec. results had located the in-distribution misses at weak anomalies, where the artifact puts them at",
+      "wide separations.", "",
+      "| id | severity | verdict | finding | disposition |", "|---|---|---|---|---|"]
+for f in sorted(R4["findings"], key=lambda f: (("critical", "major", "minor").index(f["severity"]), f["id"])):
+    L.append(f"| {f['id']} | {f['severity']} | {f['verdict']} | {f['claim'][:200].replace('|', '/')} | {D4.DISPO[f['id']]} |")
+L += ["", "### Completeness critic (fourth verification)", "", "| # | severity | target | disposition |", "|---|---|---|---|"]
+for i, g in enumerate(R4["gaps"]):
+    L.append(f"| {i + 1} | {g['severity']} | {g['target'][:160].replace('|', '/')} | {D4.GAPS4[i]} |")
+L += ["", "Left open after the fourth verification: the abstract's length (about 380 words) and the plain-text abstract in",
+      "the untracked `paper/SUBMISSION_FIELDS.txt` (the author's, before resubmitting); AUDIT finding 14 (the stage-6 cache's",
+      "shard indices, on S3); the audited F087/F213 constants against the current Roman tables (network); rewriting published",
+      "git history (I54)."]
 out = os.path.join(os.path.dirname(os.path.dirname(HERE)), "docs", "VERIFICATION_2026-09-12b.md")
 open(out, "w").write("\n".join(L) + "\n")
 print(f"wrote {os.path.relpath(out)}")

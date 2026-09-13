@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased — fourth verification of the final state (2026-09-13)
+
+Six verifiers, six adversarial checkers and a completeness critic checked the state after the third round's fixes
+(record: the addendum of `docs/VERIFICATION_2026-09-12b.md`). What changed:
+- **Stress subset made faithful and described honestly.** The July generator kept the peak time drawn for the
+  unperturbed timescale in out-of-range sweeps; `run_shard --legacy-t0-pad` reproduces it, and the wide-separation,
+  long-period and sub-day tiers were regenerated with it (the corrected sub-day tier is kept as a second row). The
+  subset is a new realisation of the suite's populations, not its events (the fleet's software was not pinned):
+  checkpoints are compared within it. Each tier records the commit that generated it. The faint sweep's anomaly
+  precision is attributed to its class mix, and the paper quotes mix-independent false-anomaly rates instead; the
+  abstract quotes the operating-threshold rates (35% of sub-day single lenses, 12% of faint microlensing events
+  without an anomaly, 0.9% in the natural population). Stage-4/6 training coverage of the regimes stated correctly.
+- **RMDC26 cascade compared stratum by stratum** with the in-house scan (giant planets and Neptunes, F146 and three
+  bands; 40% of RMDC26's eligible anomalies have q ≤ 1e-4, which the in-house scan samples with 9 events), the
+  single-lens burden given with its interval and its slight optimism, and every directional sentence guarded.
+- **The referee round's per-event archive was never committed** (gitignored); it is now, with a test that every
+  hashed file is tracked and matches.
+- **Appendix:** the simulation paragraph had described an earlier 10M-event run; the training recipe now gives the
+  one-cycle peak learning rates from the checkpoints' optimizer states (base 4e-4, not 3e-4), the base run's early
+  stop, the fine-tunes' batch and class factor, and the logged epoch throughput instead of an unsourced benchmark.
+- **Smaller text fixes:** held-out regeneration reproduces 75% of the pool's events (not "identical"); "almost always
+  delays" quantified (212 of 241); a single mid-season gap's lost single lenses go to NonPSPL (not PeriodicVar);
+  RMDC26 sub-day single lenses compared at matched timescales; several ledger rows, README/model-card/evaluation
+  statements and the notebook pointer corrected.
+- **Tooling:** `make_macros.py --list-inputs` and a manifest test for its inputs; the fail-closed tests assert the
+  guard each case is named for and cover the new stress and cascade guards; `paper/build.sh` reruns LaTeX until
+  references settle.
+
 ## Unreleased — third verification of the revision work (2026-09-13)
 
 Seven verifiers, seven adversarial checkers and a completeness critic re-checked everything added since the second
@@ -26,18 +54,24 @@ pass (record: `docs/VERIFICATION_2026-09-12b.md`). What changed:
 - **Paper:** stale Table 5 note (the Paczynski fit is at full cadence), a fourth contribution in the Introduction,
   within-season pauses in the list of schedule differences, the non-monotone onset partly numerical, the abstract
   and Conclusion no longer call the three-band scan "the same way", weightings and units labelled in the RMDC26 alert
-  burden, "no deployed operating threshold", detection comparison flagged as mixing checkpoint and simulator.
+  burden, "no deployed operating threshold", detection comparison flagged as mixing checkpoint and simulator; the
+  in-house pauses-vs-random-gaps AP differences stated to be within the seed spread; the Conclusion's list of open
+  tests rewritten; the RMDC26 fine-tunes' uncommitted working trees disclosed.
 - **Two errors older than the revision, found by the completeness critic.** (1) The 14.9M-event stress suite was scored
   with the stage-5 checkpoint, the released model's predecessor; the paper had quoted its numbers as the released
-  model's. `validation/stress_rescore_local.py` regenerates the first shards of each quoted tier with the suite's seeds
-  (and its original out-of-range class mix, `run_shard --legacy-oor-mix`) and scores the same events with both
-  checkpoints; the paper now quotes the released checkpoint on that subset (Table `tab:stress`) and says which model
-  scored the suite. The released model reproduces its held-out macro-F1 there (0.919). The suite's sub-day "PSPL
-  recall 0.524" mixed in demoted binaries: the sub-day single lenses are classified PSPL 0.274 and called anomalies
-  71% of the time (37% above the frozen threshold). Faint-source anomaly precision (0.026) is low mostly through
-  prevalence. Stage 6 had trained on the edges of three of the sweeps; the text says so.
-  (2) The appendix training recipe described the base run's defaults (batch 256, factor 2 on the anomaly class, 5
-  epochs); it now describes the six-stage warm-start chain from the stage logs (`paper/canonical_numbers.json` infra).
+  model's. `validation/stress_rescore_local.py` regenerates the first shards of each quoted tier with the suite's
+  seeds, class mix (`run_shard --legacy-oor-mix`) and, for the sweeps, its generator's peak-time draw
+  (`--legacy-t0-pad`, added after the fourth verification), and scores the same events with both checkpoints; the
+  paper now quotes the released checkpoint on that subset (Table `tab:stress`), compares checkpoints within it, and
+  says which model scored the suite. The released model reproduces its held-out macro-F1 there (0.919). The suite's
+  sub-day "PSPL recall 0.524" mixed in demoted binaries: the sub-day single lenses are classified PSPL 0.285 and
+  called anomalies 69% of the time (35% above the frozen threshold). The faint sweep's anomaly precision (0.026) is
+  set mostly by its class mix; among faint microlensing events without an anomaly the false-anomaly rate is 26%
+  (3.3% natural). The low-q and faint regimes were stage-4 training pools and stage 6 added pools overlapping two
+  sweeps; the text says so. The "10.4M out-of-distribution" figure of earlier entries counts 8.7M events in enriched
+  in-prior regimes and 1.7M in out-of-range sweeps. (2) The appendix training recipe described the base run's
+  train.py defaults (batch 256, factor 2 on the anomaly class, 5 epochs) and an earlier 10M-event AWS run; it now
+  describes the six-stage chain from the stage logs and checkpoint optimizer states (`paper/canonical_numbers.json`).
 - CI and tooling: the paper-build workflow checks both macro files and compares the regenerated macros, tables and
   rendered draft with the committed ones; generator inputs all go through `load()` and are checked against the manifest
   by a test; fail-closed tests now perturb values, not only delete keys.
@@ -63,9 +97,9 @@ pass (record: `docs/VERIFICATION_2026-09-12b.md`). What changed:
   measured pauses and the physics' false-alarm drop at large rho/|u0| do. `binml-gapaware.pt` stays seed 1, stated
   as the best of three.
 - **Truth relabelling corrected for truncation** (audit findings 8-10): full-season-fit residuals taught 13.7% of
-  truncated binary presentations NonPSPL before the onset; truncation now takes only the floors from the truth and
+  truncated binary presentations NonPSPL before the onset (15.2% against the refit reference of the third verification); truncation now takes only the floors from the truth and
   keeps the onset (use `--onset-resolution-days 0.5`). Measured impact of the released labels in
-  `validation/truth_relabel_impact.json` and the paper (§training, §limits). No released checkpoint used truth relabelling.
+  `validation/truth_relabel_impact.json` and the paper (§cascade, §limits). No released checkpoint used truth relabelling.
 - Abstract block [A] merged into `paper.tex`; the paper now carries every RMDC26 block.
 - `paper/make_gulls_macros.py`: referee and seed blocks, fail-closed direction checks for the sentences that
   describe them, `--list-inputs` for manifest hashing; seed replicates are not counted as candidates.
@@ -161,7 +195,7 @@ Nine-agent audit of every Python file (record: `docs/AUDIT_2026-09-09.md`): 0 cr
   on-grid input (all training/evaluation data); for denser input it now reproduces the training
   cache's representation instead of inflating min/max and frac with the sampling density. The GULLS
   full-population transfer (56,975 matched events) was re-scored with it: single-lens false alarms
-  at threshold 35.6% → 11.7% (shipped → gap-aware), planetary recall at threshold 0.50 → 0.46.
+  at threshold 35.6% → 11.7% (shipped → gap-aware; 11.6% after exact rounding, 2026-09-11), planetary recall at threshold 0.50 → 0.46.
   Raw-observation pooling gave 45.6% → 9.7% / 0.36; both are kept (`transfer_full_*_rawpool.json`).
 - **Cadence comparison rerun with a held-out evaluation** (`validation/cadence_local.py`): same training
   shards, seeds and recipe as `modal_cadence.py` (which had scored each arm on ~80% training data),

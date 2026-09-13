@@ -101,13 +101,15 @@ Per-class F1 (population-weighted, selection-corrected):
   Its thresholds and paired outcomes were selected on the same events, so its conditional
   McNemar values are descriptive and do not support confirmatory population-level inference.
 - **Streaming scope:** the 1,000-event prefix scan contains eligible binaries only and measures conditional
-  detection timing. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses alert); with F146 alone 51 generated single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested.
+  detection timing. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses with a PSPL label alert); with F146 alone 51 of those single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested.
 - **Stress testing:** the full suite (14.9 million events) was scored with the **stage-5 checkpoint**, the
-  released model's predecessor. Its first shards per quoted regime, regenerated with the same seeds (255,527
-  events), were scored with both (`validation/stress_rescore_local.json`, paper Table `tab:stress`): on the
-  same-prior part the released model reproduces its held-out macro-F1 (0.919 vs 0.919). The out-of-range arms
-  expose failures, and stage 6 had trained on the edges of three of them, so they are diagnostics of how far
-  targeted coverage carries, not evidence of broad population validity.
+  released model's predecessor. Its first shards per quoted regime were regenerated with the same seeds, class mix
+  and peak-time draw (a new realisation, not the same events: the cloud fleet's software was not pinned) and
+  scored with both (`validation/stress_rescore_local.json`, paper Table `tab:stress`): on the same-prior part the
+  released model reproduces its held-out macro-F1 (0.919 vs 0.919). The out-of-range arms expose failures; the
+  low-q and faint-source regimes were training pools from stage 4, and stage 6 added pools overlapping the
+  wide-separation and sub-day sweeps, so they are diagnostics of how far targeted coverage carries, not evidence of
+  broad population validity.
 
 Full methodology and the honest reading of each number: [`docs/evaluation.md`](docs/evaluation.md).
 
@@ -180,8 +182,9 @@ if you omit the bucket. Generation is embarrassingly parallel:
   (`--worker W --workers N`).
 - **`--seed-base` makes evaluation honest.** Train/val/test used base `20260720`; a far-off base
   (e.g. `900000000`) gives a different PCG64 stream — parameter tuples the model did not see in
-  training. The full stress suite has 10.4M targeted out-of-distribution events plus a 4.5M
-  same-prior subset (scored with stage 5; the released model's numbers come from a regenerated subset).
+  training. The full stress suite has a 4.5M same-prior subset, 8.7M events in 12 targeted regimes (mostly enriched
+  pools also used in training) and 1.7M in 17 out-of-range sweeps (scored with stage 5; the released model's
+  numbers come from a regenerated subset).
 - **Binning & inference run in-region.** Raw shards are ~312 MB each (~125 GB for a full run);
   binning them to compact caches (~46 MB) and running the model *in the S3 region* means the
   light curves never leave — only the compact predictions (~30 floats/event) come back.
@@ -231,9 +234,11 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   flags 6.3% against the shipped weights' 35.6%. It replaced the earlier finite-source checkpoint
   `ft_fspl5s_g08.pt` (threshold 0.957, 1.6%, recall 0.24 / 0.27) on 2026-09-12: the two tie at matched
   false-alarm budgets per simulated event, and the new one is ahead when events are weighted by rate and
-  on our own held-out seasons. Two further training seeds of the same recipe, trained afterwards, trail
+  on our own held-out seasons with the pauses (clean 0.929 vs 0.931). Two further training seeds of the same recipe, trained afterwards, trail
   `ft_fspl5s_g08.pt` per event (recall 0.349 / 0.358 against 0.390 at a 5.2% false-alarm budget) and tie it
-  weighted, so RMDC26 does not separate the two recipes; the released run is the best of the three seeds.
+  weighted, so RMDC26 does not separate the two recipes; the released run has the highest planetary recall of the three
+  seeds at every table budget and at its own threshold, although another seed flags fewer single lenses at the
+  shipped threshold.
   RMDC26 also guided the diagnosis and the choice of this checkpoint, so these numbers are optimistic for it. Under our own label policy 44-46% of the selected RMDC26 planetary
   events carry no anomaly the policy would claim within one season; on those with one, recall at 0.956
   is 0.41 / 0.48. The shipped weights are unchanged so that the submitted numbers stay exact. Full
@@ -244,9 +249,9 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   from the scripts under `validation/gulls/` (from a clone, without the curve cache: the `command_from_clone` field of
   `validation/gulls/transfer_tradeoff_all.json` is the exact `gulls_summary_tables.py --scores` invocation).
 - **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
-  faint sources m>25 (noise-dominated → false anomalies; anomaly precision 0.026, mostly because anomalies are
-  rare there), sub-day single lenses tE 0.2-1 d (71% called anomalies, 37% above the frozen threshold),
-  wide caustics s>5 (anomaly recall 0.42 on 60 events).
+  faint sources m>25 (noise-dominated: 12% of faint microlensing events without a detectable anomaly exceed the
+  operating threshold, against 0.9% in the natural population), sub-day single lenses tE 0.2-1 d (69% called
+  anomalies, 35% above the operating threshold), wide caustics s>5 (anomaly recall 0.33 on 64 events).
 - **Synthetic support, not a population forecast.** The simulator uses broad analytic training
   supports, including an authored truncated-lognormal timescale distribution anchored to a
   literature mean. Variable-star curves are analytic or phenomenological shapes, not sampled
@@ -255,7 +260,7 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   simulator's F087 and F213 zeropoints are optimistic by about 0.10 and 0.14 mag, respectively;
   its F087 saturation limit was carried from a longer exposure and is too faint (at equal exposure
   F087 saturates ~1.2 mag brighter than F146, not fainter), and its colour-band
-  background ratios do not reproduce the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. A short fine-tune on the audited calibration (one seed) keeps AP and restores periodic-variable F1 on the audited photometry (0.957) but collapses on the old one (0.750). The released model has not been retrained with corrected values.
+  background ratios do not reproduce the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. Short fine-tunes on each calibration (one seed each) keep AP; the audited-calibration fine-tune falls to periodic-variable F1 0.750 on the old photometry (0.872 at its last epoch), against 0.961 (0.972) for the old-calibration fine-tune; on the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967). The released model has not been retrained with corrected values.
 - **Provide `m_base_ref`.** The model input is baseline-relative; give the F146 quiescent
   magnitude when you have it (a catalogue value). The faint-tail estimate is only reliable for
   short, well-sampled events.

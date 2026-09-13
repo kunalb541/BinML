@@ -40,8 +40,11 @@ python -m pipeline.train --cache data/mm --out runs/binml.pt \
   the intended partial-season label progression; it does not by itself establish a real-time alert
   system or an absence of premature crossings.
 
-- **Reported training lineage.** The shipped checkpoint followed a curriculum of targeted
-  warm-starts (`--init-weights`) on harder data and then partial-season augmentation. The retained
+- **Reported training lineage.** The shipped checkpoint is the last of six stages (the paper's appendix gives each
+  stage's settings): a base run from scratch → a warm restart without the anomaly-class factor → truncation
+  (partial-season) augmentation → enriched pools of 15 targeted regimes → the detectability floor for truncated
+  periodic classes → the onset cascade for truncated binaries plus edge pools (wider separations, short
+  timescales, faint sources). The commands above are illustrative, not the stage settings. The retained
   fine-tuning comparisons use one seed per arm and do not provide a matched, repeated-seed test
   against additional base training. Treat them as lineage/provenance, not an established recipe
   advantage.

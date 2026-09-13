@@ -25,7 +25,7 @@ def _tree(tmp):
     for f in os.listdir(os.path.join(REPO, "validation/gulls")):
         if f.endswith(".json"):
             shutil.copy(os.path.join(REPO, "validation/gulls", f), os.path.join(tmp, "validation/gulls"))
-    for f in ("referee_round.json", "truth_relabel_impact.json", "cascade_reproduce_result.json"):
+    for f in ("referee_round.json", "truth_relabel_impact.json", "cascade_reproduce_result.json", "stress_rescore_local.json"):
         shutil.copy(os.path.join(REPO, "validation", f), os.path.join(tmp, "validation"))
     for f in ("__init__.py", "priors.py"):
         shutil.copy(os.path.join(REPO, "pipeline", f), os.path.join(tmp, "pipeline"))
@@ -45,34 +45,68 @@ def _drop_seed(tmp):
     _edit(tmp, "transfer_tradeoff_all.json", lambda d: d["models"].pop("fspl5s_seasons_g08_s3"))
 
 
+def _set(tmp, name, fn):
+    _edit(tmp, name, fn)
+
+
+def _seed2_ties_at_2pct(d):
+    a = next(a for a in d["models"]["fspl5s_seasons_g08_s2"]["recall_at_matched_fa"] if abs(a["fa_target"] - 0.02) < 1e-9)
+    k1 = next(a for a in d["models"]["fspl5s_seasons_g08"]["recall_at_matched_fa"] if abs(a["fa_target"] - 0.02) < 1e-9)["recall_1S2L_k_n"][0]
+    a["recall_1S2L_k_n"] = [k1 + 1, a["recall_1S2L_k_n"][1]]
+
+
+# case -> (perturbation, a fragment of the FATAL message the case must trigger: the guard it is named for)
 CASES = {
-    "missing artifact": lambda t: os.remove(os.path.join(t, "validation/gulls/transfer_colour_ablation.json")),
-    "late missing artifact": lambda t: os.remove(os.path.join(t, "validation/gulls/cascade_gulls.json")),
-    "n_scored_test null": lambda t: _edit(t, "schedule_finetune.json",
-                                          lambda d: [e["clean"].update(n_scored_test=None) for e in d["heldout_eval"].values()]),
-    "no per-season block": lambda t: _edit(t, "transfer_tradeoff_all.json", lambda d: d["models"]["sched_sched_seasons"].pop("by_season")),
-    "no calibrated cascade": lambda t: _edit(t, "cascade_gulls.json",
-                                             lambda d: d["results"].pop("fspl5s_seasons_g08|f146|calibrated_seasons_fullpool")),
-    "no PeriodicVar": lambda t: _edit(t, "transfer_subday.json", lambda d: d["models"]["shipped"]["argmax_distribution"].pop("PeriodicVar")),
-    "no referee round": lambda t: os.remove(os.path.join(t, "validation/referee_round.json")),
-    "no colour fine-tunes": lambda t: _edit(t, "../referee_round.json", lambda d: d["colour_ablation"].pop("finetuned_on_train_colour")),
-    "no third seed": _drop_seed,
-    "no refit reference": lambda t: _edit(t, "../truth_relabel_impact.json", lambda d: d["results"].pop("refit_reference")),
-    "no seed-3 vs seed-2 pair": lambda t: _edit(t, "transfer_tradeoff_all.json",
-                                                lambda d: d["paired_differences"]["pairs"].pop("fspl5s_seasons_g08_s3-fspl5s_seasons_g08_s2")),
+    "missing artifact": (lambda t: os.remove(os.path.join(t, "validation/gulls/transfer_colour_ablation.json")),
+                         "transfer_colour_ablation.json missing"),
+    "late missing artifact": (lambda t: os.remove(os.path.join(t, "validation/gulls/cascade_gulls.json")), "cascade_gulls.json missing"),
+    "n_scored_test null": (lambda t: _edit(t, "schedule_finetune.json",
+                                           lambda d: [e["clean"].update(n_scored_test=None) for e in d["heldout_eval"].values()]),
+                           "lacks n_scored_test"),
+    "no per-season block": (lambda t: _edit(t, "transfer_tradeoff_all.json", lambda d: d["models"]["sched_sched_seasons"].pop("by_season")),
+                            "per-season blocks missing"),
+    "no calibrated cascade": (lambda t: _edit(t, "cascade_gulls.json",
+                                              lambda d: d["results"].pop("fspl5s_seasons_g08|f146|calibrated_seasons_fullpool")),
+                              "lacks fspl5s_seasons_g08|f146|calibrated_seasons_fullpool"),
+    "no PeriodicVar": (lambda t: _edit(t, "transfer_subday.json", lambda d: d["models"]["shipped"]["argmax_distribution"].pop("PeriodicVar")),
+                       "sub-day argmax lacks PeriodicVar"),
+    "no referee round": (lambda t: os.remove(os.path.join(t, "validation/referee_round.json")), "referee_round.json missing"),
+    "no colour fine-tunes": (lambda t: _edit(t, "../referee_round.json", lambda d: d["colour_ablation"].pop("finetuned_on_train_colour")),
+                             "lacks the colour fine-tunes"),
+    "no third seed": (_drop_seed, "fspl5s_seasons_g08_s3 missing"),
+    "no refit reference": (lambda t: _edit(t, "../truth_relabel_impact.json", lambda d: d["results"].pop("refit_reference")),
+                           "lacks the refit reference"),
+    "no seed-3 vs seed-2 pair": (lambda t: _edit(t, "transfer_tradeoff_all.json",
+                                                 lambda d: d["paired_differences"]["pairs"].pop("fspl5s_seasons_g08_s3-fspl5s_seasons_g08_s2")),
+                                 "fspl5s_seasons_g08_s3-fspl5s_seasons_g08_s2 missing"),
+    "no cascade strata": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"].pop("timing_by_mass_ratio")),
+                          "lacks the mass-ratio strata"),
     # values that contradict a sentence (the guards, not only missing keys)
-    "floor direction flipped": lambda t: _edit(t, "../referee_round.json",
-                                               lambda d: d["floor_sensitivity"]["0.01"]["prevalence"].update(population_weighted=0.01)),
-    "a variable alerts in the stream": lambda t: _edit(t, "../referee_round.json",
-                                                       lambda d: d["mixed_class_stream"]["by_class"]["PeriodicVar"].update(alert_frac_per_season=0.001)),
-    "colour loses recall": lambda t: _edit(t, "../referee_round.json",
-                                           lambda d: d["colour_ablation"]["shipped"]["test_colour"]["all_events"]["recall"].update(PeriodicVar=0.5)),
-    "seed 2 best weighted": lambda t: _edit(t, "transfer_tradeoff_all.json", lambda d: next(
+    "floor direction flipped": (lambda t: _edit(t, "../referee_round.json",
+                                                 lambda d: d["floor_sensitivity"]["0.01"]["prevalence"].update(population_weighted=0.01)),
+                                "floor arms no longer move in the directions"),
+    "a variable alerts in the stream": (lambda t: _edit(t, "../referee_round.json",
+                                                        lambda d: d["mixed_class_stream"]["by_class"]["PeriodicVar"].update(alert_frac_per_season=0.001)),
+                                        "a flat source or variable star alerted"),
+    "colour loses recall": (lambda t: _edit(t, "../referee_round.json",
+                                            lambda d: d["colour_ablation"]["shipped"]["test_colour"]["all_events"]["recall"].update(PeriodicVar=0.5)),
+                            "no longer 'precision, not recall'"),
+    "seeds 2-3 lead weighted": (lambda t: _edit(t, "transfer_tradeoff_all.json", lambda d: next(
         a for a in d["models"]["fspl5s_seasons_g08_s2"]["weighted"]["recall_at_matched_fa"] if abs(a["fa_target"] - 0.052) < 1e-9).update(recall_1S2L=0.6)),
-    "physics resolves weighted": lambda t: _edit(t, "transfer_tradeoff_all.json",
-                                                 lambda d: d["models"]["fspl5s_g08"]["weighted"].update(mean_recall_1S2L_fa_le_0p3=0.9)),
-    "truncation errors not half late": lambda t: _edit(t, "../truth_relabel_impact.json",
-                                                       lambda d: d["results"]["refit_reference"]["truncation"]["counts"].update({"legacy PSPL / refit NonPSPL": 0})),
+                                "seeds 2-3 no longer trail the finite-source run"),
+    "seed 2 ties seed 1 at 2%": (lambda t: _edit(t, "transfer_tradeoff_all.json", _seed2_ties_at_2pct),
+                                 "the released run is no longer the best seed at every table budget"),
+    "physics resolves weighted": (lambda t: _edit(t, "transfer_tradeoff_all.json",
+                                                  lambda d: d["models"]["fspl5s_g08"]["weighted"].update(mean_recall_1S2L_fa_le_0p3=0.9)),
+                                  "the physics now resolves something weighted"),
+    "truncation errors not half late": (lambda t: _edit(t, "../truth_relabel_impact.json",
+                                                        lambda d: d["results"]["refit_reference"]["truncation"]["counts"].update({"legacy PSPL / refit NonPSPL": 0})),
+                                        "no longer 'about half' late PSPL labels"),
+    "RMDC26 alerts no later than in-house": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                             ["timing_by_mass_ratio"]["giant"].update(median_lag_nonpremature_days=1.0)),
+                                             "RMDC26 alerts 'come later' in the giant stratum"),
+    "RMDC26 sub-day like our sweep": (lambda t: _edit(t, "transfer_subday.json", lambda d: [b.update(fa=0.9) for b in d["models"]["shipped"]["fa_frozen_by_te"]]),
+                                      "no longer cross the threshold far less often than our sweep's"),
 }
 
 
@@ -104,8 +138,11 @@ def test_every_generator_input_is_in_the_manifest(tmp_path):
 
 @pytest.mark.parametrize("case", sorted(CASES))
 def test_any_missing_input_writes_nothing(tmp_path, case):
-    _tree(str(tmp_path)); CASES[case](str(tmp_path))
+    perturb, expected = CASES[case]
+    _tree(str(tmp_path)); perturb(str(tmp_path))
     r = _run(str(tmp_path))
-    assert r.returncode != 0 and "FATAL" in (r.stdout + r.stderr), case
+    out = r.stdout + r.stderr
+    assert r.returncode != 0 and "FATAL" in out, case
+    assert expected in out, f"{case}: fired a different guard than the one it is named for:\n{out[-600:]}"
     for o in OUTS:
         assert open(os.path.join(tmp_path, o)).read() == "SENTINEL\n", (case, o)

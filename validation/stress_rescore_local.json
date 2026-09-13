@@ -1,6 +1,6 @@
 {
  "_doc": "The stress-test numbers for the RELEASED checkpoint -> validation/stress_rescore_local.json.",
- "code": "submitted-ac-2026-08-15-58-g6865de141d6c",
+ "code": "submitted-ac-2026-08-15-59-gf79f073b40d6",
  "command": "validation/stress_rescore_local.py --workers 4",
  "checkpoints": {
   "stage5": {
@@ -192,6 +192,14 @@
      "LongPeriodVar": 0.039874048312962006,
      "Eruptive": 0.04522295787281386
     },
+    "true_class_fractions_w": {
+     "Flat": 0.04737041676621563,
+     "PSPL": 0.0631605556882875,
+     "NonPSPL": 0.6763021520975265,
+     "PeriodicVar": 0.05526548622725157,
+     "LongPeriodVar": 0.11053097245450313,
+     "Eruptive": 0.04737041676621563
+    },
     "macro_f1": 0.9268818376929299,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -289,6 +297,14 @@
      "PeriodicVar": 0.04251494904767853,
      "LongPeriodVar": 0.039874048312962006,
      "Eruptive": 0.04522295787281386
+    },
+    "true_class_fractions_w": {
+     "Flat": 0.04737041676621563,
+     "PSPL": 0.0631605556882875,
+     "NonPSPL": 0.6763021520975265,
+     "PeriodicVar": 0.05526548622725157,
+     "LongPeriodVar": 0.11053097245450313,
+     "Eruptive": 0.04737041676621563
     },
     "macro_f1": 0.9192305338775065,
     "pspl_label_by_generator_class": {
@@ -390,6 +406,14 @@
      "LongPeriodVar": 0.03993934953345399,
      "Eruptive": 0.044621085418099574
     },
+    "true_class_fractions_w": {
+     "Flat": 0.04689551804319451,
+     "PSPL": 0.06252735739092602,
+     "NonPSPL": 0.6795472933715043,
+     "PeriodicVar": 0.05471143771706026,
+     "LongPeriodVar": 0.10942287543412052,
+     "Eruptive": 0.04689551804319451
+    },
     "macro_f1": 0.8743261692349945,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -487,6 +511,14 @@
      "PeriodicVar": 0.04179172249616017,
      "LongPeriodVar": 0.03993934953345399,
      "Eruptive": 0.044621085418099574
+    },
+    "true_class_fractions_w": {
+     "Flat": 0.04689551804319451,
+     "PSPL": 0.06252735739092602,
+     "NonPSPL": 0.6795472933715043,
+     "PeriodicVar": 0.05471143771706026,
+     "LongPeriodVar": 0.10942287543412052,
+     "Eruptive": 0.04689551804319451
     },
     "macro_f1": 0.865063127844825,
     "pspl_label_by_generator_class": {
@@ -588,6 +620,14 @@
      "LongPeriodVar": 0.03994312323570126,
      "Eruptive": 0.1057024675918419
     },
+    "true_class_fractions_w": {
+     "Flat": 0.3323976968296915,
+     "PSPL": 0.22159846455312768,
+     "NonPSPL": 0.1136061417874895,
+     "PeriodicVar": 0.11079923227656384,
+     "LongPeriodVar": 0.11079923227656384,
+     "Eruptive": 0.11079923227656384
+    },
     "macro_f1": 0.8476153389263592,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -685,6 +725,14 @@
      "PeriodicVar": 0.08481681230770961,
      "LongPeriodVar": 0.03994312323570126,
      "Eruptive": 0.1057024675918419
+    },
+    "true_class_fractions_w": {
+     "Flat": 0.3323976968296915,
+     "PSPL": 0.22159846455312768,
+     "NonPSPL": 0.1136061417874895,
+     "PeriodicVar": 0.11079923227656384,
+     "LongPeriodVar": 0.11079923227656384,
+     "Eruptive": 0.11079923227656384
     },
     "macro_f1": 0.847072462875552,
     "pspl_label_by_generator_class": {
@@ -786,6 +834,14 @@
      "LongPeriodVar": 0.03830331347568089,
      "Eruptive": 0.10668223303313734
     },
+    "true_class_fractions_w": {
+     "Flat": 0.33355570515832417,
+     "PSPL": 0.22237047010554944,
+     "NonPSPL": 0.1105181195778023,
+     "PeriodicVar": 0.11118523505277472,
+     "LongPeriodVar": 0.11118523505277472,
+     "Eruptive": 0.11118523505277472
+    },
     "macro_f1": 0.7051943453372225,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -883,6 +939,14 @@
      "PeriodicVar": 0.08366688937721298,
      "LongPeriodVar": 0.03830331347568089,
      "Eruptive": 0.10668223303313734
+    },
+    "true_class_fractions_w": {
+     "Flat": 0.33355570515832417,
+     "PSPL": 0.22237047010554944,
+     "NonPSPL": 0.1105181195778023,
+     "PeriodicVar": 0.11118523505277472,
+     "LongPeriodVar": 0.11118523505277472,
+     "Eruptive": 0.11118523505277472
     },
     "macro_f1": 0.6956157864521987,
     "pspl_label_by_generator_class": {
@@ -984,6 +1048,14 @@
      "LongPeriodVar": 0.03800759799116739,
      "Eruptive": 0.10544757171930864
     },
+    "true_class_fractions_w": {
+     "Flat": 0.3319440872591038,
+     "PSPL": 0.22129605817273587,
+     "NonPSPL": 0.1148157673090565,
+     "PeriodicVar": 0.11064802908636794,
+     "LongPeriodVar": 0.11064802908636794,
+     "Eruptive": 0.11064802908636794
+    },
     "macro_f1": 0.7783139310551525,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -1081,6 +1153,14 @@
      "PeriodicVar": 0.08243278166934412,
      "LongPeriodVar": 0.03800759799116739,
      "Eruptive": 0.10544757171930864
+    },
+    "true_class_fractions_w": {
+     "Flat": 0.3319440872591038,
+     "PSPL": 0.22129605817273587,
+     "NonPSPL": 0.1148157673090565,
+     "PeriodicVar": 0.11064802908636794,
+     "LongPeriodVar": 0.11064802908636794,
+     "Eruptive": 0.11064802908636794
     },
     "macro_f1": 0.7868510270192304,
     "pspl_label_by_generator_class": {
@@ -1182,6 +1262,14 @@
      "LongPeriodVar": 0.015361045057884838,
      "Eruptive": 0.12170906763383164
     },
+    "true_class_fractions_w": {
+     "Flat": 0.512599283112724,
+     "PSPL": 0.03598355043087196,
+     "NonPSPL": 0.03963230110546792,
+     "PeriodicVar": 0.12071120447062259,
+     "LongPeriodVar": 0.14889327926186013,
+     "Eruptive": 0.14218038161845375
+    },
     "macro_f1": 0.459440556766495,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -1279,6 +1367,14 @@
      "PeriodicVar": 0.020259646040911104,
      "LongPeriodVar": 0.015361045057884838,
      "Eruptive": 0.12170906763383164
+    },
+    "true_class_fractions_w": {
+     "Flat": 0.512599283112724,
+     "PSPL": 0.03598355043087196,
+     "NonPSPL": 0.03963230110546792,
+     "PeriodicVar": 0.12071120447062259,
+     "LongPeriodVar": 0.14889327926186013,
+     "Eruptive": 0.14218038161845375
     },
     "macro_f1": 0.46208767473098566,
     "pspl_label_by_generator_class": {
@@ -1380,6 +1476,14 @@
      "LongPeriodVar": 0.038678307158300396,
      "Eruptive": 0.1054260143686245
     },
+    "true_class_fractions_w": {
+     "Flat": 0.3315283470711462,
+     "PSPL": 0.22101889804743083,
+     "NonPSPL": 0.11592440781027671,
+     "PeriodicVar": 0.11050944902371541,
+     "LongPeriodVar": 0.11050944902371541,
+     "Eruptive": 0.11050944902371541
+    },
     "macro_f1": 0.7656218144060145,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -1477,6 +1581,14 @@
      "PeriodicVar": 0.08271632259425098,
      "LongPeriodVar": 0.038678307158300396,
      "Eruptive": 0.1054260143686245
+    },
+    "true_class_fractions_w": {
+     "Flat": 0.3315283470711462,
+     "PSPL": 0.22101889804743083,
+     "NonPSPL": 0.11592440781027671,
+     "PeriodicVar": 0.11050944902371541,
+     "LongPeriodVar": 0.11050944902371541,
+     "Eruptive": 0.11050944902371541
     },
     "macro_f1": 0.7790452916942875,
     "pspl_label_by_generator_class": {

@@ -25,8 +25,13 @@ Later artifacts (2026-09-12/13) record their generating code themselves: `valida
 committed under `validation/referee_round_archive/`; shards 90-91 of the held-out pool regenerated under
 `~/Desktop/Research/microlensing/referee_local_work`) and `validation/truth_relabel_impact.json` (`code`,
 `gen_settings`; shard 2 regenerated with `--truth-bins` after the 2026-09-13 truth-binning fix, and its 0.5-d-onset twin
-`raw05/shard_00002.h5`, whose events are identical). Both were regenerated from a clean commit after the third
-verification. The two colour fine-tunes ran on Apple MPS (pipeline.train default device), whose kernels are not
+`raw05/shard_00002.h5`, whose events are identical). Both were re-run at a clean commit after the third
+verification, but `referee_round.json` reuses cached intermediates (the scripts skip existing outputs): its raw
+shards, shipped-model evaluations, colour fine-tunes and three-band scans were made on 2026-09-12 (the earlier
+version of the artifact records fa91bc7-dirty); the F146 scans just before 218e3f1 and 8a8bd4b; the final-epoch
+fine-tune evaluations and the gap-aware scans during the run at 8a8bd4b (the latter after 6016bc6 was committed,
+with no change to the code they use); the reduction at 8a8bd4b. Every value present in the earlier version is
+unchanged. `truth_relabel_impact.json` was computed at 218e3f1 from the truth shard regenerated with the fixed binning an hour before that commit (2026-09-12 23:42, uncommitted tree). The two colour fine-tunes ran on Apple MPS (pipeline.train default device), whose kernels are not
 bitwise deterministic; their checkpoints are archived with hashes, so the reported numbers re-derive from them, but
 a rerun of the fine-tunes need not reproduce them to the last digit. The seed replicates `fspl_finetune_fspl5s_seasons_g08_s{2,3}.json` use the same pool (one memmap) and
 recipe as `fspl5s_seasons_g08`; only `--seed` differs (20260910, 20260911 against 20260909), which also changes the
@@ -38,13 +43,18 @@ Which checkpoint scored what (2026-09-13, from the third verification): the 14.9
 (`paper/results/stress_report.json`) was scored with the stage-5 checkpoint (`aws/ud_bineval.sh`,
 `v5runs/binml_v5_stage5.pt`, sha256 4e7a5a85...), not the released `binml.pt` (= stage 6, 897a9aec...);
 `validation/stress_rescore_local.py` re-scores regenerated shards of the quoted tiers with both
-(`validation/stress_rescore_local.json`: 255,527 events; shards generated and scored at 6016bc6, metrics recomputed at
-b216d54; the raw shards were deleted after caching and regenerate from the seeds). Stage 5 on the subset reproduces
-the suite (macro-F1 0.927 vs 0.927; median difference 0.012 over the quoted numbers, largest 0.095 for the
-wide-separation recall on 60 events), so the subset stands in for the suite. The suite's PSPL recalls are per label,
-and in `oor_pspl_shortte` 38% of the weighted PSPL-labelled events are demoted binaries of natural timescale: the
-sub-day single lenses themselves are classified PSPL 0.215 (stage 5) / 0.274 (released) of the time and called
-anomalies 55% / 71% (21% / 37% above the frozen threshold). The frozen
+(`validation/stress_rescore_local.json`). Each tier records the commit that generated and scored it
+(`tiers[...].code_generation_and_scoring`: natural, planetary, faint and the corrected sub-day tier at 6016bc6; the
+wide-separation, long-period and sub-day sweeps regenerated at 6865de1 with `run_shard --legacy-t0-pad`, the July
+generator's peak-time draw); metrics are recomputed at the commit in `code`. The raw shards were deleted after
+caching and regenerate from the seeds. The subset is a new realisation, not the suite's events: the suite's fleet
+installed its Python packages unversioned (aws/ud_gentest2.sh; the local versions are recorded in the artifact's `environment`), and locally the same code labels 2.3% fewer
+detectable anomalies in the natural tier and fewer retained wide-separation binaries (even with the July generator).
+Stage 5 gives the suite's macro-F1 on the subset (0.927 vs 0.927) and differs from its other quoted numbers by 0.007
+at the median, at most 0.060 (wide-separation and faint-source recalls); checkpoint comparisons are made within the
+subset. The suite's PSPL recalls are per label: in `oor_pspl_shortte` 43% of the weighted PSPL-labelled events are
+demoted binaries of natural timescale; the sub-day single lenses themselves are classified PSPL 0.230 (stage 5) /
+0.285 (released) and called anomalies 53% / 69% (20% / 35% above the frozen threshold). The frozen
 evaluation arrays (`paper/results/`) are stage 6 (`meta.json`). The pre-RMDC26 artifacts that record no checkpoint
 hash (`baselines_result.json`, `gap_matched_result.json`, `latency_gaps_result.json`, `prevalence_result.json`,
 `cadence_result.json`, `cascade_events.json`) were all committed on or after 2026-08-04, after stage 6 shipped
