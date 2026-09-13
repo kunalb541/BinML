@@ -1,6 +1,6 @@
 {
  "_doc": "The stress-test numbers for the RELEASED checkpoint -> validation/stress_rescore_local.json.",
- "code": "submitted-ac-2026-08-15-54-gb216d54d4a11",
+ "code": "submitted-ac-2026-08-15-58-g6865de141d6c",
  "command": "validation/stress_rescore_local.py --workers 4",
  "checkpoints": {
   "stage5": {
@@ -34,6 +34,8 @@
     14,
     15
    ],
+   "run_shard_flags": [],
+   "code_generation_and_scoring": "submitted-ac-2026-08-15-52-g6016bc6edb89",
    "suite_n": 4502855
   },
   "planetary": {
@@ -49,6 +51,8 @@
     6,
     7
    ],
+   "run_shard_flags": [],
+   "code_generation_and_scoring": "submitted-ac-2026-08-15-52-g6016bc6edb89",
    "suite_n": 546735
   },
   "oor_np_widesep": {
@@ -60,6 +64,11 @@
     2,
     3
    ],
+   "run_shard_flags": [
+    "--legacy-oor-mix",
+    "--legacy-t0-pad"
+   ],
+   "code_generation_and_scoring": "submitted-ac-2026-08-15-58-g6865de141d6c",
    "suite_n": 81904
   },
   "oor_per_longp": {
@@ -71,6 +80,11 @@
     2,
     3
    ],
+   "run_shard_flags": [
+    "--legacy-oor-mix",
+    "--legacy-t0-pad"
+   ],
+   "code_generation_and_scoring": "submitted-ac-2026-08-15-58-g6865de141d6c",
    "suite_n": 82219
   },
   "oor_pspl_shortte": {
@@ -82,6 +96,11 @@
     2,
     3
    ],
+   "run_shard_flags": [
+    "--legacy-oor-mix",
+    "--legacy-t0-pad"
+   ],
+   "code_generation_and_scoring": "submitted-ac-2026-08-15-58-g6865de141d6c",
    "suite_n": 82180
   },
   "oor_flat_faint": {
@@ -93,7 +112,26 @@
     2,
     3
    ],
+   "run_shard_flags": [
+    "--legacy-oor-mix"
+   ],
+   "code_generation_and_scoring": "submitted-ac-2026-08-15-52-g6016bc6edb89",
    "suite_n": 159962
+  },
+  "oor_pspl_shortte_current": {
+   "seed_base": 931000000,
+   "regime": "oor_pspl_shortte",
+   "shards": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "run_shard_flags": [
+    "--legacy-oor-mix"
+   ],
+   "code_generation_and_scoring": "submitted-ac-2026-08-15-52-g6016bc6edb89",
+   "suite_n": 82180
   }
  },
  "subset": {
@@ -146,6 +184,14 @@
      "LongPeriodVar": 0.08452012383900928,
      "Eruptive": 0.09585808718935654
     },
+    "label_fractions_w": {
+     "Flat": 0.2192750243942306,
+     "PSPL": 0.5982580777570373,
+     "NonPSPL": 0.0548549426152777,
+     "PeriodicVar": 0.04251494904767853,
+     "LongPeriodVar": 0.039874048312962006,
+     "Eruptive": 0.04522295787281386
+    },
     "macro_f1": 0.9268818376929299,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -177,6 +223,9 @@
       "frac_above_frozen_threshold": 0.00829131109387122
      }
     },
+    "pspl_label_false_anomaly_w": 0.027915549474732054,
+    "pspl_label_above_frozen_w": 0.007885064990402502,
+    "binary_detectable_fraction_w": 0.08111011098389542,
     "nonpspl_rates": {
      "prevalence_w": 0.0548549426152777,
      "tpr_w": 0.9558146229130685,
@@ -233,6 +282,14 @@
      "LongPeriodVar": 0.08452012383900928,
      "Eruptive": 0.09585808718935654
     },
+    "label_fractions_w": {
+     "Flat": 0.2192750243942306,
+     "PSPL": 0.5982580777570373,
+     "NonPSPL": 0.0548549426152777,
+     "PeriodicVar": 0.04251494904767853,
+     "LongPeriodVar": 0.039874048312962006,
+     "Eruptive": 0.04522295787281386
+    },
     "macro_f1": 0.9192305338775065,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -264,6 +321,9 @@
       "frac_above_frozen_threshold": 0.008970131885182312
      }
     },
+    "pspl_label_false_anomaly_w": 0.0331414670236893,
+    "pspl_label_above_frozen_w": 0.008527307382800425,
+    "binary_detectable_fraction_w": 0.08111011098389542,
     "nonpspl_rates": {
      "prevalence_w": 0.0548549426152777,
      "tpr_w": 0.9617156016119747,
@@ -322,6 +382,14 @@
      "LongPeriodVar": 0.09337597076290544,
      "Eruptive": 0.104321608040201
     },
+    "label_fractions_w": {
+     "Flat": 0.22085183367337502,
+     "PSPL": 0.6465120094611233,
+     "NonPSPL": 0.006283999417788065,
+     "PeriodicVar": 0.04179172249616017,
+     "LongPeriodVar": 0.03993934953345399,
+     "Eruptive": 0.044621085418099574
+    },
     "macro_f1": 0.8743261692349945,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -353,6 +421,9 @@
       "frac_above_frozen_threshold": 0.0036991368680641184
      }
     },
+    "pspl_label_false_anomaly_w": 0.016207808117680446,
+    "pspl_label_above_frozen_w": 0.003747703022495201,
+    "binary_detectable_fraction_w": 0.009247331979810624,
     "nonpspl_rates": {
      "prevalence_w": 0.006283999417788065,
      "tpr_w": 0.8893034825870647,
@@ -409,6 +480,14 @@
      "LongPeriodVar": 0.09337597076290544,
      "Eruptive": 0.104321608040201
     },
+    "label_fractions_w": {
+     "Flat": 0.22085183367337502,
+     "PSPL": 0.6465120094611233,
+     "NonPSPL": 0.006283999417788065,
+     "PeriodicVar": 0.04179172249616017,
+     "LongPeriodVar": 0.03993934953345399,
+     "Eruptive": 0.044621085418099574
+    },
     "macro_f1": 0.865063127844825,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -440,6 +519,9 @@
       "frac_above_frozen_threshold": 0.004491809054077859
      }
     },
+    "pspl_label_false_anomaly_w": 0.01823479158267831,
+    "pspl_label_above_frozen_w": 0.004473064895027502,
+    "binary_detectable_fraction_w": 0.009247331979810624,
     "nonpspl_rates": {
      "prevalence_w": 0.006283999417788065,
      "tpr_w": 0.9092039800995025,
@@ -451,529 +533,595 @@
   },
   "oor_np_widesep": {
    "stage5": {
-    "n": 16377,
+    "n": 16362,
     "per_class": {
      "Flat": {
-      "recall": 0.9843093838002704,
-      "precision": 0.9929905642388019,
-      "f1": 0.9886309169983996,
-      "n": 8397
+      "recall": 0.9852380034755422,
+      "precision": 0.9921596025948215,
+      "f1": 0.988686688998475,
+      "n": 8348
      },
      "PSPL": {
-      "recall": 0.9669332315561631,
-      "precision": 0.9835377660863084,
-      "f1": 0.9751648208754227,
+      "recall": 0.962858062229919,
+      "precision": 0.983431952454957,
+      "f1": 0.9730362658507286,
       "n": 3790
      },
      "NonPSPL": {
-      "recall": 0.31666666666666665,
-      "precision": 0.214285714925936,
-      "f1": 0.25560538162138313,
-      "n": 60
+      "recall": 0.28125,
+      "precision": 0.20532319453679168,
+      "f1": 0.2373626377772283,
+      "n": 64
      },
      "PeriodicVar": {
-      "recall": 0.988,
-      "precision": 0.9524421593830334,
-      "f1": 0.9698952879581152,
-      "n": 1500
+      "recall": 0.9902024820378837,
+      "precision": 0.963151207115629,
+      "f1": 0.9764895330112721,
+      "n": 1531
      },
      "LongPeriodVar": {
-      "recall": 0.9775910364145658,
-      "precision": 0.9124183006535947,
-      "f1": 0.9438810006761325,
-      "n": 714
+      "recall": 0.9736477115117892,
+      "precision": 0.8996155495215294,
+      "f1": 0.9351687392287767,
+      "n": 721
      },
      "Eruptive": {
-      "recall": 0.982776617954071,
-      "precision": 0.9679575054041342,
-      "f1": 0.9753107736144867,
-      "n": 1916
+      "recall": 0.9858490566037735,
+      "precision": 0.9642857144166688,
+      "f1": 0.974948168691674,
+      "n": 1908
      }
     },
     "label_fractions": {
-     "Flat": 0.5127312694632716,
-     "PSPL": 0.23142211638273189,
-     "NonPSPL": 0.0036636746656896865,
-     "PeriodicVar": 0.09159186664224217,
-     "LongPeriodVar": 0.04359772852170727,
-     "Eruptive": 0.11699334432435733
+     "Flat": 0.5102065762131769,
+     "PSPL": 0.23163427453856497,
+     "NonPSPL": 0.003911502261337245,
+     "PeriodicVar": 0.0935704681579269,
+     "LongPeriodVar": 0.0440655176628774,
+     "Eruptive": 0.11661166116611661
     },
-    "macro_f1": 0.8514146969573232,
+    "label_fractions_w": {
+     "Flat": 0.4791143461247528,
+     "PSPL": 0.28687767530714453,
+     "NonPSPL": 0.0035455754328500427,
+     "PeriodicVar": 0.08481681230770961,
+     "LongPeriodVar": 0.03994312323570126,
+     "Eruptive": 0.1057024675918419
+    },
+    "macro_f1": 0.8476153389263592,
     "pspl_label_by_generator_class": {
      "single_lenses": {
-      "n": 3532,
-      "recall": 0.9583805209513023,
-      "weighted_share_of_label": 0.6725057208612943,
+      "n": 3545,
+      "recall": 0.955148095909732,
+      "weighted_share_of_label": 0.6845832078077997,
       "argmax_fractions": {
-       "Flat": 0.007361268403171008,
-       "PSPL": 0.9583805209513023,
-       "NonPSPL": 0.01783691959229898,
+       "Flat": 0.007616361071932299,
+       "PSPL": 0.955148095909732,
+       "NonPSPL": 0.01777150916784203,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.0056625141562853904,
-       "Eruptive": 0.010758776896942242
+       "LongPeriodVar": 0.005641748942172073,
+       "Eruptive": 0.01382228490832158
       },
-      "frac_above_frozen_threshold": 0.0028312570781426952
+      "frac_above_frozen_threshold": 0.004513399153737658
      },
      "demoted_binaries": {
-      "n": 258,
-      "recall": 0.9844961240310076,
-      "weighted_share_of_label": 0.32749427913870577,
+      "n": 245,
+      "recall": 0.979591836734694,
+      "weighted_share_of_label": 0.3154167921922003,
       "argmax_fractions": {
-       "Flat": 0.003875968992248062,
-       "PSPL": 0.9844961240310076,
-       "NonPSPL": 0.003875968992248062,
+       "Flat": 0.00816326530612245,
+       "PSPL": 0.9795918367346937,
+       "NonPSPL": 0.004081632653061225,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.0,
-       "Eruptive": 0.007751937984496124
+       "LongPeriodVar": 0.00816326530612245,
+       "Eruptive": 0.0
       },
       "frac_above_frozen_threshold": 0.0
      }
     },
+    "pspl_label_false_anomaly_w": 0.013453492232042528,
+    "pspl_label_above_frozen_w": 0.003089797270782735,
+    "binary_detectable_fraction_w": 0.031209364010287052,
     "nonpspl_rates": {
-     "prevalence_w": 0.003301540734258139,
-     "tpr_w": 0.31666666666666665,
-     "fpr_w": 0.003846153849360121,
-     "n_flagged": 83,
+     "prevalence_w": 0.0035455754328500427,
+     "tpr_w": 0.28125,
+     "fpr_w": 0.0038732394388911653,
+     "n_flagged": 82,
      "n_false_flags": 64
     }
    },
    "released": {
-    "n": 16377,
+    "n": 16362,
     "per_class": {
      "Flat": {
-      "recall": 0.9815606627141864,
-      "precision": 0.9957013399348787,
-      "f1": 0.9885804367680925,
-      "n": 8397
+      "recall": 0.9824629022954733,
+      "precision": 0.9945376512120425,
+      "f1": 0.9884634028234145,
+      "n": 8348
      },
      "PSPL": {
-      "recall": 0.9635059658593783,
-      "precision": 0.9844368067502434,
-      "f1": 0.9738589343101838,
+      "recall": 0.9611200512651037,
+      "precision": 0.9841803438786263,
+      "f1": 0.9725135150582674,
       "n": 3790
      },
      "NonPSPL": {
-      "recall": 0.4166666666666667,
-      "precision": 0.20053476106278828,
-      "f1": 0.2707581242973229,
-      "n": 60
+      "recall": 0.328125,
+      "precision": 0.19148936216468715,
+      "f1": 0.24184261073358782,
+      "n": 64
      },
      "PeriodicVar": {
-      "recall": 0.9913333333333333,
-      "precision": 0.9453273998728544,
-      "f1": 0.9677839245037423,
-      "n": 1500
+      "recall": 0.992161985630307,
+      "precision": 0.9583596214511041,
+      "f1": 0.9749679075738126,
+      "n": 1531
      },
      "LongPeriodVar": {
-      "recall": 0.9747899159663865,
-      "precision": 0.9019438448020738,
-      "f1": 0.9369531076384616,
-      "n": 714
+      "recall": 0.9736477115117892,
+      "precision": 0.8938879462736827,
+      "f1": 0.932064616393334,
+      "n": 721
      },
      "Eruptive": {
-      "recall": 0.9838204592901879,
-      "precision": 0.9635372297719376,
-      "f1": 0.9735732118057548,
-      "n": 1916
+      "recall": 0.9884696016771488,
+      "precision": 0.9571984438371555,
+      "f1": 0.9725827246708963,
+      "n": 1908
      }
     },
     "label_fractions": {
-     "Flat": 0.5127312694632716,
-     "PSPL": 0.23142211638273189,
-     "NonPSPL": 0.0036636746656896865,
-     "PeriodicVar": 0.09159186664224217,
-     "LongPeriodVar": 0.04359772852170727,
-     "Eruptive": 0.11699334432435733
+     "Flat": 0.5102065762131769,
+     "PSPL": 0.23163427453856497,
+     "NonPSPL": 0.003911502261337245,
+     "PeriodicVar": 0.0935704681579269,
+     "LongPeriodVar": 0.0440655176628774,
+     "Eruptive": 0.11661166116611661
     },
-    "macro_f1": 0.8519179565539264,
+    "label_fractions_w": {
+     "Flat": 0.4791143461247528,
+     "PSPL": 0.28687767530714453,
+     "NonPSPL": 0.0035455754328500427,
+     "PeriodicVar": 0.08481681230770961,
+     "LongPeriodVar": 0.03994312323570126,
+     "Eruptive": 0.1057024675918419
+    },
+    "macro_f1": 0.847072462875552,
     "pspl_label_by_generator_class": {
      "single_lenses": {
-      "n": 3532,
-      "recall": 0.9589467723669309,
-      "weighted_share_of_label": 0.6725057208612943,
+      "n": 3545,
+      "recall": 0.9526093088857546,
+      "weighted_share_of_label": 0.6845832078077997,
       "argmax_fractions": {
-       "Flat": 0.004246885617214043,
-       "PSPL": 0.9589467723669309,
-       "NonPSPL": 0.020385050962627407,
+       "Flat": 0.005359661495063469,
+       "PSPL": 0.9526093088857546,
+       "NonPSPL": 0.022566995768688293,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.005379388448471121,
-       "Eruptive": 0.011041902604756512
+       "LongPeriodVar": 0.005359661495063469,
+       "Eruptive": 0.014104372355430184
       },
-      "frac_above_frozen_threshold": 0.003680634201585504
+      "frac_above_frozen_threshold": 0.005359661495063469
      },
      "demoted_binaries": {
-      "n": 258,
-      "recall": 0.9728682170542635,
-      "weighted_share_of_label": 0.32749427913870577,
+      "n": 245,
+      "recall": 0.979591836734694,
+      "weighted_share_of_label": 0.3154167921922003,
       "argmax_fractions": {
-       "Flat": 0.0,
-       "PSPL": 0.9728682170542635,
-       "NonPSPL": 0.015503875968992248,
+       "Flat": 0.004081632653061225,
+       "PSPL": 0.9795918367346937,
+       "NonPSPL": 0.004081632653061225,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.003875968992248062,
-       "Eruptive": 0.007751937984496124
+       "LongPeriodVar": 0.00816326530612245,
+       "Eruptive": 0.004081632653061225
       },
       "frac_above_frozen_threshold": 0.0
      }
     },
+    "pspl_label_false_anomaly_w": 0.016736401832249184,
+    "pspl_label_above_frozen_w": 0.0036691342590544976,
+    "binary_detectable_fraction_w": 0.031209364010287052,
     "nonpspl_rates": {
-     "prevalence_w": 0.003301540734258139,
-     "tpr_w": 0.4166666666666667,
-     "fpr_w": 0.005502392311507134,
-     "n_flagged": 102,
-     "n_false_flags": 77
+     "prevalence_w": 0.0035455754328500427,
+     "tpr_w": 0.328125,
+     "fpr_w": 0.004929577471696421,
+     "n_flagged": 104,
+     "n_false_flags": 83
     }
    }
   },
   "oor_per_longp": {
    "stage5": {
-    "n": 16438,
+    "n": 16424,
     "per_class": {
      "Flat": {
-      "recall": 0.9847164088444129,
-      "precision": 0.98645893454718,
-      "f1": 0.9855869014964748,
-      "n": 8465
+      "recall": 0.9896081902728678,
+      "precision": 0.9880870033506962,
+      "f1": 0.9888470117849135,
+      "n": 8434
      },
      "PSPL": {
-      "recall": 0.9545396092857017,
-      "precision": 0.9831776938850464,
-      "f1": 0.9686470263167714,
-      "n": 3756
+      "recall": 0.9567734720329857,
+      "precision": 0.9887808525193973,
+      "f1": 0.9725138767969136,
+      "n": 3729
      },
      "NonPSPL": {
-      "recall": 0.9594594594594594,
-      "precision": 0.5503876002899903,
-      "f1": 0.6995073919010764,
+      "recall": 0.9527027027027027,
+      "precision": 0.5786593732414618,
+      "f1": 0.7200000019479305,
       "n": 148
      },
      "PeriodicVar": {
-      "recall": 0.04341926729986431,
-      "precision": 0.9014084507042254,
-      "f1": 0.08284789644012945,
-      "n": 1474
+      "recall": 0.05249169435215947,
+      "precision": 0.9634146341463414,
+      "f1": 0.09955891619407688,
+      "n": 1505
      },
      "LongPeriodVar": {
-      "recall": 0.9755043227665706,
-      "precision": 0.3211067194482823,
-      "f1": 0.48316878800618246,
-      "n": 694
+      "recall": 0.9753265602322206,
+      "precision": 0.31728045337684224,
+      "f1": 0.4788029926542638,
+      "n": 689
      },
      "Eruptive": {
-      "recall": 0.9847448711204629,
-      "precision": 0.9619732789129022,
-      "f1": 0.973225890505186,
-      "n": 1901
+      "recall": 0.9838457529963522,
+      "precision": 0.9593495938833447,
+      "f1": 0.9714432726452363,
+      "n": 1919
      }
     },
     "label_fractions": {
-     "Flat": 0.514965324248692,
-     "PSPL": 0.22849495072393236,
-     "NonPSPL": 0.009003528409782212,
-     "PeriodicVar": 0.08967027618931743,
-     "LongPeriodVar": 0.04221924808370848,
-     "Eruptive": 0.11564667234456746
+     "Flat": 0.5135168046760837,
+     "PSPL": 0.22704578665367756,
+     "NonPSPL": 0.009011203117389186,
+     "PeriodicVar": 0.09163419386264005,
+     "LongPeriodVar": 0.04195080370189966,
+     "Eruptive": 0.11684120798830978
     },
-    "macro_f1": 0.69883064911097,
+    "label_fractions_w": {
+     "Flat": 0.48146912893445165,
+     "PSPL": 0.2816507277856119,
+     "NonPSPL": 0.00822770739390533,
+     "PeriodicVar": 0.08366688937721298,
+     "LongPeriodVar": 0.03830331347568089,
+     "Eruptive": 0.10668223303313734
+    },
+    "macro_f1": 0.7051943453372225,
     "pspl_label_by_generator_class": {
      "single_lenses": {
-      "n": 3504,
-      "recall": 0.9631849315068494,
-      "weighted_share_of_label": 0.6759259346301935,
+      "n": 3493,
+      "recall": 0.9602061265387919,
+      "weighted_share_of_label": 0.689453262011386,
       "argmax_fractions": {
-       "Flat": 0.007134703196347032,
-       "PSPL": 0.9631849315068494,
-       "NonPSPL": 0.014554794520547944,
+       "Flat": 0.006870884626395649,
+       "PSPL": 0.9602061265387919,
+       "NonPSPL": 0.015173203549957057,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.005707762557077625,
-       "Eruptive": 0.009417808219178082
+       "LongPeriodVar": 0.00830231892356141,
+       "Eruptive": 0.009447466361294017
       },
-      "frac_above_frozen_threshold": 0.003424657534246575
+      "frac_above_frozen_threshold": 0.0037217291726309764
      },
      "demoted_binaries": {
-      "n": 252,
-      "recall": 0.9365079365079365,
-      "weighted_share_of_label": 0.3240740653698067,
+      "n": 236,
+      "recall": 0.9491525423728814,
+      "weighted_share_of_label": 0.31054673798861404,
       "argmax_fractions": {
-       "Flat": 0.01984126984126984,
-       "PSPL": 0.9365079365079365,
-       "NonPSPL": 0.02380952380952381,
+       "Flat": 0.00847457627118644,
+       "PSPL": 0.9491525423728813,
+       "NonPSPL": 0.01694915254237288,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.007936507936507936,
-       "Eruptive": 0.011904761904761906
+       "LongPeriodVar": 0.01271186440677966,
+       "Eruptive": 0.01271186440677966
       },
-      "frac_above_frozen_threshold": 0.007936507936507936
+      "frac_above_frozen_threshold": 0.00847457627118644
      }
     },
+    "pspl_label_false_anomaly_w": 0.015724718716385956,
+    "pspl_label_above_frozen_w": 0.005197710335246024,
+    "binary_detectable_fraction_w": 0.07444668281849662,
     "nonpspl_rates": {
-     "prevalence_w": 0.008185237111689074,
-     "tpr_w": 0.9594594594594594,
-     "fpr_w": 0.00646840142606709,
-     "n_flagged": 224,
-     "n_false_flags": 82
+     "prevalence_w": 0.00822770739390533,
+     "tpr_w": 0.9527027027027027,
+     "fpr_w": 0.005754857961199281,
+     "n_flagged": 221,
+     "n_false_flags": 80
     }
    },
    "released": {
-    "n": 16438,
+    "n": 16424,
     "per_class": {
      "Flat": {
-      "recall": 0.980261894834206,
-      "precision": 0.99211037701444,
-      "f1": 0.9861505476806687,
-      "n": 8465
+      "recall": 0.9845277500535886,
+      "precision": 0.9908967654970872,
+      "f1": 0.9877019905245773,
+      "n": 8434
      },
      "PSPL": {
-      "recall": 0.9519032924304257,
-      "precision": 0.98202321728324,
-      "f1": 0.9667287035777169,
-      "n": 3756
+      "recall": 0.9528258440077066,
+      "precision": 0.9854382144126805,
+      "f1": 0.9688576685783666,
+      "n": 3729
      },
      "NonPSPL": {
-      "recall": 0.9797297297297297,
-      "precision": 0.4822616450473071,
-      "f1": 0.6463595877687996,
+      "recall": 0.9527027027027027,
+      "precision": 0.547218630969678,
+      "f1": 0.695152014962883,
       "n": 148
      },
      "PeriodicVar": {
-      "recall": 0.03934871099050204,
-      "precision": 0.8285714285714286,
-      "f1": 0.07512953367875648,
-      "n": 1474
+      "recall": 0.043853820598006646,
+      "precision": 0.9295774647887324,
+      "f1": 0.08375634517766498,
+      "n": 1505
      },
      "LongPeriodVar": {
-      "recall": 0.9798270893371758,
-      "precision": 0.3167210061721972,
-      "f1": 0.47870468158410434,
-      "n": 694
+      "recall": 0.9782293178519593,
+      "precision": 0.3149042206043493,
+      "f1": 0.476437323369142,
+      "n": 689
      },
      "Eruptive": {
-      "recall": 0.9857969489742241,
-      "precision": 0.9551478087457101,
-      "f1": 0.9702303910875149,
-      "n": 1901
+      "recall": 0.9859301719645649,
+      "precision": 0.9388025150461041,
+      "f1": 0.9617893761005586,
+      "n": 1919
      }
     },
     "label_fractions": {
-     "Flat": 0.514965324248692,
-     "PSPL": 0.22849495072393236,
-     "NonPSPL": 0.009003528409782212,
-     "PeriodicVar": 0.08967027618931743,
-     "LongPeriodVar": 0.04221924808370848,
-     "Eruptive": 0.11564667234456746
+     "Flat": 0.5135168046760837,
+     "PSPL": 0.22704578665367756,
+     "NonPSPL": 0.009011203117389186,
+     "PeriodicVar": 0.09163419386264005,
+     "LongPeriodVar": 0.04195080370189966,
+     "Eruptive": 0.11684120798830978
     },
-    "macro_f1": 0.6872172408962601,
+    "label_fractions_w": {
+     "Flat": 0.48146912893445165,
+     "PSPL": 0.2816507277856119,
+     "NonPSPL": 0.00822770739390533,
+     "PeriodicVar": 0.08366688937721298,
+     "LongPeriodVar": 0.03830331347568089,
+     "Eruptive": 0.10668223303313734
+    },
+    "macro_f1": 0.6956157864521987,
     "pspl_label_by_generator_class": {
      "single_lenses": {
-      "n": 3504,
-      "recall": 0.9611872146118722,
-      "weighted_share_of_label": 0.6759259346301935,
+      "n": 3493,
+      "recall": 0.9602061265387919,
+      "weighted_share_of_label": 0.689453262011386,
       "argmax_fractions": {
-       "Flat": 0.004280821917808219,
-       "PSPL": 0.9611872146118722,
-       "NonPSPL": 0.016837899543378994,
+       "Flat": 0.004008016032064128,
+       "PSPL": 0.9602061265387919,
+       "NonPSPL": 0.01717721156598912,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.005422374429223744,
-       "Eruptive": 0.012271689497716894
+       "LongPeriodVar": 0.006870884626395649,
+       "Eruptive": 0.011737761236759233
       },
-      "frac_above_frozen_threshold": 0.0045662100456621
+      "frac_above_frozen_threshold": 0.0034354423131978244
      },
      "demoted_binaries": {
-      "n": 252,
-      "recall": 0.9325396825396827,
-      "weighted_share_of_label": 0.3240740653698067,
+      "n": 236,
+      "recall": 0.9364406779661018,
+      "weighted_share_of_label": 0.31054673798861404,
       "argmax_fractions": {
-       "Flat": 0.003968253968253968,
-       "PSPL": 0.9325396825396827,
-       "NonPSPL": 0.03968253968253968,
+       "Flat": 0.00847457627118644,
+       "PSPL": 0.9364406779661018,
+       "NonPSPL": 0.01694915254237288,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.011904761904761906,
-       "Eruptive": 0.011904761904761906
+       "LongPeriodVar": 0.00847457627118644,
+       "Eruptive": 0.029661016949152543
       },
-      "frac_above_frozen_threshold": 0.003968253968253968
+      "frac_above_frozen_threshold": 0.00423728813559322
      }
     },
+    "pspl_label_false_anomaly_w": 0.017106388580136227,
+    "pspl_label_above_frozen_w": 0.003684452917712512,
+    "binary_detectable_fraction_w": 0.07444668281849662,
     "nonpspl_rates": {
-     "prevalence_w": 0.008185237111689074,
-     "tpr_w": 0.9797297297297297,
-     "fpr_w": 0.008680297287235569,
-     "n_flagged": 244,
-     "n_false_flags": 99
+     "prevalence_w": 0.00822770739390533,
+     "tpr_w": 0.9527027027027027,
+     "fpr_w": 0.0065396113276441955,
+     "n_flagged": 235,
+     "n_false_flags": 94
     }
    }
   },
   "oor_pspl_shortte": {
    "stage5": {
-    "n": 16466,
+    "n": 16449,
     "per_class": {
      "Flat": {
-      "recall": 0.9802368747019797,
-      "precision": 0.9698474884779267,
-      "f1": 0.975014506031872,
-      "n": 9196
+      "recall": 0.982119028564202,
+      "precision": 0.9774236387813741,
+      "f1": 0.97976570820579,
+      "n": 9771
      },
      "PSPL": {
-      "recall": 0.4838145829927237,
-      "precision": 0.9695446924324156,
-      "f1": 0.6455112221646387,
-      "n": 2987
+      "recall": 0.5320017300279071,
+      "precision": 0.9729987286874705,
+      "f1": 0.6878895006032458,
+      "n": 2433
      },
      "NonPSPL": {
-      "recall": 0.9606741573033708,
-      "precision": 0.09810671269874047,
-      "f1": 0.17803227507780428,
-      "n": 178
+      "recall": 0.9320987654320988,
+      "precision": 0.10987145299503853,
+      "f1": 0.19657192476671093,
+      "n": 162
      },
      "PeriodicVar": {
-      "recall": 0.9866399465597863,
-      "precision": 0.9609629147690306,
-      "f1": 0.97363216875412,
-      "n": 1497
+      "recall": 0.9838926174496644,
+      "precision": 0.953185955786736,
+      "f1": 0.9682959048877147,
+      "n": 1490
      },
      "LongPeriodVar": {
-      "recall": 0.9814285714285714,
-      "precision": 0.9000000015616937,
-      "f1": 0.9389521648590116,
-      "n": 700
+      "recall": 0.975254730713246,
+      "precision": 0.9029649615029974,
+      "f1": 0.9377186854376932,
+      "n": 687
      },
      "Eruptive": {
-      "recall": 0.9816561844863732,
-      "precision": 0.8016835499035871,
-      "f1": 0.8825885495486404,
-      "n": 1908
+      "recall": 0.9884575026232949,
+      "precision": 0.8254710093927342,
+      "f1": 0.8996418624297607,
+      "n": 1906
      }
     },
     "label_fractions": {
-     "Flat": 0.5584841491558362,
-     "PSPL": 0.1814041054293696,
-     "NonPSPL": 0.01081015425725738,
-     "PeriodicVar": 0.0909146119276084,
-     "LongPeriodVar": 0.04251184258472003,
-     "Eruptive": 0.11587513664520831
+     "Flat": 0.594017873426956,
+     "PSPL": 0.14791172715666606,
+     "NonPSPL": 0.009848623016596754,
+     "PeriodicVar": 0.09058301416499483,
+     "LongPeriodVar": 0.041765456866678825,
+     "Eruptive": 0.11587330536810748
     },
-    "macro_f1": 0.7656218144060145,
+    "label_fractions_w": {
+     "Flat": 0.5527975527439158,
+     "PSPL": 0.2123520055202683,
+     "NonPSPL": 0.008962490355995802,
+     "PeriodicVar": 0.08243278166934412,
+     "LongPeriodVar": 0.03800759799116739,
+     "Eruptive": 0.10544757171930864
+    },
+    "macro_f1": 0.7783139310551525,
     "pspl_label_by_generator_class": {
      "single_lenses": {
-      "n": 2740,
-      "recall": 0.21496350364963504,
-      "weighted_share_of_label": 0.6246200701072677,
+      "n": 2185,
+      "recall": 0.2297482837528604,
+      "weighted_share_of_label": 0.5692574999736421,
       "argmax_fractions": {
-       "Flat": 0.09014598540145985,
-       "PSPL": 0.21496350364963504,
-       "NonPSPL": 0.5485401459854015,
-       "PeriodicVar": 0.0,
+       "Flat": 0.08512585812356979,
+       "PSPL": 0.2297482837528604,
+       "NonPSPL": 0.5318077803203661,
+       "PeriodicVar": 0.0004576659038901602,
        "LongPeriodVar": 0.0,
-       "Eruptive": 0.14635036496350365
+       "Eruptive": 0.15286041189931351
       },
-      "frac_above_frozen_threshold": 0.20912408759124088
+      "frac_above_frozen_threshold": 0.19816933638443937
      },
      "demoted_binaries": {
-      "n": 247,
-      "recall": 0.9311740890688258,
-      "weighted_share_of_label": 0.3753799298927324,
+      "n": 248,
+      "recall": 0.9314516129032259,
+      "weighted_share_of_label": 0.43074250002635783,
       "argmax_fractions": {
-       "Flat": 0.008097165991902832,
-       "PSPL": 0.9311740890688258,
-       "NonPSPL": 0.03643724696356275,
+       "Flat": 0.00403225806451613,
+       "PSPL": 0.9314516129032262,
+       "NonPSPL": 0.03225806451612904,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.020242914979757082,
-       "Eruptive": 0.004048582995951416
+       "LongPeriodVar": 0.024193548387096777,
+       "Eruptive": 0.00806451612903226
       },
-      "frac_above_frozen_threshold": 0.016194331983805665
+      "frac_above_frozen_threshold": 0.012096774193548388
      }
     },
+    "pspl_label_false_anomaly_w": 0.3166304868473924,
+    "pspl_label_above_frozen_w": 0.11801997576002501,
+    "binary_detectable_fraction_w": 0.0780597522975301,
     "nonpspl_rates": {
-     "prevalence_w": 0.00983534096311067,
-     "tpr_w": 0.9606741573033708,
-     "fpr_w": 0.08772321452614756,
-     "n_flagged": 1692,
-     "n_false_flags": 1521
+     "prevalence_w": 0.008962490355995802,
+     "tpr_w": 0.9320987654320988,
+     "fpr_w": 0.06829177538553488,
+     "n_flagged": 1329,
+     "n_false_flags": 1178
     }
    },
    "released": {
-    "n": 16466,
+    "n": 16449,
     "per_class": {
      "Flat": {
-      "recall": 0.9604737494039596,
-      "precision": 0.9943633103259306,
-      "f1": 0.9771247707677949,
-      "n": 9196
+      "recall": 0.9679410195021285,
+      "precision": 0.9957787082118152,
+      "f1": 0.9816625503346396,
+      "n": 9771
      },
      "PSPL": {
-      "recall": 0.5205167111997566,
-      "precision": 0.9314658675134078,
-      "f1": 0.6678365939935798,
-      "n": 2987
+      "recall": 0.5635258295687816,
+      "precision": 0.9390738046754916,
+      "f1": 0.7043690584581084,
+      "n": 2433
      },
      "NonPSPL": {
-      "recall": 0.9719101123595506,
-      "precision": 0.07608855015462504,
-      "f1": 0.14112848417696644,
-      "n": 178
+      "recall": 0.9382716049382716,
+      "precision": 0.08480565381052256,
+      "f1": 0.15555176547654295,
+      "n": 162
      },
      "PeriodicVar": {
-      "recall": 0.9899799599198397,
-      "precision": 0.9487836107554417,
-      "f1": 0.9689440993788819,
-      "n": 1497
+      "recall": 0.9906040268456375,
+      "precision": 0.944337811900192,
+      "f1": 0.9669177857844743,
+      "n": 1490
      },
      "LongPeriodVar": {
-      "recall": 0.9857142857142858,
-      "precision": 0.900000001243923,
-      "f1": 0.9409090915888794,
-      "n": 700
+      "recall": 0.9781659388646288,
+      "precision": 0.8948069259950163,
+      "f1": 0.934631433578273,
+      "n": 687
      },
      "Eruptive": {
-      "recall": 0.9858490566037735,
-      "precision": 0.9709222301347624,
-      "f1": 0.9783287102596231,
-      "n": 1908
+      "recall": 0.9900314795383001,
+      "precision": 0.9662058375667544,
+      "f1": 0.9779735684833437,
+      "n": 1906
      }
     },
     "label_fractions": {
-     "Flat": 0.5584841491558362,
-     "PSPL": 0.1814041054293696,
-     "NonPSPL": 0.01081015425725738,
-     "PeriodicVar": 0.0909146119276084,
-     "LongPeriodVar": 0.04251184258472003,
-     "Eruptive": 0.11587513664520831
+     "Flat": 0.594017873426956,
+     "PSPL": 0.14791172715666606,
+     "NonPSPL": 0.009848623016596754,
+     "PeriodicVar": 0.09058301416499483,
+     "LongPeriodVar": 0.041765456866678825,
+     "Eruptive": 0.11587330536810748
     },
-    "macro_f1": 0.7790452916942875,
+    "label_fractions_w": {
+     "Flat": 0.5527975527439158,
+     "PSPL": 0.2123520055202683,
+     "NonPSPL": 0.008962490355995802,
+     "PeriodicVar": 0.08243278166934412,
+     "LongPeriodVar": 0.03800759799116739,
+     "Eruptive": 0.10544757171930864
+    },
+    "macro_f1": 0.7868510270192304,
     "pspl_label_by_generator_class": {
      "single_lenses": {
-      "n": 2740,
-      "recall": 0.2737226277372263,
-      "weighted_share_of_label": 0.6246200701072677,
+      "n": 2185,
+      "recall": 0.2851258581235698,
+      "weighted_share_of_label": 0.5692574999736421,
       "argmax_fractions": {
-       "Flat": 0.006569343065693431,
-       "PSPL": 0.2737226277372263,
-       "NonPSPL": 0.7098540145985401,
+       "Flat": 0.008695652173913044,
+       "PSPL": 0.2851258581235698,
+       "NonPSPL": 0.6929061784897025,
        "PeriodicVar": 0.0,
        "LongPeriodVar": 0.0,
-       "Eruptive": 0.009854014598540146
+       "Eruptive": 0.013272311212814645
       },
-      "frac_above_frozen_threshold": 0.36642335766423356
+      "frac_above_frozen_threshold": 0.3528604118993135
      },
      "demoted_binaries": {
-      "n": 247,
-      "recall": 0.9311740890688258,
-      "weighted_share_of_label": 0.3753799298927324,
+      "n": 248,
+      "recall": 0.9314516129032259,
+      "weighted_share_of_label": 0.43074250002635783,
       "argmax_fractions": {
-       "Flat": 0.008097165991902832,
-       "PSPL": 0.9311740890688258,
-       "NonPSPL": 0.040485829959514164,
+       "Flat": 0.0,
+       "PSPL": 0.9314516129032262,
+       "NonPSPL": 0.03225806451612904,
        "PeriodicVar": 0.0,
-       "LongPeriodVar": 0.016194331983805665,
-       "Eruptive": 0.004048582995951416
+       "LongPeriodVar": 0.024193548387096777,
+       "Eruptive": 0.012096774193548388
       },
-      "frac_above_frozen_threshold": 0.008097165991902832
+      "frac_above_frozen_threshold": 0.00403225806451613
      }
     },
+    "pspl_label_false_anomaly_w": 0.4083369582390272,
+    "pspl_label_above_frozen_w": 0.20260530083693387,
+    "binary_detectable_fraction_w": 0.0780597522975301,
     "nonpspl_rates": {
-     "prevalence_w": 0.00983534096311067,
-     "tpr_w": 0.9719101123595506,
-     "fpr_w": 0.11722470273220462,
-     "n_flagged": 2217,
-     "n_false_flags": 2044
+     "prevalence_w": 0.008962490355995802,
+     "tpr_w": 0.9382716049382716,
+     "fpr_w": 0.09157052501913336,
+     "n_flagged": 1747,
+     "n_false_flags": 1595
     }
    }
   },
@@ -1026,6 +1174,14 @@
      "LongPeriodVar": 0.015869544843959887,
      "Eruptive": 0.12573802755302865
     },
+    "label_fractions_w": {
+     "Flat": 0.7992379959601649,
+     "PSPL": 0.04149699553613564,
+     "NonPSPL": 0.0019352497710721055,
+     "PeriodicVar": 0.020259646040911104,
+     "LongPeriodVar": 0.015361045057884838,
+     "Eruptive": 0.12170906763383164
+    },
     "macro_f1": 0.459440556766495,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -1057,6 +1213,9 @@
       "frac_above_frozen_threshold": 0.13084112149532703
      }
     },
+    "pspl_label_false_anomaly_w": 0.29293174725578336,
+    "pspl_label_above_frozen_w": 0.16346854573099448,
+    "binary_detectable_fraction_w": 0.048830113747927346,
     "nonpspl_rates": {
      "prevalence_w": 0.0019352497710721055,
      "tpr_w": 0.78125,
@@ -1113,6 +1272,14 @@
      "LongPeriodVar": 0.015869544843959887,
      "Eruptive": 0.12573802755302865
     },
+    "label_fractions_w": {
+     "Flat": 0.7992379959601649,
+     "PSPL": 0.04149699553613564,
+     "NonPSPL": 0.0019352497710721055,
+     "PeriodicVar": 0.020259646040911104,
+     "LongPeriodVar": 0.015361045057884838,
+     "Eruptive": 0.12170906763383164
+    },
     "macro_f1": 0.46208767473098566,
     "pspl_label_by_generator_class": {
      "single_lenses": {
@@ -1144,12 +1311,213 @@
       "frac_above_frozen_threshold": 0.10280373831775698
      }
     },
+    "pspl_label_false_anomaly_w": 0.260869565972749,
+    "pspl_label_above_frozen_w": 0.12047607517677536,
+    "binary_detectable_fraction_w": 0.048830113747927346,
     "nonpspl_rates": {
      "prevalence_w": 0.0019352497710721055,
      "tpr_w": 0.734375,
      "fpr_w": 0.05415067645542566,
      "n_flagged": 1653,
      "n_false_flags": 1606
+    }
+   }
+  },
+  "oor_pspl_shortte_current": {
+   "stage5": {
+    "n": 16466,
+    "per_class": {
+     "Flat": {
+      "recall": 0.9802368747019797,
+      "precision": 0.9698474884779267,
+      "f1": 0.975014506031872,
+      "n": 9196
+     },
+     "PSPL": {
+      "recall": 0.4838145829927237,
+      "precision": 0.9695446924324156,
+      "f1": 0.6455112221646387,
+      "n": 2987
+     },
+     "NonPSPL": {
+      "recall": 0.9606741573033708,
+      "precision": 0.09810671269874047,
+      "f1": 0.17803227507780428,
+      "n": 178
+     },
+     "PeriodicVar": {
+      "recall": 0.9866399465597863,
+      "precision": 0.9609629147690306,
+      "f1": 0.97363216875412,
+      "n": 1497
+     },
+     "LongPeriodVar": {
+      "recall": 0.9814285714285714,
+      "precision": 0.9000000015616937,
+      "f1": 0.9389521648590116,
+      "n": 700
+     },
+     "Eruptive": {
+      "recall": 0.9816561844863732,
+      "precision": 0.8016835499035871,
+      "f1": 0.8825885495486404,
+      "n": 1908
+     }
+    },
+    "label_fractions": {
+     "Flat": 0.5584841491558362,
+     "PSPL": 0.1814041054293696,
+     "NonPSPL": 0.01081015425725738,
+     "PeriodicVar": 0.0909146119276084,
+     "LongPeriodVar": 0.04251184258472003,
+     "Eruptive": 0.11587513664520831
+    },
+    "label_fractions_w": {
+     "Flat": 0.5209599603391608,
+     "PSPL": 0.24238405457655263,
+     "NonPSPL": 0.00983534096311067,
+     "PeriodicVar": 0.08271632259425098,
+     "LongPeriodVar": 0.038678307158300396,
+     "Eruptive": 0.1054260143686245
+    },
+    "macro_f1": 0.7656218144060145,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 2740,
+      "recall": 0.21496350364963504,
+      "weighted_share_of_label": 0.6246200701072677,
+      "argmax_fractions": {
+       "Flat": 0.09014598540145985,
+       "PSPL": 0.21496350364963504,
+       "NonPSPL": 0.5485401459854015,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0,
+       "Eruptive": 0.14635036496350365
+      },
+      "frac_above_frozen_threshold": 0.20912408759124088
+     },
+     "demoted_binaries": {
+      "n": 247,
+      "recall": 0.9311740890688258,
+      "weighted_share_of_label": 0.3753799298927324,
+      "argmax_fractions": {
+       "Flat": 0.008097165991902832,
+       "PSPL": 0.9311740890688258,
+       "NonPSPL": 0.03643724696356275,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.020242914979757082,
+       "Eruptive": 0.004048582995951416
+      },
+      "frac_above_frozen_threshold": 0.016194331983805665
+     }
+    },
+    "pspl_label_false_anomaly_w": 0.35630699565271867,
+    "pspl_label_above_frozen_w": 0.13670212945709986,
+    "binary_detectable_fraction_w": 0.08484271042563625,
+    "nonpspl_rates": {
+     "prevalence_w": 0.00983534096311067,
+     "tpr_w": 0.9606741573033708,
+     "fpr_w": 0.08772321452614756,
+     "n_flagged": 1692,
+     "n_false_flags": 1521
+    }
+   },
+   "released": {
+    "n": 16466,
+    "per_class": {
+     "Flat": {
+      "recall": 0.9604737494039596,
+      "precision": 0.9943633103259306,
+      "f1": 0.9771247707677949,
+      "n": 9196
+     },
+     "PSPL": {
+      "recall": 0.5205167111997566,
+      "precision": 0.9314658675134078,
+      "f1": 0.6678365939935798,
+      "n": 2987
+     },
+     "NonPSPL": {
+      "recall": 0.9719101123595506,
+      "precision": 0.07608855015462504,
+      "f1": 0.14112848417696644,
+      "n": 178
+     },
+     "PeriodicVar": {
+      "recall": 0.9899799599198397,
+      "precision": 0.9487836107554417,
+      "f1": 0.9689440993788819,
+      "n": 1497
+     },
+     "LongPeriodVar": {
+      "recall": 0.9857142857142858,
+      "precision": 0.900000001243923,
+      "f1": 0.9409090915888794,
+      "n": 700
+     },
+     "Eruptive": {
+      "recall": 0.9858490566037735,
+      "precision": 0.9709222301347624,
+      "f1": 0.9783287102596231,
+      "n": 1908
+     }
+    },
+    "label_fractions": {
+     "Flat": 0.5584841491558362,
+     "PSPL": 0.1814041054293696,
+     "NonPSPL": 0.01081015425725738,
+     "PeriodicVar": 0.0909146119276084,
+     "LongPeriodVar": 0.04251184258472003,
+     "Eruptive": 0.11587513664520831
+    },
+    "label_fractions_w": {
+     "Flat": 0.5209599603391608,
+     "PSPL": 0.24238405457655263,
+     "NonPSPL": 0.00983534096311067,
+     "PeriodicVar": 0.08271632259425098,
+     "LongPeriodVar": 0.038678307158300396,
+     "Eruptive": 0.1054260143686245
+    },
+    "macro_f1": 0.7790452916942875,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 2740,
+      "recall": 0.2737226277372263,
+      "weighted_share_of_label": 0.6246200701072677,
+      "argmax_fractions": {
+       "Flat": 0.006569343065693431,
+       "PSPL": 0.2737226277372263,
+       "NonPSPL": 0.7098540145985401,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0,
+       "Eruptive": 0.009854014598540146
+      },
+      "frac_above_frozen_threshold": 0.36642335766423356
+     },
+     "demoted_binaries": {
+      "n": 247,
+      "recall": 0.9311740890688258,
+      "weighted_share_of_label": 0.3753799298927324,
+      "argmax_fractions": {
+       "Flat": 0.008097165991902832,
+       "PSPL": 0.9311740890688258,
+       "NonPSPL": 0.040485829959514164,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.016194331983805665,
+       "Eruptive": 0.004048582995951416
+      },
+      "frac_above_frozen_threshold": 0.008097165991902832
+     }
+    },
+    "pspl_label_false_anomaly_w": 0.458586632376317,
+    "pspl_label_above_frozen_w": 0.2319148969555443,
+    "binary_detectable_fraction_w": 0.08484271042563625,
+    "nonpspl_rates": {
+     "prevalence_w": 0.00983534096311067,
+     "tpr_w": 0.9719101123595506,
+     "fpr_w": 0.11722470273220462,
+     "n_flagged": 2217,
+     "n_false_flags": 2044
     }
    }
   }
@@ -1186,21 +1554,21 @@
   },
   "widesep_np_recall": {
    "suite_stage5": 0.2215,
-   "subset_stage5": 0.31666666666666665,
-   "subset_released": 0.4166666666666667,
-   "n_subset": 60
+   "subset_stage5": 0.28125,
+   "subset_released": 0.328125,
+   "n_subset": 64
   },
   "longp_per_recall": {
    "suite_stage5": 0.0536,
-   "subset_stage5": 0.04341926729986431,
-   "subset_released": 0.03934871099050204,
-   "n_subset": 1474
+   "subset_stage5": 0.05249169435215947,
+   "subset_released": 0.043853820598006646,
+   "n_subset": 1505
   },
   "shortte_pspl_recall": {
    "suite_stage5": 0.524,
-   "subset_stage5": 0.4838145829927237,
-   "subset_released": 0.5205167111997566,
-   "n_subset": 2987
+   "subset_stage5": 0.5320017300279071,
+   "subset_released": 0.5635258295687816,
+   "n_subset": 2433
   },
   "faint_pspl_recall": {
    "suite_stage5": 0.4907,
@@ -1215,9 +1583,38 @@
    "n_subset": 64
   }
  },
- "code_generation_and_scoring": "submitted-ac-2026-08-15-52-g6016bc6edb89",
  "single_lens_recall": {
   "oor_pspl_shortte": {
+   "stage5": {
+    "n": 2185,
+    "recall": 0.2297482837528604,
+    "weighted_share_of_label": 0.5692574999736421,
+    "argmax_fractions": {
+     "Flat": 0.08512585812356979,
+     "PSPL": 0.2297482837528604,
+     "NonPSPL": 0.5318077803203661,
+     "PeriodicVar": 0.0004576659038901602,
+     "LongPeriodVar": 0.0,
+     "Eruptive": 0.15286041189931351
+    },
+    "frac_above_frozen_threshold": 0.19816933638443937
+   },
+   "released": {
+    "n": 2185,
+    "recall": 0.2851258581235698,
+    "weighted_share_of_label": 0.5692574999736421,
+    "argmax_fractions": {
+     "Flat": 0.008695652173913044,
+     "PSPL": 0.2851258581235698,
+     "NonPSPL": 0.6929061784897025,
+     "PeriodicVar": 0.0,
+     "LongPeriodVar": 0.0,
+     "Eruptive": 0.013272311212814645
+    },
+    "frac_above_frozen_threshold": 0.3528604118993135
+   }
+  },
+  "oor_pspl_shortte_current": {
    "stage5": {
     "n": 2740,
     "recall": 0.21496350364963504,
@@ -1315,8 +1712,8 @@
    "released": 0.8157510639194894
   },
   "oor_np_widesep": {
-   "stage5": 0.8269451719234002,
-   "released": 0.8146416669095992
+   "stage5": 0.8082232850429449,
+   "released": 0.794373972999417
   },
   "oor_flat_faint": {
    "stage5": 0.47351955562262543,
@@ -1371,6 +1768,14 @@
    "PeriodicVar": 0.02081744414298396,
    "LongPeriodVar": 0.015960040509621035,
    "Eruptive": 0.12436703717132819
+  },
+  "oor_pspl_shortte_current": {
+   "Flat": 0.5906911657337551,
+   "PSPL": 0.1475054757848625,
+   "NonPSPL": 0.010063275736188853,
+   "PeriodicVar": 0.092394743246532,
+   "LongPeriodVar": 0.04359941591628133,
+   "Eruptive": 0.11574592358238014
   }
  }
 }

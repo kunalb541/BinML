@@ -33,8 +33,9 @@ complete 72-day light curves in a held-out $\bmlNtest$-event test set whose dete
 prevalence is $\bmlPriorPiZero\%$; at a $1\%$ prevalence the same threshold yields purity
 $\bmlPurityOnePct$, or completeness $\bmlPrevCompOne$ at fixed purity. On events
 regenerated from a disjoint stress set the released model reproduces its complete-season macro-F1; beyond the
-natural priors it fails, notably on faint sources (anomaly precision $\bmlStressRelFaintPrec$) and on sub-day
-single lenses, most of which it calls anomalies.
+natural priors it raises false anomalies at its operating threshold for $\bmlStressRelShortteSingleAlert\%$ of
+sub-day single lenses and $\bmlStressRelFaintMlAlert\%$ of faint microlensing events without a detectable anomaly
+($\bmlStressRelNatMlAlert\%$ in the natural population).
 Revealed in half-day steps, $\bmlCascDetFrac\%$ of $\bmlCascN$ eligible binaries alert within the
 season, $\bmlCascPrematurePct\%$ (95\% CI $[\bmlCascPrematureLo,\bmlCascPrematureHi]\%$) before a
 truth-informed, noise-free onset and the other alerts a median $\bmlCascMedianLagNonPrem$~days after
@@ -363,8 +364,9 @@ detectability floor re-evaluated on the truncated data), and earns \texttt{NonPS
 anomaly lies inside the revealed window. In the training data $t_{\mathrm{anom}}$ is resolved
 only to the end of the $7.2$-day interval in which the anomaly first became detectable, so the
 training label switches to \texttt{NonPSPL} up to $7.2$ days after the true onset---a
-conservative bias that almost always delays the label (it can advance it where detectability is not
-monotone in the revealed time; see below); the evaluation onsets in
+conservative bias that usually delays the label (in $\bmlTruthDelayK$ of the $\bmlTruthDelayN$ truncated binary
+presentations whose anomaly label disagrees with the rule measured below; it can advance it where detectability is
+not monotone in the revealed time); the evaluation onsets in
 Section~\ref{sec:cascade} are resolved at $0.5$~days and do not inherit it. The resulting training target follows the cascade
 \texttt{Flat}$\rightarrow$\texttt{PSPL}$\rightarrow$\texttt{NonPSPL}.
 
@@ -382,8 +384,8 @@ had become detectable, and from the rule's amplitude and event thresholds for $\
 $\bmlTruthTruncPer\%$, $\bmlTruthTruncPspl\%$ and $\bmlTruthTruncErupt\%$ of truncated long-period,
 periodic, single-lens and eruptive presentations. The released model is trained with these labels. With the
 stored per-bin signal for the thresholds and the half-day onset for the anomaly, the disagreement for
-binaries falls to $\bmlTruthTruncNonFixed\%$, the cases where detectability is not monotone in the revealed
-time (a further $\bmlTruthUnstable\%$ are refits too unstable to call).
+binaries falls to $\bmlTruthTruncNonFixed\%$, from cases where detectability is not monotone in the revealed
+time and from the half-day resolution of the onset (a further $\bmlTruthUnstable\%$ are refits too unstable to call).
 
 Figure~\ref{fig:cascade} shows the cascade at the level of individual events. As the clean binary
 is revealed, BinML's probability mass moves from \texttt{Flat} to \texttt{PSPL} during the smooth
@@ -501,10 +503,10 @@ the mix of non-anomalous events fixed, the share would be $\bmlRefStreamPurOne\%
 and $\bmlRefStreamPurTenth\%$ at 0.1\%, the same prior-shift arithmetic as Figure~\ref{fig:prior}. Nearly all
 single-lens alerts ($\bmlRefStreamDemotedK$ of $\bmlRefStreamDemotedN$, $\bmlRefStreamDemoted\%$ after
 reweighting) come from binaries whose anomaly falls below the detectability policy, which are false only under
-that policy; $\bmlRefStreamGenK$ of the $\bmlRefStreamGenN$ generated single lenses alerted. The colour bands do
+that policy; $\bmlRefStreamGenK$ of the $\bmlRefStreamGenN$ generated single lenses with a \texttt{PSPL} label alerted. The colour bands do
 much of this work: with F146 alone the stream raises $\bmlRefStreamFAlertsDay$ alerts per 1,000 events per day,
 $\bmlRefStreamFPurity\%$ of them from detectable anomalies ($\bmlRefStreamFPurOne\%$ at 1\%);
-$\bmlRefStreamFGenK$ of the generated single lenses and $\bmlRefStreamFVarAlerts$ flat sources or variable stars
+$\bmlRefStreamFGenK$ of those single lenses and $\bmlRefStreamFVarAlerts$ flat sources or variable stars
 alert. Among the $\bmlRefStreamElig$ \texttt{NonPSPL} events, with all three bands $\bmlRefStreamPrem\%$
 ($\bmlRefStreamPremLo$--$\bmlRefStreamPremHi\%$) alerted before the 0.5-day first-detectable onset recorded at
 generation and the median lag of the others is $\bmlRefStreamLag$~days, close to the three-band row of
@@ -687,8 +689,8 @@ single band. The network and feature models consume all 6912 epochs; the five-pa
 evaluated on the full cadence as well, since its residual statistic is a fixed-width running
 window in \emph{epochs} and thinning the input would change the timescale it integrates (an
 earlier version of this comparison thinned it to 800 epochs, which suppressed caustic-length
-residuals and understated the baseline). The training budgets are also unmatched: BinML was trained on
-roughly $\bmlSimEvents$ million simulated events, whereas the feature classifiers use only the
+residuals and understated the baseline). The training budgets are also unmatched: BinML's training
+stages used up to $\bmlTrainFinalEvents$ million simulated events (Appendix~\ref{app:infra}), whereas the feature classifiers use only the
 training split of this 9,000-event comparison set. BinML scores $\bmlBaseBinml$, compared with
 $\bmlBaseGbt$ for gradient-boosted trees, $\bmlBaseLogistic$ for logistic regression, and
 $\bmlBasePspl$ for the fitted-residual statistic. None of the baselines approaches the network
@@ -760,57 +762,71 @@ $\bmlSeedStress$ against $\bmlSeedTrain$ for the train/validation/test data---so
 draws are independent of the training draws;
 it comprises a $\bmlStressNatN$-million-event natural-population subset, targeted regimes (most of them
 enriched pools that were also used in training, drawn afresh) and out-of-range sweeps that redraw one
-parameter of one class beyond the natural priors. The set was scored in July 2026 with the stage-5
-checkpoint, the released model's predecessor (Appendix~\ref{app:infra}). For the released model we
-regenerated the first shards of each tier quoted here with the set's seeds and class mix ($\bmlStressSubN$
-events, $\bmlStressSubNat$ of them from the natural population) and scored the same events with both
-checkpoints (Table~\ref{tab:stress}). Stage~5 on this subset reproduces its full-set numbers: macro-F1
-$\bmlStressFiveSubMacroF$ against $\bmlStressMacroF$, and a median difference of $\bmlStressSubDiffMed$ over
-the quoted numbers, the largest ($\bmlStressSubDiffMax$) for the wide-separation recall, which rests on
-$\bmlStressRelWidesepN$ events. On the natural-population subset the released model reproduces its held-out
+parameter beyond the natural priors (for one class, or for the source magnitude every class). The set was
+scored in July 2026 with the stage-5 checkpoint, the released model's predecessor (Appendix~\ref{app:infra}).
+For the released model we regenerated the first shards of each tier quoted here with the set's seeds, class mix
+and (for the sweeps) its generator's draw of the peak time ($\bmlStressSubN$ events, $\bmlStressSubNat$ of them
+from the natural population) and scored the same events with both checkpoints (Table~\ref{tab:stress}). The
+regenerated events are a new realisation, not the set's own: the set was made on cloud instances whose software
+environment was not pinned, and our regenerated natural tier labels $\bmlStressNatAnomDeficit\%$ fewer detectable
+anomalies. Stage~5 on this subset gives the set's macro-F1 ($\bmlStressFiveSubMacroF$ against $\bmlStressMacroF$),
+and its other quoted numbers differ from the set's by $\bmlStressSubDiffMed$ at the median and by at most
+$\bmlStressSubDiffMax$, for the wide-separation and faint-source recalls, which rest on few events; its natural
+anomaly recall is $\bmlStressFiveSubNatNp$ against $\bmlStressSuiteNatNp$. We therefore compare the two
+checkpoints within the subset. On the natural-population subset the released model reproduces its held-out
 performance, with a macro-F1 of $\bmlStressRelMacroF$ against $\bmlMacroF$.
 
-The released model's training is not blind to the regimes below. The low-$q$ regime is one of the enriched
-pools added at stage~4, and stage~6, trained after the stage-5 stress results, added pools at the edges of
-three of the sweeps: separations $s = 3$--$8$ (the sweep spans $5$--$12$), timescales $0.3$--$10$~d (the sweep
-spans $0.2$--$1$~d) and source magnitudes $23.5$--$25$ (the sweep spans $25$--$27.5$). For the released
-model these numbers measure how far that targeted coverage carries, not generalisation to unseen regimes.
+The released model's training is not blind to the regimes below. The low-$q$ regime and faint sources
+($m = 23.5$--$25$) are among the enriched pools added at stage~4, and stage~6, trained after the stage-5 stress
+results, added more faint sources and pools that overlap two of the sweeps: separations $s = 3$--$8$ (the sweep
+spans $5$--$12$) and timescales $t_{\rm E} = 0.3$--$10$~d (the sweep spans $0.2$--$1$~d). For the released model
+these numbers measure how far that targeted coverage carries, not generalisation to unseen regimes.
 
 The out-of-range regimes still expose failures. Anomaly recall falls to $\bmlStressRelWidesep$ for very wide
-separations ($\bmlStressRelWidesepN$ retained wide-separation binaries; $\bmlStressSuiteWidesep$ for stage~5 on
-the full set's $\bmlStressWidesepN$). The out-of-range shards carry far fewer swept-class events than their
-totals suggest, and we quote the swept-class support for each number. This recall is conditional on an anomaly
-already passing the detectability policy, so the shortfall is a classifier failure on the retained
-wide-separation subset, not relabelling of uncrossed caustics. \texttt{PeriodicVar} examples whose period
-exceeds the season are recovered as \texttt{PeriodicVar} only $\bmlStressRelLongp$ of the time
-($\bmlStressRelLongpN$ events; a nearly complete failure, since within one window they are not observably
-periodic). Sub-day single lenses fail in a more consequential way: only $\bmlStressRelShortteSingle$ of the
-detectable ones ($\bmlStressRelShortteSingleN$ events) are classified \texttt{PSPL}, and
-$\bmlStressRelShortteSingleNp\%$ are called anomalies, $\bmlStressRelShortteSingleAlert\%$ above the frozen
-threshold (stage~5: $\bmlStressFiveSubShortteSingle$, $\bmlStressFiveSubShortteSingleNp\%$ and
-$\bmlStressFiveSubShortteSingleAlert\%$). The per-label value in the full set, $\bmlStressSuiteShortte$, is not a
-single-lens recall: under that set's class mix $\bmlStressShortteDemotedShare\%$ of the weighted
-\texttt{PSPL}-labelled events are binaries of ordinary timescale whose anomaly fails the policy, and the model
-recovers those ($\bmlStressRelShortteDemoted$). For faint sources, single lenses are classified \texttt{PSPL}
-$\bmlStressRelFaintSingle$ of the time ($\bmlStressRelFaintSingleN$ events) and anomaly \emph{precision} falls
-to $\bmlStressRelFaintPrec$ ($\bmlStressRelFaintPrecN$ detectable anomalies), mostly because detectable
-anomalies are rare among faint sources ($\bmlStressFaintPrevW\%$ of events by weight, against
-$\bmlStressNatPrevW\%$ in the natural population): at the natural prevalence the same rates would give
-$\bmlStressRelFaintPrecNat$. The rate of false anomaly calls itself rises from $\bmlStressRelNatFpr\%$ to
-$\bmlStressRelFaintFpr\%$ of non-anomalous events. Both failures manufacture spurious anomalies, the failure
-mode that matters most for a follow-up programme. In the low-$q$ regime recall holds at
-$\bmlStressRelPlanetNp$ and precision falls to $\bmlStressRelPlanetPrec$ only through prevalence
-($\bmlStressPlanetPrevW\%$): at the natural prevalence the same rates give $\bmlStressRelPlanetPrecNat$.
+separations ($\bmlStressRelWidesepN$ retained wide-separation binaries; stage~5, $\bmlStressFiveSubWidesep$). The
+out-of-range shards carry far fewer swept-class events than their totals suggest, and we quote the swept-class
+support for each number. This recall is conditional on an anomaly already passing the detectability policy, so
+the shortfall is a classifier failure on the retained wide-separation subset, not relabelling of uncrossed
+caustics. \texttt{PeriodicVar} examples whose period is comparable to or longer than the $72$-day season
+($60$--$200$~d) are recovered as \texttt{PeriodicVar} only $\bmlStressRelLongp$ of the time ($\bmlStressRelLongpN$
+events; a nearly complete failure, since within one window they are not observably periodic). Sub-day single
+lenses fail in a more consequential way: only $\bmlStressRelShortteSingle$ of the detectable ones
+($\bmlStressRelShortteSingleN$ events) are classified \texttt{PSPL}, and $\bmlStressRelShortteSingleNp\%$ are
+called anomalies, $\bmlStressRelShortteSingleAlert\%$ above the frozen threshold (stage~5:
+$\bmlStressFiveSubShortteSingle$, $\bmlStressFiveSubShortteSingleNp\%$ and $\bmlStressFiveSubShortteSingleAlert\%$).
+The per-label value in the full set, $\bmlStressSuiteShortte$, is not a single-lens recall: in this tier
+$\bmlStressShortteDemotedShare\%$ of the weighted \texttt{PSPL}-labelled events are binaries of ordinary timescale
+whose anomaly fails the policy, and the model recovers those ($\bmlStressRelShortteDemoted$). The set's generator
+drew the peak times of the swept events for their original, longer timescales, so some sub-day single lenses
+peak outside the season; with the corrected generator the released model classifies
+$\bmlStressRelShortteCurSingle$ of the detectable single lenses ($\bmlStressRelShortteCurSingleN$) as \texttt{PSPL}
+and calls $\bmlStressRelShortteCurSingleNp\%$ anomalies ($\bmlStressRelShortteCurSingleAlert\%$ above the threshold).
+For faint sources ($m = 25$--$27.5$) single lenses are classified \texttt{PSPL} $\bmlStressRelFaintSingle$ of the
+time ($\bmlStressRelFaintSingleN$ events), and among microlensing events without a detectable anomaly the
+false-anomaly rate rises from $\bmlStressRelNatMlFa\%$ in the natural population to $\bmlStressRelFaintMlFa\%$
+($\bmlStressRelNatMlAlert\%$ and $\bmlStressRelFaintMlAlert\%$ above the frozen threshold). Anomaly
+\emph{precision} in this tier falls to $\bmlStressRelFaintPrec$ ($\bmlStressRelFaintPrecN$ detectable anomalies),
+but that number is set mostly by the sweep's class mix: it is $\bmlStressFaintFlatShare\%$ flat sources by
+weight, so detectable anomalies are $\bmlStressFaintPrevW\%$ of its events against $\bmlStressNatPrevW\%$ in the
+natural population, while faintness itself lowers the detectable fraction of binaries only from
+$\bmlStressNatBinDet\%$ to $\bmlStressFaintBinDet\%$; at the natural prevalence the same rates would give
+$\bmlStressRelFaintPrecNat$. Both failures manufacture spurious anomalies, the failure mode that matters most for a
+follow-up programme. In the low-$q$ regime recall holds at $\bmlStressRelPlanetNp$ and precision falls to
+$\bmlStressRelPlanetPrec$ only through prevalence ($\bmlStressPlanetPrevW\%$): at the natural prevalence the same
+rates give $\bmlStressRelPlanetPrecNat$.
 
 \begin{deluxetable*}{llcccc}
 \tabletypesize{\footnotesize}
 \tablecaption{Stress numbers of the released model and its predecessor. ``Full set'' is the
-$\bmlStressN$-million-event stress set, scored with the stage-5 checkpoint; ``subset'' is its first shards
-regenerated with the same seeds and class mix and scored with both checkpoints. Recall and precision are
-per label over every event of a regime, argmax class, weighted by the inverse keep probability; $N$ is the
-number of events with the class label (for precision, the detectable anomalies; for macro-F1, all events). The single-lens rows keep
-the generated single lenses with a \texttt{PSPL} label; ``called anomalies'' is the fraction whose most probable
-class is \texttt{NonPSPL}, with the fraction above the frozen threshold in parentheses.
+$\bmlStressN$-million-event stress set, scored with the stage-5 checkpoint; ``subset'' is its first shards,
+regenerated with the same seeds, class mix and peak-time draw (a new realisation of the same populations, not the
+same events; \S\ref{sec:limits}) and scored with both checkpoints. Recall and precision are per label over every
+event of a regime, argmax class, weighted by the inverse keep probability; $N$ is the number of events with the
+class label (for precision, the detectable anomalies; for macro-F1, all events). The single-lens rows keep the
+generated single lenses with a \texttt{PSPL} label; ``called anomalies'' is the fraction whose most probable class
+is \texttt{NonPSPL}, with the fraction above the frozen threshold in parentheses; ``corrected'' regenerates the
+sub-day tier with the peak times drawn for the sub-day timescales. ``Microlensing'' rows take every
+\texttt{PSPL}-labelled event, single lenses and binaries without a detectable anomaly.
 \code{validation/stress\_rescore\_local.json}, \code{paper/results/stress\_report.json}.\label{tab:stress}}
 \tablehead{\colhead{regime} & \colhead{quantity} & \colhead{full set, stage 5 ($N$)} &
 \colhead{subset, stage 5} & \colhead{subset, released} & \colhead{$N$ (subset)}}
@@ -818,6 +834,7 @@ class is \texttt{NonPSPL}, with the fraction above the frozen threshold in paren
 natural & macro-F1 & $\bmlStressMacroF$ ($\bmlStressNatN$M) & $\bmlStressFiveSubMacroF$ & $\bmlStressRelMacroF$ & $\bmlStressSubNat$ \\
 natural & anomaly recall & $\bmlStressSuiteNatNp$ ($\bmlStressNatNpN$) & $\bmlStressFiveSubNatNp$ & $\bmlStressRelNatNp$ & $\bmlStressRelNatNpN$ \\
 natural & anomaly precision & $\bmlStressSuiteNatNpPrec$ & $\bmlStressFiveSubNatNpPrec$ & $\bmlStressRelNatNpPrec$ & $\bmlStressRelNatNpPrecN$ \\
+natural & microlensing: called anomalies & \nodata & \nodata & $\bmlStressRelNatMlFa\%$ ($\bmlStressRelNatMlAlert\%$) & $\bmlStressRelNatPsplN$ \\
 low $q$ ($10^{-6}$--$10^{-3}$) & anomaly recall & $\bmlStressSuitePlanetNp$ ($\bmlStressPlanetNpN$) & $\bmlStressFiveSubPlanetNp$ & $\bmlStressRelPlanetNp$ & $\bmlStressRelPlanetNpN$ \\
 low $q$ & anomaly precision & $\bmlStressSuitePlanetPrec$ & $\bmlStressFiveSubPlanetPrec$ & $\bmlStressRelPlanetPrec$ & $\bmlStressRelPlanetPrecN$ \\
 wide $s$ ($5$--$12$) & anomaly recall & $\bmlStressSuiteWidesep$ ($\bmlStressWidesepN$) & $\bmlStressFiveSubWidesep$ & $\bmlStressRelWidesep$ & $\bmlStressRelWidesepN$ \\
@@ -825,8 +842,11 @@ long $P$ ($60$--$200$~d) & \texttt{PeriodicVar} recall & $\bmlStressSuiteLongp$ 
 sub-day $t_{\rm E}$ ($0.2$--$1$~d) & \texttt{PSPL} recall & $\bmlStressSuiteShortte$ ($\bmlStressShortteN$) & $\bmlStressFiveSubShortte$ & $\bmlStressRelShortte$ & $\bmlStressRelShortteN$ \\
  & single lenses: \texttt{PSPL} & \nodata & $\bmlStressFiveSubShortteSingle$ & $\bmlStressRelShortteSingle$ & $\bmlStressRelShortteSingleN$ \\
  & single lenses: called anomalies & \nodata & $\bmlStressFiveSubShortteSingleNp\%$ ($\bmlStressFiveSubShortteSingleAlert\%$) & $\bmlStressRelShortteSingleNp\%$ ($\bmlStressRelShortteSingleAlert\%$) & $\bmlStressRelShortteSingleN$ \\
+ & corrected: single lenses \texttt{PSPL} & \nodata & $\bmlStressFiveSubShortteCurSingle$ & $\bmlStressRelShortteCurSingle$ & $\bmlStressRelShortteCurSingleN$ \\
+ & corrected: called anomalies & \nodata & $\bmlStressFiveSubShortteCurSingleNp\%$ ($\bmlStressFiveSubShortteCurSingleAlert\%$) & $\bmlStressRelShortteCurSingleNp\%$ ($\bmlStressRelShortteCurSingleAlert\%$) & $\bmlStressRelShortteCurSingleN$ \\
 faint ($m = 25$--$27.5$) & \texttt{PSPL} recall & $\bmlStressSuiteFaintPspl$ ($\bmlStressFaintPsplN$) & $\bmlStressFiveSubFaintPspl$ & $\bmlStressRelFaintPspl$ & $\bmlStressRelFaintPsplN$ \\
  & single lenses: \texttt{PSPL} & \nodata & $\bmlStressFiveSubFaintSingle$ & $\bmlStressRelFaintSingle$ & $\bmlStressRelFaintSingleN$ \\
+ & microlensing: called anomalies & \nodata & \nodata & $\bmlStressRelFaintMlFa\%$ ($\bmlStressRelFaintMlAlert\%$) & $\bmlStressRelFaintPsplN$ \\
  & anomaly precision & $\bmlStressSuiteFaintPrec$ ($\bmlStressFaintNpN$) & $\bmlStressFiveSubFaintPrec$ & $\bmlStressRelFaintPrec$ & $\bmlStressRelFaintPrecN$ \\
 \enddata
 \end{deluxetable*}
@@ -911,19 +931,18 @@ $\bmlGapShippedFlatClean$ to $\bmlGapShippedFlatSched$, mostly to \texttt{Period
 and long-period variables and \texttt{NonPSPL} itself also degrade, and \texttt{NonPSPL} precision
 falls from $\bmlGapShippedPrecClean$ to $\bmlGapShippedPrecSched$. A single gap of half an hour costs
 nothing, but one gap of 1--2~h placed at mid-season already lowers single-lens recall from $\bmlGapSensNone$ to
-$\bmlGapSensTwo$ ($\bmlGapSensN$ events per class; the cost depends on where the gap falls), the lost events
-going to \texttt{NonPSPL} and \texttt{PeriodicVar}. The remedy is an augmentation, not a new model:
+$\bmlGapSensTwo$ ($\bmlGapSensN$ events per class; the cost depends on where the gap falls), the lost events going to \texttt{NonPSPL}. The remedy is an augmentation, not a new model:
 blanking one to eight contiguous runs of 1--12~h in every band during a 12-epoch warm-start fine-tune of
 the shipped weights raises held-out average precision under the measured pauses from
 $\bmlGapApShipped$ to $\bmlGapApRand$, while clean-data average precision falls only from
-$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does at least as well,
+$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does as well within the seed spread,
 provided they are the right pauses: drawing one of RMDC26's six measured seasons per training example gives
 $\bmlGapApSeasons$ under the measured pauses against $\bmlGapApRandNorelabel$ for random gaps, with clean
 average precision $\bmlGapApCleanSeasons$ against $\bmlGapApCleanRandNorelabel$, whereas training on a single season's
 pauses scores only $\bmlGapApFirstSeason$ across the six seasons, its own included. The first two
 differences are smaller than the spread of held-out average precision across three training seeds of one
 recipe ($\bmlSeedHeldApRange$, \S\ref{sec:gulls:results}), so on our own seasons the measured and random pauses
-are not separated; on RMDC26 the measured pauses lead by more than that seed range. Both schedule arms
+are not separated; on RMDC26 the measured pauses lead in recall by more than the seed range of Table~\ref{tab:seeds}. Both schedule arms
 train with the caustic-in-gap relabel off. That rule relabels a binary as \texttt{PSPL} when the bins
 around its recorded onset are blanked, but the onset records when the anomaly first becomes detectable,
 not where the caustic is; with a fixed mask and the legacy 7.2-day onset grid it made
@@ -1010,10 +1029,13 @@ than fainter. Our sky-background ratios also fail to reproduce the published the
 which make F213 substantially worse and F087 substantially better relative to F146 than we assume.
 Both errors sit in the colour bands, which the model uses chiefly to reject variable-star
 contaminants. To measure their effect we regenerated two shards of the held-out pool ($\bmlRefN$ events,
-disjoint from training; $\bmlRefValPct\%$ of them are among the rows the frozen threshold was chosen on) with
+disjoint from training) with
 the audited colour-band zeropoints, backgrounds and saturation limits (F146, the exposure time and the
 cadence unchanged; the events are identical and $\bmlRefColLabChanged$ labels change) and scored both
-versions with the shipped model at its frozen threshold. Every quantity below is on every event of the
+versions with the shipped model at its frozen threshold. At the current code the regenerated shards reproduce
+$\bmlRefMatchPct\%$ of their events in the held-out pool; the rest are new draws from the same priors, because a
+few labels changed after the pool was made and the draw that keeps or drops an event then shifts the random
+stream. Of the reproduced events, $\bmlRefValPctMatched\%$ are among the rows the frozen threshold was chosen on. Every quantity below is on every event of the
 shards. The anomaly channel barely moves: completeness is $\bmlRefColCompAudited$ against
 $\bmlRefColCompTrained$, population-weighted purity $\bmlRefColPurAudited$ against $\bmlRefColPurTrained$,
 and average precision $\bmlRefColApAudited$ against $\bmlRefColApTrained$. The variable classes lose
@@ -1098,7 +1120,7 @@ three classes. We keep events whose host single-lens peak amplitude, computed fr
 parameter and blend fraction, is at least $0.1$~mag (the median single-lens event is
 $\bmlGullsAmpMedSingle$~mag and $\bmlGullsAmpFracSingle\%$ pass) and whose Einstein timescale lies in
 our natural prior's support, $1 \le t_{\rm E} \le 300$~d (the released model's last training stage
-also saw a short-timescale pool reaching $0.3$~d, Appendix~\ref{app:infra}; $\bmlGullsSubdaySingle\%$ of RMDC26 single lenses are
+also saw a short-timescale pool reaching $0.3$~d, \S\ref{sec:limits}; $\bmlGullsSubdaySingle\%$ of RMDC26 single lenses are
 sub-day, against $\bmlGullsSubdayPlanet\%$ and $\bmlGullsSubdayPlanetBin\%$ of the planetary classes).
 That leaves $\bmlGullsEligibleN$ events. Of these, $\bmlGullsScoredPct\%$ ($\bmlGullsN$:
 $\bmlGullsNSingle$ 1S1L, $\bmlGullsNPlanet$ 1S2L, $\bmlGullsNPlanetBin$ 2S2L) peak inside one of the
@@ -1170,7 +1192,7 @@ augmentation, $\bmlGullsMeanRecCtrl$ and $\bmlGullsMeanRecFspl$). In false alarm
 the gain over gap augmentation is therefore the extra training; at higher budgets and in mean recall it is
 the physics. Per simulated event the physics lowers false alarms most in the two largest-ratio bins (from
 $\bmlGullsRhoMidCtrl$ and $\bmlGullsRhoHiCtrl$ to $\bmlGullsRhoMidFspl$ and $\bmlGullsRhoHiFspl$); in the smaller
-bins, where finite size cannot matter, its reductions are within the training noise measured below. On our
+bins its reductions are within the training noise measured below. On our
 own finite-source held-out only the physics restores single-lens recall for sources larger than the
 impact parameter ($\bmlHeldPsplMidCtrl$ and $\bmlHeldPsplHiCtrl$ for the control, $\bmlHeldPsplMidFspl$
 and $\bmlHeldPsplHiFspl$ with finite sources, in the 1--3 and $> 3$ bins). Weighted by event rate its
@@ -1261,7 +1283,7 @@ within the seed range.
 recommended recipe. FA is the change in the single-lens false-alarm rate at the frozen threshold (percentage
 points); R$_x$ the change in 1S2L recall at a single-lens false-alarm budget of $x\%$; ``mean'' the change in
 mean 1S2L recall over false-alarm rates up to 30\%. Columns marked (w) weight events by their RMDC26 event
-rate. The first row is the range (maximum minus minimum) over the three seeds; entries in bold exceed it at
+rate. The first row is the range (maximum minus minimum) over the three seeds; entries in bold exceed it (compared at full precision) at
 the same budget and weighting. The pauses arms are the schedule experiment of \S\ref{sec:gulls:results} (a
 different pool, from the shipped weights). Generated from
 \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:seeds}}
@@ -1392,37 +1414,47 @@ model would add is events whose light curves span seasons and the four low-caden
 \subsection{The partial-season cascade on RMDC26}\label{sec:gulls:cascade}
 Section~\ref{sec:cascade} measures how early the model flags an anomaly, on our own simulator and for
 eligible binaries only. We repeated its primary protocol on RMDC26 with the recommended checkpoint at the
-frozen threshold. The high-cadence season of $\bmlCgNsingle$ single lenses and $\bmlCgNbinary$ binaries was
-revealed in half-day steps, every cut was scored from F146 alone, and the alert is the first cut above the
-threshold. The onset is the first cut at which our labelling rule (\S\ref{sec:gulls:labels}) is met on
+frozen threshold. The first $\bmlCgNsingle$ scored single lenses and the first $\bmlCgNplanet$ of each planetary class
+(by event identifier), each in its high-cadence season, were revealed in half-day steps, every cut was scored
+from F146 alone, and the alert is the first cut above the threshold. The onset is the first cut at which our labelling rule (\S\ref{sec:gulls:labels}) is met on
 GULLS' noise-free light curve with GULLS' errors, so it comes from a simulator we did not write. The
 $\bmlCgElig$ eligible events are the binaries whose anomaly is claimable over the whole season; nothing is
 selected on the model's output.
 
 Premature alerts stay rare: $\bmlCgPrem\%$ of the eligible events are flagged before the onset (95\%
-interval $\bmlCgPremLo$--$\bmlCgPremHi\%$), against $\bmlCgInGiantPrem\%$ and $\bmlCgInNeptunePrem\%$ for the
-giant-planet and Neptune strata of the in-house scan ($\bmlCgInGiantN$ and $\bmlCgInNeptuneN$ events; shipped
-model, our simulator), the only strata comparable with RMDC26's planetary anomalies. Alerts come later: the
-median lag of the others is $\bmlCgLag$~d, against $\bmlCgInGiantLag$~d in-house. Detection is lower:
-$\bmlCgDet\%$ ($\bmlCgDetLo$--$\bmlCgDetHi\%$) of the eligible events are flagged by the end of the
-season, against $\bmlCgInGiantDet\%$ and $\bmlCgInNeptuneDet\%$ in-house (a different checkpoint on a different
-simulator, so the difference mixes the two), in line with the full-season recall on
-claimable anomalies ($\bmlGullsRecDetPlanet$ and $\bmlGullsRecDetPlanetBin$, \S\ref{sec:gulls:labels}).
-Revealing all three bands lowers premature alerts to $\bmlCgPremThree\%$, lengthens the lag to
-$\bmlCgLagThree$~d and lowers detection to $\bmlCgDetThree\%$. The in-house scan measured three bands
-only for its whole population, mostly stellar binaries (premature alerts $\bmlCascPrematurePct\%$ to
-$\bmlCascMultibandPct\%$, lag $\bmlCascMedianLagNonPrem$ to $\bmlCascMultibandMedianLag$~d, detection
-$\bmlCascDetFrac\%$ to $\bmlCascMultibandDet\%$), so its planetary strata cannot be compared on this point.
+interval $\bmlCgPremLo$--$\bmlCgPremHi\%$). We compare stratum by stratum with the in-house scan (shipped
+model, our simulator), split by the same planet mass ratios. For giant planets ($10^{-3} < q \le 10^{-2}$;
+$\bmlCgRmGiantN$ RMDC26 events against $\bmlCgInGiantN$ in-house) premature alerts are $\bmlCgRmGiantPrem\%$
+against $\bmlCgInGiantPrem\%$, the median lag of the other alerts is $\bmlCgRmGiantLag$~d against
+$\bmlCgInGiantLag$~d, and $\bmlCgRmGiantDet\%$ against $\bmlCgInGiantDet\%$ are flagged by the end of the
+season; for Neptunes ($10^{-4} < q \le 10^{-3}$; $\bmlCgRmNeptuneN$ against $\bmlCgInNeptuneN$) the figures are
+$\bmlCgRmNeptunePrem\%$ against $\bmlCgInNeptunePrem\%$, $\bmlCgRmNeptuneLag$ against $\bmlCgInNeptuneLag$~d,
+and $\bmlCgRmNeptuneDet\%$ against $\bmlCgInNeptuneDet\%$. Premature alerts are therefore no more frequent,
+alerts come later and detection is lower (a different checkpoint on a different simulator, so the differences
+mix the two). $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
+scan barely samples ($\bmlCgInLowmassN$ events); there detection falls to $\bmlCgRmLowmassDet\%$. Over all
+$\bmlCgElig$ eligible events $\bmlCgDet\%$ ($\bmlCgDetLo$--$\bmlCgDetHi\%$) are flagged by the end of the season,
+in line with the full-season recall on claimable anomalies ($\bmlGullsRecDetPlanet$ and
+$\bmlGullsRecDetPlanetBin$, \S\ref{sec:gulls:labels}), and the median lag is $\bmlCgLag$~d. Revealing all three
+bands lowers premature alerts to $\bmlCgPremThree\%$, lengthens the lag to $\bmlCgLagThree$~d and lowers detection
+to $\bmlCgDetThree\%$; with three bands the in-house giant and Neptune strata flag $\bmlCgInGiantDetThree\%$ and
+$\bmlCgInNeptuneDetThree\%$ ($\bmlCgInGiantPremThree\%$ and $\bmlCgInNeptunePremThree\%$ premature), against
+$\bmlCgRmGiantDetThree\%$ and $\bmlCgRmNeptuneDetThree\%$ ($\bmlCgRmGiantPremThree\%$ and
+$\bmlCgRmNeptunePremThree\%$) on RMDC26.
 
-Scanning single lenses gives the alert burden on a second simulator. $\bmlCgSingleAlert\%$ of single
-lenses per simulated event ($\bmlCgSingleAlertW\%$ weighted by event rate) raise an alert at some point in the
-season ($\bmlCgSingleAlertDay$ alerts per 1,000 single lenses per day). If 1\% of events were planetary
+Scanning single lenses gives the alert burden on a second simulator. $\bmlCgSingleAlert\%$ of the
+scanned single lenses (95\% interval $\bmlCgSingleAlertLo$--$\bmlCgSingleAlertHi\%$; $\bmlCgSingleAlertW\%$
+weighted by event rate) raise an alert at some point in the season ($\bmlCgSingleAlertDay$ alerts per 1,000
+single lenses per day). On the complete season this sample flags slightly fewer single lenses than all scored
+ones ($\bmlCgSingleFullWindow\%$ against $\bmlGullsFaCombined\%$), so the burden and purity figures here are
+slightly optimistic. If 1\% of events were planetary
 binaries, $\bmlCgPurOne\%$ of alerts would come from a claimable anomaly, and $\bmlCgPurFive\%$ at 5\% (per
 simulated event). At RMDC26's own rate-weighted planetary fraction, which over-represents planets, the figure is
 $\bmlCgPurRmdc\%$. These count single-lens contamination only; RMDC26 contains no variable stars or flat
-sources (our synthetic ones rarely alert, \S\ref{sec:cascade}, but real variables are untested), so a real
-stream would be less pure. On our own simulator, with continuous seasons and the same checkpoint, band and
-threshold, $\bmlRefRecSingleK$ of $\bmlRefRecSingleN$ generated single lenses alert ($\bmlRefRecSinglePct\%$);
+sources (our synthetic ones rarely alert for the shipped checkpoint, \S\ref{sec:cascade}, but were not scanned
+with the recommended one, and real variables are untested), so a real stream would be less pure. On our own simulator, with continuous seasons and the same checkpoint, band and
+threshold, $\bmlRefRecSingleK$ of the $\bmlRefRecSingleN$ generated single lenses with a \texttt{PSPL} label alert
+($\bmlRefRecSinglePct\%$);
 RMDC26's single lenses alert several times as often. At the recalibrated
 threshold single-lens alerts fall to $\bmlCgSingleAlertCal\%$ and purity at 1\% rises to
 $\bmlCgPurOneCal\%$, but detection falls to $\bmlCgDetCal\%$, premature alerts to $\bmlCgPremCal\%$, and the
@@ -1611,7 +1643,7 @@ $\bmlRefStreamFPurity\%$. The matched-risk comparison between models trained wit
 truncation is exploratory---thresholds and outcomes use the same $\bmlMatchN$ events---and does not
 establish a causal timing benefit.
 
-Of the tests the submitted version listed as open, two are now reported: a scan of every class that
+Of the tests an earlier version of this work left open, two are now reported: a scan of every class that
 measures the alert burden (\S\ref{sec:cascade}) and the label side of the $0.02$~mag floor
 (\S\ref{sec:limits}). So are a colour-calibration ablation (\S\ref{sec:limits}) and transfer to an independent
 simulation of the survey, on which the shipped model fails because of the survey's F146 observing pauses and a
@@ -1687,7 +1719,10 @@ tables of \S\ref{sec:gulls} regenerate from it alone; the recommended checkpoint
 
 \emph{Training reproduction.} The multi-million-event training set is too large to host and is
 available on request; it can also be regenerated from the released simulation code, since each
-shard is seeded deterministically by its index. Reproducing the released checkpoint, the ablation
+shard is seeded deterministically by its index. Regenerated at the current code the data are statistically
+equivalent, not event-identical: a few labels have changed since the released shards were made, which shifts
+the random stream after the first change (for two held-out shards, $\bmlRefMatchPct\%$ of the events
+reproduce, \S\ref{sec:limits}). Reproducing the released checkpoint, the ablation
 arms or the fine-tuning runs means rerunning that generation and the training, which is the
 cloud-scale cost described in Appendix~\ref{app:infra}. The build script does not do this, and no
 claim in this paper should be read as implying that it does.
@@ -1699,36 +1734,41 @@ claim in this paper should be read as implying that it does.
 For reproducibility we describe the compute configuration used to generate the data and train the
 model. We did not retain billing records and therefore do not report a currency cost.
 
-\paragraph{Simulation (AWS).} The training set of roughly $\bmlSimEvents$~million events was
-generated on Amazon Web Services in the \texttt{\bmlSimRegion} region, on a small fleet of
-$\bmlSimInstances$ transient (Spot) instances of $\bmlSimVcpus$ virtual CPUs each. The generator is
-embarrassingly parallel: one process builds one self-contained shard of a few thousand light
-curves, seeded purely by its index, so a shard that is lost to a Spot interruption costs at most
-that shard and the run resumes by skipping shards already written to cloud storage. At a measured
-throughput of about $\bmlSimEps$ events per second across the fleet, the full set was produced in
-roughly $\bmlSimHours$~hours. Storage use and cloud price vary with provider, region, and date and
-are not reconstructed here.
+\paragraph{Simulation (AWS).} The simulated data were generated on Amazon Web Services in the
+\texttt{\bmlSimRegion} region, on transient (Spot) instances of $\bmlSimVcpus$ virtual CPUs each. The generator
+is embarrassingly parallel: one process builds one self-contained shard of a few thousand light curves, seeded
+purely by its index, so a shard that is lost to a Spot interruption costs at most that shard and the run resumes
+by skipping shards already written to cloud storage. The same code, with the seed bases of \S\ref{sec:limits},
+produced the stress set. The fleets' software environment was not pinned (the Python packages were installed
+unversioned), so regenerating a shard elsewhere gives statistically equivalent rather than identical events.
+We did not retain throughput or billing records for these runs. Storage use and cloud price vary with provider,
+region, and date and are not reconstructed here.
 
-\paragraph{Training recipe.} The released checkpoint is the last of $\bmlTrainStages$ warm-started
-stages, each keeping its epoch with the highest validation \texttt{NonPSPL} F1. A base model was trained
-from scratch on $\bmlTrainBaseEvents$ natural-prior events with AdamW (learning rate $3\times10^{-4}$,
-weight decay $0.01$, batch size 512) and cross-entropy loss with the selection weights of \S\ref{sec:eval}
-and an additional factor $2$ on the anomaly class. Stage 2 restarted from its fourth epoch without that
-factor (learning rate $1.2\times10^{-4}$); stage 3 added the truncation augmentation, applied to half of all
-training examples (learning rate $3\times10^{-5}$); stage 4 added targeted hard-regime pools (learning rate
-$5\times10^{-5}$, batch size 384, as in every later stage); stage 5 applied the detectability floor to truncated
-periodic classes and admitted truncations from the first days of the season; and stage 6 applied the
-truncation relabelling to every class and added pools that widen the separation, timescale and faint-source
-coverage, $\bmlTrainFinalEvents$ million events in all, for $\bmlTrainEpochs$ epochs. The released checkpoint
-is stage 6's zero-based epoch 4. Seeds are fixed ($\bmlSeedTrain$) and the data loader is seeded per worker.
-The fine-tunes of \S\ref{sec:limits} and \S\ref{sec:gulls} warm-start from the released weights (or from the
-gap-augmented checkpoint) and keep their best epoch the same way; the colour-calibration fine-tunes use a
-learning rate of $5\times10^{-5}$, the RMDC26 fine-tunes $10^{-4}$.
+\paragraph{Training recipe.} The released checkpoint is the last of $\bmlTrainStages$ stages, five of them
+warm-started from the previous one, each keeping its epoch with the highest validation \texttt{NonPSPL} F1. Every
+stage used AdamW (weight decay $0.01$) with a one-cycle schedule (15\% warm-up, cosine decay; the rates below are
+the peaks) and cross-entropy loss with the selection weights of \S\ref{sec:eval}. The base model was trained from
+scratch on $\bmlTrainBaseEvents$ natural-prior events (peak learning rate $4\times10^{-4}$, batch size 512, an
+additional factor $2$ on the anomaly class); it was scheduled for 18 epochs and stopped after six. Stage 2 restarted
+from its fourth epoch without that factor (learning rate $1.2\times10^{-4}$); stage 3 added the truncation
+augmentation, applied to half of all training examples (learning rate $3\times10^{-5}$); stage 4 added enriched
+pools of 15 targeted regimes, among them the low-$q$ and faint-source ($m = 23.5$--$25$) regimes of
+\S\ref{sec:limits} (learning rate $5\times10^{-5}$, batch size 384, as in every later stage); stage 5 applied the
+detectability floor to truncated periodic classes and admitted truncations from the first days of the season; and
+stage 6 relabelled truncated binaries as \texttt{PSPL} until their recorded anomaly onset (the cascade of
+\S\ref{sec:cascade}) and added pools of separations $s = 3$--$8$, timescales $t_{\rm E} = 0.3$--$10$~d and further
+faint sources, $\bmlTrainFinalEvents$ million events in all, for $\bmlTrainEpochs$ epochs. The released checkpoint
+is stage 6's zero-based epoch 4. Seeds are fixed ($\bmlSeedTrain$); the stages loaded data in the main process, so
+the augmentation's random stream follows from that seed (per-worker seeding for multi-process loading was added to
+the code afterwards). The fine-tunes of \S\ref{sec:limits} and \S\ref{sec:gulls} warm-start from the released
+weights (or from the gap-augmented checkpoint) and keep their best epoch the same way, with batch size 256 and the
+factor $2$ on the anomaly class; the colour-calibration fine-tunes use a peak learning rate of $5\times10^{-5}$, the
+RMDC26 fine-tunes $10^{-4}$.
 
 \paragraph{Training (local).} The network is small enough that every stage was trained on a personal
-computer, on the \bmlTrainDevice. A benchmark of the training step (forward and backward pass on a full batch
-of $\bmlTrainBatchBench$) sustains about $\bmlTrainEps$ events per second; the $\bmlTrainStages$ stages took
-about $\bmlTrainHours$~hours of wall-clock in total. On local hardware no compute is rented, so the marginal
+computer, on the \bmlTrainDevice. The logged training epochs processed $\bmlTrainEpsLo$--$\bmlTrainEpsHi$ events
+per second, including data loading and augmentation; the $\bmlTrainStages$ stages took about $\bmlTrainHours$~hours
+of wall-clock in total. On local hardware no compute is rented, so the marginal
 training cost is local electricity; we did not estimate it. The compactness of the network
 (\S\ref{sec:model}) is what
 keeps both training and survey-scale inference within reach of a single workstation rather than

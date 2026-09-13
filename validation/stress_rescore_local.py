@@ -128,6 +128,7 @@ def metrics(ev):
     from pipeline.classes import CLASS_NAMES
     y = np.load(os.path.join(ev, "label.npy")).astype(int); pred = np.load(os.path.join(ev, "logits.npy")).argmax(1)
     score = np.load(os.path.join(ev, "score_nonpspl.npy")).astype(np.float64)
+    tc0 = np.load(os.path.join(ev, "true_class.npy")).astype(int)
     w = 1.0 / np.clip(np.load(os.path.join(ev, "keep_prob.npy")).astype(np.float64), 1e-3, 1.0)
     cls = {}
     for c, name in enumerate(CLASS_NAMES):
@@ -136,7 +137,8 @@ def metrics(ev):
             cls[name] = {"recall": float(r), "precision": float(p), "f1": float(f), "n": int((y == c).sum())}
     out = {"n": int(y.size), "per_class": cls,
            "label_fractions": {n: float((y == c).mean()) for c, n in enumerate(CLASS_NAMES)},
-           "label_fractions_w": {n: float(w[y == c].sum() / w.sum()) for c, n in enumerate(CLASS_NAMES)}}
+           "label_fractions_w": {n: float(w[y == c].sum() / w.sum()) for c, n in enumerate(CLASS_NAMES)},
+           "true_class_fractions_w": {n: float(w[tc0 == c].sum() / w.sum()) for c, n in enumerate(CLASS_NAMES)}}
     if len(cls) == len(CLASS_NAMES):
         out["macro_f1"] = float(np.mean([cls[n]["f1"] for n in CLASS_NAMES]))
     # PSPL-labelled events split by generator class (see the module docstring)

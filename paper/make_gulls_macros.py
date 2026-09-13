@@ -84,6 +84,11 @@ if GS:
     cmd("bmlGapSensNone", two(GS["no_gaps"]["PSPL"]["recall"]))
     assert abs(sg1["0.5"]["PSPL"]["recall"] - GS["no_gaps"]["PSPL"]["recall"]) < 1e-9, "0.5 h gap no longer free"
     cmd("bmlGapSensTwo", two(min(sg1["1.0"]["PSPL"]["recall"], sg1["2.0"]["PSPL"]["recall"])))
+    for _h in ("1.0", "2.0"):                    # "the lost events going to NonPSPL": the extra losses are NonPSPL calls
+        _a0, _a1 = GS["no_gaps"]["PSPL"]["argmax"], sg1[_h]["PSPL"]["argmax"]
+        _gain = {c: _a1.get(c, 0) - _a0.get(c, 0) for c in set(_a0) | set(_a1) if c != "PSPL"}
+        need(max(_gain, key=_gain.get) == "NonPSPL" and _gain["NonPSPL"] >= 0.8 * sum(v for v in _gain.values() if v > 0),
+             f"a {_h} h gap's lost single lenses no longer go (almost all) to NonPSPL")
     cmd("bmlGapSensN", str(GS["n_per_class"]))
 
 # ------------------------------------------------------------------ dataset facts
@@ -216,6 +221,7 @@ if T:
             W_ = M[m]["weighted"]; wat = next(a for a in W_["recall_at_matched_fa"] if abs(a["fa_target"] - mid) < 1e-9)
             cmd(f"bmlGullsFaW{nm}", pct(W_["frozen_threshold"]["fa_1S1L"]))
             cmd(f"bmlGullsRecW{nm}", three(wat["recall_1S2L"])); cmd(f"bmlGullsRecBinW{nm}", three(wat["recall_2S2L"]))
+    FA_REC_FROZEN = fa(REC)          # all scored single lenses, frozen threshold (the cascade sample is compared with it)
     # every fine-tuned checkpoint scored on RMDC26 before the choice (the multiplicity behind "optimistic"); the seed
     # replicates of the recommended recipe (suffix _s2, _s3) were trained after the choice and are not candidates
     cmd("bmlGullsNcheckpoints", str(len([k for k in M if k != "shipped" and not re.search(r"_s\d+$", k)])))
@@ -500,6 +506,45 @@ if CG:
     cmd("bmlCgPremThree", pct(t3["timing"]["premature_frac"])); cmd("bmlCgDetThree", pct0(t3["timing"]["detected_frac"]))
     cmd("bmlCgLagThree", f"{t3['timing']['median_lag_nonpremature_days']:+.1f}")
     cmd("bmlCgSingleAlertThree", pct(t3["burden"]["RMDC26_1S1L_ML"]["alert_frac_per_season"]))
+    # Stratum by stratum against the in-house scan (fourth verification, 2026-09-13): RMDC26's eligible anomalies split
+    # by planet mass ratio with the in-house strata, for F146 alone and three bands.
+    need("timing_by_mass_ratio" in pr and "by_mass_ratio_three_band" in CG["inhouse_reference"],
+         "cascade_gulls.json lacks the mass-ratio strata (rerun --reduce)")
+    rs1, rs3 = pr["timing_by_mass_ratio"], t3["timing_by_mass_ratio"]
+    ih3 = CG["inhouse_reference"]["by_mass_ratio_three_band"]; ihn = CG["inhouse_reference"]["n_by_mass_ratio"]
+    for st, nm in (("giant", "Giant"), ("neptune", "Neptune"), ("lowmass", "Lowmass")):
+        cmd(f"bmlCgRm{nm}N", f"{rs1[st]['n_eligible']:,}"); cmd(f"bmlCgRm{nm}Frac", pct0(rs1[st]["frac_of_eligible"]))
+        cmd(f"bmlCgRm{nm}Det", pct0(rs1[st]["detected_frac"])); cmd(f"bmlCgRm{nm}Prem", pct(rs1[st]["premature_frac"]))
+        cmd(f"bmlCgRm{nm}Lag", f"{rs1[st]['median_lag_nonpremature_days']:+.1f}")
+        cmd(f"bmlCgRm{nm}DetThree", pct0(rs3[st]["detected_frac"])); cmd(f"bmlCgRm{nm}PremThree", pct(rs3[st]["premature_frac"]))
+        cmd(f"bmlCgRm{nm}LagThree", f"{rs3[st]['median_lag_nonpremature_days']:+.1f}")
+    for st, nm in (("giant", "Giant"), ("neptune", "Neptune")):
+        cmd(f"bmlCgIn{nm}DetThree", pct0(ih3[st]["detection_fraction"])); cmd(f"bmlCgIn{nm}PremThree", pct(ih3[st]["premature_rate_of_eligible"]))
+        cmd(f"bmlCgIn{nm}LagThree", f"{ih3[st]['median_lag_non_premature_days']:+.1f}")
+    cmd("bmlCgInLowmassN", str(ihn["lowmass"]))
+    cmd("bmlCgNplanet", f"{CG['n_scanned']['RMDC26_1S2L_ML']:,}"); cmd("bmlCgNplanetBin", f"{CG['n_scanned']['RMDC26_2S2L_ML']:,}")
+    cmd("bmlCgSingleAlertLo", pct(bu["alert_frac_ci95"][0])); cmd("bmlCgSingleAlertHi", pct(bu["alert_frac_ci95"][1]))
+    cmd("bmlCgSingleFullWindow", pct(bu["full_window_flag_frac"]))
+    # directional sentences of Sec. gulls:cascade
+    for st in ("giant", "neptune"):
+        need(rs1[st]["median_lag_nonpremature_days"] > ih[st]["median_lag_non_premature_days"], f"RMDC26 alerts 'come later' in the {st} stratum")
+        need(rs1[st]["detected_frac"] < ih[st]["detection_fraction"], f"RMDC26 detection 'is lower' in the {st} stratum")
+        need(rs1[st]["premature_frac"] <= ih[st]["premature_rate_of_eligible"], f"RMDC26 premature alerts 'no more frequent' in the {st} stratum")
+        need(rs3[st]["detected_frac"] < ih3[st]["detection_fraction"], f"three-band RMDC26 detection 'lower' in the {st} stratum")
+    need(rs1["lowmass"]["detected_frac"] < rs1["neptune"]["detected_frac"] < rs1["giant"]["detected_frac"], "detection 'falls with mass ratio'")
+    need(ihn["lowmass"] < 20, "the in-house scan 'barely samples' q < 1e-4")
+    need(t_["premature_ci95"][1] < 0.05, "premature alerts 'stay rare'")
+    need(t3["timing"]["premature_frac"] < t_["premature_frac"] and t3["timing"]["median_lag_nonpremature_days"] > t_["median_lag_nonpremature_days"]
+         and t3["timing"]["detected_frac"] < t_["detected_frac"], "three bands 'lower premature alerts, lengthen the lag and lower detection'")
+    if k_cal in R_:
+        tcal = R_[k_cal]
+        need(tcal["burden"]["RMDC26_1S1L_ML"]["alert_frac_per_season"] < bu["alert_frac_per_season"], "recalibrated single-lens alerts 'fall'")
+        need(tcal["streaming_purity"]["planetary_prevalence_0.01"]["purity_detectable_anomaly_alerts"] > sp["planetary_prevalence_0.01"]["purity_detectable_anomaly_alerts"],
+             "recalibrated purity at 1% 'rises'")
+        need(tcal["timing"]["detected_frac"] < t_["detected_frac"] and tcal["timing"]["premature_frac"] < t_["premature_frac"]
+             and tcal["timing"]["median_lag_nonpremature_days"] > t_["median_lag_nonpremature_days"],
+             "recalibrated detection and premature alerts 'fall', lag 'grows'")
+    need(bu["full_window_flag_frac"] < FA_REC_FROZEN, "the scanned single lenses flag less often than all scored ones ('slightly optimistic')")
 # ------------------------------------------------------------------ referee-round items on our own simulator
 RR = load(os.path.join(os.pardir, "referee_round.json"))          # validation/referee_round.json (our simulator)
 if RR:
@@ -522,6 +567,10 @@ if RR:
     cmd("bmlRefFloorShareLo", pct0(ov["test_f001"]["frac_shared"])); cmd("bmlRefFloorShareHi", pct0(ov["test_f005"]["frac_shared"]))
     need(0 < ov["test_f005"]["frac_shared"] < ov["test_f001"]["frac_shared"] < 0.5, "the floor arms' overlap is no longer 'partly'")
     cmd("bmlRefValPct", pct0(RR["threshold_selection_overlap"]["frac_threshold_selection_rows"]))
+    _to = RR["threshold_selection_overlap"]            # regenerated at the current code: part of each shard is new draws
+    cmd("bmlRefMatchPct", pct0(_to["n_matched_to_pool"] / _to["n"]))
+    cmd("bmlRefValPctMatched", pct0(_to["n_threshold_selection_rows"] / _to["n_matched_to_pool"]))
+    need(0.5 < _to["n_matched_to_pool"] / _to["n"] < 1, "the regenerated shards reproduce 'most' (not all) held-out events")
     # the directions the limits paragraph states in words
     comp = {k: fl[k]["at_frozen_threshold"]["completeness"] for k in fl}
     pur = {k: fl[k]["at_frozen_threshold"]["purity_population_weighted"] for k in fl}
@@ -637,6 +686,11 @@ if TI:
         leg = k_("truncation", "legacy"); late = kd("truncation", "legacy PSPL / refit NonPSPL")
         cmd("bmlTruthTruncNonLegacy", pct(leg / nT)); cmd("bmlTruthTruncNonLate", pct0(late / leg))
         need(0.4 <= late / leg <= 0.6, "the legacy truncation errors are no longer 'about half' late PSPL labels")
+        # the legacy anomaly-label disagreements by direction: late (PSPL or Flat where the rule says NonPSPL) vs early
+        dly = kd("truncation", "legacy PSPL / refit NonPSPL") + kd("truncation", "legacy Flat / refit NonPSPL")
+        adv = kd("truncation", "legacy NonPSPL / refit PSPL") + kd("truncation", "legacy NonPSPL / refit Flat")
+        cmd("bmlTruthDelayK", f"{dly:,}"); cmd("bmlTruthDelayN", f"{dly + adv:,}")
+        need(dly / (dly + adv) > 0.75, "the coarse onset no longer 'usually delays' the anomaly label")
         cmd("bmlTruthTruncNonFixed", pct(k_("truncation", "floors_onset_0p5") / nT))
         cmd("bmlTruthTruncNonOnsetSeven", pct(k_("truncation", "floors_onset_7p2") / nT))
         cmd("bmlTruthTruncNonResid", pct(k_("truncation", "full_season_residuals") / nT))

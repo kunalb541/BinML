@@ -509,3 +509,18 @@ def test_clean_archive_full_paper_build(tmp_path):
     assert r.returncode == 0, f"clean-archive build.sh failed:\n{r.stdout[-4000:]}\n{r.stderr[-4000:]}"
     pdf = root / "paper" / "paper.pdf"
     assert pdf.exists() and pdf.stat().st_size > 100_000, "build.sh produced no usable PDF"
+
+
+def test_referee_round_archive_is_committed_and_matches_its_hashes():
+    """Data availability cites validation/referee_round_archive/; every file referee_round.json hashes must be tracked
+    by git and match (fourth verification, 2026-09-13: the directory had been gitignored)."""
+    import hashlib
+    import subprocess
+    rr = json.load(open(os.path.join(REPO, "validation", "referee_round.json")))["archive"]
+    tracked = set(subprocess.run(["git", "ls-files", rr["dir"]], cwd=REPO, capture_output=True, text=True).stdout.split())
+    if not tracked and not os.path.isdir(os.path.join(REPO, ".git")):
+        pytest.skip("not a git checkout")
+    for name, sha in rr["sha256"].items():
+        path = f"{rr['dir']}/{name}"
+        assert path in tracked, f"{path} is not committed"
+        assert hashlib.sha256(open(os.path.join(REPO, path), "rb").read()).hexdigest() == sha, path

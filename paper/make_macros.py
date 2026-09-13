@@ -196,10 +196,13 @@ if not os.path.exists(_srl_path):
     raise SystemExit(f"FATAL: {_srl_path} missing; run validation/stress_rescore_local.py")
 _srl = json.load(open(_srl_path))
 _q = _srl["quoted"]
+_sub = _srl["subset"]
+def _rel(k):
+    return _q[k]["subset_released"]
 cmd("bmlStressRelMacroF", three(_q["natural_macro_f1"]["subset_released"]))
 cmd("bmlStressFiveSubMacroF", three(_q["natural_macro_f1"]["subset_stage5"]))
-cmd("bmlStressSubNat", f"{_srl['subset']['natural']['released']['n']:,}")
-cmd("bmlStressSubN", f"{sum(v['released']['n'] for v in _srl['subset'].values()):,}")
+cmd("bmlStressSubNat", f"{_sub['natural']['released']['n']:,}")
+cmd("bmlStressSubN", f"{sum(_sub[t]['released']['n'] for t in _sub if t != 'oor_pspl_shortte_current'):,}")
 for _k, _nm in (("natural_np_recall", "NatNp"), ("natural_np_prec", "NatNpPrec"), ("planetary_np_recall", "PlanetNp"),
                 ("planetary_np_prec", "PlanetPrec"), ("widesep_np_recall", "Widesep"), ("longp_per_recall", "Longp"),
                 ("shortte_pspl_recall", "Shortte"), ("faint_pspl_recall", "FaintPspl"), ("faint_np_prec", "FaintPrec")):
@@ -207,56 +210,68 @@ for _k, _nm in (("natural_np_recall", "NatNp"), ("natural_np_prec", "NatNpPrec")
     cmd(f"bmlStressFiveSub{_nm}", three(_q[_k]["subset_stage5"]))
     cmd(f"bmlStressSuite{_nm}", three(_q[_k]["suite_stage5"]))
     cmd(f"bmlStressRel{_nm}N", f"{_q[_k]['n_subset']:,}")
-# how well the regenerated subset stands in for the suite: stage 5 on the subset vs stage 5 on the suite
-_dev = [abs(_q[k]["subset_stage5"] - _q[k]["suite_stage5"]) for k in _q]
-cmd("bmlStressSubDiffMax", three(max(_dev)))
-cmd("bmlStressSubDiffMed", three(float(np.median(_dev))))
+# how close the regenerated subset is to the suite: stage 5 on the subset vs stage 5 on the suite. The subset is a new
+# realisation (the suite's fleet ran an unpinned environment), so checkpoint comparisons are made within the subset.
+_dev = {k: abs(_q[k]["subset_stage5"] - _q[k]["suite_stage5"]) for k in _q}
+cmd("bmlStressSubDiffMax", three(max(_dev.values())))
+cmd("bmlStressSubDiffMed", three(float(np.median(list(_dev.values())))))
+_fr_sub, _fr_suite = _sub["natural"]["released"]["label_fractions"]["NonPSPL"], _srl["suite_label_fractions"]["natural"]["NonPSPL"]
+cmd("bmlStressNatAnomDeficit", f"{100 * (1 - _fr_sub / _fr_suite):.1f}")
 # PSPL recall by generator class: the suite's per-label PSPL recalls mix swept single lenses with demoted binaries
-for _t, _nm in (("oor_pspl_shortte", "Shortte"), ("oor_flat_faint", "Faint")):
-    _g = {c: _srl["subset"][_t][c]["pspl_label_by_generator_class"] for c in ("released", "stage5")}
-    cmd(f"bmlStressRel{_nm}Single", three(_g["released"]["single_lenses"]["recall"]))
-    cmd(f"bmlStressFiveSub{_nm}Single", three(_g["stage5"]["single_lenses"]["recall"]))
-    cmd(f"bmlStressRel{_nm}SingleN", f"{_g['released']['single_lenses']['n']:,}")
-    cmd(f"bmlStressRel{_nm}Demoted", three(_g["released"]["demoted_binaries"]["recall"]))
-    cmd(f"bmlStressRel{_nm}DemotedN", f"{_g['released']['demoted_binaries']['n']:,}")
-    cmd(f"bmlStress{_nm}DemotedShare", f"{100 * _g['released']['demoted_binaries']['weighted_share_of_label']:.0f}")
+for _t, _nm in (("oor_pspl_shortte", "Shortte"), ("oor_pspl_shortte_current", "ShortteCur"), ("oor_flat_faint", "Faint")):
+    _g = {c: _sub[_t][c]["pspl_label_by_generator_class"] for c in ("released", "stage5")}
     for _c, _cn in (("released", "Rel"), ("stage5", "FiveSub")):
         _sl = _g[_c]["single_lenses"]
+        cmd(f"bmlStress{_cn}{_nm}Single", three(_sl["recall"]))
         cmd(f"bmlStress{_cn}{_nm}SingleNp", f"{100 * _sl['argmax_fractions']['NonPSPL']:.0f}")
         cmd(f"bmlStress{_cn}{_nm}SingleAlert", f"{100 * _sl['frac_above_frozen_threshold']:.0f}")
+    cmd(f"bmlStressRel{_nm}SingleN", f"{_g['released']['single_lenses']['n']:,}")
+    cmd(f"bmlStressRel{_nm}Demoted", three(_g["released"]["demoted_binaries"]["recall"]))
+    cmd(f"bmlStress{_nm}DemotedShare", f"{100 * _g['released']['demoted_binaries']['weighted_share_of_label']:.0f}")
 # anomaly calls: weighted prevalence and false-positive rate, and precision at the natural prevalence (prior shift)
 _pn = _srl["precision_at_natural_prevalence"]
 for _t, _nm in (("natural", "Nat"), ("planetary", "Planet"), ("oor_flat_faint", "Faint"), ("oor_np_widesep", "Widesep")):
-    _r = _srl["subset"][_t]["released"]["nonpspl_rates"]
-    cmd(f"bmlStress{_nm}PrevW", f"{100 * _r['prevalence_w']:.2g}")
-    cmd(f"bmlStressRel{_nm}Fpr", f"{100 * _r['fpr_w']:.1f}")
+    _r = _sub[_t]["released"]
+    cmd(f"bmlStress{_nm}PrevW", f"{100 * _r['nonpspl_rates']['prevalence_w']:.2g}")
+    cmd(f"bmlStressRel{_nm}Fpr", f"{100 * _r['nonpspl_rates']['fpr_w']:.1f}")
+    cmd(f"bmlStressRel{_nm}MlFa", f"{100 * _r['pspl_label_false_anomaly_w']:.1f}")        # microlensing without an anomaly
+    cmd(f"bmlStressRel{_nm}MlAlert", f"{100 * _r['pspl_label_above_frozen_w']:.1f}")
+    cmd(f"bmlStress{_nm}BinDet", f"{100 * _r['binary_detectable_fraction_w']:.1f}")
     if _t in _pn:
         cmd(f"bmlStressRel{_nm}PrecNat", three(_pn[_t]["released"]))
-# The directional sentences of Sec. limits and the abstract about these numbers (third verification, 2026-09-13).
+cmd("bmlStressRelNatPsplN", f"{_sub['natural']['released']['per_class']['PSPL']['n']:,}")
+cmd("bmlStressFaintFlatShare", f"{100 * _sub['oor_flat_faint']['released']['true_class_fractions_w']['Flat']:.0f}")
+# The directional sentences of Sec. limits and the abstract about these numbers (third and fourth verifications).
 def _need(ok, what):
     if not ok:
         raise SystemExit(f"FATAL: stress sentence no longer holds: {what}")
-def _rel(k):
-    return _q[k]["subset_released"]
 _need(abs(_q["natural_macro_f1"]["subset_released"] - h["macro_f1"]) <= 0.005,
       "the released model 'reproduces' its held-out macro-F1 on the natural subset")
 _need(abs(_q["natural_macro_f1"]["subset_stage5"] - _q["natural_macro_f1"]["suite_stage5"]) <= 0.005,
-      "stage 5 on the subset reproduces the full set's macro-F1")
-_need(max(_dev) == abs(_q["widesep_np_recall"]["subset_stage5"] - _q["widesep_np_recall"]["suite_stage5"]),
-      "the largest subset-vs-full-set difference is the wide-separation recall")
-_need(float(np.median(_dev)) <= 0.02, "subset-vs-full-set differences are small (median)")
+      "stage 5 on the subset gives the full set's macro-F1")
+_need(set(sorted(_dev, key=_dev.get)[-2:]) == {"widesep_np_recall", "faint_pspl_recall"},
+      "the two largest subset-vs-full-set differences are the wide-separation and faint-source recalls")
+_need(_q["natural_np_recall"]["subset_stage5"] - _q["natural_np_recall"]["suite_stage5"] > 0.005 and _fr_sub < _fr_suite,
+      "the regenerated natural tier has fewer detectable anomalies and stage 5's recall on it differs from the full set's")
 _need(_rel("widesep_np_recall") < 0.5, "wide-separation anomaly recall 'falls'")
 _need(_rel("longp_per_recall") < 0.1, "long-period PeriodicVar recall is 'a nearly complete failure'")
-_sd = _srl["subset"]["oor_pspl_shortte"]["released"]["pspl_label_by_generator_class"]
-_need(_sd["single_lenses"]["recall"] < 0.5 and _sd["single_lenses"]["argmax_fractions"]["NonPSPL"] > 0.5,
-      "'only' a minority of sub-day single lenses is classified PSPL and 'most' are called anomalies")
-_need(_sd["demoted_binaries"]["recall"] > 0.8 and _sd["demoted_binaries"]["weighted_share_of_label"] > 0.2,
-      "the per-label sub-day recall is propped up by demoted binaries that the model recovers")
-_fp, _fpn, _npp = _rel("faint_np_prec"), _pn["oor_flat_faint"]["released"], _rel("natural_np_prec")
-_need(np.log(_fpn / _fp) > np.log(_npp / _fpn), "faint anomaly precision falls 'mostly' through prevalence")
-_need(_srl["subset"]["oor_flat_faint"]["released"]["nonpspl_rates"]["fpr_w"]
-      > _srl["subset"]["natural"]["released"]["nonpspl_rates"]["fpr_w"], "the faint false-anomaly rate 'rises'")
-_need(_pn["planetary"]["released"] >= _npp, "low-q precision falls 'only through prevalence'")
+for _t in ("oor_pspl_shortte", "oor_pspl_shortte_current"):
+    _sd = _sub[_t]["released"]["pspl_label_by_generator_class"]
+    _need(_sd["single_lenses"]["recall"] < 0.5 and _sd["single_lenses"]["argmax_fractions"]["NonPSPL"] > 0.5,
+          f"{_t}: 'only' a minority of sub-day single lenses is classified PSPL and 'most' are called anomalies")
+    _need(_sd["demoted_binaries"]["recall"] > 0.8 and _sd["demoted_binaries"]["weighted_share_of_label"] > 0.2,
+          f"{_t}: the per-label sub-day recall is propped up by demoted binaries that the model recovers")
+_rn, _rf = _sub["natural"]["released"], _sub["oor_flat_faint"]["released"]
+_need(_rf["pspl_label_false_anomaly_w"] > 3 * _rn["pspl_label_false_anomaly_w"] and _rf["pspl_label_above_frozen_w"] > 5 * _rn["pspl_label_above_frozen_w"],
+      "the false-anomaly rate among faint microlensing events 'rises' well above the natural population's")
+_need(_sub["oor_pspl_shortte"]["released"]["pspl_label_by_generator_class"]["single_lenses"]["frac_above_frozen_threshold"] > 5 * _rn["pspl_label_above_frozen_w"],
+      "sub-day single lenses cross the threshold far more often than natural microlensing events")
+_mix = _rn["true_class_fractions_w"]["NonPSPL"] / _rf["true_class_fractions_w"]["NonPSPL"]
+_det = _rn["binary_detectable_fraction_w"] / _rf["binary_detectable_fraction_w"]
+_need(_mix > _det > 1, "the faint tier's low prevalence is set 'mostly' by its class mix; faintness lowers the detectable fraction 'only' a little")
+_need(_srl["subset"]["oor_flat_faint"]["released"]["nonpspl_rates"]["prevalence_w"] < 0.1 * _srl["subset"]["natural"]["released"]["nonpspl_rates"]["prevalence_w"],
+      "the faint tier's anomaly prevalence is far below the natural one")
+_need(_pn["planetary"]["released"] >= _rel("natural_np_prec"), "low-q precision falls 'only through prevalence'")
 _need(_rel("planetary_np_recall") >= _rel("natural_np_recall") - 0.1, "low-q anomaly recall 'holds'")
 # Support behind each quoted OOR number = the swept class's per-class n in that regime, read from
 # the stress report itself. The regime TOTALS (~82k) are mostly in-distribution filler: the OOR
@@ -459,6 +474,7 @@ cmd("bmlTrainStages", str(ia["train_stages"]))
 cmd("bmlTrainFinalEvents", f"{ia['train_final_stage_events'] / 1e6:.1f}")
 cmd("bmlTrainBaseEvents", f"{ia['train_base_events']:,}")
 cmd("bmlTrainBatchBench", str(ia["train_batch_benchmark"]))
+cmd("bmlTrainEpsLo", str(ia["train_epoch_events_per_sec_lo"])); cmd("bmlTrainEpsHi", str(ia["train_epoch_events_per_sec_hi"]))
 cmd("bmlTrainEpochs", str(ia["train_epochs_effective"]))
 
 sl = cn["slices"]

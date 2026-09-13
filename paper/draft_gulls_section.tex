@@ -56,19 +56,17 @@ $\bmlGapShippedFlatClean$ to $\bmlGapShippedFlatSched$, mostly to \texttt{Period
 and long-period variables and \texttt{NonPSPL} itself also degrade, and \texttt{NonPSPL} precision
 falls from $\bmlGapShippedPrecClean$ to $\bmlGapShippedPrecSched$. A single gap of half an hour costs
 nothing, but one gap of 1--2~h placed at mid-season already lowers single-lens recall from $\bmlGapSensNone$ to
-$\bmlGapSensTwo$ ($\bmlGapSensN$ events per class; the cost depends on where the gap falls), the lost events
-going to \texttt{NonPSPL} and \texttt{PeriodicVar}. The remedy is an augmentation, not a new model:
+$\bmlGapSensTwo$ ($\bmlGapSensN$ events per class; the cost depends on where the gap falls), the lost events going to \texttt{NonPSPL}. The remedy is an augmentation, not a new model:
 blanking one to eight contiguous runs of 1--12~h in every band during a 12-epoch warm-start fine-tune of
 the shipped weights raises held-out average precision under the measured pauses from
 $\bmlGapApShipped$ to $\bmlGapApRand$, while clean-data average precision falls only from
-$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does at least as well,
+$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does as well within the seed spread,
 provided they are the right pauses: drawing one of RMDC26's six measured seasons per training example gives
 $\bmlGapApSeasons$ under the measured pauses against $\bmlGapApRandNorelabel$ for random gaps, with clean
 average precision $\bmlGapApCleanSeasons$ against $\bmlGapApCleanRandNorelabel$, whereas training on a single season's
 pauses scores only $\bmlGapApFirstSeason$ across the six seasons, its own included. The first two differences are smaller than the
 spread of held-out average precision across three training seeds of one recipe ($\bmlSeedHeldApRange$,
-\S\ref{sec:gulls:results}), so on our own seasons the measured and random pauses are not separated; on RMDC26 the
-measured pauses lead by more than that seed range. Both schedule arms
+\S\ref{sec:gulls:results}), so on our own seasons the measured and random pauses are not separated; on RMDC26 the measured pauses lead in recall by more than the seed range of Table~\ref{tab:seeds}. Both schedule arms
 train with the caustic-in-gap relabel off. That rule relabels a binary as \texttt{PSPL} when the bins
 around its recorded onset are blanked, but the onset records when the anomaly first becomes detectable,
 not where the caustic is; with a fixed mask and the legacy 7.2-day onset grid it made
@@ -136,7 +134,7 @@ three classes. We keep events whose host single-lens peak amplitude, computed fr
 parameter and blend fraction, is at least $0.1$~mag (the median single-lens event is
 $\bmlGullsAmpMedSingle$~mag and $\bmlGullsAmpFracSingle\%$ pass) and whose Einstein timescale lies in
 our natural prior's support, $1 \le t_{\rm E} \le 300$~d (the released model's last training stage
-also saw a short-timescale pool reaching $0.3$~d, Appendix~\ref{app:infra}; $\bmlGullsSubdaySingle\%$ of RMDC26 single lenses are
+also saw a short-timescale pool reaching $0.3$~d, \S\ref{sec:limits}; $\bmlGullsSubdaySingle\%$ of RMDC26 single lenses are
 sub-day, against $\bmlGullsSubdayPlanet\%$ and $\bmlGullsSubdayPlanetBin\%$ of the planetary classes).
 That leaves $\bmlGullsEligibleN$ events. Of these, $\bmlGullsScoredPct\%$ ($\bmlGullsN$:
 $\bmlGullsNSingle$ 1S1L, $\bmlGullsNPlanet$ 1S2L, $\bmlGullsNPlanetBin$ 2S2L) peak inside one of the
@@ -208,7 +206,7 @@ augmentation, $\bmlGullsMeanRecCtrl$ and $\bmlGullsMeanRecFspl$). In false alarm
 the gain over gap augmentation is therefore the extra training; at higher budgets and in mean recall it is
 the physics. Per simulated event the physics lowers false alarms most in the two largest-ratio bins (from
 $\bmlGullsRhoMidCtrl$ and $\bmlGullsRhoHiCtrl$ to $\bmlGullsRhoMidFspl$ and $\bmlGullsRhoHiFspl$); in the smaller
-bins, where finite size cannot matter, its reductions are within the training noise measured below. On our
+bins its reductions are within the training noise measured below. On our
 own finite-source held-out only the physics restores single-lens recall for sources larger than the
 impact parameter ($\bmlHeldPsplMidCtrl$ and $\bmlHeldPsplHiCtrl$ for the control, $\bmlHeldPsplMidFspl$
 and $\bmlHeldPsplHiFspl$ with finite sources, in the 1--3 and $> 3$ bins). Weighted by event rate its
@@ -299,7 +297,7 @@ within the seed range.
 recommended recipe. FA is the change in the single-lens false-alarm rate at the frozen threshold (percentage
 points); R$_x$ the change in 1S2L recall at a single-lens false-alarm budget of $x\%$; ``mean'' the change in
 mean 1S2L recall over false-alarm rates up to 30\%. Columns marked (w) weight events by their RMDC26 event
-rate. The first row is the range (maximum minus minimum) over the three seeds; entries in bold exceed it at
+rate. The first row is the range (maximum minus minimum) over the three seeds; entries in bold exceed it (compared at full precision) at
 the same budget and weighting. The pauses arms are the schedule experiment of \S\ref{sec:gulls:results} (a
 different pool, from the shipped weights). Generated from
 \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:seeds}}
@@ -430,37 +428,47 @@ model would add is events whose light curves span seasons and the four low-caden
 \subsection{The partial-season cascade on RMDC26}\label{sec:gulls:cascade}
 Section~\ref{sec:cascade} measures how early the model flags an anomaly, on our own simulator and for
 eligible binaries only. We repeated its primary protocol on RMDC26 with the recommended checkpoint at the
-frozen threshold. The high-cadence season of $\bmlCgNsingle$ single lenses and $\bmlCgNbinary$ binaries was
-revealed in half-day steps, every cut was scored from F146 alone, and the alert is the first cut above the
-threshold. The onset is the first cut at which our labelling rule (\S\ref{sec:gulls:labels}) is met on
+frozen threshold. The first $\bmlCgNsingle$ scored single lenses and the first $\bmlCgNplanet$ of each planetary class
+(by event identifier), each in its high-cadence season, were revealed in half-day steps, every cut was scored
+from F146 alone, and the alert is the first cut above the threshold. The onset is the first cut at which our labelling rule (\S\ref{sec:gulls:labels}) is met on
 GULLS' noise-free light curve with GULLS' errors, so it comes from a simulator we did not write. The
 $\bmlCgElig$ eligible events are the binaries whose anomaly is claimable over the whole season; nothing is
 selected on the model's output.
 
 Premature alerts stay rare: $\bmlCgPrem\%$ of the eligible events are flagged before the onset (95\%
-interval $\bmlCgPremLo$--$\bmlCgPremHi\%$), against $\bmlCgInGiantPrem\%$ and $\bmlCgInNeptunePrem\%$ for the
-giant-planet and Neptune strata of the in-house scan ($\bmlCgInGiantN$ and $\bmlCgInNeptuneN$ events; shipped
-model, our simulator), the only strata comparable with RMDC26's planetary anomalies. Alerts come later: the
-median lag of the others is $\bmlCgLag$~d, against $\bmlCgInGiantLag$~d in-house. Detection is lower:
-$\bmlCgDet\%$ ($\bmlCgDetLo$--$\bmlCgDetHi\%$) of the eligible events are flagged by the end of the
-season, against $\bmlCgInGiantDet\%$ and $\bmlCgInNeptuneDet\%$ in-house (a different checkpoint on a different
-simulator, so the difference mixes the two), in line with the full-season recall on
-claimable anomalies ($\bmlGullsRecDetPlanet$ and $\bmlGullsRecDetPlanetBin$, \S\ref{sec:gulls:labels}).
-Revealing all three bands lowers premature alerts to $\bmlCgPremThree\%$, lengthens the lag to
-$\bmlCgLagThree$~d and lowers detection to $\bmlCgDetThree\%$. The in-house scan measured three bands
-only for its whole population, mostly stellar binaries (premature alerts $\bmlCascPrematurePct\%$ to
-$\bmlCascMultibandPct\%$, lag $\bmlCascMedianLagNonPrem$ to $\bmlCascMultibandMedianLag$~d, detection
-$\bmlCascDetFrac\%$ to $\bmlCascMultibandDet\%$), so its planetary strata cannot be compared on this point.
+interval $\bmlCgPremLo$--$\bmlCgPremHi\%$). We compare stratum by stratum with the in-house scan (shipped
+model, our simulator), split by the same planet mass ratios. For giant planets ($10^{-3} < q \le 10^{-2}$;
+$\bmlCgRmGiantN$ RMDC26 events against $\bmlCgInGiantN$ in-house) premature alerts are $\bmlCgRmGiantPrem\%$
+against $\bmlCgInGiantPrem\%$, the median lag of the other alerts is $\bmlCgRmGiantLag$~d against
+$\bmlCgInGiantLag$~d, and $\bmlCgRmGiantDet\%$ against $\bmlCgInGiantDet\%$ are flagged by the end of the
+season; for Neptunes ($10^{-4} < q \le 10^{-3}$; $\bmlCgRmNeptuneN$ against $\bmlCgInNeptuneN$) the figures are
+$\bmlCgRmNeptunePrem\%$ against $\bmlCgInNeptunePrem\%$, $\bmlCgRmNeptuneLag$ against $\bmlCgInNeptuneLag$~d,
+and $\bmlCgRmNeptuneDet\%$ against $\bmlCgInNeptuneDet\%$. Premature alerts are therefore no more frequent,
+alerts come later and detection is lower (a different checkpoint on a different simulator, so the differences
+mix the two). $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
+scan barely samples ($\bmlCgInLowmassN$ events); there detection falls to $\bmlCgRmLowmassDet\%$. Over all
+$\bmlCgElig$ eligible events $\bmlCgDet\%$ ($\bmlCgDetLo$--$\bmlCgDetHi\%$) are flagged by the end of the season,
+in line with the full-season recall on claimable anomalies ($\bmlGullsRecDetPlanet$ and
+$\bmlGullsRecDetPlanetBin$, \S\ref{sec:gulls:labels}), and the median lag is $\bmlCgLag$~d. Revealing all three
+bands lowers premature alerts to $\bmlCgPremThree\%$, lengthens the lag to $\bmlCgLagThree$~d and lowers detection
+to $\bmlCgDetThree\%$; with three bands the in-house giant and Neptune strata flag $\bmlCgInGiantDetThree\%$ and
+$\bmlCgInNeptuneDetThree\%$ ($\bmlCgInGiantPremThree\%$ and $\bmlCgInNeptunePremThree\%$ premature), against
+$\bmlCgRmGiantDetThree\%$ and $\bmlCgRmNeptuneDetThree\%$ ($\bmlCgRmGiantPremThree\%$ and
+$\bmlCgRmNeptunePremThree\%$) on RMDC26.
 
-Scanning single lenses gives the alert burden on a second simulator. $\bmlCgSingleAlert\%$ of single
-lenses per simulated event ($\bmlCgSingleAlertW\%$ weighted by event rate) raise an alert at some point in the
-season ($\bmlCgSingleAlertDay$ alerts per 1,000 single lenses per day). If 1\% of events were planetary
+Scanning single lenses gives the alert burden on a second simulator. $\bmlCgSingleAlert\%$ of the
+scanned single lenses (95\% interval $\bmlCgSingleAlertLo$--$\bmlCgSingleAlertHi\%$; $\bmlCgSingleAlertW\%$
+weighted by event rate) raise an alert at some point in the season ($\bmlCgSingleAlertDay$ alerts per 1,000
+single lenses per day). On the complete season this sample flags slightly fewer single lenses than all scored
+ones ($\bmlCgSingleFullWindow\%$ against $\bmlGullsFaCombined\%$), so the burden and purity figures here are
+slightly optimistic. If 1\% of events were planetary
 binaries, $\bmlCgPurOne\%$ of alerts would come from a claimable anomaly, and $\bmlCgPurFive\%$ at 5\% (per
 simulated event). At RMDC26's own rate-weighted planetary fraction, which over-represents planets, the figure is
 $\bmlCgPurRmdc\%$. These count single-lens contamination only; RMDC26 contains no variable stars or flat
-sources (our synthetic ones rarely alert, \S\ref{sec:cascade}, but real variables are untested), so a real
-stream would be less pure. On our own simulator, with continuous seasons and the same checkpoint, band and
-threshold, $\bmlRefRecSingleK$ of $\bmlRefRecSingleN$ generated single lenses alert ($\bmlRefRecSinglePct\%$);
+sources (our synthetic ones rarely alert for the shipped checkpoint, \S\ref{sec:cascade}, but were not scanned
+with the recommended one, and real variables are untested), so a real stream would be less pure. On our own simulator, with continuous seasons and the same checkpoint, band and
+threshold, $\bmlRefRecSingleK$ of the $\bmlRefRecSingleN$ generated single lenses with a \texttt{PSPL} label alert
+($\bmlRefRecSinglePct\%$);
 RMDC26's single lenses alert several times as often. At the recalibrated
 threshold single-lens alerts fall to $\bmlCgSingleAlertCal\%$ and purity at 1\% rises to
 $\bmlCgPurOneCal\%$, but detection falls to $\bmlCgDetCal\%$, premature alerts to $\bmlCgPremCal\%$, and the

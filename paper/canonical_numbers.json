@@ -238,7 +238,7 @@
     "ap_fitted_pspl": 0.545
   },
   "infra": {
-    "_comment": "measured/recorded infrastructure numbers for the appendix. 2026-09-13 (third verification): the training fields now describe the released checkpoint's six-stage warm-start chain from the stage logs (base ... stage6_20260726_0025.log): final stage 1,906,329 events (1,525,063 train), batch 384, 6 epochs, released = zero-based epoch 4; base 540,952 training events at batch 512; about 22 h of epochs in total. They had described the base run's defaults (batch 256, 5 epochs). train_events_per_sec is a step benchmark at batch 256 (train_batch_benchmark).",
+    "_comment": "measured/recorded infrastructure numbers for the appendix. 2026-09-13 (third verification): the training fields now describe the released checkpoint's six-stage warm-start chain from the stage logs (base ... stage6_20260726_0025.log): final stage 1,906,329 events (1,525,063 train), batch 384, 6 epochs, released = zero-based epoch 4; base 540,952 training events at batch 512; about 22 h of epochs in total. They had described the base run's defaults (batch 256, 5 epochs). train_events_per_sec is a step benchmark at batch 256 (train_batch_benchmark). 2026-09-13 (fourth verification): the sim_* fields describe the 10M-event v4 AWS run of 2026-07-05, not the released model's data, and the paper no longer quotes them; the training fields were checked against the stage checkpoints' optimizer states (base peak lr 4e-4 of a one-cycle schedule, 18 epochs scheduled and stopped after 6). train_events_per_sec (958) was a hand-entered step benchmark with no artifact; the paper now quotes train_epoch_events_per_sec_lo/hi, the per-epoch throughput of the six stage logs (v5runs/*.log: epoch time and training-split size), excluding one stage-6 epoch stretched by a system sleep (21,366 s).",
     "sim_events_millions": 10.0,
     "sim_instances": 3,
     "sim_vcpus_each": 2,
@@ -253,7 +253,9 @@
     "train_stages": 6,
     "train_final_stage_events": 1906329,
     "train_base_events": 540952,
-    "train_batch_benchmark": 256
+    "train_batch_benchmark": 256,
+    "train_epoch_events_per_sec_lo": 376,
+    "train_epoch_events_per_sec_hi": 656
   },
   "model": {
     "n_params": 505479,

@@ -62,11 +62,15 @@ env/
 !paper/results/true_class.npy
 !validation/cascade_trace.npz
 !validation/matched_traces.npz
+# the referee round's per-event inputs and its two colour fine-tunes, hashed in validation/referee_round.json
+# ("archive"); the paper's Data availability section cites them (fourth verification: they had not been committed)
+!validation/referee_round_archive/*.npz
 
 # Model checkpoints (but allow best_model.pt in results)
 *.pth
 *.pt
 !results/**/best_model.pt
+!validation/referee_round_archive/*.pt
 
 # Logs
 *.log
