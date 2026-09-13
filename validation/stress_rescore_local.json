@@ -1,7 +1,15 @@
 {
  "_doc": "The stress-test numbers for the RELEASED checkpoint -> validation/stress_rescore_local.json.",
- "code": "submitted-ac-2026-08-15-59-gf79f073b40d6",
+ "code": "submitted-ac-2026-08-15-60-g6a912f428577",
  "command": "validation/stress_rescore_local.py --workers 4",
+ "environment": {
+  "python": "3.11.8",
+  "numpy": "2.2.6",
+  "scipy": "1.16.0",
+  "h5py": "3.16.0",
+  "VBBinaryLensing": "3.7.0",
+  "torch": "2.11.0"
+ },
  "checkpoints": {
   "stage5": {
    "path": "/Users/kunalbhatia/Desktop/Research/microlensing/v5runs/binml_v5_stage5.pt",

@@ -214,8 +214,8 @@
       "_note": "2026-09-12: recommended gap-aware checkpoint (byte-identical to validation/gulls/weights/ft_fspl5s_seasons_g08.pt)"
     },
     "validation/stress_rescore_local.json": {
-      "sha256": "92b8a9a5237a4b54b79ab319ef59173cfb32f9c031c76ff6852302c513fab7b7",
-      "_note": "2026-09-13 (fourth verification): sweeps regenerated with --legacy-t0-pad, corrected sub-day tier, per-tier stamps, mix-independent rates; previous sha a4b715a9b565c918... | 2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
+      "sha256": "cc2d06f50811f0f58a8f4a9b19b5b8a1d88468f43e2cade89a0285e1bcb49a1f",
+      "_note": "2026-09-13 (fourth verification): regenerated at 6a912f4 with the package environment recorded; 2026-09-13 (fourth verification): sweeps regenerated with --legacy-t0-pad, corrected sub-day tier, per-tier stamps, mix-independent rates; previous sha a4b715a9b565c918... | 2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
     },
     "validation/inference_benchmark_result.json": {
       "sha256": "da148cd004933ba5e2dd710cab5ea86d43a19901d1fabb5fa6e4cf853126d4db",

@@ -249,8 +249,8 @@ for _t, _nm in (("natural", "Nat"), ("planetary", "Planet"), ("oor_flat_faint", 
     _r = _sub[_t]["released"]
     cmd(f"bmlStress{_nm}PrevW", f"{100 * _r['nonpspl_rates']['prevalence_w']:.2g}")
     cmd(f"bmlStressRel{_nm}Fpr", f"{100 * _r['nonpspl_rates']['fpr_w']:.1f}")
-    cmd(f"bmlStressRel{_nm}MlFa", f"{100 * _r['pspl_label_false_anomaly_w']:.1f}")        # microlensing without an anomaly
-    cmd(f"bmlStressRel{_nm}MlAlert", f"{100 * _r['pspl_label_above_frozen_w']:.1f}")
+    cmd(f"bmlStressRel{_nm}MlFa", f"{100 * _r['pspl_label_false_anomaly_w']:.2g}")        # microlensing without an anomaly
+    cmd(f"bmlStressRel{_nm}MlAlert", f"{100 * _r['pspl_label_above_frozen_w']:.2g}")
     cmd(f"bmlStress{_nm}BinDet", f"{100 * _r['binary_detectable_fraction_w']:.1f}")
     if _t in _pn:
         cmd(f"bmlStressRel{_nm}PrecNat", three(_pn[_t]["released"]))
