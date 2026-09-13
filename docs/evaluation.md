@@ -131,10 +131,20 @@ lineage, not as a causal claim.
 ## 5. Stress testing — separate same-prior and out-of-distribution arms
 
 The full suite contains 14.9 million events: a 4.5-million-event same-prior subset plus 10.4
-million events in targeted out-of-distribution regimes. Only the same-prior subset reproduces the
-headline result (macro-F1 0.927). The targeted arms expose failures at faint magnitudes, wide
-separations, and sub-day timescales. They test sensitivity to chosen stressors; they do not define
-their prevalence in the Roman population.
+million events in targeted regimes. It was scored in July 2026 with the **stage-5 checkpoint**, the released
+model's predecessor (`paper/results/stress_report.json`; its macro-F1 0.927 is stage 5's). For the released model,
+`validation/stress_rescore_local.py` regenerates the first shards of each quoted regime with the suite's seeds
+and class mix (255,527 events) and scores the same events with both checkpoints. Stage 5 on this subset
+reproduces its suite numbers (macro-F1 0.927 vs 0.927; median difference 0.012, largest 0.095 on 60 wide-separation
+binaries). The released model reproduces its held-out macro-F1 on the same-prior part (0.919 vs 0.919).
+
+The targeted arms expose failures at faint magnitudes, wide separations, long periods and sub-day timescales:
+sub-day single lenses (tE 0.2-1 d) are classified PSPL only 0.27 of the time and called anomalies 71% of the time
+(37% above the frozen threshold); the suite's per-label PSPL recall (0.52) mixed in binaries of natural timescale
+demoted to PSPL. Faint-source anomaly precision (0.026) is low mostly because anomalies are rare there. Stage 6
+trained on the edges of three of these regimes (s 3-8, tE 0.3-10 d, m 23.5-25) and the low-q regime is a
+stage-4 training pool, so for the released model they measure how far targeted coverage carries. They test
+sensitivity to chosen stressors; they do not define their prevalence in the Roman population.
 
 ## 6. Baselines are sanity checks
 

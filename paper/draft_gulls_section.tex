@@ -61,11 +61,14 @@ going to \texttt{NonPSPL} and \texttt{PeriodicVar}. The remedy is an augmentatio
 blanking one to eight contiguous runs of 1--12~h in every band during a 12-epoch warm-start fine-tune of
 the shipped weights raises held-out average precision under the measured pauses from
 $\bmlGapApShipped$ to $\bmlGapApRand$, while clean-data average precision falls only from
-$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does better still,
+$\bmlGapApCleanShipped$ to $\bmlGapApCleanRand$. Training on the pauses themselves does at least as well,
 provided they are the right pauses: drawing one of RMDC26's six measured seasons per training example gives
 $\bmlGapApSeasons$ under the measured pauses against $\bmlGapApRandNorelabel$ for random gaps, with clean
 average precision $\bmlGapApCleanSeasons$ against $\bmlGapApCleanRandNorelabel$, whereas training on a single season's
-pauses scores only $\bmlGapApFirstSeason$ across the six seasons, its own included. Both schedule arms
+pauses scores only $\bmlGapApFirstSeason$ across the six seasons, its own included. The first two differences are smaller than the
+spread of held-out average precision across three training seeds of one recipe ($\bmlSeedHeldApRange$,
+\S\ref{sec:gulls:results}), so on our own seasons the measured and random pauses are not separated; on RMDC26 the
+measured pauses lead by more than that seed range. Both schedule arms
 train with the caustic-in-gap relabel off. That rule relabels a binary as \texttt{PSPL} when the bins
 around its recorded onset are blanked, but the onset records when the anomaly first becomes detectable,
 not where the caustic is; with a fixed mask and the legacy 7.2-day onset grid it made
@@ -132,7 +135,8 @@ Selection uses catalogue parameters, never the model's output, and is applied id
 three classes. We keep events whose host single-lens peak amplitude, computed from the catalogue impact
 parameter and blend fraction, is at least $0.1$~mag (the median single-lens event is
 $\bmlGullsAmpMedSingle$~mag and $\bmlGullsAmpFracSingle\%$ pass) and whose Einstein timescale lies in
-our prior's support, $1 \le t_{\rm E} \le 300$~d ($\bmlGullsSubdaySingle\%$ of RMDC26 single lenses are
+our natural prior's support, $1 \le t_{\rm E} \le 300$~d (the released model's last training stage
+also saw a short-timescale pool reaching $0.3$~d, Appendix~\ref{app:infra}; $\bmlGullsSubdaySingle\%$ of RMDC26 single lenses are
 sub-day, against $\bmlGullsSubdayPlanet\%$ and $\bmlGullsSubdayPlanetBin\%$ of the planetary classes).
 That leaves $\bmlGullsEligibleN$ events. Of these, $\bmlGullsScoredPct\%$ ($\bmlGullsN$:
 $\bmlGullsNSingle$ 1S1L, $\bmlGullsNPlanet$ 1S2L, $\bmlGullsNPlanetBin$ 2S2L) peak inside one of the
@@ -481,13 +485,15 @@ single seed, and that recipe's three seeds give only a rough scale of the traini
 of the comparisons between recipes; some
 conclusions depend on whether events are weighted by rate; and RMDC26 was used to choose among
 checkpoints. It does not test the binary-source degeneracy, for which
-RMDC26 has no class. Sub-day single lenses, outside our timescale prior, are flagged as anomalies by the
+RMDC26 has no class. Sub-day single lenses, outside our natural timescale prior, are flagged as anomalies by the
 recommended checkpoint less often than in-support single lenses ($\bmlGullsSubdayFa\%$ of
 $\bmlGullsSubdayN$ unweighted and $\bmlGullsSubdayFaW\%$ weighted by event rate, against
 $\bmlGullsFaCombined\%$ and $\bmlGullsFaWCombined\%$), and their most probable class is mostly
 \texttt{PeriodicVar} ($\bmlGullsSubdayPerLo$--$\bmlGullsSubdayPerHi\%$ across checkpoints), with
-$\bmlGullsSubdayMl\%$ read as microlensing of either kind; a model for free-floating planets needs sub-day
-timescales in its prior, not a threshold change.
+$\bmlGullsSubdayMl\%$ read as microlensing of either kind. They are mostly shorter (median $t_{\rm E}$
+$\bmlGullsSubdayTe$~d) than the $0.2$--$1$~d single lenses of our own sweep, most of which the released model calls
+anomalies (\S\ref{sec:limits}); a model for free-floating planets needs sub-day timescales in its prior, not a
+threshold change.
 
 % ---------------------------------------------------------------- [D] Discussion paragraph
 BinML's input is one contiguous season. Of RMDC26's eligible events, that contract leaves out those

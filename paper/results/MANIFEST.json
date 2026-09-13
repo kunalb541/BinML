@@ -211,6 +211,10 @@
     "binml/weights/binml-gapaware.pt": {
       "sha256": "b2c4c24ca33f9d0d6a8ee0ace8c55654b1c7f3a703e28584d890839bd018d812",
       "_note": "2026-09-12: recommended gap-aware checkpoint (byte-identical to validation/gulls/weights/ft_fspl5s_seasons_g08.pt)"
+    },
+    "validation/stress_rescore_local.json": {
+      "sha256": "9c5a355e2c90ef4f9ce7ff2912c1e54aa61bc2e827da1c0564c36cf2d349512e",
+      "_note": "2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
     }
   }
 }

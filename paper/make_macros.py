@@ -205,6 +205,7 @@ for _k, _nm in (("natural_np_recall", "NatNp"), ("natural_np_prec", "NatNpPrec")
                 ("shortte_pspl_recall", "Shortte"), ("faint_pspl_recall", "FaintPspl"), ("faint_np_prec", "FaintPrec")):
     cmd(f"bmlStressRel{_nm}", three(_q[_k]["subset_released"]))
     cmd(f"bmlStressFiveSub{_nm}", three(_q[_k]["subset_stage5"]))
+    cmd(f"bmlStressSuite{_nm}", three(_q[_k]["suite_stage5"]))
     cmd(f"bmlStressRel{_nm}N", f"{_q[_k]['n_subset']:,}")
 # how well the regenerated subset stands in for the suite: stage 5 on the subset vs stage 5 on the suite
 _dev = [abs(_q[k]["subset_stage5"] - _q[k]["suite_stage5"]) for k in _q]
@@ -219,15 +220,44 @@ for _t, _nm in (("oor_pspl_shortte", "Shortte"), ("oor_flat_faint", "Faint")):
     cmd(f"bmlStressRel{_nm}Demoted", three(_g["released"]["demoted_binaries"]["recall"]))
     cmd(f"bmlStressRel{_nm}DemotedN", f"{_g['released']['demoted_binaries']['n']:,}")
     cmd(f"bmlStress{_nm}DemotedShare", f"{100 * _g['released']['demoted_binaries']['weighted_share_of_label']:.0f}")
+    for _c, _cn in (("released", "Rel"), ("stage5", "FiveSub")):
+        _sl = _g[_c]["single_lenses"]
+        cmd(f"bmlStress{_cn}{_nm}SingleNp", f"{100 * _sl['argmax_fractions']['NonPSPL']:.0f}")
+        cmd(f"bmlStress{_cn}{_nm}SingleAlert", f"{100 * _sl['frac_above_frozen_threshold']:.0f}")
 # anomaly calls: weighted prevalence and false-positive rate, and precision at the natural prevalence (prior shift)
 _pn = _srl["precision_at_natural_prevalence"]
-cmd("bmlStressNatPrev", f"{100 * _pn['natural_prevalence_w']:.1f}")
 for _t, _nm in (("natural", "Nat"), ("planetary", "Planet"), ("oor_flat_faint", "Faint"), ("oor_np_widesep", "Widesep")):
     _r = _srl["subset"][_t]["released"]["nonpspl_rates"]
-    cmd(f"bmlStress{_nm}PrevW", f"{100 * _r['prevalence_w']:.1f}")
+    cmd(f"bmlStress{_nm}PrevW", f"{100 * _r['prevalence_w']:.2g}")
     cmd(f"bmlStressRel{_nm}Fpr", f"{100 * _r['fpr_w']:.1f}")
     if _t in _pn:
         cmd(f"bmlStressRel{_nm}PrecNat", three(_pn[_t]["released"]))
+# The directional sentences of Sec. limits and the abstract about these numbers (third verification, 2026-09-13).
+def _need(ok, what):
+    if not ok:
+        raise SystemExit(f"FATAL: stress sentence no longer holds: {what}")
+def _rel(k):
+    return _q[k]["subset_released"]
+_need(abs(_q["natural_macro_f1"]["subset_released"] - h["macro_f1"]) <= 0.005,
+      "the released model 'reproduces' its held-out macro-F1 on the natural subset")
+_need(abs(_q["natural_macro_f1"]["subset_stage5"] - _q["natural_macro_f1"]["suite_stage5"]) <= 0.005,
+      "stage 5 on the subset reproduces the full set's macro-F1")
+_need(max(_dev) == abs(_q["widesep_np_recall"]["subset_stage5"] - _q["widesep_np_recall"]["suite_stage5"]),
+      "the largest subset-vs-full-set difference is the wide-separation recall")
+_need(float(np.median(_dev)) <= 0.02, "subset-vs-full-set differences are small (median)")
+_need(_rel("widesep_np_recall") < 0.5, "wide-separation anomaly recall 'falls'")
+_need(_rel("longp_per_recall") < 0.1, "long-period PeriodicVar recall is 'a nearly complete failure'")
+_sd = _srl["subset"]["oor_pspl_shortte"]["released"]["pspl_label_by_generator_class"]
+_need(_sd["single_lenses"]["recall"] < 0.5 and _sd["single_lenses"]["argmax_fractions"]["NonPSPL"] > 0.5,
+      "'only' a minority of sub-day single lenses is classified PSPL and 'most' are called anomalies")
+_need(_sd["demoted_binaries"]["recall"] > 0.8 and _sd["demoted_binaries"]["weighted_share_of_label"] > 0.2,
+      "the per-label sub-day recall is propped up by demoted binaries that the model recovers")
+_fp, _fpn, _npp = _rel("faint_np_prec"), _pn["oor_flat_faint"]["released"], _rel("natural_np_prec")
+_need(np.log(_fpn / _fp) > np.log(_npp / _fpn), "faint anomaly precision falls 'mostly' through prevalence")
+_need(_srl["subset"]["oor_flat_faint"]["released"]["nonpspl_rates"]["fpr_w"]
+      > _srl["subset"]["natural"]["released"]["nonpspl_rates"]["fpr_w"], "the faint false-anomaly rate 'rises'")
+_need(_pn["planetary"]["released"] >= _npp, "low-q precision falls 'only through prevalence'")
+_need(_rel("planetary_np_recall") >= _rel("natural_np_recall") - 0.1, "low-q anomaly recall 'holds'")
 # Support behind each quoted OOR number = the swept class's per-class n in that regime, read from
 # the stress report itself. The regime TOTALS (~82k) are mostly in-distribution filler: the OOR
 # shard mix had a duplicate-key bug (run_shard.py) that left the swept class at 500-1,000 per

@@ -102,10 +102,12 @@ Per-class F1 (population-weighted, selection-corrected):
   McNemar values are descriptive and do not support confirmatory population-level inference.
 - **Streaming scope:** the 1,000-event prefix scan contains eligible binaries only and measures conditional
   detection timing. An every-class scan of two held-out-pool shards (15,016 events; `validation/referee_round.json`, `mixed_class_stream{,_f146}`; shipped model, frozen complete-season threshold) measures the burden on our simulator: with all three bands revealed no flat or variable-star event alerts, and the scan raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies at the simulated 5.5% prevalence (58% at 1% and 12% at 0.1% by prior shift); with F146 alone it raises 0.98 per day, 67% of them detectable anomalies (26% at 1%), and 4 eruptive variables alert. With three bands nearly all false alerts come from binaries whose anomaly falls below the detectability policy (29 of 32; 3 of the 1,759 generated single lenses alert); with F146 alone 51 generated single lenses alert as well. The threshold is still the complete-season one; a streaming threshold calibrated on disjoint prefixes is untested.
-- **Stress testing:** the full suite contains 14.9 million events, but the reported macro-F1
-  reproduction applies to its **4.5-million-event same-prior subset**. Separate deliberately
-  out-of-distribution arms expose substantial failures; they are diagnostics, not evidence of
-  broad population validity.
+- **Stress testing:** the full suite (14.9 million events) was scored with the **stage-5 checkpoint**, the
+  released model's predecessor. Its first shards per quoted regime, regenerated with the same seeds (255,527
+  events), were scored with both (`validation/stress_rescore_local.json`, paper Table `tab:stress`): on the
+  same-prior part the released model reproduces its held-out macro-F1 (0.919 vs 0.919). The out-of-range arms
+  expose failures, and stage 6 had trained on the edges of three of them, so they are diagnostics of how far
+  targeted coverage carries, not evidence of broad population validity.
 
 Full methodology and the honest reading of each number: [`docs/evaluation.md`](docs/evaluation.md).
 
@@ -179,7 +181,7 @@ if you omit the bucket. Generation is embarrassingly parallel:
 - **`--seed-base` makes evaluation honest.** Train/val/test used base `20260720`; a far-off base
   (e.g. `900000000`) gives a different PCG64 stream — parameter tuples the model did not see in
   training. The full stress suite has 10.4M targeted out-of-distribution events plus a 4.5M
-  same-prior subset.
+  same-prior subset (scored with stage 5; the released model's numbers come from a regenerated subset).
 - **Binning & inference run in-region.** Raw shards are ~312 MB each (~125 GB for a full run);
   binning them to compact caches (~46 MB) and running the model *in the S3 region* means the
   light curves never leave — only the compact predictions (~30 floats/event) come back.
@@ -242,8 +244,9 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   from the scripts under `validation/gulls/` (from a clone, without the curve cache: the `command_from_clone` field of
   `validation/gulls/transfer_tradeoff_all.json` is the exact `gulls_summary_tables.py --scores` invocation).
 - **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
-  faint sources m>25 (noise-dominated → false anomalies), wide caustics s>5 (rarely crossed),
-  sub-day tE (few epochs on the peak).
+  faint sources m>25 (noise-dominated → false anomalies; anomaly precision 0.026, mostly because anomalies are
+  rare there), sub-day single lenses tE 0.2-1 d (71% called anomalies, 37% above the frozen threshold),
+  wide caustics s>5 (anomaly recall 0.42 on 60 events).
 - **Synthetic support, not a population forecast.** The simulator uses broad analytic training
   supports, including an authored truncated-lognormal timescale distribution anchored to a
   literature mean. Variable-star curves are analytic or phenomenological shapes, not sampled

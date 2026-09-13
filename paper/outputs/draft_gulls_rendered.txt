@@ -24,22 +24,20 @@
 % add the bibliography entries listed at the end.
 % =====================================================================================
 
-% ---------------------------------------------------------------- [A] abstract (replacement)
-Validation on our own simulator uses a continuous 15-minute schedule and an adopted $0.02$~mag
-detectability floor, so the numbers above are benchmark values rather than \Rom{} yield forecasts.
-On RMDC26, a simulation of the survey made independently with GULLS for the Roman Microlensing Data
-Challenge 2026 ($56,975$ selected events, none used for training), the shipped checkpoint flags $35.6\%$ of single lenses as anomalous,
-mostly because that simulation's F146 observing pauses are absent from our training seasons.
-Fine-tuning the same network on our own simulations with gap augmentation, finite-source single lenses
-and the measured pauses raises planetary recall at a $5.2\%$ single-lens false-alarm
-budget from $0.214$ to $0.349$--$0.391$ per simulated event across three
-training seeds ($0.144$ to $0.385$--$0.407$ weighted by event rate); at
-its own threshold, chosen on our simulations, the recommended checkpoint flags $2.4\%$ of single
-lenses. RMDC26 also guided the diagnosis and the
-choice of checkpoint, so these values are optimistic for it. Applying our labelling policy to RMDC26's
-noise-free curves, $44$--$46\%$ of its selected planetary events
-carry no anomaly the policy would claim within one season, so we report recall against both label sets.
-Code, weights, and reproducibility artifacts are released openly.
+% ---------------------------------------------------------------- [A] abstract (merged 2026-09-12: the abstract was condensed; these are its closing sentences)
+These are benchmark
+values for a continuous 15-minute schedule and an adopted $0.02$~mag detectability floor, not \Rom{}
+yield forecasts. On RMDC26, an independent GULLS simulation of the survey made for the Roman
+Microlensing Data Challenge 2026 ($56,975$ selected events, none used for training), the shipped
+checkpoint flags $35.6\%$ of single lenses per simulated event as anomalous, mostly because our training
+seasons lack the survey's F146 observing pauses. Fine-tuning on our own simulations with gap
+augmentation, finite-source single lenses and the measured pauses raises planetary recall at a
+$5.2\%$ single-lens false-alarm budget from $0.214$ to
+$0.349$--$0.391$ per simulated event across three training seeds
+($0.144$ to $0.385$--$0.407$ weighted by event rate); RMDC26 also
+guided the diagnosis and the choice of checkpoint, so these values are optimistic, and
+$44$--$46\%$ of the planetary events we checked carry no anomaly our
+labelling policy would claim within one season. Code, weights, and reproducibility artifacts are released openly.
 
 % ---------------------------------------------------------------- [B] Sec. limits, replacement paragraph
 \paragraph{The schedule, not the sampling rate, is what the shipped model cannot survive.}
@@ -63,21 +61,25 @@ going to \texttt{NonPSPL} and \texttt{PeriodicVar}. The remedy is an augmentatio
 blanking one to eight contiguous runs of 1--12~h in every band during a 12-epoch warm-start fine-tune of
 the shipped weights raises held-out average precision under the measured pauses from
 $0.169$ to $0.910$, while clean-data average precision falls only from
-$0.959$ to $0.951$. Training on the pauses themselves does better still,
+$0.959$ to $0.951$. Training on the pauses themselves does at least as well,
 provided they are the right pauses: drawing one of RMDC26's six measured seasons per training example gives
 $0.921$ under the measured pauses against $0.911$ for random gaps, with clean
 average precision $0.948$ against $0.952$, whereas training on a single season's
-pauses scores only $0.568$ across the six seasons, its own included. Both schedule arms
+pauses scores only $0.568$ across the six seasons, its own included. The first two differences are smaller than the
+spread of held-out average precision across three training seeds of one recipe ($0.018$,
+\S\ref{sec:gulls:results}), so on our own seasons the measured and random pauses are not separated; on RMDC26 the
+measured pauses lead by more than that seed range. Both schedule arms
 train with the caustic-in-gap relabel off. That rule relabels a binary as \texttt{PSPL} when the bins
 around its recorded onset are blanked, but the onset records when the anomaly first becomes detectable,
 not where the caustic is; with a fixed mask and the legacy 7.2-day onset grid it made
 $20.1\%$ of the \texttt{NonPSPL}-labelled training events eligible for relabelling, while
 with random gaps it makes no measurable difference ($0.910$ with it, $0.911$
-without). We later stored each event's noise-free residual against its best single-lens fit per 2-hour bin
-(one natural-prior training shard, $7,403$ events, $4$ presentations each) and applied the
-label rule to the bins that survive: under the measured pauses the rule gives $10.5\%$ of
-binary presentations a single-lens label although their surviving anomaly would still be claimed, while
-with the rule off $1.4\%$ keep a binary label that the surviving bins do not support. The shipped checkpoint's input contract is therefore \emph{continuous F146}; for a gapped
+without). We later applied the label rule itself to the epochs that survive the pauses, refitting the
+single-lens model to each binary's noise-free curve (one natural-prior training shard, $7,403$ events,
+$4$ presentations each): under the measured pauses the caustic-in-gap rule gives
+$9.4\%$ of binary presentations a single-lens label although their surviving anomaly would
+still be claimed, while with the rule off $2.5\%$ keep a binary label that the surviving
+epochs do not support. The shipped checkpoint's input contract is therefore \emph{continuous F146}; for a gapped
 schedule, use the recommended checkpoint of \S\ref{sec:gulls} at its own threshold.
 
 \begin{deluxetable*}{lcccccc}
@@ -112,7 +114,8 @@ Every number so far comes from our own simulator. RMDC26 \citep{RGESPIT2026} is 
 survey made by a different group with GULLS \citep{Penny2013,Penny2019} and the SynthPop Galactic model
 \citep{Kluter2025}, with its own implementation of the observing schedule, photometry and Galactic
 population, released openly for testing and development. We use it to test transfer: no RMDC26 event entered
-training and no operating threshold was chosen on it. It was, however, used to diagnose the residual
+training and no deployed operating threshold was chosen on it (the matched-budget reporting thresholds below
+are set on its single lenses by construction). It was, however, used to diagnose the residual
 false alarms, to set the upper end of the single-lens source-size prior, and to choose among the
 $14$ fine-tuned checkpoints scored on it (one seed each; two further seeds of the chosen
 recipe were trained afterwards), and the recommendation below
@@ -138,7 +141,8 @@ Selection uses catalogue parameters, never the model's output, and is applied id
 three classes. We keep events whose host single-lens peak amplitude, computed from the catalogue impact
 parameter and blend fraction, is at least $0.1$~mag (the median single-lens event is
 $0.063$~mag and $41\%$ pass) and whose Einstein timescale lies in
-our prior's support, $1 \le t_{\rm E} \le 300$~d ($33\%$ of RMDC26 single lenses are
+our natural prior's support, $1 \le t_{\rm E} \le 300$~d (the released model's last training stage
+also saw a short-timescale pool reaching $0.3$~d, Appendix~\ref{app:infra}; $33\%$ of RMDC26 single lenses are
 sub-day, against $0.31\%$ and $0.15\%$ of the planetary classes).
 That leaves $100,935$ events. Of these, $56.4\%$ ($56,975$:
 $33,353$ 1S1L, $11,388$ 1S2L, $12,234$ 2S2L) peak inside one of the
@@ -205,17 +209,18 @@ high-magnification single lenses. A control with the same pool shape, recipe and
 single lenses separates them (its events are a different random draw from the same priors): the extra
 training alone lowers false alarms to $6.4\%$ and raises recall at the budget to
 $0.361$, and the finite-source single lenses then take them to $4.8\%$ and
-$0.390$ (mean recall over false-alarm rates up to 30\%: $0.490$ and
-$0.539$). Most of the gain over gap augmentation is therefore the extra training. The
-physics lowers false alarms in every $\rho/|u_0|$ bin and most, in rate, in the two largest-ratio bins
-(from $0.410$ and $0.513$ to $0.280$ and $0.288$),
-but part of the reduction falls where finite size cannot matter, so not all of it is the physics. On our
+$0.390$ (mean recall over false-alarm rates up to 30\%: $0.486$ for gap
+augmentation, $0.490$ and $0.539$). In false alarms and at low budgets most of
+the gain over gap augmentation is therefore the extra training; at higher budgets and in mean recall it is
+the physics. Per simulated event the physics lowers false alarms most in the two largest-ratio bins (from
+$0.410$ and $0.513$ to $0.280$ and $0.288$); in the smaller
+bins, where finite size cannot matter, its reductions are within the training noise measured below. On our
 own finite-source held-out only the physics restores single-lens recall for sources larger than the
 impact parameter ($0.22$ and $0.16$ for the control, $0.66$
 and $0.84$ with finite sources, in the 1--3 and $> 3$ bins). Weighted by event rate its
 false-alarm reduction holds ($-1.0$ points, interval $-1.5$ to
 $-0.4$) but its recall gain at the budget is not resolved ($+0.010$, interval
-$-0.010$ to $0.027$), and both differences are smaller than the training-seed
+$-0.010$ to $0.027$); both weighted differences are smaller than the training-seed
 range measured below. Widening the \emph{binary} source-size prior at the same
 time was worse: false alarms $8.7\%$ instead of $4.8\%$, recall
 $0.344$ instead of $0.390$. The largest-ratio bins remain near
@@ -241,8 +246,9 @@ $4.8\%$ of single lenses ($4.8\%$ for the original), its planetary recall is
 within $0.001$ of the original's at every budget, and its false-alarm rate in every
 $\rho/|u_0|$ bin within $0.001$. Per simulated event the recommended checkpoint's
 planetary recall is within $0.008$ of the finite-source checkpoint's at every budget, and
-at the frozen threshold it flags more single lenses ($6.3\%$ against $4.8\%$),
-in every $\rho/|u_0|$ bin, though by less than its own seeds differ (below). Weighted by event rate it is ahead at every budget, by
+at the frozen threshold it flags more single lenses ($6.3\%$ against $4.8\%$, a
+difference smaller than the spread of its own seeds, $4.7$--$7.3\%$), in every $\rho/|u_0|$
+bin. Weighted by event rate it is ahead at every budget, by
 $0.017$--$0.024$ for 1S2L (every interval above zero), and at the
 $5.2\%$ budget by more for 2S2L ($0.450$ against $0.405$), and on our own held-out events with
 the measured pauses imposed it is also better (average precision $0.893$ against
@@ -251,12 +257,14 @@ therefore matches or beats the finite-source checkpoint at every matched budget 
 and we chose it on that basis. Two further seeds of the same recipe, trained after the choice (the last
 two rows of Table~\ref{tab:gulls}), do not: per simulated event they trail the finite-source checkpoint
 by $0.032$--$0.041$ at the $5.2\%$ budget, and weighted by event rate
-they tie it. On our own held-out events with the measured pauses, which involve no RMDC26 selection, all
-three seeds score at least as well as the finite-source checkpoint (average precision
-$0.876$--$0.894$ against $0.874$). RMDC26 therefore does not separate
-the two recipes. We keep the first seed as the recommended checkpoint, trained on the survey's measured
-pauses, and \S\S\ref{sec:gulls:labels}--\ref{sec:gulls:cascade} use it; its RMDC26 numbers are the best
-of the three seeds, in both weightings.
+they tie it. On our own held-out events with the measured pauses, which involve no RMDC26 selection, the
+three seeds tie or exceed the finite-source checkpoint (average precision
+$0.876$--$0.894$ against $0.874$); on the clean held-out they are at or just
+below it ($0.919$--$0.931$ against $0.931$). RMDC26 therefore
+does not separate the two recipes. We keep the first seed as the recommended checkpoint, trained on the
+survey's measured pauses, and \S\S\ref{sec:gulls:labels}--\ref{sec:gulls:cascade} use it; its planetary
+recall at every budget of Table~\ref{tab:gulls}, and at its own threshold, is the best of the three seeds in
+both weightings, although another seed flags fewer single lenses at the frozen threshold.
 
 Other changes did not help. Matching GULLS' noise, whose F146 errors equal ours for
 sources brighter than 20th magnitude and reach $2.64$ times ours at 24--25~mag (a
@@ -267,20 +275,54 @@ single noise level we do not attribute a mechanism. Recording the anomaly onset 
 attempt made before the off-by-one error in its first implementation was found) moved recall at the
 $5.2\%$ budget from $0.390$ to $0.375$.
 
-The three seeds of the recommended recipe also measure the training noise behind every comparison in this
-section. At the $5.2\%$ budget they reach planetary recall $0.349$--$0.391$
-per simulated event and $0.385$--$0.407$ weighted by event rate, and they flag
-$4.7$--$7.3\%$ of single lenses at the frozen threshold. The paired intervals quoted
-above cover only the sampling of events: between two seeds of one recipe they exclude zero (seed 2
-against seed 1: $-0.042$ per event, interval $-0.049$ to $-0.033$). We
-therefore do not interpret a difference between single training runs that is smaller than the seed range
-in the same weighting ($0.042$ per event and $0.022$ weighted, at the
-$5.2\%$ budget). The extra training and the measured pauses pass this test in both
-weightings; the finite-source physics passes it in the false alarms of the two largest-ratio bins, where
-the seeds differ by at most $0.083$, but not in recall; the recommended recipe's lead over
-the finite-source recipe does not pass it. Two fine-tunes of one recipe on different pools with the same
-seed differ by $0.014$--$0.023$ per event across the three budgets, within the seed
-range.
+The three seeds of the recommended recipe also give a scale for the training noise behind every
+comparison in this section (Table~\ref{tab:seeds}). At the $5.2\%$ budget they reach
+planetary recall $0.349$--$0.391$ per simulated event and $0.385$--$0.407$
+weighted by event rate, and they flag $4.7$--$7.3\%$ of single lenses at the frozen
+threshold. The paired intervals quoted above cover only the sampling of events: between seeds of one
+recipe they can exclude zero (seed 2 against seed 1: $-0.042$ per event, interval
+$-0.049$ to $-0.033$; seed 3 against seed 2: $+0.009$, interval
+$-0.001$ to $0.016$). Three runs give only a rough scale: it includes
+the random training split and the choice of epoch but not the variation between pools, and two runs of one
+recipe would differ by more than a three-run range about a third of the time. We therefore read a
+difference between single runs as unresolved when it is smaller than the seed range at the same budget and
+in the same weighting, and as indicative rather than established when it is larger. On that reading the
+measured pauses lead random gaps in recall at every budget and in mean recall, in both weightings; the extra
+training accounts for most of the gain over gap augmentation in false alarms and at the low budgets, and the
+finite-source physics for the gain at the $11.7\%$ budget and in mean recall and for the false
+alarms of the two largest $\rho/|u_0|$ bins, all per simulated event; weighted by event rate the physics
+resolves nothing (those two bins hold about $100$ and $50$ effective single
+lenses). The recommended recipe's lead over the finite-source recipe is not established: at the
+$5.2\%$ budget its three seeds differ from the finite-source run by $-0.041$ to
+$+0.001$ per simulated event and by $+0.002$ to $+0.024$ weighted, and only the
+released seed's weighted lead exceeds the seed range. Two fine-tunes of one recipe on different pools
+with the same seed differ by $0.014$--$0.023$ per event across the three budgets,
+within the seed range.
+
+\begin{deluxetable*}{lcccccccccc}
+\tabletypesize{\scriptsize}
+\tablecaption{Differences between single training runs on RMDC26, against the spread of three seeds of the
+recommended recipe. FA is the change in the single-lens false-alarm rate at the frozen threshold (percentage
+points); R$_x$ the change in 1S2L recall at a single-lens false-alarm budget of $x\%$; ``mean'' the change in
+mean 1S2L recall over false-alarm rates up to 30\%. Columns marked (w) weight events by their RMDC26 event
+rate. The first row is the range (maximum minus minimum) over the three seeds; entries in bold exceed it at
+the same budget and weighting. The pauses arms are the schedule experiment of \S\ref{sec:gulls:results} (a
+different pool, from the shipped weights). Generated from
+\code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:seeds}}
+\tablehead{\colhead{comparison} & \colhead{FA} & \colhead{R$_{2.0}$} & \colhead{R$_{5.2}$} &
+           \colhead{R$_{11.7}$} & \colhead{mean} & \colhead{FA (w)} & \colhead{R$_{2.0}$ (w)} &
+           \colhead{R$_{5.2}$ (w)} & \colhead{R$_{11.7}$ (w)} & \colhead{mean (w)}}
+\startdata
+seed range (three seeds) & 2.7 & 0.041 & 0.042 & 0.029 & 0.017 & 3.9 & 0.016 & 0.022 & 0.028 & 0.015 \\
+extra training (control $-$ gap aug.) & \textbf{-5.3} & \textbf{+0.059} & \textbf{+0.066} & +0.028 & +0.003 & \textbf{-4.9} & \textbf{+0.040} & \textbf{+0.038} & \textbf{+0.036} & +0.012 \\
+finite source $-$ control & -1.5 & +0.021 & +0.030 & \textbf{+0.048} & \textbf{+0.049} & -1.0 & -0.015 & +0.010 & +0.012 & +0.015 \\
+measured pauses $-$ random gaps & \textbf{-2.7} & \textbf{+0.058} & \textbf{+0.072} & \textbf{+0.058} & \textbf{+0.046} & -0.9 & \textbf{+0.038} & \textbf{+0.048} & \textbf{+0.034} & \textbf{+0.028} \\
+recommended recipe, seed 1 $-$ finite source & +1.4 & +0.008 & +0.001 & -0.001 & -0.002 & +0.8 & \textbf{+0.024} & \textbf{+0.024} & +0.017 & \textbf{+0.016} \\
+recommended recipe, seed 2 $-$ finite source & -0.2 & -0.033 & -0.041 & \textbf{-0.030} & \textbf{-0.019} & -1.7 & +0.008 & +0.002 & -0.011 & +0.000 \\
+recommended recipe, seed 3 $-$ finite source & +2.5 & -0.032 & -0.032 & -0.019 & -0.010 & +2.2 & +0.012 & +0.002 & -0.004 & +0.007 \\
+
+\enddata
+\end{deluxetable*}
 
 Removing the colour bands lowers planetary recall at matched budget by
 $0.042$--$0.068$ for each of the $4$ checkpoints ablated.
@@ -297,13 +339,14 @@ evidence that the colour bands carry anomaly information across simulators.
 $11,388$ 1S2L, $12,234$ 2S2L), identical inputs for every row. ``FA'' is the
 percentage of single lenses over the frozen threshold $0.904$. R$_x$ columns give 1S2L recall at
 the threshold that yields a single-lens false-alarm rate of $x\%$ on this population (achieved
-within $0.05$ points); the $5.2\%$ and $11.7\%$ budgets are
+within $0.05$ points, $0.09$ in the weighted column); the $5.2\%$ and $11.7\%$ budgets are
 close to the frozen-threshold false-alarm rates of two earlier checkpoints (the first finite-source round,
 $5.2\%$, and gap augmentation, $11.6\%$) and $2.0\%$ is a
 low-budget reference, all chosen after seeing the results. Columns marked (w) weight each event by its
 RMDC26 event rate, budgets included (effective sample sizes $8,309$ single lenses and
 $2,841$ 1S2L events). The last four columns are the single-lens false-alarm rate at the
-frozen threshold in four of the six bins of $\rho/|u_0|$ (the 0.03--0.3 bins are omitted). Rows below
+frozen threshold in four of the six bins of $\rho/|u_0|$, per simulated event (the 0.03--0.3 bins are
+omitted). Rows below
 gap augmentation add 12 epochs from it with point-source single lenses (control), finite-source single
 lenses, and finite sources plus the measured pauses (recommended); the last two rows repeat the
 recommended recipe with two other training seeds, trained after the choice. Fine-tunes are
@@ -356,7 +399,8 @@ $1,600$ scored single lenses and $2,500$ scored events of each planetary
 class. Under that rule $44\%$ of 1S2L and
 $46\%$ of 2S2L events carry no anomaly the policy would claim within one season:
 $26\%$ of the planetary events fail the $\Delta\chi^2$ cut and $19\%$ pass
-it but fall under the floor. Rescaling the $\Delta\chi^2$ cuts for RMDC26's $11\%$ more F146 epochs per
+it but fall under the floor (with GULLS' errors, larger than ours for faint sources, the $\Delta\chi^2$ cut
+is not the formality it is on our simulator, \S\ref{sec:sims}). Rescaling the $\Delta\chi^2$ cuts for RMDC26's $11\%$ more F146 epochs per
 season moves these fractions by under a point. The figure depends on the floor, the single-season window
 and our selection; it is not a statement about what a survey could detect. Recall against generator
 labels mixes detectable and undetectable planets and is not bounded by the detectable fraction: the
@@ -418,9 +462,10 @@ Premature alerts stay rare: $2.2\%$ of the eligible events are flagged before th
 interval $1.6$--$3.0\%$), against $1.4\%$ and $4.2\%$ for the
 giant-planet and Neptune strata of the in-house scan ($138$ and $48$ events; shipped
 model, our simulator), the only strata comparable with RMDC26's planetary anomalies. Alerts come later: the
-median lag of the others is $+6.5$~d, against $+4.5$~d in-house. Detection does not
-transfer: $61\%$ ($59$--$64\%$) of the eligible events are flagged by the end of the
-season, against $89\%$ and $73\%$ in-house, in line with the full-season recall on
+median lag of the others is $+6.5$~d, against $+4.5$~d in-house. Detection is lower:
+$61\%$ ($59$--$64\%$) of the eligible events are flagged by the end of the
+season, against $89\%$ and $73\%$ in-house (a different checkpoint on a different
+simulator, so the difference mixes the two), in line with the full-season recall on
 claimable anomalies ($0.543$ and $0.621$, \S\ref{sec:gulls:labels}).
 Revealing all three bands lowers premature alerts to $1.1\%$, lengthens the lag to
 $+11.5$~d and lowers detection to $59\%$. The in-house scan measured three bands
@@ -428,16 +473,16 @@ only for its whole population, mostly stellar binaries (premature alerts $1.6\%$
 $1.0\%$, lag $+5.0$ to $+7.0$~d, detection
 $89.0\%$ to $91.0\%$), so its planetary strata cannot be compared on this point.
 
-Scanning single lenses gives the alert burden on a second simulator. $6.2\%$
-of single lenses raise an alert at some point in the season ($0.86$ alerts per 1,000 events
-per day). If 1\% of events were planetary binaries, $5\%$ of alerts would come from a claimable
-anomaly, and $21\%$ at 5\%. At RMDC26's own rate-weighted planetary fraction, which
-over-represents planets, the figure is $49\%$. These count single-lens contamination only;
-RMDC26 contains no variable stars or flat sources (our synthetic ones raise no alert, \S\ref{sec:cascade},
-but real variables are untested), so a real stream would be less pure. On our own simulator, with
-continuous seasons and the shipped checkpoint, only $0.7\%$ of single lenses alert,
-almost all of them binaries below the detectability policy; RMDC26's single lenses alert several times
-as often. At the recalibrated
+Scanning single lenses gives the alert burden on a second simulator. $6.2\%$ of single
+lenses per simulated event ($8.9\%$ weighted by event rate) raise an alert at some point in the
+season ($0.86$ alerts per 1,000 single lenses per day). If 1\% of events were planetary
+binaries, $5\%$ of alerts would come from a claimable anomaly, and $21\%$ at 5\% (per
+simulated event). At RMDC26's own rate-weighted planetary fraction, which over-represents planets, the figure is
+$49\%$. These count single-lens contamination only; RMDC26 contains no variable stars or flat
+sources (our synthetic ones rarely alert, \S\ref{sec:cascade}, but real variables are untested), so a real
+stream would be less pure. On our own simulator, with continuous seasons and the same checkpoint, band and
+threshold, $31$ of $1,759$ generated single lenses alert ($1.8\%$);
+RMDC26's single lenses alert several times as often. At the recalibrated
 threshold single-lens alerts fall to $3.2\%$ and purity at 1\% rises to
 $8\%$, but detection falls to $50\%$, premature alerts to $1.3\%$, and the
 lag grows to $+8.0$~d. The cascade's low premature-alert rate therefore holds on another simulator,
@@ -447,24 +492,29 @@ removes single-lens contaminants.
 \subsection{What this test does and does not establish}
 
 It establishes that the shipped model's failure on a gapped schedule is a property of the schedule,
-reproducible without any GULLS data and remediable by augmentation, preferably with the measured pauses;
-that continued training on a pool rich in high-magnification single lenses removed most of the remaining
-single-lens false alarms; and that finite-source single lenses, a physics our generator lacked, removed a
-further part, most strongly in the largest $\rho/|u_0|$ bins. It does
+reproducible without any GULLS data and reduced by augmentation, preferably with the measured pauses;
+that continued training on a pool rich in high-magnification single lenses accounts for most of the further
+reduction in single-lens false alarms after gap augmentation ($11.6\%$ to $6.4\%$ per
+simulated event, $13.5\%$ to $8.6\%$ weighted); and that finite-source single
+lenses, a physics our generator lacked, lower false alarms further in the two largest $\rho/|u_0|$ bins and raise
+recall at high budgets, per simulated event, by more than the training noise we measured. It does
 not establish a \Rom{} planet yield: RMDC26's planetary population, detection cut and our amplitude
 selection all differ from our training population; neither simulator contains real systematics; our
 detectability policy uses a static point-source refit and a uniform source without limb darkening; the
 fine-tunes' gap relabelling is approximate (\S\ref{sec:limits}); every fine-tune but the recommended recipe is a
-single seed, and that recipe's seeds differ by more than several of the comparisons between recipes; some
+single seed, and that recipe's three seeds give only a rough scale of the training noise, which exceeds several
+of the comparisons between recipes; some
 conclusions depend on whether events are weighted by rate; and RMDC26 was used to choose among
 checkpoints. It does not test the binary-source degeneracy, for which
-RMDC26 has no class. Sub-day single lenses, outside our timescale prior, are flagged as anomalies by the
+RMDC26 has no class. Sub-day single lenses, outside our natural timescale prior, are flagged as anomalies by the
 recommended checkpoint less often than in-support single lenses ($1.6\%$ of
 $1,385$ unweighted and $5.7\%$ weighted by event rate, against
 $6.3\%$ and $8.4\%$), and their most probable class is mostly
 \texttt{PeriodicVar} ($60$--$93\%$ across checkpoints), with
-$15\%$ read as microlensing of either kind; a model for free-floating planets needs sub-day
-timescales in its prior, not a threshold change.
+$15\%$ read as microlensing of either kind. They are mostly shorter (median $t_{\rm E}$
+$0.13$~d) than the $0.2$--$1$~d single lenses of our own sweep, most of which the released model calls
+anomalies (\S\ref{sec:limits}); a model for free-floating planets needs sub-day timescales in its prior, not a
+threshold change.
 
 % ---------------------------------------------------------------- [D] Discussion paragraph
 BinML's input is one contiguous season. Of RMDC26's eligible events, that contract leaves out those

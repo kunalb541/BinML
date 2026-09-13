@@ -31,7 +31,11 @@ pass (record: `docs/VERIFICATION_2026-09-12b.md`). What changed:
   with the stage-5 checkpoint, the released model's predecessor; the paper had quoted its numbers as the released
   model's. `validation/stress_rescore_local.py` regenerates the first shards of each quoted tier with the suite's seeds
   (and its original out-of-range class mix, `run_shard --legacy-oor-mix`) and scores the same events with both
-  checkpoints; the paper now quotes the released checkpoint on that subset and says which model scored the suite.
+  checkpoints; the paper now quotes the released checkpoint on that subset (Table `tab:stress`) and says which model
+  scored the suite. The released model reproduces its held-out macro-F1 there (0.919). The suite's sub-day "PSPL
+  recall 0.524" mixed in demoted binaries: the sub-day single lenses are classified PSPL 0.274 and called anomalies
+  71% of the time (37% above the frozen threshold). Faint-source anomaly precision (0.026) is low mostly through
+  prevalence. Stage 6 had trained on the edges of three of the sweeps; the text says so.
   (2) The appendix training recipe described the base run's defaults (batch 256, factor 2 on the anomaly class, 5
   epochs); it now describes the six-stage warm-start chain from the stage logs (`paper/canonical_numbers.json` infra).
 - CI and tooling: the paper-build workflow checks both macro files and compares the regenerated macros, tables and

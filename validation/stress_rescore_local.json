@@ -1,6 +1,6 @@
 {
  "_doc": "The stress-test numbers for the RELEASED checkpoint -> validation/stress_rescore_local.json.",
- "code": "submitted-ac-2026-08-15-52-g6016bc6edb89",
+ "code": "submitted-ac-2026-08-15-54-gcd85ee815466",
  "command": "validation/stress_rescore_local.py --workers 4",
  "checkpoints": {
   "stage5": {
@@ -138,7 +138,52 @@
       "n": 11456
      }
     },
-    "macro_f1": 0.9268818376929299
+    "label_fractions": {
+     "Flat": 0.32301899422642455,
+     "PSPL": 0.2902100242657518,
+     "NonPSPL": 0.11627478872060916,
+     "PeriodicVar": 0.09011798175884864,
+     "LongPeriodVar": 0.08452012383900928,
+     "Eruptive": 0.09585808718935654
+    },
+    "macro_f1": 0.9268818376929299,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 14059,
+      "recall": 0.9601678640017071,
+      "weighted_share_of_label": 0.09276663841201148,
+      "argmax_fractions": {
+       "Flat": 0.0070417526139839245,
+       "PSPL": 0.9601678640017071,
+       "NonPSPL": 0.014510278113663845,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.006330464471157266,
+       "Eruptive": 0.011949640799487873
+      },
+      "frac_above_frozen_threshold": 0.003912084785546625
+     },
+     "demoted_binaries": {
+      "n": 20624,
+      "recall": 0.9390031031807602,
+      "weighted_share_of_label": 0.9072333615879883,
+      "argmax_fractions": {
+       "Flat": 0.008242823894491857,
+       "PSPL": 0.9390031031807602,
+       "NonPSPL": 0.029286268425135775,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.007854926299456945,
+       "Eruptive": 0.015612878200155162
+      },
+      "frac_above_frozen_threshold": 0.00829131109387122
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.0548549426152777,
+     "tpr_w": 0.9558146229130685,
+     "fpr_w": 0.017735423305709406,
+     "n_flagged": 14100,
+     "n_false_flags": 818
+    }
    },
    "released": {
     "n": 119510,
@@ -180,7 +225,52 @@
       "n": 11456
      }
     },
-    "macro_f1": 0.9192305338775065
+    "label_fractions": {
+     "Flat": 0.32301899422642455,
+     "PSPL": 0.2902100242657518,
+     "NonPSPL": 0.11627478872060916,
+     "PeriodicVar": 0.09011798175884864,
+     "LongPeriodVar": 0.08452012383900928,
+     "Eruptive": 0.09585808718935654
+    },
+    "macro_f1": 0.9192305338775065,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 14059,
+      "recall": 0.9584607724589231,
+      "weighted_share_of_label": 0.09276663841201148,
+      "argmax_fractions": {
+       "Flat": 0.004054342414111956,
+       "PSPL": 0.9584607724589231,
+       "NonPSPL": 0.016786400170709155,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0064727220997225976,
+       "Eruptive": 0.014225762856533182
+      },
+      "frac_above_frozen_threshold": 0.004196600042677289
+     },
+     "demoted_binaries": {
+      "n": 20624,
+      "recall": 0.9340574088440651,
+      "weighted_share_of_label": 0.9072333615879883,
+      "argmax_fractions": {
+       "Flat": 0.004945694336695115,
+       "PSPL": 0.9340574088440651,
+       "NonPSPL": 0.03481380915438325,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.008145849495733128,
+       "Eruptive": 0.018037238169123355
+      },
+      "frac_above_frozen_threshold": 0.008970131885182312
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.0548549426152777,
+     "tpr_w": 0.9617156016119747,
+     "fpr_w": 0.021051678765469088,
+     "n_flagged": 14330,
+     "n_false_flags": 966
+    }
    }
   },
   "planetary": {
@@ -224,7 +314,52 @@
       "n": 5709
      }
     },
-    "macro_f1": 0.8743261692349945
+    "label_fractions": {
+     "Flat": 0.35407948835084513,
+     "PSPL": 0.3358245774326176,
+     "NonPSPL": 0.014691640018273184,
+     "PeriodicVar": 0.0977067153951576,
+     "LongPeriodVar": 0.09337597076290544,
+     "Eruptive": 0.104321608040201
+    },
+    "macro_f1": 0.8743261692349945,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 7024,
+      "recall": 0.9615603644646925,
+      "weighted_share_of_label": 0.08491569991869467,
+      "argmax_fractions": {
+       "Flat": 0.0049829157175398636,
+       "PSPL": 0.9615603644646925,
+       "NonPSPL": 0.01623006833712984,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.006548974943052392,
+       "Eruptive": 0.010677676537585421
+      },
+      "frac_above_frozen_threshold": 0.004271070615034169
+     },
+     "demoted_binaries": {
+      "n": 11354,
+      "recall": 0.958516822265281,
+      "weighted_share_of_label": 0.9150843000813051,
+      "argmax_fractions": {
+       "Flat": 0.006693676237449359,
+       "PSPL": 0.958516822265281,
+       "NonPSPL": 0.016205742469614235,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.00722212436145852,
+       "Eruptive": 0.011361634666196937
+      },
+      "frac_above_frozen_threshold": 0.0036991368680641184
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.006283999417788065,
+     "tpr_w": 0.8893034825870647,
+     "fpr_w": 0.010560536841835248,
+     "n_flagged": 1015,
+     "n_false_flags": 300
+    }
    },
    "released": {
     "n": 54725,
@@ -266,7 +401,52 @@
       "n": 5709
      }
     },
-    "macro_f1": 0.865063127844825
+    "label_fractions": {
+     "Flat": 0.35407948835084513,
+     "PSPL": 0.3358245774326176,
+     "NonPSPL": 0.014691640018273184,
+     "PeriodicVar": 0.0977067153951576,
+     "LongPeriodVar": 0.09337597076290544,
+     "Eruptive": 0.104321608040201
+    },
+    "macro_f1": 0.865063127844825,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 7024,
+      "recall": 0.9585706150341685,
+      "weighted_share_of_label": 0.08491569991869467,
+      "argmax_fractions": {
+       "Flat": 0.0028473804100227792,
+       "PSPL": 0.9585706150341685,
+       "NonPSPL": 0.01921981776765376,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.007830296127562643,
+       "Eruptive": 0.011531890660592256
+      },
+      "frac_above_frozen_threshold": 0.004271070615034169
+     },
+     "demoted_binaries": {
+      "n": 11354,
+      "recall": 0.9566672538312491,
+      "weighted_share_of_label": 0.9150843000813051,
+      "argmax_fractions": {
+       "Flat": 0.0037872115553989785,
+       "PSPL": 0.9566672538312491,
+       "NonPSPL": 0.018143385590981158,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.008279020609476842,
+       "Eruptive": 0.013123128412894139
+      },
+      "frac_above_frozen_threshold": 0.004491809054077859
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.006283999417788065,
+     "tpr_w": 0.9092039800995025,
+     "fpr_w": 0.011918619785733579,
+     "n_flagged": 1079,
+     "n_false_flags": 348
+    }
    }
   },
   "oor_np_widesep": {
@@ -310,7 +490,52 @@
       "n": 1916
      }
     },
-    "macro_f1": 0.8514146969573232
+    "label_fractions": {
+     "Flat": 0.5127312694632716,
+     "PSPL": 0.23142211638273189,
+     "NonPSPL": 0.0036636746656896865,
+     "PeriodicVar": 0.09159186664224217,
+     "LongPeriodVar": 0.04359772852170727,
+     "Eruptive": 0.11699334432435733
+    },
+    "macro_f1": 0.8514146969573232,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 3532,
+      "recall": 0.9583805209513023,
+      "weighted_share_of_label": 0.6725057208612943,
+      "argmax_fractions": {
+       "Flat": 0.007361268403171008,
+       "PSPL": 0.9583805209513023,
+       "NonPSPL": 0.01783691959229898,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0056625141562853904,
+       "Eruptive": 0.010758776896942242
+      },
+      "frac_above_frozen_threshold": 0.0028312570781426952
+     },
+     "demoted_binaries": {
+      "n": 258,
+      "recall": 0.9844961240310076,
+      "weighted_share_of_label": 0.32749427913870577,
+      "argmax_fractions": {
+       "Flat": 0.003875968992248062,
+       "PSPL": 0.9844961240310076,
+       "NonPSPL": 0.003875968992248062,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0,
+       "Eruptive": 0.007751937984496124
+      },
+      "frac_above_frozen_threshold": 0.0
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.003301540734258139,
+     "tpr_w": 0.31666666666666665,
+     "fpr_w": 0.003846153849360121,
+     "n_flagged": 83,
+     "n_false_flags": 64
+    }
    },
    "released": {
     "n": 16377,
@@ -352,7 +577,52 @@
       "n": 1916
      }
     },
-    "macro_f1": 0.8519179565539264
+    "label_fractions": {
+     "Flat": 0.5127312694632716,
+     "PSPL": 0.23142211638273189,
+     "NonPSPL": 0.0036636746656896865,
+     "PeriodicVar": 0.09159186664224217,
+     "LongPeriodVar": 0.04359772852170727,
+     "Eruptive": 0.11699334432435733
+    },
+    "macro_f1": 0.8519179565539264,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 3532,
+      "recall": 0.9589467723669309,
+      "weighted_share_of_label": 0.6725057208612943,
+      "argmax_fractions": {
+       "Flat": 0.004246885617214043,
+       "PSPL": 0.9589467723669309,
+       "NonPSPL": 0.020385050962627407,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.005379388448471121,
+       "Eruptive": 0.011041902604756512
+      },
+      "frac_above_frozen_threshold": 0.003680634201585504
+     },
+     "demoted_binaries": {
+      "n": 258,
+      "recall": 0.9728682170542635,
+      "weighted_share_of_label": 0.32749427913870577,
+      "argmax_fractions": {
+       "Flat": 0.0,
+       "PSPL": 0.9728682170542635,
+       "NonPSPL": 0.015503875968992248,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.003875968992248062,
+       "Eruptive": 0.007751937984496124
+      },
+      "frac_above_frozen_threshold": 0.0
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.003301540734258139,
+     "tpr_w": 0.4166666666666667,
+     "fpr_w": 0.005502392311507134,
+     "n_flagged": 102,
+     "n_false_flags": 77
+    }
    }
   },
   "oor_per_longp": {
@@ -396,7 +666,52 @@
       "n": 1901
      }
     },
-    "macro_f1": 0.69883064911097
+    "label_fractions": {
+     "Flat": 0.514965324248692,
+     "PSPL": 0.22849495072393236,
+     "NonPSPL": 0.009003528409782212,
+     "PeriodicVar": 0.08967027618931743,
+     "LongPeriodVar": 0.04221924808370848,
+     "Eruptive": 0.11564667234456746
+    },
+    "macro_f1": 0.69883064911097,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 3504,
+      "recall": 0.9631849315068494,
+      "weighted_share_of_label": 0.6759259346301935,
+      "argmax_fractions": {
+       "Flat": 0.007134703196347032,
+       "PSPL": 0.9631849315068494,
+       "NonPSPL": 0.014554794520547944,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.005707762557077625,
+       "Eruptive": 0.009417808219178082
+      },
+      "frac_above_frozen_threshold": 0.003424657534246575
+     },
+     "demoted_binaries": {
+      "n": 252,
+      "recall": 0.9365079365079365,
+      "weighted_share_of_label": 0.3240740653698067,
+      "argmax_fractions": {
+       "Flat": 0.01984126984126984,
+       "PSPL": 0.9365079365079365,
+       "NonPSPL": 0.02380952380952381,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.007936507936507936,
+       "Eruptive": 0.011904761904761906
+      },
+      "frac_above_frozen_threshold": 0.007936507936507936
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.008185237111689074,
+     "tpr_w": 0.9594594594594594,
+     "fpr_w": 0.00646840142606709,
+     "n_flagged": 224,
+     "n_false_flags": 82
+    }
    },
    "released": {
     "n": 16438,
@@ -438,7 +753,52 @@
       "n": 1901
      }
     },
-    "macro_f1": 0.6872172408962601
+    "label_fractions": {
+     "Flat": 0.514965324248692,
+     "PSPL": 0.22849495072393236,
+     "NonPSPL": 0.009003528409782212,
+     "PeriodicVar": 0.08967027618931743,
+     "LongPeriodVar": 0.04221924808370848,
+     "Eruptive": 0.11564667234456746
+    },
+    "macro_f1": 0.6872172408962601,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 3504,
+      "recall": 0.9611872146118722,
+      "weighted_share_of_label": 0.6759259346301935,
+      "argmax_fractions": {
+       "Flat": 0.004280821917808219,
+       "PSPL": 0.9611872146118722,
+       "NonPSPL": 0.016837899543378994,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.005422374429223744,
+       "Eruptive": 0.012271689497716894
+      },
+      "frac_above_frozen_threshold": 0.0045662100456621
+     },
+     "demoted_binaries": {
+      "n": 252,
+      "recall": 0.9325396825396827,
+      "weighted_share_of_label": 0.3240740653698067,
+      "argmax_fractions": {
+       "Flat": 0.003968253968253968,
+       "PSPL": 0.9325396825396827,
+       "NonPSPL": 0.03968253968253968,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.011904761904761906,
+       "Eruptive": 0.011904761904761906
+      },
+      "frac_above_frozen_threshold": 0.003968253968253968
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.008185237111689074,
+     "tpr_w": 0.9797297297297297,
+     "fpr_w": 0.008680297287235569,
+     "n_flagged": 244,
+     "n_false_flags": 99
+    }
    }
   },
   "oor_pspl_shortte": {
@@ -482,7 +842,52 @@
       "n": 1908
      }
     },
-    "macro_f1": 0.7656218144060145
+    "label_fractions": {
+     "Flat": 0.5584841491558362,
+     "PSPL": 0.1814041054293696,
+     "NonPSPL": 0.01081015425725738,
+     "PeriodicVar": 0.0909146119276084,
+     "LongPeriodVar": 0.04251184258472003,
+     "Eruptive": 0.11587513664520831
+    },
+    "macro_f1": 0.7656218144060145,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 2740,
+      "recall": 0.21496350364963504,
+      "weighted_share_of_label": 0.6246200701072677,
+      "argmax_fractions": {
+       "Flat": 0.09014598540145985,
+       "PSPL": 0.21496350364963504,
+       "NonPSPL": 0.5485401459854015,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0,
+       "Eruptive": 0.14635036496350365
+      },
+      "frac_above_frozen_threshold": 0.20912408759124088
+     },
+     "demoted_binaries": {
+      "n": 247,
+      "recall": 0.9311740890688258,
+      "weighted_share_of_label": 0.3753799298927324,
+      "argmax_fractions": {
+       "Flat": 0.008097165991902832,
+       "PSPL": 0.9311740890688258,
+       "NonPSPL": 0.03643724696356275,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.020242914979757082,
+       "Eruptive": 0.004048582995951416
+      },
+      "frac_above_frozen_threshold": 0.016194331983805665
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.00983534096311067,
+     "tpr_w": 0.9606741573033708,
+     "fpr_w": 0.08772321452614756,
+     "n_flagged": 1692,
+     "n_false_flags": 1521
+    }
    },
    "released": {
     "n": 16466,
@@ -524,7 +929,52 @@
       "n": 1908
      }
     },
-    "macro_f1": 0.7790452916942875
+    "label_fractions": {
+     "Flat": 0.5584841491558362,
+     "PSPL": 0.1814041054293696,
+     "NonPSPL": 0.01081015425725738,
+     "PeriodicVar": 0.0909146119276084,
+     "LongPeriodVar": 0.04251184258472003,
+     "Eruptive": 0.11587513664520831
+    },
+    "macro_f1": 0.7790452916942875,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 2740,
+      "recall": 0.2737226277372263,
+      "weighted_share_of_label": 0.6246200701072677,
+      "argmax_fractions": {
+       "Flat": 0.006569343065693431,
+       "PSPL": 0.2737226277372263,
+       "NonPSPL": 0.7098540145985401,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0,
+       "Eruptive": 0.009854014598540146
+      },
+      "frac_above_frozen_threshold": 0.36642335766423356
+     },
+     "demoted_binaries": {
+      "n": 247,
+      "recall": 0.9311740890688258,
+      "weighted_share_of_label": 0.3753799298927324,
+      "argmax_fractions": {
+       "Flat": 0.008097165991902832,
+       "PSPL": 0.9311740890688258,
+       "NonPSPL": 0.040485829959514164,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.016194331983805665,
+       "Eruptive": 0.004048582995951416
+      },
+      "frac_above_frozen_threshold": 0.008097165991902832
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.00983534096311067,
+     "tpr_w": 0.9719101123595506,
+     "fpr_w": 0.11722470273220462,
+     "n_flagged": 2217,
+     "n_false_flags": 2044
+    }
    }
   },
   "oor_flat_faint": {
@@ -568,7 +1018,52 @@
       "n": 4025
      }
     },
-    "macro_f1": 0.459440556766495
+    "label_fractions": {
+     "Flat": 0.8115335353472244,
+     "PSPL": 0.023929274311955264,
+     "NonPSPL": 0.001999312736246915,
+     "PeriodicVar": 0.020930305207584893,
+     "LongPeriodVar": 0.015869544843959887,
+     "Eruptive": 0.12573802755302865
+    },
+    "macro_f1": 0.459440556766495,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 659,
+      "recall": 0.48710166919575115,
+      "weighted_share_of_label": 0.4802040419807166,
+      "argmax_fractions": {
+       "Flat": 0.010622154779969651,
+       "PSPL": 0.48710166919575115,
+       "NonPSPL": 0.33687405159332323,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.0409711684370258,
+       "Eruptive": 0.1244309559939302
+      },
+      "frac_above_frozen_threshold": 0.19878603945371776
+     },
+     "demoted_binaries": {
+      "n": 107,
+      "recall": 0.6074766355140186,
+      "weighted_share_of_label": 0.5197959580192837,
+      "argmax_fractions": {
+       "Flat": 0.018691588785046724,
+       "PSPL": 0.6074766355140186,
+       "NonPSPL": 0.25233644859813076,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.018691588785046724,
+       "Eruptive": 0.10280373831775698
+      },
+      "frac_above_frozen_threshold": 0.13084112149532703
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.0019352497710721055,
+     "tpr_w": 0.78125,
+     "fpr_w": 0.05041405755283801,
+     "n_flagged": 1510,
+     "n_false_flags": 1460
+    }
    },
    "released": {
     "n": 32011,
@@ -610,7 +1105,52 @@
       "n": 4025
      }
     },
-    "macro_f1": 0.46208767473098566
+    "label_fractions": {
+     "Flat": 0.8115335353472244,
+     "PSPL": 0.023929274311955264,
+     "NonPSPL": 0.001999312736246915,
+     "PeriodicVar": 0.020930305207584893,
+     "LongPeriodVar": 0.015869544843959887,
+     "Eruptive": 0.12573802755302865
+    },
+    "macro_f1": 0.46208767473098566,
+    "pspl_label_by_generator_class": {
+     "single_lenses": {
+      "n": 659,
+      "recall": 0.5098634294385432,
+      "weighted_share_of_label": 0.4802040419807166,
+      "argmax_fractions": {
+       "Flat": 0.004552352048558422,
+       "PSPL": 0.5098634294385432,
+       "NonPSPL": 0.30045523520485584,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.04704097116843703,
+       "Eruptive": 0.13808801213960548
+      },
+      "frac_above_frozen_threshold": 0.13960546282245828
+     },
+     "demoted_binaries": {
+      "n": 107,
+      "recall": 0.6635514018691587,
+      "weighted_share_of_label": 0.5197959580192837,
+      "argmax_fractions": {
+       "Flat": 0.009345794392523362,
+       "PSPL": 0.6635514018691587,
+       "NonPSPL": 0.22429906542056072,
+       "PeriodicVar": 0.0,
+       "LongPeriodVar": 0.009345794392523362,
+       "Eruptive": 0.09345794392523363
+      },
+      "frac_above_frozen_threshold": 0.10280373831775698
+     }
+    },
+    "nonpspl_rates": {
+     "prevalence_w": 0.0019352497710721055,
+     "tpr_w": 0.734375,
+     "fpr_w": 0.05415067645542566,
+     "n_flagged": 1653,
+     "n_false_flags": 1606
+    }
    }
   }
  },
@@ -673,6 +1213,164 @@
    "subset_stage5": 0.0291715287504092,
    "subset_released": 0.025622387906889154,
    "n_subset": 64
+  }
+ },
+ "code_generation_and_scoring": "submitted-ac-2026-08-15-52-g6016bc6edb89",
+ "single_lens_recall": {
+  "oor_pspl_shortte": {
+   "stage5": {
+    "n": 2740,
+    "recall": 0.21496350364963504,
+    "weighted_share_of_label": 0.6246200701072677,
+    "argmax_fractions": {
+     "Flat": 0.09014598540145985,
+     "PSPL": 0.21496350364963504,
+     "NonPSPL": 0.5485401459854015,
+     "PeriodicVar": 0.0,
+     "LongPeriodVar": 0.0,
+     "Eruptive": 0.14635036496350365
+    },
+    "frac_above_frozen_threshold": 0.20912408759124088
+   },
+   "released": {
+    "n": 2740,
+    "recall": 0.2737226277372263,
+    "weighted_share_of_label": 0.6246200701072677,
+    "argmax_fractions": {
+     "Flat": 0.006569343065693431,
+     "PSPL": 0.2737226277372263,
+     "NonPSPL": 0.7098540145985401,
+     "PeriodicVar": 0.0,
+     "LongPeriodVar": 0.0,
+     "Eruptive": 0.009854014598540146
+    },
+    "frac_above_frozen_threshold": 0.36642335766423356
+   }
+  },
+  "oor_flat_faint": {
+   "stage5": {
+    "n": 659,
+    "recall": 0.48710166919575115,
+    "weighted_share_of_label": 0.4802040419807166,
+    "argmax_fractions": {
+     "Flat": 0.010622154779969651,
+     "PSPL": 0.48710166919575115,
+     "NonPSPL": 0.33687405159332323,
+     "PeriodicVar": 0.0,
+     "LongPeriodVar": 0.0409711684370258,
+     "Eruptive": 0.1244309559939302
+    },
+    "frac_above_frozen_threshold": 0.19878603945371776
+   },
+   "released": {
+    "n": 659,
+    "recall": 0.5098634294385432,
+    "weighted_share_of_label": 0.4802040419807166,
+    "argmax_fractions": {
+     "Flat": 0.004552352048558422,
+     "PSPL": 0.5098634294385432,
+     "NonPSPL": 0.30045523520485584,
+     "PeriodicVar": 0.0,
+     "LongPeriodVar": 0.04704097116843703,
+     "Eruptive": 0.13808801213960548
+    },
+    "frac_above_frozen_threshold": 0.13960546282245828
+   }
+  },
+  "natural": {
+   "stage5": {
+    "n": 14059,
+    "recall": 0.9601678640017071,
+    "weighted_share_of_label": 0.09276663841201148,
+    "argmax_fractions": {
+     "Flat": 0.0070417526139839245,
+     "PSPL": 0.9601678640017071,
+     "NonPSPL": 0.014510278113663845,
+     "PeriodicVar": 0.0,
+     "LongPeriodVar": 0.006330464471157266,
+     "Eruptive": 0.011949640799487873
+    },
+    "frac_above_frozen_threshold": 0.003912084785546625
+   },
+   "released": {
+    "n": 14059,
+    "recall": 0.9584607724589231,
+    "weighted_share_of_label": 0.09276663841201148,
+    "argmax_fractions": {
+     "Flat": 0.004054342414111956,
+     "PSPL": 0.9584607724589231,
+     "NonPSPL": 0.016786400170709155,
+     "PeriodicVar": 0.0,
+     "LongPeriodVar": 0.0064727220997225976,
+     "Eruptive": 0.014225762856533182
+    },
+    "frac_above_frozen_threshold": 0.004196600042677289
+   }
+  }
+ },
+ "precision_at_natural_prevalence": {
+  "natural_prevalence_w": 0.0548549426152777,
+  "planetary": {
+   "stage5": 0.830146842122925,
+   "released": 0.8157510639194894
+  },
+  "oor_np_widesep": {
+   "stage5": 0.8269451719234002,
+   "released": 0.8146416669095992
+  },
+  "oor_flat_faint": {
+   "stage5": 0.47351955562262543,
+   "released": 0.4404350077721428
+  }
+ },
+ "suite_label_fractions": {
+  "natural": {
+   "Flat": 0.3217043409125988,
+   "PSPL": 0.2903073716564269,
+   "NonPSPL": 0.11896896524538321,
+   "PeriodicVar": 0.08914477592549616,
+   "LongPeriodVar": 0.08459699457344284,
+   "Eruptive": 0.09527755168665214
+  },
+  "planetary": {
+   "Flat": 0.35264250505272204,
+   "PSPL": 0.3361463963346045,
+   "NonPSPL": 0.015076773939842886,
+   "PeriodicVar": 0.09785545099545484,
+   "LongPeriodVar": 0.09361390801759537,
+   "Eruptive": 0.10466496565978033
+  },
+  "oor_np_widesep": {
+   "Flat": 0.5089861301035359,
+   "PSPL": 0.2316004102363743,
+   "NonPSPL": 0.005347724164875952,
+   "PeriodicVar": 0.09233981246337175,
+   "LongPeriodVar": 0.04515042000390701,
+   "Eruptive": 0.11657550302793514
+  },
+  "oor_per_longp": {
+   "Flat": 0.511280847492672,
+   "PSPL": 0.22809812816988773,
+   "NonPSPL": 0.010131478125494107,
+   "PeriodicVar": 0.09114681521302861,
+   "LongPeriodVar": 0.04314087984529123,
+   "Eruptive": 0.11620185115362629
+  },
+  "oor_pspl_shortte": {
+   "Flat": 0.5906911657337551,
+   "PSPL": 0.1475054757848625,
+   "NonPSPL": 0.010063275736188853,
+   "PeriodicVar": 0.092394743246532,
+   "LongPeriodVar": 0.04359941591628133,
+   "Eruptive": 0.11574592358238014
+  },
+  "oor_flat_faint": {
+   "Flat": 0.8135244620597392,
+   "PSPL": 0.023261774671484478,
+   "NonPSPL": 0.00206924144484315,
+   "PeriodicVar": 0.02081744414298396,
+   "LongPeriodVar": 0.015960040509621035,
+   "Eruptive": 0.12436703717132819
   }
  }
 }

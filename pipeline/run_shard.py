@@ -249,7 +249,7 @@ def _config_for(regime: Optional[str], cfg: SurveyConfig):
         # stress_report.json's per-class n says, not the regime total. The per-LABEL recalls also
         # mix populations where the swept class shares its label with others: in oor_pspl_shortte
         # the PSPL-labelled events include binaries of natural timescale demoted to PSPL by the
-        # detectability policy (37% of the weighted label mass under the legacy mix), so the
+        # detectability policy (38% of the weighted label mass under the legacy mix), so the
         # suite's 0.524 is not a sub-day single-lens recall (validation/stress_rescore_local.py
         # splits them by generator class).
         mix = {"Flat": 1500, "PSPL": 1000, "NonPSPL": 500,

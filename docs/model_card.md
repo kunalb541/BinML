@@ -57,9 +57,11 @@ single-lens part: 6.2% of single lenses raise an alert at some point in the seas
 anomaly (about one in thirteen at 0.956). RMDC26 contains no variable stars or flat sources, so a real
 stream would be less pure.
 
-The 14.9-million-event stress suite contains a 4.5-million-event same-prior subset, on which
-macro-F1 is 0.927, and 10.4 million targeted out-of-distribution cases that expose failures. Full
-detail: [evaluation.md](evaluation.md).
+The 14.9-million-event stress suite (a 4.5-million-event same-prior subset and 10.4 million targeted cases) was
+scored with the stage-5 checkpoint, the released model's predecessor; its 0.927 macro-F1 is stage 5's. On the
+first shards of each quoted regime, regenerated with the same seeds (255,527 events), the released model reaches
+macro-F1 0.919 on the same-prior part, equal to its held-out value
+(`validation/stress_rescore_local.json`). Full detail: [evaluation.md](evaluation.md).
 
 ## Limitations / known failure modes
 
@@ -89,10 +91,14 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   (38% have t_E < 3 d, 16% weighted by event rate, against 1.8% of our prior's mass), and the gap-aware
   checkpoints' false-alarm rate rises with timescale, so per-event and rate-weighted rates differ
   (`validation/gulls/transfer_tradeoff_all.json`, `weighted` blocks).
-- **Faint sources (m > 25):** noise-dominated; risk of noise excursions read as anomalies
-  (NonPSPL precision collapses). The single most operationally relevant weak spot.
-- **Wide caustics (s > 5):** the caustic is rarely crossed, so many are unrecoverable.
-- **Sub-day tE:** few epochs sample the peak.
+- **Faint sources (m = 25-27.5):** noise-dominated; NonPSPL precision 0.026, mostly because detectable anomalies
+  are rare there (0.19% of events by weight); at the natural prevalence the same rates would give 0.44, and the
+  false-anomaly rate rises from 2.1% to 5.4% of non-anomalous events.
+- **Sub-day single lenses (tE 0.2-1 d):** only 0.27 of the detectable ones are classified PSPL; 71% are called
+  anomalies (37% above the frozen threshold). The suite's per-label 0.52 mixed in demoted binaries. Stage 6 had
+  trained on tE down to 0.3 d.
+- **Wide caustics (s = 5-12):** anomaly recall 0.42 on the 60 detectable ones in the regenerated subset (stage 5:
+  0.22 on the suite's 438).
 - **Cadence:** trained on a legacy one-season Roman-like schedule; not validated on the current
   multi-season survey design or sparse ground-survey sampling.
 - **Oracle baseline:** evaluation supplies the true simulated baseline magnitude; performance with
