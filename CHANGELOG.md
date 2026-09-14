@@ -1,10 +1,37 @@
 # Changelog
 
+## Unreleased — eighth check of the cut and the new abstract (2026-09-15)
+
+A narrow check of the unreviewed commits 52e2d8c..e65a510 (the seventh-round fixes, the length cut, the new abstract
+and Appendix B; record: the fifth addendum of `docs/VERIFICATION_2026-09-12b.md`) found that the cut had removed
+hedges the data still require and that the new abstract overclaimed. Restored or corrected:
+- **Abstract:** no survey cadence claim (15 min is our legacy benchmark; the survey samples F146 every ~12 min);
+  labels follow an *adopted* detectability policy (not "what no survey could claim"); the half-day numbers are F146
+  alone and the stream numbers three-band; the RMDC26 failure is "mostly" the pauses; RMDC26 guided the checkpoint
+  choice, so its numbers are optimistic; "artifacts are public" without "every number". 247 words.
+- **Hedges the cut had dropped:** detection lower at high mass ratios only *nominally* resolved (one of six
+  comparisons) and the intermediate-ratio lag *at the edge of resolution*; weighted by event rate the finite-source
+  physics resolves *nothing*; the measured pauses lead random gaps in *recall* in both weightings (false alarms per
+  event only); the stress failures are not *established* limits of the method; *essentially* none of the training
+  events has an empty mid-season bin; the NonPSPL false-positive diagnostic *suggests* (or correlated source
+  properties); the floor arms are partly overlapping draws; the colour boundary depends on where training stops; the
+  RMDC26 burden is slightly optimistic; the finite-source cause is the *likely* one and explains only part.
+- **Wrong populations or pointers:** the gap-augmentation numbers are now the relabel-off arm the text describes;
+  the baselines are named with their scores; q < 1e-3 for the 0.892 slice; the 43% sub-day demoted share is the
+  regenerated tier's; the conclusion's stream numbers are three-band; the 19.9% is of the final-test split; Data
+  availability again says the referee-round results reduce from the runner's work directory; captions of Figs. 3, 4
+  and 9 and Tables 6, 8, 9 and 10 restored their conditions (relabel rows, full-precision comparison, blanking rules).
+- **Code and records:** the probability-evolution figure's self-checks now match the sentences as they stand; the
+  Appendix B table's bin edges are guarded (with a case); `paper/README.md` lists `make_gulls_macros.py`,
+  `render_draft.py` and the committed outputs; `REVISION.md` notes where the cut moved statements to the draft.
+
 ## Unreleased — length cut (2026-09-14)
 
 The revision had doubled the manuscript (7,900 to 15,200 words of prose; 25 to 32 pages): every verification round
 closed findings by adding hedges, disclosures and sensitivity prose and never removed any. Eight sections were
-rewritten to 8,300 words and 21 pages with every result, macro, table and figure kept: one statement of each result in
+rewritten to 8,300 words and 21 pages with every table and figure kept, but secondary numbers and many hedges
+cut from the text (the eighth check restored the hedges the data require; the dropped numbers remain in
+`paper/draft_gulls_section.tex` and the artifacts): one statement of each result in
 the section that owns it, one hedge per result, provenance only in Data availability, and no restating of tables in
 prose. The abstract was rewritten around the paper's two ideas and its cross-simulator finding (249 words, a third
 of the numbers). The RMDC26 transfer table lost its four source-size columns, which moved with the seed-spread

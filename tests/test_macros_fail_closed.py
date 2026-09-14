@@ -142,6 +142,9 @@ CASES = {
     "in-house strata copy stale": (lambda t: _edit(t, "../cascade_reproduce_result.json", lambda d: d["stratified"]["by_mass_ratio"]["giant"]
                                                    .update(n_premature=3)),
                                    "in-house strata differ from validation/cascade_reproduce_result.json"),
+    "rho table bin edges changed": (lambda t: _edit(t, "transfer_tradeoff_all.json", lambda d: d["models"]["shipped"]
+                                                    ["fa_1S1L_by_rho_over_u0"][0].update(bin=[0, 0.05])),
+                                    "bin edges differ from those typed in Table tab:rho"),
     "F146-only reference at another threshold": (lambda t: _edit(t, "transfer_full_fspl5s_seasons_g08_f146only.json", lambda d: d.update(threshold=0.95)),
                                                  "another threshold than the scan"),
     "cascade sample not optimistic": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]

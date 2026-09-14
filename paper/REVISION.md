@@ -23,7 +23,7 @@ done until this table says so.
 | OOR swept-class support (e.g. widesep NonPSPL n = 438) | ✅ read from `stress_report.json`; the released model's stress numbers from `validation/stress_rescore_local.json` (§1½ row 23) | ✅ via `\bmlStress*N`, Table `tab:stress` |
 | F087 saturation physics corrected | ✅ `photometry.py` | ✅ paragraph corrected |
 | `t_anom` 7.2-day resolution of training labels | — | ✅ stated in §cascade |
-| McNemar discordant counts as macros | ✅ | ✅ |
+| McNemar discordant counts as macros | ✅ | ✅ (macros kept; the 2026-09-14 length cut dropped the counts from the text) |
 | Finite-source fine-tune `ft_fspl_g08.pt` (GULLS false alarms 11.6% → 5.2%; recall at matched budget +6–7 pts; threshold under the measured seasons 0.945 → 2.4% FA; the 0.935 first-season calibration is superseded) | ✅ `validation/gulls/{fspl_finetune,transfer_full_reduced,transfer_tradeoff}_fspl_g08.json`, `gapped_threshold_fspl_g08_seasons.json` (the 0.945 calibration; `gapped_threshold_fspl_g08.json` is the superseded 0.935) | ✅ Table gulls |
 | Round 2 `ft_fspl5_g08.pt` (rho ≤ 5 + binary rho ≤ 0.1): negative — no gain over round 1, finite-source bins worse | ✅ `fspl_finetune_fspl5_g08.json`, `transfer_tradeoff_all.json` | — (one sentence at most) |
 | Round 3 `ft_fspl5s_g08.pt` (single-lens rho ≤ 5, binaries unchanged): best at matched budgets, tied by the combined arm (§1½ row 14) — FA 4.8%, recall 0.390 @ 5.2% FA, mean 0.539 | ✅ `fspl_finetune_fspl5s_g08.json`, `transfer_tradeoff_all.json` | ✅ Table gulls |
@@ -60,7 +60,8 @@ must enter through `make_macros.py`, never typed.
 the corrections are made in place below where they are numbers, and where this section conflicts
 with section 1½ or the verification record, those win. In particular: RMDC26's pause schedule
 differs between seasons (the "seven pauses" below are the first season's), the calibrations below
-were redone under the measured seasons, and the manuscript text lives in `paper/draft_gulls_section.tex`.
+were redone under the measured seasons; the manuscript text is `paper/paper.tex` (since the 2026-09-14 length cut
+`paper/draft_gulls_section.tex` is the long-form record, no longer a mirror).
 
 **Status:** all artifacts committed (`9b921c5`, `ecd5178`). Shipped weights unchanged.
 
@@ -365,7 +366,7 @@ like g08e12, and state that RMDC26 was used for diagnosis and checkpoint choice 
   than the quiescent flux in this release. We did not use it. Mention in a footnote only if a
   referee asks how the baseline was obtained.
 
-### Where it goes (rewritten 2026-09-11; the manuscript text is `paper/draft_gulls_section.tex`)
+### Where it goes (rewritten 2026-09-11; the manuscript text is now `paper/paper.tex`, with `paper/draft_gulls_section.tex` as the long-form record)
 
 - **Abstract [A]:** replace the last two sentences with the draft's; the finite-source checkpoint
   is quoted at a matched false-alarm budget with the development-set caveat, and recall is quoted
@@ -430,6 +431,14 @@ recipe is a single seed. Three seeds of that recipe (row 20) span 0.042 in per-e
 budget (0.022 weighted) — more than the 0.014-0.023 between two fine-tunes with one recipe on different
 pools, and more than several differences between recipes; the paired event-bootstrap intervals do not
 cover it.
+
+> **2026-09-14 length cut.** `paper.tex` was condensed from about 15,200 to 8,300 words of prose. Where a row
+> below says "the paper quotes" or "in paper (Sec. X)", the number or statement may now appear only in
+> `paper/draft_gulls_section.tex` (the long-form record) and in the artifacts; the eighth check (2026-09-15) restored
+> the hedges the data require. Rows 6, 11, 20 and 23 are affected: the paper keeps 1.6% (not the weighted 5.7%), 37% and
+> 5 of 20 (not the 35-40% / 16-25% ranges), no longer states the seed-1 choice's per-budget ranking, and the abstract no
+> longer carries the stress numbers.
+
 
 | # | Experiment | Outcome (corrected where the verification required) | Artifacts | Status |
 |---|---|---|---|---|

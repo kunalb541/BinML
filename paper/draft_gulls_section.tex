@@ -314,8 +314,7 @@ $\bmlGullsColUndetOne$ to $\bmlGullsColUndetThree$ on events without one. We hav
 (class-dependent colours in RMDC26, or chromatic effects our F146 policy cannot see), so this is not
 evidence that the colour bands carry anomaly information across simulators.
 
-\begin{deluxetable*}{lcccccccccc}
-\tabletypesize{\scriptsize}
+\begin{deluxetable*}{lcccccc}
 \tablecaption{Cross-simulator transfer on $\bmlGullsN$ RMDC26 events ($\bmlGullsNSingle$ 1S1L,
 $\bmlGullsNPlanet$ 1S2L, $\bmlGullsNPlanetBin$ 2S2L), identical inputs for every row. ``FA'' is the
 percentage of single lenses over the frozen threshold $\bmlThreshold$. R$_x$ columns give 1S2L recall at
@@ -325,9 +324,8 @@ close to the frozen-threshold false-alarm rates of two earlier checkpoints (the 
 $\bmlGullsFaFsplOne\%$, and gap augmentation, $\bmlGullsFaGapaware\%$) and $\bmlGullsBudgetLo\%$ is a
 low-budget reference, all chosen after seeing the results. Columns marked (w) weight each event by its
 RMDC26 event rate, budgets included (effective sample sizes $\bmlGullsNeffSingle$ single lenses and
-$\bmlGullsNeffPlanet$ 1S2L events). The last four columns are the single-lens false-alarm rate at the
-frozen threshold in four of the six bins of $\rho/|u_0|$, per simulated event (the 0.03--0.3 bins are
-omitted). Rows below
+$\bmlGullsNeffPlanet$ 1S2L events). The false-alarm rate in all six bins of $\rho/|u_0|$ follows in
+Table~\ref{tab:rho}. Rows below
 gap augmentation add 12 epochs from it with point-source single lenses (control), finite-source single
 lenses, and finite sources plus the measured pauses (recommended); the last two rows repeat the
 recommended recipe with two other training seeds, trained after the choice. Fine-tunes are
@@ -336,10 +334,19 @@ shipped weights, every other row from the gap-augmented checkpoint. The last thr
 and a finite-source magnification without hand-off steps (\S\ref{sec:gulls:results}). Generated from
 \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:gulls}}
 \tablehead{\colhead{checkpoint} & \colhead{FA} & \colhead{FA (w)} & \colhead{R$_{\bmlGullsBudgetLo}$} &
-           \colhead{R$_{\bmlGullsBudgetMid}$} & \colhead{R$_{\bmlGullsBudgetHi}$} & \colhead{R$_{\bmlGullsBudgetMid}$ (w)} &
-           \colhead{$<0.03$} & \colhead{0.3--1} & \colhead{1--3} & \colhead{$> 3$}}
+           \colhead{R$_{\bmlGullsBudgetMid}$} & \colhead{R$_{\bmlGullsBudgetHi}$} & \colhead{R$_{\bmlGullsBudgetMid}$ (w)}}
 \startdata
 \input{outputs/gulls_transfer_table.tex}
+\enddata
+\end{deluxetable*}
+
+\begin{deluxetable*}{lcccccc}
+\tablecaption{Fraction of single lenses over the frozen threshold by $\rho/|u_0|$ bin, per simulated event, for the
+checkpoints of Table~\ref{tab:gulls}. Generated from \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:rho}}
+\tablehead{\colhead{checkpoint} & \colhead{$<0.03$} & \colhead{0.03--0.1} & \colhead{0.1--0.3} & \colhead{0.3--1} &
+           \colhead{1--3} & \colhead{$> 3$}}
+\startdata
+\input{outputs/gulls_rho_table.tex}
 \enddata
 \end{deluxetable*}
 

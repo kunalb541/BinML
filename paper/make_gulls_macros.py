@@ -287,6 +287,8 @@ if T:
         # the single-lens false-alarm rate by rho/|u0| bin: its own table in the appendix (all six bins), so that the
         # transfer table fits upright in the body
         need(len(b) == 6 and all(x["n"] > 0 for x in b), f"{m}: expected six populated rho/|u0| bins")
+        need([x["bin"] for x in b] == [[0, 0.03], [0.03, 0.1], [0.1, 0.3], [0.3, 1], [1, 3], [3, None]],
+             f"{m}: the rho/|u0| bin edges differ from those typed in Table tab:rho")
         rho_lines.append(label + " & " + " & ".join(three(x["k"] / x["n"]) for x in b) + " \\\\")
     ach = {t: max(abs(at(m, t)["fa_achieved_exact"] - t) for m, _ in ROWS if m in M) for t in (budgets[0], mid, budgets[3])}
     lines.append(f"% achieved single-lens false-alarm rate within {100 * max(ach.values()):.2f} points of each budget")

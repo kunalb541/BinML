@@ -242,7 +242,7 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   RMDC26 also guided the diagnosis and the choice of this checkpoint, so these numbers are optimistic for it. Under our own label policy 44-46% of the selected RMDC26 planetary
   events carry no anomaly the policy would claim within one season; on those with one, recall at 0.956
   is 0.41 / 0.48. The shipped weights are unchanged so that the submitted numbers stay exact. Full
-  account, including what did not work and what six verification rounds corrected, in
+  account, including what did not work and what eight verification rounds corrected, in
   [`paper/REVISION.md`](paper/REVISION.md) §1½, [`docs/VERIFICATION_2026-09-11.md`](docs/VERIFICATION_2026-09-11.md)
   [`docs/VERIFICATION_2026-09-12.md`](docs/VERIFICATION_2026-09-12.md) and
   [`docs/VERIFICATION_2026-09-12b.md`](docs/VERIFICATION_2026-09-12b.md) (with its addenda). The RMDC26 tables regenerate

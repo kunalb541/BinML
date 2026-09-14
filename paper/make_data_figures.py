@@ -526,14 +526,14 @@ def fig_prob_confidence(K=30, n_steps=144):
     # what the caption and Sec. cascade say about this figure, checked on the events actually drawn (fail-closed)
     ev_ = {(e["class"], e["kind"]): e for e in record["events"]}
     width = lambda e: e["final_p_true_16_84"][1] - e["final_p_true_16_84"][0]
-    marg = [ev_[(c, "marginal")] for c in CLASS_NAMES if c != "Flat"]
+    marg = [ev_[(c, "marginal")] for c in CLASS_NAMES]
     checks = [
         (all(width(ev_[(c, "clear")]) < 0.05 and ev_[(c, "clear")]["frac_realisations_correct_at_day_72"] == 1.0 for c in CLASS_NAMES),
-         "the clear events' bands are narrow and every re-draw is called correctly"),
+         "the clear events settle: narrow bands, every re-draw called correctly"),
         (ev_[("Flat", "marginal")]["final_p_true_median"] > 0.9 and width(ev_[("Flat", "marginal")]) < 0.1,
-         "even the most ambiguous flat source is called with probability near 1"),
-        (sum(width(e) >= 0.2 for e in marg) >= 3, "the noise draw alone moves the marginal events' calls by tens of points"),
-        (sum(e["frac_realisations_correct_at_day_72"] < 0.8 for e in marg) >= 3, "several marginal events are called wrongly in a good share of the draws"),
+         "the flat source stays near 1 (caption: even the most ambiguous flat source is called with probability near 1)"),
+        (sum(width(e) >= 0.2 for e in marg) > len(marg) / 2,
+         "for most of the marginal events the noise draw alone moves the end-of-season call by tens of points"),
     ]
     for ok_, what in checks:
         if not ok_:

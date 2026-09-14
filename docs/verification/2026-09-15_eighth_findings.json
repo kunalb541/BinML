@@ -1,0 +1,722 @@
+{
+ "_note": "Eighth check (2026-09-15) of the unreviewed commits 52e2d8c..e65a510 (seventh-round fixes, the length cut, the new abstract and Appendix B): prose, front-matter/captions/tables and records slices, a refuter per slice, a narrow critic. The first launch lost all agents to a usage limit and was rerun.",
+ "findings": [
+  {
+   "id": "prose8-01",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "845-846 (vs 866-867)",
+   "claim": "\"...it is the physics (per simulated event; weighted by event rate the physics resolves nothing beyond the false-alarm drop).\"",
+   "evidence": "This merges two facts into one false one. By the paper's own rule, a difference is unresolved when it is smaller than the three-seed range. The physics' weighted false-alarm (FA) change is -0.980 points against a weighted seed range of 3.918 (transfer_tradeoff_all.json, full precision). Table seeds prints it as FA(w) -1.0, not bold, against 3.9. So the drop is unresolved. The same paragraph also says 'the extra training carries the false-alarm gain', and the guard at make_gulls_macros.py:831 asserts that nothing in the weighted columns is resolved (\"the text says it resolves nothing\"). At 52e2d8c the text said 'weighted by event rate the physics resolves nothing' and noted that the -1.0 (-1.5 to -0.4) bootstrap interval covers event sampling only and is smaller than the seed range. The cut combined that bootstrap statement with 'resolves'.",
+   "fix": "\"weighted by event rate the physics resolves nothing (its -1.0-point false-alarm drop excludes zero over events but lies within the 3.9-point seed range)\".",
+   "verdict": "real",
+   "verdict_note": "Reproduced from transfer_tradeoff_all.json using the generator's row(): weighted physics FA change (finite source minus control) is -0.980 against a weighted seed range of 3.918, not bold in gulls_seed_table.tex. Bootstrap interval is -1.5 to -0.4, so it excludes zero over events but lies inside the seed range. make_gulls_macros.py:831 asserts no weighted physics column is resolved. new.tex:846 'resolves nothing beyond the false-alarm drop' contradicts that guard, Table seeds and the paper's own rule at :865-866. Old 52e2d8c:1214-1217 said the drop 'holds' over events but both weighted differences are smaller than the seed range. Major is justified: the text claims something is resolved that the paper's rule says is not."
+  },
+  {
+   "id": "prose8-02",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "943-949",
+   "claim": "\"...premature alerts are about as frequent ... (Fisher p >= 0.36), detection is lower in both strata (80% against 89%, p = 0.035; 66% against 73% on 48 in-house events, unresolved), and alerts come later by 2 d at intermediate ratios (bootstrap 95% interval 0-4.5 d) and 0.5 d at high ones (unresolved)\"",
+   "evidence": "The cut reversed two seventh-round fixes. paper7-04 had changed this to 'nominally resolved at high ratios (p = 0.035, one of six comparisons here)'; the Bonferroni bar for six tests is 0.0083. paper7-05 added 'at the edge of resolution' for the 2 d lag, whose interval is [0.0, 4.5] with 4.9% of bootstrap draws at or below zero (cascade_gulls.json vs_inhouse, neptune). Now only the 0.5 d difference is marked 'unresolved', which implies that the p = 0.035 difference and the 2 d lag are resolved. The guards at make_gulls_macros.py:591-594 still check the dropped wording, and docs/VERIFICATION_2026-09-12b.md still lists paper7-04 and paper7-05 as Fixed. The counts were also dropped, so 'about as frequent' rests only on p: 21/826 = 2.5% against 2/48 = 4.2% (Wilson interval about 1-14%). That shows no resolved difference, not that the rates are equal.",
+   "fix": "Restore 'nominally, one of six comparisons' and 'at the edge of resolution', and write 'not distinguishable' (or restore the counts) instead of 'about as frequent'.",
+   "verdict": "partly",
+   "verdict_note": "The defect exists. cascade_gulls.json has giant detection Fisher p=0.0351, Neptune lag 2.0 d [0.0,4.5] with frac_boot_diff_le_0=0.049, and premature counts 21/826 vs 2/48. 1631cb2 had 'nominally resolved ... one of six comparisons' and 'at the edge of resolution'; the cut removed both, and the guards at make_gulls_macros.py:590-596 and VERIFICATION_2026-09-12b rows paper7-04/05 still describe the old wording. Severity is overstated, though. The seventh round rated both issues minor, and the new text still prints p=0.035 and an interval that starts at 0. 'About as frequent' was also in the old text. Minor."
+  },
+  {
+   "id": "prose8-03",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "847-849, 866-867; 726-727",
+   "claim": "\"Training on the measured per-season pauses ... also transfers, under both weightings: ... lowers false alarms from 12.8% to 10.0% ...\"; \"the measured pauses lead random gaps in both weightings\"; Sec. limits: \"on RMDC26 the measured pauses lead\"",
+   "evidence": "The false-alarm gain holds per event only. Weighted, FA goes from 13.32% to 12.47% (-0.86 points) against a weighted seed range of 3.92 (Table seeds FA(w) -0.9, not bold). The per-event FA change is -2.73 against 2.65, bold. The guard at make_gulls_macros.py:823 checks only the recall columns (\"lead in recall at every budget and in mean recall, both weightings\"). The old text read 'lead random gaps in recall at every budget and in mean recall, in both weightings'. The cut dropped 'in recall', so the only numbers now shown (per-event FA and recall) appear to hold under both weightings.",
+   "fix": "\"lead random gaps in recall in both weightings, and in false alarms per simulated event only\". Make the same change in Sec. limits line 727.",
+   "verdict": "partly",
+   "verdict_note": "The numbers reproduce. Measured pauses minus random gaps: FA -2.731 per event against a 2.650 range (bold); weighted -0.855 against 3.918 (not bold; bootstrap -1.41 to -0.29). The guard at make_gulls_macros.py:827 (not 823) checks the recall columns only. The old :1284 had 'in recall at every budget and in mean recall', and limits :961 had 'lead in recall'; both qualifiers were dropped. But 'transfers, under both weightings' is the old text verbatim, and the weighted FA does fall (the interval excludes zero), so no direction is wrong. What is lost is the resolution qualifier. Minor, not major."
+  },
+  {
+   "id": "prose8-04",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1089-1091, 1098-1100",
+   "claim": "\"the streaming, floor, colour-calibration and stress results reduce from archived per-event inputs under validation/, each with the script that produced it, except that the referee-round overlap statistics read the runner's work directory\"",
+   "evidence": "This is false for the floor, colour-calibration and every-class stream results, which come from referee_round.json. validation/referee_round_local.py:40-44 says 'the reduction itself still reads the work directory (a reduction from the archive alone is not implemented)'. Only stress_rescore_local.py has --from-archive. The text at 52e2d8c stated this limitation (the round-5 fix). Separately, the list of RMDC26 results that need a rerun on the pinned release has lost 'dataset facts', which paper7-06 had added. Sec. gulls still quotes them (33% sub-day, 10% brighter than 20 mag, 38%/16% with tE < 3 d, 10%/85% pass by s, median q), and rmdc26_dataset_facts.py reads /tmp/rmdc26_meta.parquet and the local curve cache.",
+   "fix": "Say that the referee-round results are reduced from the runner's work directory (the archive keeps their inputs, but reducing from it is not implemented). Add 'and dataset facts' to the rerun list.",
+   "verdict": "partly",
+   "verdict_note": "Both parts are real. referee_round_local.py:40-44 says 'the reduction itself still reads the work directory (a reduction from the archive alone is not implemented)'; only stress_rescore_local.py has --from-archive. The old text (52e2d8c:1753-1755) said the whole referee-round reduction reads the work directory; the new :1089-1091 narrows the exception to the overlap statistics. 'Dataset facts' (1631cb2:1801, paper7-06) is gone from the rerun list, although SubdaySingle, QmedPlanet, WidePass and ResonantPass still come from rmdc26_dataset_facts.json, whose script reads /tmp/rmdc26_meta.parquet. Nothing in the build breaks, and round 5 rated the same disclosure minor (appendix-referee-archive-cannot-rederive). Minor."
+  },
+  {
+   "id": "prose8-05",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "660-663",
+   "claim": "\"Each failure has a plausible physical cause ...; they are the current model's operating envelope, not limits of the method.\"",
+   "evidence": "At 52e2d8c this read 'not established limits of the method'. The cut turned an admission of ignorance into a claim that nothing supports: no experiment shows the method overcoming these failures. The same paragraph also contradicts it: long-period variables fail 'since within one window they are not observably periodic', which is a limit of the single-season input itself.",
+   "fix": "Restore 'not established limits of the method'.",
+   "verdict": "real",
+   "verdict_note": "new.tex:662 reads 'not limits of the method'; 52e2d8c:870 and 1631cb2:893 read 'not established limits of the method'. The paragraph's own causes (noise comparable to the signal; a signal that does not complete within one window) are limits of the information or the single-season input, so the unhedged claim is unsupported. Major is defensible."
+  },
+  {
+   "id": "prose8-06",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "351-354, 356-368",
+   "claim": "\"whereas the marginal ones wander ... and the noise draw alone moves their end-of-season call by tens of percentage points\"",
+   "evidence": "prob_evolution_confidence.json gives these 16-84% widths for the marginal events: Flat [0.954, 0.997] = 4 points; NonPSPL [0.546, 0.616] = 7 points; PSPL 32, PeriodicVar 63, LongPeriodVar 65, Eruptive 47. So the claim fails for 2 of the 6, including NonPSPL. The 1631cb2 text had 'Only the flat sources stay robust', and its caption had 'for Flat even that event is called with probability near 1'; the cut dropped both. As a result, the guard at make_data_figures.py:533 backs no sentence, and the guard at :535 checks only 3 or more of the 5 non-Flat events. The caption also dropped '(generator grid)' for the dashed onset, which the code draws from ev.params['t_anom'] on the 7.2 d grid, not the half-day onset this section defines. It also dropped the clear-PSPL condition that the peak lies inside the season.",
+   "fix": "Restore the Flat exception, write 'for most of them' (NonPSPL moves by about 7 points), and put back '(generator grid)' and the PSPL peak condition in the caption.",
+   "verdict": "real",
+   "verdict_note": "prob_evolution_confidence.json gives these 16-84% widths for the marginal events: Flat 0.043, NonPSPL 0.070, PSPL 0.324, PeriodicVar 0.63, LPV 0.646, Eruptive 0.474, so 'tens of percentage points' fails for Flat and NonPSPL. 1631cb2:389/:401-403 had 'Only the flat sources stay robust', the Flat 'near 1' note, '(for PSPL, peaking inside the season)' and '(generator grid)'. The code still applies PC_PEAK_IN_SEASON, and CFG=SurveyConfig() uses a 7.2 d onset. The guard at :533 backs no sentence; :535 needs only 3 of 5. Minor."
+  },
+  {
+   "id": "prose8-07",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "717-718",
+   "claim": "\"None of our training events contains an empty mid-season F146 bin\"",
+   "evidence": "The recorded count is 6 of 89,919 (VERIFICATION_2026-09-11 G21, which fixed this very wording to 'essentially none'; REVISION.md line 82; draft_gulls_section.tex:46 still says 'Essentially none'). The cut brought the old defect back.",
+   "fix": "\"Essentially none (6 of 89,919)\".",
+   "verdict": "real",
+   "verdict_note": "new.tex:717 reads 'None of our training events contains an empty mid-season F146 bin'. 52e2d8c:941 and draft_gulls_section.tex:46 say 'Essentially none'. VERIFICATION_2026-09-11 G21 fixed this wording (6 of 89,919), and REVISION.md:82 records the same count. Minor."
+  },
+  {
+   "id": "prose8-08",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "722-727",
+   "claim": "\"blanking random runs ... raises held-out average precision under the pauses from 0.169 to 0.910 at a clean-data cost of 0.959 to 0.951, and training on one of RMDC26's six measured seasons ... gives 0.921 ... Both arms train with the caustic-in-gap relabel off\"",
+   "evidence": "0.910 and 0.951 are \\bmlGapApRand and \\bmlGapApCleanRand, which is the 'random gaps' row of Table gap with the relabel on. The relabel-off arm is 0.911/0.952 (\\bmlGapApRandNorelabel), and that is the arm the guard compares with the measured seasons. The cut removed the old '0.910 with it, 0.911 without', so the sentence now contradicts the table.",
+   "fix": "Quote 0.911 and 0.952, or say that the 0.910 arm kept the relabel and it made no measurable difference.",
+   "verdict": "real",
+   "verdict_note": "gulls_gap_table.tex has 'random gaps' 0.951/0.910 (relabel on) and 'random gaps, relabel off' 0.952/0.911. The text quotes bmlGapApRand/bmlGapApCleanRand (0.910/0.951) and then says 'Both arms train with the caustic-in-gap relabel off'. The old text (52e2d8c:966) quoted both values. It is a 0.001 inconsistency, and the within-seed-range statement holds either way. Minor."
+  },
+  {
+   "id": "prose8-09",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "583-589",
+   "claim": "\"a fitted single-lens residual statistic ... and gradient-boosted-tree and logistic classifiers ... BinML scores 0.843 against 0.436, 0.371 and 0.545\"",
+   "evidence": "The numbers follow the table's order (trees, logistic, residual), not the sentence's order (residual, trees, logistic), so the natural reading gives the residual statistic 0.436. It is 0.545 (Table baselines; the old text named each method).",
+   "fix": "\"against 0.545 (fitted residual), 0.436 (trees) and 0.371 (logistic)\".",
+   "verdict": "real",
+   "verdict_note": "new.tex:583-589 names the methods as residual, trees, logistic but prints \\bmlBaseGbt (0.436), \\bmlBaseLogistic (0.371), \\bmlBasePspl (0.545). Read in the sentence's order, the residual statistic gets 0.436; the table gives 0.545. The old text :702 named each value. Minor."
+  },
+  {
+   "id": "prose8-10",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "566-567",
+   "claim": "\"low-q events are recovered at 0.892 (argmax) where they are detectable\"",
+   "evidence": "0.892 is metrics.json slices deep_planetary_q_lt_1e-3 (n = 2,477). The cut dropped the q<10^-3 definition. The sentence follows a clause about log q < -4 cells, and Table massratio calls q<10^-4 'Low ratio' (0.588 at the threshold).",
+   "fix": "\"events with q < 10^-3 are recovered at 0.892 (argmax)\".",
+   "verdict": "real",
+   "verdict_note": "bmlSliceDeepPlanet = metrics.json slices deep_planetary_q_lt_1e-3 (recall 0.892, n=2,477). The old :738 said 'q<10^-3'. The new :566 says 'low-q', right after log q<-4 cells, and Table massratio's 'Low ratio' is q<10^-4 at 0.588. Minor."
+  },
+  {
+   "id": "prose8-11",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "497-499",
+   "claim": "\"the model evidently responds to sub-threshold anomaly signal, but whether that sensitivity is real needs independent detection statistics\"",
+   "evidence": "The old wording was 'suggests it responds to sub-threshold anomaly signal (or to correlated source properties)'. The hedge and the alternative explanation were dropped, and the new sentence contradicts itself. Sec. gulls:labels shows the response to sub-floor structure is not specific to anomalies (5 of 20 single lenses with a sub-floor misfit are flagged).",
+   "fix": "Restore 'suggests ... (or to correlated source properties)'.",
+   "verdict": "real",
+   "verdict_note": "The old text (52e2d8c:576-580) said 'suggests it responds to sub-threshold anomaly signal (or to correlated source properties)'. The new text says 'evidently responds ..., but whether that sensitivity is real needs independent detection statistics'; the hedge and the alternative explanation are gone, and the sentence contradicts itself. Sec. gulls:labels gives 5 of 20 sub-floor-misfit single lenses flagged. Minor."
+  },
+  {
+   "id": "prose8-12",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "653-654",
+   "claim": "\"the set's per-label value of 0.524 mixes in demoted binaries of ordinary timescale, 43% of the weighted PSPL labels\"",
+   "evidence": "The 43% comes from the regenerated subset (stress_rescore_local.json subset/oor_pspl_shortte/released/.../demoted_binaries weighted_share_of_label = 0.431), not from the full set, whose per-event data are not distributed. The old text said 'in the regenerated tier'.",
+   "fix": "\"...43% of the weighted PSPL labels in the regenerated tier\".",
+   "verdict": "real",
+   "verdict_note": "make_macros.py:268 takes bmlStressShortteDemotedShare from stress_rescore_local.json['subset'] (the regenerated tier), while bmlStressSuiteShortte (0.524) is the full-set value. The old :812-813 said 'in the regenerated tier'; the new :653-654 attributes the 43% to 'the set'. Minor."
+  },
+  {
+   "id": "prose8-13",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "703-712",
+   "claim": "\"...still recovers 0.567 (the same events give 0.942 at full cadence): what makes the shipped model fail outright is empty two-hour bins\"; \"Retraining ... at the 12-minute rate changes nothing measurable (AP 0.830 against 0.827 ...; one seed per arm)\"",
+   "evidence": "The cut dropped the seventh-round paper7-01 reading that thinning alone costs recall (0.942 against 0.567-0.617) and that at 32 visits per day the gap-free grid trails the random subsample (0.617 against 0.775), so the arrangement of visits matters beyond empty bins. The guards at make_macros.py:372-375 now back no sentence. On the 12-minute run, the completeness at the purity target moves from 0.663 (purity 0.878) to 0.580 (0.925) (cadence_local_result.json). The old text explained why AP is the like-for-like comparison and said one seed 'bounds ... rather than establishing equivalence'.",
+   "fix": "Restore one clause on thinning and visit arrangement, and replace 'changes nothing measurable' with 'no difference resolvable with one seed per arm (AP ...)'.",
+   "verdict": "partly",
+   "verdict_note": "The paper7-01 part is real. The new text drops 'at the highest density the regular grid trails the random subsample' (0.617 vs 0.775) and 'arrangement matters beyond empty bins'. The guard at make_macros.py:374-375 and the VERIFICATION paper7-01 disposition now describe text that is not there. However, 'thinning alone costs recall' is still conveyed by the kept '(0.942 at full cadence)' next to 0.567. The 12-minute half is refuted: AP 0.830 vs 0.827 and F1 within 0.021 support 'nothing measurable' with 'one seed per arm' kept. The completeness shift 0.663->0.580 comes at different achieved purities (0.878 vs 0.925), which is why the old text called AP the like-for-like comparison, so it is not evidence of a change."
+  },
+  {
+   "id": "prose8-14",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "774-781",
+   "claim": "\"Regenerating the same shards with the floor at 0.01 and 0.05 mag ... halving the floor ... lowers completeness from 0.891 to 0.808\"; \"Short fine-tunes on each calibration show that this flat-versus-periodic boundary follows the calibration a model is trained on\"",
+   "evidence": "The floor arms are mostly different events: 15,206/15,016/14,636 events, and only 21.6% and 4.5% of the adopted-floor events recur (referee_round.json floor_overlap). The cut dropped this, so the comparison now reads as paired. For the colour boundary, it dropped 'by an amount that depends on where training stops': on the audited photometry the two fine-tunes differ at the kept epoch (0.957 against 0.917) but not at the last (0.967 against 0.967).",
+   "fix": "Say that the floor arms share only 22% and 5% of events, and restore the stopping-epoch qualifier.",
+   "verdict": "real",
+   "verdict_note": "referee_round.json floor_overlap has n_ref 15,016 and frac_shared 0.216 (0.01 mag) and 0.045 (0.05 mag). The old text (52e2d8c:1083-1085) disclosed 'partly overlapping draws'; the new text says 'the same shards' and reads as paired. The Wilson intervals (0.791-0.825 vs 0.876-0.905) still separate, so the direction holds. Colour: the audited-photometry F1s are 0.957 vs 0.917 at the kept epoch and 0.967 vs 0.967 at the last; 'by an amount that depends on where training stops' was dropped, although the AT-vs-TT gap (0.750/0.961, 0.872/0.972) still supports the main claim. Minor."
+  },
+  {
+   "id": "prose8-15",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "972-974",
+   "claim": "\"Sub-day single lenses ... are flagged by the recommended checkpoint less often than in-support ones (1.6% of 1,385 against 6.3%), mostly as PeriodicVar\"",
+   "evidence": "A flagged event is above the NonPSPL threshold, so its argmax is NonPSPL by construction. The PeriodicVar share (60-93% across checkpoints, REVISION row 6) is the most probable class of all sub-day single lenses.",
+   "fix": "\"...(1.6% ...); their most probable class is mostly PeriodicVar\".",
+   "verdict": "real",
+   "verdict_note": "A flagged event has P(NonPSPL) above the 0.904 threshold, so its argmax is NonPSPL. 'flagged ... mostly as PeriodicVar' contradicts itself. The old text (52e2d8c:1504-1508) had 'their most probable class is mostly PeriodicVar (60-93% across checkpoints)'. Minor."
+  },
+  {
+   "id": "prose8-16",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1051-1054",
+   "claim": "Conclusion: \"At half-day resolution it alerts on 89.0% ..., 1.6% ..., +5.0 days; a mixture of every class raises 0.77 alerts per 1,000 events per day, 89% of them detectable anomalies\"",
+   "evidence": "0.77/day and 89% come from the three-band stream scan. The clauses before them report the F146-only protocol, and with F146 alone the stream gives 0.98/day and 67% (Sec. cascade). The old conclusion said 'with all three bands' and gave 67%. The abstract has the same omission (outside this slice).",
+   "fix": "Add 'with all three bands (67% with F146 alone)'.",
+   "verdict": "real",
+   "verdict_note": "The conclusion :1051-1054 pairs the F146-only cascade numbers (89.0%, 1.6%, +5.0 d; the Protocol scores 'F146 alone') with bmlRefStreamAlertsDay 0.77 and Purity 89, which come from the three-band scan (new :423-431). F146 alone gives 0.98/day and 67%. The old conclusion (:1668-1672) said 'with all three bands' and gave 67%. The abstract (:34-36) has the same omission. Minor."
+  },
+  {
+   "id": "prose8-17",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "837-838, 869-873, 897-898, 931-933, 953-955",
+   "claim": "Conditions dropped in the RMDC26 subsections",
+   "evidence": "(a) 837: the finite-source cause is now stated as fact. The old text had 'The likely cause' and 'the missing physics explains only part of the residual' (the largest-ratio bin stays at 0.288). (b) 869-873: the 0.042-0.068 colour loss spans 4 checkpoints, but the 0.174->0.248 and 0.546->0.575 figures are for the recommended one only (both qualifiers dropped). (c) 897: 1.8-3.1% is the 16-84% range of 200 slices (make_gulls_macros.py:403-404), not the full scatter. (d) 931: the matched 5.2% budget for wing seasons rests on 38 exceedances (dropped). (e) 953: the scanned single lenses flag 4.8% against 5.8% for all scored ones, so the burden and purity are slightly optimistic. That hedge was dropped, and its guard (make_gulls_macros.py:557-558) now backs no sentence.",
+   "fix": "Restore each qualifier in a few words.",
+   "verdict": "real",
+   "verdict_note": "All five sub-items reproduce. (a) old :1192 'The likely cause' and :1215 'explains only part of the residual' were dropped; the largest bin goes 0.674->0.288 (control 0.513). (b) ColourGain spans the 4 models in transfer_colour_ablation.json (bmlGullsNcolour=4), while ColDet/ColUndet come from REC only; old :1315-1318 scoped both. (c) bmlSidecarFaLo/Hi come from gulls_at_slice_p16_p84; old :1357 said '(68% of them)'. (d) bmlMsBudgetExceed=38 was dropped. (e) bmlCgSingleFullWindow 4.8 vs AllFone 5.8 and the 'slightly optimistic' hedge are gone; the guard at make_gulls_macros.py:555-556 backs no sentence. Minor."
+  },
+  {
+   "id": "prose8-18",
+   "severity": "minor",
+   "file": "CHANGELOG.md",
+   "line": "5-15",
+   "claim": "\"Eight sections were rewritten ... with every result, macro, table and figure kept\"",
+   "evidence": "292 macros used at 52e2d8c no longer appear in paper.tex. Examples: the weighted pauses recall 0.334->0.382, the 12-minute completeness and purity, the colour fine-tune F1s, the floor-arm macro-F1 and overlaps, the sub-day weighted 5.7% and the PeriodicVar 60-93%. REVISION.md rows 6 and 11 still say 'the paper quotes' 1.6%/5.7% and the 35-40%/16-25% sub-floor rates. docs/VERIFICATION_2026-09-12b.md still lists paper7-01, -04, -05 and -06 as Fixed, although the cut undid them (prose8-02, -04, -13).",
+   "fix": "Say that results were dropped from the text (listing them or pointing to draft_gulls_section.tex/REVISION.md), update the two REVISION rows, and annotate the seventh-check dispositions.",
+   "verdict": "real",
+   "verdict_note": "292 macros used in paper.tex at 52e2d8c are absent at e65a510, and only 2 new ones were added, so these are removals, not renames. Examples verified: RecWSeasons, CadTwelvePurity, RefColFtFonePerAT, RefFloorFoneLo, RefFloorShareLo, GullsSubdayFaW, GullsSubdayPerLo, DiffPhysFaW. CHANGELOG:6-8 says 'with every result, macro, table and figure kept'. REVISION rows 6 and 11 (lines 441, 446) still attribute 5.7%, 35-40% and 16-25% to 'the paper'. VERIFICATION_2026-09-12b rows paper7-01/04/05/06 still read Fixed with wording the paper no longer has. Minor."
+  },
+  {
+   "id": "prose8-19",
+   "severity": "minor",
+   "file": "paper/outputs/gulls_seed_table.tex (caption paper/paper.tex ~1159-1163)",
+   "claim": "\"bold entries exceed it at the same budget and weighting\"",
+   "evidence": "The row 'measured pauses - random gaps' shows FA -2.7 in bold against a seed range printed as 2.7; at full precision the values are 2.731 and 2.650. The note '(compared at full precision)' was dropped in f26e22a. The text also gives the seed FA range as 4.7-7.3% (2.6).",
+   "fix": "Restore '(compared at full precision)'.",
+   "verdict": "real",
+   "verdict_note": "Full precision: measured pauses FA -2.731 against a range of 2.650, both printed '2.7', and the FA entry is bold. The old caption (:1302) had '(compared at full precision)'; the new caption (~:1161) dropped it. Minor."
+  },
+  {
+   "id": "prose8-20",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1012-1014",
+   "claim": "\"because it was trained to call anomalous the sub-threshold binaries that make up 19.9% of the stored test events\"",
+   "evidence": "19.9% (\\bmlGenNpDemoted) is measured on the 360,472-event final-test split. In this paragraph 'the stored test events' reads as the ablation's 45,070-event evaluation set, for which no such fraction is recorded (labelling_ablation_result.json). The old text scoped it with 'Across the final test split'.",
+   "fix": "\"...19.9% of the stored events of the final-test split\".",
+   "verdict": "partly",
+   "verdict_note": "19.9% comes from make_figures.py:385 on the frozen final-test artifact, so the number is correct for that population. The paper defines 'stored test events' as that set (Table perclass caption, new :483), so the population is not misattributed. The only issue is clarity: the ablation paragraph does not say it has switched from its own 45,070-event evaluation set to the final test split. Trivial."
+  },
+  {
+   "id": "prose8-21",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "991-993; 1136-1137",
+   "claim": "Discussion: \"events that peak between seasons (9-10% of RMDC26's planetary events, §gulls:seasons)\"; Appendix A: \"the 6 stages took about 17 hours (22 including one epoch stretched by a system sleep)\"",
+   "evidence": "Sec. gulls:seasons now gives only the pooled 22.0%; the per-class 9-10% (and 27% for single lenses) was cut from both places, so the cross-reference points to a number that is not there. The stages took 22 h of wall-clock time; 17 h is the counterfactual with a typical epoch in place of the stretched one (old text). The 376-656/s range excluded that epoch, which the new text no longer says.",
+   "fix": "Cite the 9-10% where it is computed, or give it in §seasons. Write 'took about 22 hours, about 17 with a typical epoch in place of one stretched by a system sleep'.",
+   "verdict": "real",
+   "verdict_note": "new :992 cites 9-10% (bmlGullsBetweenPlanetLo/Hi) to §gulls:seasons, but that section (:923) gives only the pooled 22.0%, and 27% for single lenses appears nowhere. In the old text (:1548) the per-class figures sat in the discussion itself. Training: old :1831-1833 gave 22 h wall-clock and 17 h with a typical epoch in place of the stretched one, and said the 376-656/s range excluded that epoch. The new :1136-1137 leads with 17 h and drops the exclusion. That part is a small wording issue; the dead cross-reference is the substantive one. Minor."
+  },
+  {
+   "id": "front8-01",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "35-40 (abstract)",
+   "claim": "\"On RMDC26, an independent GULLS simulation of the survey ... brings that to 6.3% and raises planetary recall at a 5.2% false-alarm budget from 0.214 to 0.349-0.391 (three seeds).\" The caveat that these values are optimistic is gone.",
+   "evidence": "The body still says it (789-793): RMDC26 was used to diagnose the false alarms, to set the upper end of the single-lens rho prior and to choose among 14 checkpoints, 'so the recommended checkpoint's numbers are the best of several on this set and are optimistic'. Other places say the same: Sec. gulls 'does not establish' ('RMDC26 was used to choose among checkpoints'), and the tab:gulls caption, where the 5.2% budget was 'chosen after seeing the results'. 6.3% is the chosen checkpoint (2085/33353). 0.391, the top of the range, is that same checkpoint. The old abstract ended 'RMDC26 also guided the checkpoint choice, so these values are optimistic', and draft_gulls_section.tex [A] still does. paper/REVISION.md:370-372 requires the abstract to quote the matched budget 'with the development-set caveat'.",
+   "fix": "Restore a short clause, e.g. 'RMDC26 guided the checkpoint choice and the source-size prior, so these values are optimistic'. At 249/250 words, pay for it by trimming elsewhere, for example the 'tens of thousands ... at 15-minute cadence' clause (see front8-05).",
+   "verdict": "real",
+   "verdict_note": "Reproduced. Recomputed from transfer_tradeoff_all.json: 6.3% is 2085/33353 and 0.391 is 4457/11388, both from fspl5s_seasons_g08 (the chosen run). At e65a510 the body still says 'optimistic' (paper.tex:789-793), Sec. 'does not establish' (971-972) repeats that RMDC26 chose among checkpoints, and the tab:gulls caption (880-881) says the budgets were 'chosen after seeing the results'. The old abstract carried the caveat, so do draft [A] and REVISION.md:370-372. Seeds 2 and 3 were trained after the choice, but the recipe and the budget were still picked on RMDC26, so the caveat is still needed. Major severity stands."
+  },
+  {
+   "id": "front8-02",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "28-30 (abstract)",
+   "claim": "\"labels are conditioned on an explicit detectability policy, so a binary whose perturbation no survey could claim is labelled a single lens\"",
+   "evidence": "The body disclaims exactly this reading. Table 1 (203) calls the policy 'noise-free statistics and an unvalidated amplitude floor'. Sec. detcond (242-243) says the 0.02 mag floor is 'the operative criterion' and 'an adopted simulation policy rather than a measured instrumental limit'. Sec. gulls:labels (910) says the claimable share 'is not a statement about what a survey could detect'. Lowering the floor to 0.005 mag raises the claimable 1S2L share from 56% to 70%, so binaries labelled single lenses at 0.02 mag are claimable under another policy. The old abstract said only 'labels conditioned on detectability thresholds'.",
+   "fix": "'so a binary whose perturbation falls below the adopted thresholds is labelled a single lens'.",
+   "verdict": "real",
+   "verdict_note": "Reproduced. The body calls the policy 'noise-free statistics and an unvalidated amplitude floor' (203), 'an adopted simulation policy rather than a measured instrumental limit' (242-243) and 'not a statement about what a survey could detect' (910). On RMDC26, 19% of planetary events pass the chi2 cut but fall under the floor (\\bmlGullsFloorVeto), and a 0.005 mag floor raises the claimable 1S2L share from 56 to 70%. So 'no survey could claim' contradicts the paper. Major is defensible because this is the abstract's framing of the central contribution."
+  },
+  {
+   "id": "front8-03",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "36-37 (abstract)",
+   "claim": "\"the shipped model fails, flagging 35.6% of single lenses, because our training seasons lack the survey's F146 observing pauses\"",
+   "evidence": "This drops the hedge the data still need. Gap augmentation alone lowers the rate only from 35.6% to 11.6% (3885/33353). The body credits the rest to extra training (6.4%) and finite-source physics (4.8%), and the input contract also matters (raw-observation binning gives 45.6%). The Conclusion (1055) and the old abstract both say 'mostly because'.",
+   "fix": "Restore 'mostly because'.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. Gap augmentation alone gives 35.61% to 11.65% (3885/33353). The control and finite-source runs give 6.4% and 4.8%, and raw-observation binning gives 45.6%. The Conclusion (1055) and the old abstract say 'mostly because'. Minor."
+  },
+  {
+   "id": "front8-04",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "41-42 (abstract)",
+   "claim": "\"Code, weights and the artifact behind every number are public.\"",
+   "evidence": "Data availability (1090-1103) lists exceptions. The referee-round overlap statistics (e.g. bmlRefValPct = 15% of stream rows) read the runner's work directory. The stress set's 14.9 million per-event predictions and the stage-5 weights (Table 6's stage-5 columns) are not distributed. The training set is 'available on request'. The scan, sub-day, relabel, floor, season, occupancy, noise and schedule results need a rerun on the pinned release. The old abstract said only 'Code, weights and artifacts are public'.",
+   "fix": "'Code, the released weights and the evaluation artifacts are public' (or revert to the old wording).",
+   "verdict": "partly",
+   "verdict_note": "The Data availability opening sentence (1085-1086) makes the same claim: every data-derived number is generated from artifacts distributed with the release. The listed exceptions concern upstream inputs, not the artifacts the numbers come from. Two examples: bmlRefValPct is built from validation/referee_round.json, which is committed, and Table 6's stage-5 columns come from paper/results/stress_report.json. What remains is small. 'Every number' is broader than 'every data-derived number' (the Appendix A measurements are typed). An unqualified 'weights' also covers the stage-5 weights, which are not distributed, but the old abstract had the same wording. At most cosmetic. A better fix is 'the artifacts behind every data-derived number'."
+  },
+  {
+   "id": "front8-05",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "25-26 (abstract)",
+   "claim": "\"Roman's Galactic Bulge Time-Domain Survey will deliver tens of thousands of microlensing light curves at 15-minute cadence\"",
+   "evidence": "The intro (60-61) says the survey samples F146 every ~12 minutes. Sec. limits (707-708) says 15-minute F146 sampling is 'a legacy Roman-like design' and 'the current Galactic Bulge Time-Domain Survey specifies F146 every 12 minutes'. Table 1 also calls 15 min the 'legacy design'. The old abstract used 15 minutes only for the synthetic benchmark. The body never gives the event count.",
+   "fix": "'at ~12-minute cadence', or drop the cadence from this sentence.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. Abstract line 25 gives the GBTDS 15-minute cadence. The intro (60-61) says ~12 min, Sec. limits (707-709) calls 15 min 'a legacy Roman-like design' and says the current GBTDS specifies 12 min, and the Table 1 cell reads 'F146 every 15 min ... legacy design'. The old abstract used 15 min only for the synthetic benchmark. 'Tens of thousands' is not stated in the body. Minor."
+  },
+  {
+   "id": "front8-06",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "32-35, 40-41 (abstract); 1051-1052 (Conclusion)",
+   "claim": "\"Revealed in half-day steps, it flags 89.0% ..., only 1.6% before the anomaly is detectable ...; a stream of every class yields 0.77 alerts ..., 89% of them detectable anomalies\" ... \"at ... 5.6% anomaly prevalence\"",
+   "evidence": "The first three numbers are F146-only; with three bands they are 91.0% / 1.0% / +7.0 d. The stream numbers are three-band; F146 alone gives 0.98 alerts/1000/day and 67%. The stream's prevalence is 5.5% (bmlRefStreamPrev), not the test set's 5.6%. The old abstract had 'with all three bands', and the cut dropped it. 'Only 1.6%' is the lower end of a bracket the body says it reports in full (4.5% under the persistent onset, Table 2). The Conclusion's new '1.6% of them' reads as a share of the alerted binaries, which would be 16/890 = 1.8%.",
+   "fix": "Add '(F146 alone)' and 'with all three bands'. Write '1.6% (4.5% under the persistent onset)' or 'before a truth-informed onset'. In the Conclusion write 'of eligible binaries'.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. The cascade macros are the F146-only primary protocol (tab:policy note a). The three-band values are 91.0 / 1.0 / +7.0 (bmlCascMultiband*). The stream's 0.77 and 89% are three-band; F146 alone gives 0.98 and 67%. The stream prevalence is 5.5 (bmlRefStreamPrev), not 5.6. The old abstract and old Conclusion both said 'with all three bands'; both lost it. bmlCascPrematureOfDet is 1.8 (16/890). One sub-point is weak: '1.6% before the anomaly is detectable' is literally accurate for the first-detectable onset, so adding the 4.5% bracket is a hedge preference, not a correction."
+  },
+  {
+   "id": "front8-07",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "324-328 (Fig. 3 caption)",
+   "claim": "\"the single-lens control never acquires NonPSPL probability. The three events illustrate the intended behaviour; the evidence is the aggregate scan below.\"",
+   "evidence": "The old caption said the three events 'are not evidence' and that the aggregate evaluation 'measures the first NonPSPL threshold crossing ..., not the full three-state sequence'. The new caption says the opposite, and the causal timing claim is 'unresolved' (Sec. ablations). In the rendered figure the control's NonPSPL probability peaks at about 0.08 near day 60; the old caption said 'no appreciable'. The caption also says 'against the revealed fraction of the season', but the axis is 'days of season revealed'.",
+   "fix": "'...acquires no appreciable NonPSPL probability. The events are selected illustrations; the scan below measures only the first NonPSPL threshold crossing', and 'against the days of season revealed'.",
+   "verdict": "real",
+   "verdict_note": "Confirmed on the rendered cascade_evolution.pdf. The control's NonPSPL curve peaks near 0.08 around day 60, so 'never acquires' is false (the old caption said 'no appreciable'). The x-axis label in make_data_figures.py is 'days of season revealed'. The old caption's limit ('measures the first NonPSPL threshold crossing ..., not the full three-state sequence') is gone. The ablation paragraph (1016) is titled 'unresolved'. 'Says the opposite' overstates, since the new caption also presents the events only as illustrations, but the lost scope condition is real. Minor."
+  },
+  {
+   "id": "front8-08",
+   "severity": "minor",
+   "file": "paper/paper.tex; paper/make_data_figures.py",
+   "line": "paper.tex 352-354, 361-366; make_data_figures.py 531-536",
+   "claim": "\"the marginal ones wander as the season is revealed and the noise draw alone moves their end-of-season call by tens of percentage points\"; caption: \"... which checks these statements on the events it draws\"",
+   "evidence": "The committed record, which I regenerated byte-identical, gives the marginal events' day-72 16-84% own-class bands. Flat: 0.954-0.997 (width 0.04, 100% correct). NonPSPL: 0.546-0.616 (0.07, 97% correct). Only PSPL, PeriodicVar, LPV and Eruptive exceed 0.2. The 1631cb2 text said 'Only the flat sources stay robust', and its caption 'for Flat even that event is called with probability near 1'; the cut removed both. Checks 2 and 4 in make_data_figures.py now guard sentences that appear in no file. Check 3 requires only 3 of 5, so the caption's 'these statements' is no longer true. The dashed onset is the generator's 7.2-d t_anom (median 3.7 d late), but the cut dropped '(generator grid)', and Sec. cascade defines 'the onset' at 0.5 d.",
+   "fix": "'the marginal non-flat events other than NonPSPL ... tens of points; the flat source stays near 1'. Add '(generator 7.2-d grid)' to 'dashed', and align the checks with the new sentence.",
+   "verdict": "real",
+   "verdict_note": "The committed prob_evolution_confidence.json matches the working copy. Day-72 16-84% widths of the marginal events: Flat 0.043, NonPSPL 0.070, PSPL 0.32, PeriodicVar 0.63, LPV 0.65, Eruptive 0.47. So 'tens of percentage points' holds for 4 of 6. The rendered figure shows the Flat marginal flat near 1. At 1631cb2 the text had 'Only the flat sources stay robust', 'several of them are called wrongly in a good share of the draws', the caption's 'for Flat even that event is called with probability near 1', and '(generator grid)'. All are gone. Checks 2 and 4 in make_data_figures.py (531-536) now guard sentences that are absent. The dashed line is params t_anom at the default 7.2-d onset_resolution_days. Minor."
+  },
+  {
+   "id": "front8-09",
+   "severity": "minor",
+   "file": "paper/paper.tex; paper/make_gulls_macros.py; docs/VERIFICATION_2026-09-12b.md",
+   "line": "paper.tex 946-949, 955-957; make_gulls_macros.py 557-558, 591-594; VERIFICATION_2026-09-12b.md:420-421",
+   "claim": "\"detection is lower in both strata (80% against 89%, p = 0.035; ...), and alerts come later by 2 d at intermediate ratios (bootstrap 95% interval 0-4.5 d)\"; the burden paragraph quotes 6.2% / 0.86 per 1,000 per day with no optimism note",
+   "evidence": "The cut removed three hedges added by the seventh check or earlier. (i) paper7-04 'nominally resolved ..., one of six comparisons' (Holm threshold 0.0083 against p = 0.035). (ii) 'at the edge of resolution' (bootstrap share at or below 0 = 0.049). (iii) 'slightly optimistic' (sample 4.8% vs all 5.75%). Their guards (591-594, 557-558) and the test case 'lag difference not at the edge of resolution' still pass, but they now back only draft_gulls_section.tex. The record (420) says paper7-04 was 'Fixed ... paper and draft'.",
+   "fix": "Restore the three short hedges in Sec. gulls:cascade, or update the record and dispositions.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. 'nominally resolved ..., one of six comparisons' (1631cb2:1476), 'at the edge of resolution' and 'slightly optimistic' are all absent at e65a510. They survive only in draft_gulls_section.tex (445, 447, 466). Values: fisher_p_detection giant 0.0351 (above the Holm threshold 0.05/6 = 0.0083); neptune frac_boot_diff_le_0 0.049; full_window_flag_frac 0.048 against 0.0575 for all scored lenses. The guards at make_gulls_macros.py 557-558 and 591-594 still pass. VERIFICATION_2026-09-12b.md:420 says paper7-04 was 'Fixed ... paper and draft', which is now stale. Minor."
+  },
+  {
+   "id": "front8-10",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "880-881 (Table 8 caption)",
+   "claim": "\"the 5.2% and 11.7% budgets are the frozen-threshold rates of two earlier checkpoints\"",
+   "evidence": "The gap-augmentation row of the same table shows FA 11.6 (3885/33353 = 11.65%), not 11.7. The 5.2% checkpoint (fspl_g08, 1742/33353 = 5.22%) is not in the table or named. The old caption said 'close to' and named both (bmlGullsFaFsplOne, bmlGullsFaGapaware).",
+   "fix": "'close to the frozen-threshold rates of the first finite-source round (5.2%) and gap augmentation (11.6%)'.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. The budgets are [0.02, 0.031, 0.052, 0.117, 0.2]. ft_g08e12's frozen-threshold FA is 3885/33353 = 11.648%, shown as 11.6 in the table, while the budget is 11.7. fspl_g08 is 1742/33353 = 5.22% and is not a table row. The old caption said 'close to' and named both runs (bmlGullsFaFsplOne, bmlGullsFaGapaware). Minor."
+  },
+  {
+   "id": "front8-11",
+   "severity": "minor",
+   "file": "paper/paper.tex; paper/make_gulls_macros.py",
+   "line": "paper.tex 1159-1164 (Table 10 caption); make_gulls_macros.py 794-797",
+   "claim": "Row \"measured pauses - random gaps\"; caption \"bold entries exceed it\"",
+   "evidence": "The row is sched_sched_seasons minus sched_rand_norelabel: Table 7's fine-tunes of the shipped weights on another pool (FA 10.02 vs 12.75). Readers of Table 8 will take it for '+ finite source, pauses (rec.)' minus '+ finite source', which is actually the 'rec. seed 1 - finite source' row. The cut removed the caption sentence identifying these arms, and also '(compared at full precision)'. Without it, the FA entry -2.7 is bold against a displayed range of 2.7 (full precision -2.73 vs 2.65).",
+   "fix": "Restore 'the pauses arms are the schedule experiment of Table 7 (another pool, from the shipped weights)' and 'compared at full precision', or relabel the row.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. The row is sched_sched_seasons minus sched_rand_norelabel, FA 10.020 - 12.751 = -2.73. The seed FA range is 7.340 - 4.689 = 2.65, displayed as 2.7, so '-2.7' is bold against '2.7'. The old caption had '(compared at full precision)' and 'The pauses arms are the schedule experiment ... (a different pool, from the shipped weights)'. Both are gone. The body's 'on one pool' (848) is the only remaining hint. Minor."
+  },
+  {
+   "id": "front8-12",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "845-846",
+   "claim": "\"(per simulated event; weighted by event rate the physics resolves nothing beyond the false-alarm drop)\"",
+   "evidence": "Table 10, 'finite source - control': FA -1.5 (range 2.7) and FA(w) -1.0 (range 3.9), both not bold. By the paper's own reading rule the physics' false-alarm drop is unresolved in both weightings, and the guard (not ex(dp,0)) asserts that. The old text said 'weighted by event rate the physics resolves nothing'.",
+   "fix": "Revert to 'weighted by event rate the physics resolves nothing'.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. The 'finite source - control' row reads FA -1.5 against a range of 2.7 and FA(w) -1.0 against 3.9, neither bold. The guard need(not any(ex(dp,i) for i in range(5,10))) and 'not ex(dp,0)' say the physics resolves no false-alarm change in either weighting. The paper itself (857-859) credits the false-alarm gain to the extra training. The old text said only 'weighted by event rate the physics resolves nothing'. Minor."
+  },
+  {
+   "id": "front8-13",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1149-1150 (Table 9 caption)",
+   "claim": "\"Single-lens false-alarm rate at the frozen threshold by rho/|u0| bin\"",
+   "evidence": "The entries are fractions (shipped 0.402...0.258), while Table 8's FA, also called 'false-alarm rate', is a percentage. The shipped row pools to 35.6% (11877/33353). The table itself matches transfer_tradeoff_all.json: six bins, edges as typed, all 42 cells k/n per event.",
+   "fix": "'fraction of single lenses over the frozen threshold'.",
+   "verdict": "real",
+   "verdict_note": "Confirmed but cosmetic. gulls_rho_table.tex holds fractions: the shipped row is 7298/18151 = 0.402 up to 69/267 = 0.258, pooled 11877/33353. Table 8 defines FA as a percentage. Bin edges [0,0.03) ... [3,inf) match the tablehead. The same fraction-vs-percent mix predates the cut (old Table 8's rho columns; body 834-836 puts 11.6% next to 0.046-0.674). A rate given as a fraction is not wrong, so this is a consistency nit."
+  },
+  {
+   "id": "front8-14",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "612-613 (Fig. 9 caption)",
+   "claim": "\"Cells with fewer than 30 effective events are blank in the first two panels.\"",
+   "evidence": "The cut merged two criteria. make_figures.py fig_efficiency_plane blanks the left panel at fewer than 30 effective generated events and the centre panel at fewer than 30 effective detectable events. In the rendered figure the left panel has no blank cells, while the centre has many.",
+   "fix": "'fewer than 30 effective events (left) or effective detectable events (centre)'.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. fig_efficiency_plane blanks A when neff < 30 (generated) and Cc when nd < 30 (detectable). In the rendered efficiency_plane.pdf the left panel has no blank cells and the centre has many. The old caption stated the two criteria separately. Minor."
+  },
+  {
+   "id": "front8-15",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "670-671 (Table 6 caption)",
+   "claim": "\"N counts events with the class label\"",
+   "evidence": "For the macro-F1 row, N (4.5M; subset 119,510) counts all events of the tier. The old caption said '(for precision, the detectable anomalies; for macro-F1, all events)'.",
+   "fix": "Restore the macro-F1 exception.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. For the macro-F1 row, N is bmlStressNatN = 4.5M and bmlStressSubNat = 119,510, i.e. all events of the tier. The old caption's '(for precision, the detectable anomalies; for macro-F1, all events)' was dropped. The precision rows are still covered by 'events with the class label'. Minor."
+  },
+  {
+   "id": "front8-16",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "722-727",
+   "claim": "\"blanking random runs ... raises ... from 0.169 to 0.910 at a clean-data cost of 0.959 to 0.951, and training on one of RMDC26's six measured seasons ... gives 0.921 ... Both arms train with the caustic-in-gap relabel off\"",
+   "evidence": "0.910 and 0.951 are Table 7's 'random gaps' row, which has the relabel on. The relabel-off arm is 0.911 / 0.952 (bmlGapApRandNorelabel / bmlGapApCleanRandNorelabel). The old text kept the two arms apart.",
+   "fix": "Quote the relabel-off values, or say only the measured-season arm has the relabel off.",
+   "verdict": "real",
+   "verdict_note": "Confirmed. bmlGapApRand = 0.910 and bmlGapApCleanRand = 0.951 are the 'random gaps' row, which has the relabel on. The relabel-off row is 0.911 / 0.952. The new 'Both arms train with the caustic-in-gap relabel off' (727) now covers the quoted relabel-on arm. The old text had 'Both schedule arms', meaning seasons against rand_norelabel. The numbers differ by only 0.001, so the conclusion is unchanged. Minor."
+  },
+  {
+   "id": "front8-17",
+   "severity": "minor",
+   "file": "paper/README.md; paper/REVISION.md; paper/draft_gulls_section.tex; CHANGELOG.md",
+   "line": "README 14-31, 75; REVISION 63, 368; draft 28; CHANGELOG 7",
+   "claim": "Stale records of the outputs and the cut",
+   "evidence": "paper/README.md never mentions make_gulls_macros.py or its committed outputs (gulls_macros.tex, outputs/gulls_{transfer,rho,gap,seed}_table.tex, draft_gulls_rendered.txt). It says outputs/ is gitignored and gives the build as 'pdflatex x bibtex x pdflatex x 2' (build.sh loops up to 4). REVISION.md 63 and 368 say 'the manuscript text lives in / is paper/draft_gulls_section.tex'. The draft's [A] header says 'these are its closing sentences', no longer true after f26e22a. CHANGELOG says 'every result, macro, table and figure kept', but 292 of the 764 macros used at 52e2d8c are unused now (474). Some of those results appear in no table, e.g. bmlRefColFt* (colour fine-tune F1s), bmlGullsSubdayFaW, bmlCadTwelveCompleteness/Purity and bmlCgSingleFullWindow.",
+   "fix": "Add make_gulls_macros.py and its committed outputs to paper/README. Update REVISION 63/368 and the draft [A] header. Reword the CHANGELOG to 'every table and figure kept; secondary numbers and hedges trimmed'.",
+   "verdict": "real",
+   "verdict_note": "All parts reproduce. paper/README.md never mentions make_gulls_macros.py. It calls outputs/ gitignored, but git ls-files shows the gulls_* tables, draft_gulls_rendered.txt and two JSON records committed. It gives the build as 'pdflatex x bibtex x pdflatex x 2', while build.sh loops up to 4. REVISION.md 63 and 368 still say the manuscript text lives in the draft. Draft [A] still says 'these are its closing sentences'. Macro count: 767 distinct \\bml tokens at 52e2d8c against 477 now, 292 dropped (e.g. bmlRefColFt*, bmlGullsSubdayFaW, bmlCadTwelveCompleteness/Purity, bmlCgSingleFullWindow), so the CHANGELOG line 'every ... macro ... kept' is false. The README items predate the cut (README changed by one line since 52e2d8c). Minor."
+  },
+  {
+   "id": "front8-18",
+   "severity": "minor",
+   "file": "paper/make_gulls_macros.py; tests/test_macros_fail_closed.py",
+   "line": "make_gulls_macros.py 289; paper.tex 1151-1152",
+   "claim": "New guard need(len(b) == 6 and all(x['n'] > 0 ...)) for the rho table",
+   "evidence": "The guard has no perturbation case in test_macros_fail_closed.py, though the sixth-check CHANGELOG says every new guard has one. It also does not compare the artifact's bin edges with the edges typed in the tablehead (<0.03 ... >3). The edges match today: [0,0.03), [0.03,0.1), [0.1,0.3), [0.3,1), [1,3), [3,inf).",
+   "fix": "Assert the edges and add a case, e.g. dropping one bin.",
+   "verdict": "partly",
+   "verdict_note": "True that the guard (make_gulls_macros.py:289) has no case in tests/test_macros_fail_closed.py and does not check the typed bin edges. But nothing is wrong today: the artifact edges are [0,0.03],[0.03,0.1],[0.1,0.3],[0.3,1],[1,3],[3,None], matching the tablehead. The cited sentence 'every new guard has a perturbation case' (CHANGELOG:58) belongs to the sixth-check entry, not to a standing policy covering a guard added in f26e22a. This is a hardening suggestion, not a defect."
+  },
+  {
+   "id": "front8-19",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "110-111 (Introduction)",
+   "claim": "\"a selection-aware reweighting that corrects for the training distribution\"",
+   "evidence": "The trimmed Sec. eval (453-458) calls it 'a partial correction' that 'undoes one internal sampling step' and 'does not reweight the deliberately chosen generator class quotas'. This predates the cut (the introduction is word-identical to 52e2d8c).",
+   "fix": "'a selection-aware reweighting that partially corrects for how the training set was sampled'.",
+   "verdict": "real",
+   "verdict_note": "Reproduced. The intro (113-114) says 'corrects for the training distribution'. Sec. eval (453-458) says 'a partial correction' that 'undoes one internal sampling step' and does not reweight the class quotas. Both texts are identical at 52e2d8c (lines 113 and 525-529), so this is pre-existing and outside the reviewed diff, but accurate. Minor."
+  },
+  {
+   "id": "records8-01",
+   "severity": "major",
+   "file": "CHANGELOG.md",
+   "line": "7",
+   "claim": "Length-cut entry: \"Eight sections were rewritten to 8,300 words and 21 pages with every result, macro, table and figure kept\". Commit 22a80e8 makes the same claim.",
+   "evidence": "Tables and figures were kept: no \\input, \\includegraphics or tab:/fig: label is lost. Macros and results were not. 764 distinct \\bml* macros are used in the comment-stripped 52e2d8c paper.tex and 474 at e65a510. 22a80e8 alone removed 291 (768 -> 477), and f26e22a removed bmlGullsRecWShipped and bmlSeedRecWLo/Hi. Some results are now gone from the paper entirely rather than condensed: NonPSPL precision under the pauses, 0.72 -> 0.09 (bmlGapShippedPrecClean/Sched); weighted sub-day false alarms of 5.7% against 8.4% (bmlGullsSubdayFaW, bmlGullsFaWCombined); the three-band RMDC26 cascade (1.1% premature, 59% detected, +11.5 d) and its three-band strata; the out-of-support brightness residual, 11.8% against 4.1% (bmlGullsFaBright/FaInside); the round-2 negative fine-tune (8.7%, 0.344); the 0.05 mag floor arm values (completeness 0.948, purity 0.766, prevalence 4.2%); the McNemar discordant counts (bmlMatchDiscordSixty/OnOnly/OffOnly); and the per-artifact provenance disclosures in Data availability (dirty cascade trace, hashless ablation run). Several hedges were dropped as well (records8-03, 08, 09, 10).",
+   "fix": "Replace the claim with \"every table and figure kept; N results and hedges dropped from the text (listed)\" and add that list, so later rounds re-check the dropped hedges.",
+   "verdict": "partly",
+   "verdict_note": "The claim is false and the counts reproduce. Distinct \\bml macros in the comment-stripped paper.tex: 764 at 52e2d8c, 768 at 1631cb2, 477 at 22a80e8, 474 at e65a510. The cut removed 291 and added none, and f26e22a removed bmlGullsRecWShipped and bmlSeedRecWLo/Hi. Several listed results are absent from the new text and from every \\input table: bmlGapShippedPrecClean/Sched (0.72/0.09), bmlGullsSubdayFaW/FaWCombined (5.7/8.4), bmlCgPremThree/DetThree/LagThree (1.1/59/+11.5), bmlGullsFaBright/FaInside (11.8/4.1), bmlGullsFaFsplFive/RecFsplFive (8.7/0.344), the 0.05 mag floor-arm values (only 'the other way' remains), and the McNemar counts (old l.1630-1633; the macros are bmlMatchDiscordSixty, bmlMatchOffOnlySixty and bmlMatchOnOnlySixty). Two corrections. (1) The provenance disclosures were condensed, not removed: the new Data availability keeps 'Several archived runs have provenance limitations (uncommitted working trees or missing hashes), recorded in the artifacts and in PROVENANCE.md'. (2) Severity should be minor. This is a CHANGELOG and commit-message record; the paper-side harm of the dropped hedges is already counted in 03, 08, 09 and 10. The proposed fix is fine."
+  },
+  {
+   "id": "records8-02",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1089-1091",
+   "claim": "Data availability: \"the streaming, floor, colour-calibration and stress results reduce from archived per-event inputs under validation/, each with the script that produced it, except that the referee-round overlap statistics read the runner's work directory\"",
+   "evidence": "The floor, colour-calibration and every-class stream results come from validation/referee_round_local.py. Its docstring (l.41-44) says \"the reduction itself still reads the work directory (a reduction from the archive alone is not implemented)\", and no script reads validation/referee_round_archive/. Only the stress results have --from-archive (stress_rescore_local.py). The 52e2d8c text said so explicitly (\"the runner reduces them from its own work directory; a reduction from the archive alone is not implemented\"), and the fifth-round disposition appendix-referee-archive-cannot-rederive records it as left open. The cut merged the two facts into a false one. Related stale record: the tests/test_validation_and_invariants.py:643 docstring says \"Data availability cites validation/referee_round_archive/\", but the new text no longer names the archive.",
+   "fix": "Restore: the stress results re-reduce from validation/stress_rescore_archive/ alone; the referee-round results (floor, colour calibration, every-class stream) have archived inputs but are reduced from the runner's work directory. Name referee_round_archive/ again, or fix the test docstring.",
+   "verdict": "partly",
+   "verdict_note": "The defect exists. referee_round_local.py l.41-44 says 'the reduction itself still reads the work directory (a reduction from the archive alone is not implemented)'. git grep finds no script that reads referee_round_archive/; only stress_rescore_local.py has --from-archive. The old text (52e2d8c l.1731-1738) said the whole referee-round reduction reads the work directory. The new text narrows the exception to 'the referee-round overlap statistics', which implies that the floor, colour and stream results reduce from the archive. The new Data availability no longer names referee_round_archive/, so the docstring at tests/test_validation_and_invariants.py:643 is stale. Severity should be minor, not major. The per-event inputs are archived and hash-matched, so no result is affected. The fifth round rated the same overstatement minor (appendix-referee-archive-cannot-rederive, 'Fixed by disclosure'). Fix as proposed."
+  },
+  {
+   "id": "records8-03",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "845-846",
+   "claim": "\"(per simulated event; weighted by event rate the physics resolves nothing beyond the false-alarm drop)\"",
+   "evidence": "This says the weighted physics false-alarm drop is resolved. Table tab:seeds (gulls_seed_table.tex) shows finite source minus control FA(w) = -1.0 against a seed range of 3.9, not bold; at full precision it is -0.980 against 3.918. The paper's own rule two sentences later (\"unresolved when it is smaller than that range\") and its summary (\"the extra training carries the false-alarm gain\") contradict the parenthetical. So do REVISION row 13 (\"-1.0 weighted, is inside the seed spread (2.7 / 3.9 points)\") and row 20 (\"weighted it resolves nothing\"). The 52e2d8c text read: \"its false-alarm reduction holds (-1.0, interval -1.5 to -0.4) ... both weighted differences are smaller than the training-seed range\". The cut dropped the seed-range clause.",
+   "fix": "\"weighted by event rate the physics resolves nothing: its false-alarm drop (-1.0 points) is within the 3.9-point seed range\".",
+   "verdict": "real",
+   "verdict_note": "Recomputed from transfer_tradeoff_all.json with the generator's own row() logic. Finite source minus control, FA(w) = -0.980 against a seed range of 3.918, not bold; per event -1.517 against 2.650. Under the paper's rule at l.866 ('unresolved when it is smaller than that range') the weighted drop is unresolved, so 'resolves nothing beyond the false-alarm drop' is unsupported. It also contradicts the summary at l.867, REVISION rows 13 and 20, and the generator's own guard at make_gulls_macros.py l.836: need(not any(ex(dp,i) for i in 5..9)), message 'the text says it resolves nothing'. That guard includes FA(w), so it backs the old wording and contradicts the new parenthetical. The old text (l.1216-1218) gave the bootstrap 'holds' together with 'both weighted differences are smaller than the training-seed range'; the cut kept the first half only. Major is defensible (an unsupported directional claim)."
+  },
+  {
+   "id": "records8-04",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "36-40 (also paper/SUBMISSION_FIELDS.txt plain abstract)",
+   "claim": "New abstract: \"the shipped model fails, flagging 35.6% of single lenses, because our training seasons lack the survey's F146 observing pauses. Fine-tuning ... brings that to 6.3% and raises planetary recall at a 5.2% false-alarm budget from 0.214 to 0.349-0.391 (three seeds).\"",
+   "evidence": "The 52e2d8c abstract had \"RMDC26 also guided the checkpoint choice, so these values are optimistic\", \"per simulated event\" with the rate-weighted values (0.144 -> 0.385-0.407), and \"mostly because\". f26e22a dropped all three. REVISION.md §1 'Where it goes' requires the abstract to quote the checkpoint \"with the development-set caveat\". 'What NOT to claim' says per-event RMDC26 rates must be called per simulated event. The body keeps the caveat (§gulls l.792-793: the numbers \"are the best of several on this set and are optimistic\"), and the Conclusion keeps \"mostly because\" (fifth-round read-14). Gap augmentation alone takes 35.6% to 11.6%, not to zero, so an unhedged \"because\" overstates.",
+   "fix": "Restore \"per simulated event\" and \"mostly\", and add \"RMDC26 also guided the checkpoint choice, so these are optimistic\". Then regenerate the SUBMISSION_FIELDS abstract.",
+   "verdict": "real",
+   "verdict_note": "The 52e2d8c abstract (l.44-49) had 'mostly because', 'per simulated event', the rate-weighted 0.144 -> 0.385-0.407, and 'RMDC26 also guided the checkpoint choice, so these values are optimistic'. The e65a510 abstract (l.36-40) has none of them. REVISION §1 l.370-371 requires the development-set caveat in the abstract, and l.362 requires 'per simulated event'. The body keeps both hedges: l.792-793 'best of several on this set and are optimistic', and the Conclusion at l.1055 says 'mostly because'. Gap augmentation alone takes 35.6% to 11.6%, so an unhedged 'because' overstates. Note: the untracked SUBMISSION_FIELDS.txt was regenerated on disk during this check (2026-09-15) and now carries 'mostly because' and the optimism clause. e65a510 paper.tex is unchanged."
+  },
+  {
+   "id": "records8-05",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "25-26 (also SUBMISSION_FIELDS.txt)",
+   "claim": "\"Roman's Galactic Bulge Time-Domain Survey will deliver tens of thousands of microlensing light curves at 15-minute cadence\"",
+   "evidence": "The paper's own text says otherwise. The introduction (l.60-61) says F146 \"samples the light curve every ~12 minutes\". §limits (l.705-707) says \"15-minute F146 sampling ... is a legacy Roman-like design; the current Galactic Bulge Time-Domain Survey specifies F146 every 12 minutes\". RMDC26 samples every 12.1 min (REVISION §1). The new abstract gives the survey the model's legacy training cadence.",
+   "fix": "\"at ~12-minute cadence\", or drop the cadence.",
+   "verdict": "partly",
+   "verdict_note": "The inconsistency reproduces. Abstract l.25-26: 'deliver ... at 15-minute cadence'. The intro (l.60-61) says '~12 minutes', and §limits (l.707-708) says the current GBTDS specifies F146 every 12 minutes and that 15 minutes is a legacy design. The old abstract applied 15 minutes to our benchmarks, not to the survey. Severity should be minor, not major. No result or conclusion depends on it: the paper shows retraining at 12 minutes changes nothing measurable (l.710-712), and the transfer failure is about pauses, not cadence. It is an abstract-versus-body factual inconsistency. Fix as proposed. The on-disk SUBMISSION_FIELDS has since dropped the cadence."
+  },
+  {
+   "id": "records8-06",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "29-30 (also SUBMISSION_FIELDS.txt)",
+   "claim": "\"labels are conditioned on an explicit detectability policy, so a binary whose perturbation no survey could claim is labelled a single lens\"",
+   "evidence": "The body disclaims this in several places. §detcond (l.244-245): the floor is \"an adopted simulation policy rather than a measured instrumental limit\". Table 1: \"noise-free statistics and an unvalidated amplitude floor\". §gulls:labels (l.910): \"it is not a statement about what a survey could detect\". The tab:perclass note says the model responds to sub-threshold signal, and \"whether that sensitivity is real needs independent detection statistics\". Halving the floor raises the anomaly prevalence (§limits). This wording is new in f26e22a.",
+   "fix": "\"so a binary whose perturbation falls below the adopted detectability thresholds is labelled a single lens\".",
+   "verdict": "real",
+   "verdict_note": "Abstract l.29-30 at e65a510: 'a binary whose perturbation no survey could claim is labelled a single lens'. This is new in f26e22a; the old abstract said 'labels conditioned on detectability thresholds'. The body contradicts it directly. l.243: 'an adopted simulation policy rather than a measured instrumental limit'. l.203: 'an unvalidated amplitude floor'. l.910: 'it is not a statement about what a survey could detect'. l.915 counts 'planetary events whose anomaly is significant but below the 0.02 mag floor'. l.499: 'whether that sensitivity is real needs independent detection statistics'. The sentence misstates the paper's central labelling idea, so major stands. The on-disk SUBMISSION_FIELDS now reads 'an adopted detectability policy ... falls below its thresholds'."
+  },
+  {
+   "id": "records8-07",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "26, 27, 441, 446, 455, 458",
+   "claim": "Several REVISION.md entries say the paper quotes or states things that the trimmed paper no longer contains.",
+   "evidence": "- Status table, l.26: \"McNemar discordant counts as macros | ✅ | ✅\". The counts (old l.1630-1633) were cut.\n- l.27: ft_fspl_g08 \"✅ Table gulls\". No such row exists, and since the cut no text names the checkpoint (pre-existing, but still untrue).\n- Row 6: \"the recommended checkpoint, whose numbers the paper quotes, 1.6% / 5.7%\". The paper quotes only 1.6%.\n- Row 11: \"(the values the paper quotes) ... (35-40%), 16-25% with F146 alone, ... 5 of 20 (95% 11-47%)\". The paper keeps only 37% and 5 of 20.\n- Row 20: \"stated as the best of the three seeds in planetary recall at every table budget and at its own threshold\". No longer stated (old l.1260); Table tab:seeds has also moved to Appendix B.\n- Row 23: the abstract is listed as rewritten for the stress results, which the new abstract no longer mentions.",
+   "fix": "Annotate these rows with \"condensed in the 2026-09-14 length cut; now ...\", or restore the one-clause statements (the seed-1 choice and the McNemar counts matter for the reader).",
+   "verdict": "real",
+   "verdict_note": "Verified. REVISION l.26 marks the McNemar counts in paper ✅, but they were cut (only bmlMatchOn/OffSixty remain, l.1029-1030). l.27 says 'Table gulls' for ft_fspl_g08, which has no row in gulls_transfer_table.tex (pre-existing). Row 6 (l.441) says 'whose numbers the paper quotes, 1.6% / 5.7%', but only bmlGullsSubdayFa (1.6) is used (l.973). Row 20 (l.455) says 'stated as the best of the three seeds', but that sentence is gone (old l.1259-1261); the guard at make_gulls_macros.py l.841 remains. Row 11: the paper now keeps only 37% and 5 of 20; 35-40%, 16-25% and 11-47% were cut from old l.1393-1399. Two weaker sub-items. Row 23's 'Done; ... abstract ... rewritten' is a historical entry, not a claim about the current abstract. Row 11's '(the values the paper quotes)' mainly says which checkpoint is quoted. Minor is right."
+  },
+  {
+   "id": "records8-08",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "799-800; 882-887",
+   "claim": "The cut removed two disclosures that REVISION.md §1 says the manuscript must make.",
+   "evidence": "'What NOT to claim' says \"a NonPSPL call on 2S2L may respond to the binary source rather than the planet. Say so\". The 52e2d8c text did (l.1128-1129, with the binary-source share of 55%). The new text keeps only \"the Gaudi1998 degeneracy remains untested\", yet it still quotes 2S2L as planetary recall (l.899, 913, 929). §1 also says \"the manuscript must say the fine-tune's relabelling was approximate\" and \"state that the fine-tune used the pre-fix --gap-aug relabelling semantics like g08e12\". The old text said so (l.1499, \"the fine-tunes' gap relabelling is approximate\"), and the old Table gulls caption said \"The last three rows also have the caustic-in-gap relabel off\". Now nothing tells the reader that g08e12, the control and the finite-source rows (the warm start of the recommended checkpoint) were trained with the approximate rule on.",
+   "fix": "Restore one clause for each disclosure.",
+   "verdict": "real",
+   "verdict_note": "(a) REVISION l.346-351 says the binary-source caveat must be stated ('Say so'). The old text (l.1124-1128) had the 55% binary-source share and 'a NonPSPL call on a 2S2L event may respond to its second source rather than its planet'. The new text (l.798-800) says only 'with a second source' and 'the Gaudi1998 degeneracy remains untested', yet still quotes 2S2L recall as planetary recall (l.900, 912-913, 929). (b) REVISION l.117 and l.342 require stating that the fine-tunes' gap relabelling was approximate. The old text had 'the fine-tunes' gap relabelling is approximate' (l.1499) and the Table gulls caption had 'The last three rows also have the caustic-in-gap relabel off' (l.1341). Both are gone. The new 'does not establish' list (l.969-972) and the tab:gulls caption (l.876-886) no longer tell the reader that g08e12, the control and the finite-source rows used the approximate rule. l.349's 'approximate labels' refers to cascade truncation labels, not gap relabelling. Minor is fair."
+  },
+  {
+   "id": "records8-09",
+   "severity": "minor",
+   "file": "docs/verification/dispositions_2026_09_14c.py",
+   "line": "10-21 (and dispositions_2026_09_14b.py paper6-03, docs6-07; dispositions_2026_09_14.py results-03, cascade-no-more-frequent-scope, cascade-optimistic-mixed-protocol, stress-widesep-population-differs, stress-abstract-detectable-qualifier, read-10; VERIFICATION_2026-09-12b.md 4th addendum cascade-1, cascade-3, stress-05, text-seed-table-display-ties; CHANGELOG seventh-check bullet)",
+   "claim": "Dispositions describe paper text as the current state after the cut removed it, and several of the removed hedges are still required by the data.",
+   "evidence": "- paper7-04, \"'nominally resolved at high ratios, p = 0.035, one of six comparisons here', paper and draft\": the paper (l.946-947) now gives a bare p = 0.035.\n- paper6-03/paper7-05, \"+2 d (0 to 4.5 d, at the edge of resolution) and +0.5 d (-0.5 to +2 d, not resolved)\": the paper (l.948-950) says \"alerts come later by 2 d ... (0-4.5 d)\" with no hedge. The guard for 'at the edge of resolution' now backs only the draft.\n- cascade-optimistic-mixed-protocol: the caveat that the scanned single lenses flag 4.8% against 5.75% (burden and purity slightly optimistic) is gone. Its guard and test case remain.\n- paper7-01: \"the regular grid even trails the random subsample\" is gone (bmlGapRegularA removed).\n- paper7-03: \"stored 0.16 at 0.29\" is gone.\n- paper7-06/docs6-07: dataset facts are no longer in Data availability.\n- results-03: Nd 1,298/2,595/35 are gone.\n- stress-widesep-population-differs: 27% is no longer in the tab:stress caption or the appendix.\n- stress-05, read-10 and stress-abstract-detectable-qualifier: \"the abstract quotes 35-37% ... 12%\", but the new abstract has no stress numbers.\n- 4th addendum cascade-1/cascade-3: \"the paper compares strata (F146 and three bands) ... quotes [in-house three-band strata]\": gone.\n- docs7-01: \"32 pages\" (now 21).\n- The single-gap position dependence (0-14 points, n = 100 per class) was also cut (l.721-722), while README and the model card still carry it.",
+   "fix": "Add a dated note to the VERIFICATION record (or a dispositions_2026_09_14d.py) listing which fixes the cut condensed or removed. Restore the p = 0.035 multiplicity hedge, 'at the edge of resolution', and the cascade-sample optimism clause.",
+   "verdict": "partly",
+   "verdict_note": "The core holds. paper7-04's 'nominally ... one of six comparisons' is at 1631cb2 l.1476 but not at e65a510 (l.946-947 give a bare p = 0.035). paper6-03/7-05's 'at the edge of resolution' is gone (l.948-949), though make_gulls_macros.py l.591-594 and a test case still guard it. The cascade-sample optimism clause (bmlCgSingleFullWindow 4.8 against 5.75, 'slightly optimistic', 1631cb2 l.1495-1497) is gone, while its macro, guard and the 'cascade sample not optimistic' test case remain. bmlGapRegularA, bmlCalibMid*Stored and bmlEffWideBigqNd/LowqNd* are gone, and 'dataset facts' was dropped from Data availability. Three sub-items are inaccurate. (1) The wide-separation 27% is still in the paper, at §limits l.636 and Data availability l.1103. The pre-cut tab:stress caption never gave 27%, only a pointer clause, which is what was lost. (2) The single-gap item is not stale: the paper keeps 'at mid-season', and README/model_card say only 'the cost depends on where the gap falls', which nothing contradicts. (3) docs7-01's '32 pages' was true when written. results-03 lost only the Nd counts; the qualitative hedges 'thinly populated' and 'well-populated' survive (l.564-565). The proposed fix stands."
+  },
+  {
+   "id": "records8-10",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1160-1164",
+   "claim": "Table tab:seeds caption: \"The first row is the range over its three seeds; bold entries exceed it at the same budget and weighting.\"",
+   "evidence": "The cut dropped \"(compared at full precision)\" (old l.1302), which the fourth round added for display ties (text-seed-table-display-ties), and the table has ties again. For measured pauses minus random gaps, FA -2.7 is bold against a range of 2.7 (full precision -2.731 vs 2.650). For finite source minus control, mean(w) +0.015 is not bold against 0.015 (0.01455 vs 0.01530). The sentence \"The pauses arms are the schedule experiment (a different pool, from the shipped weights)\" was also dropped.",
+   "fix": "Restore \"(compared at full precision)\" and the pool note.",
+   "verdict": "real",
+   "verdict_note": "Old caption (l.1302-1304) had '(compared at full precision)' and the pauses-arm pool note; the new caption (l.1160-1164) has neither. Recomputed from transfer_tradeoff_all.json: measured pauses minus random gaps, FA -2.731 against range 2.650, bold but displayed as -2.7 against 2.7. Finite source minus control, mean(w) 0.01455 against 0.01530, not bold but displayed as +0.015 against 0.015. So the table shows ties both ways that only the dropped clause explains. Minor."
+  },
+  {
+   "id": "records8-11",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "723-727",
+   "claim": "\"raises held-out average precision under the pauses from 0.169 to 0.910 at a clean-data cost of 0.959 to 0.951, and training on one of RMDC26's six measured seasons per example gives 0.921 ... Both arms train with the caustic-in-gap relabel off\"",
+   "evidence": "0.910/0.951 are \\bmlGapApRand/\\bmlGapApCleanRand, the 'random gaps' row of Table gap, which has the relabel on. The relabel-off arm ('random gaps, relabel off') is 0.911/0.952. REVISION row 2 compares 0.921 vs 0.911 with the relabel off in both. The cut merged the relabel-on remedy with the single-factor comparison, so \"Both arms\" is false for the arm quoted. The conclusion is unchanged.",
+   "fix": "Quote \\bmlGapApRandNorelabel/\\bmlGapApCleanRandNorelabel, or say the random-gap arm quoted keeps the relabel on.",
+   "verdict": "real",
+   "verdict_note": "l.722-727 quote \\bmlGapApRand 0.910 and \\bmlGapApCleanRand 0.951, which are the 'random gaps' row with the relabel on. The 'random gaps, relabel off' row is 0.911/0.952 (gulls_gap_table.tex). The old text (l.954-958, 966) quoted 0.910 as the relabel-on remedy and then compared 0.921 against bmlGapApRandNorelabel 0.911 as the two relabel-off 'schedule arms'. The cut merged the two, so 'Both arms train with the caustic-in-gap relabel off' is false for the arm quoted. The conclusion holds either way: |0.921-0.910| = 0.011 and |0.921-0.911| = 0.010, both below the seed range 0.018. Minor."
+  },
+  {
+   "id": "records8-12",
+   "severity": "minor",
+   "file": "paper/draft_gulls_section.tex",
+   "line": "328-331, 351-353",
+   "claim": "The long-form record's Table gulls has an 11-column header, and its caption says \"The last four columns are the single-lens false-alarm rate at the frozen threshold in four of the six bins of rho/|u0|\".",
+   "evidence": "f26e22a moved those columns into outputs/gulls_rho_table.tex. gulls_transfer_table.tex now has 7 cells per row, and the draft does not \\input the rho table. The regenerated outputs/draft_gulls_rendered.txt (l.330-360) shows 7-cell rows under the 11-column header, so the long-form record CHANGELOG points to has lost the per-bin data its caption describes.",
+   "fix": "Update the draft's header and caption to 7 columns and \\input outputs/gulls_rho_table.tex as its own table, then re-render.",
+   "verdict": "real",
+   "verdict_note": "draft_gulls_section.tex l.328-330 still say 'The last four columns are ... four of the six bins of rho/|u0| ... (the 0.03-0.3 bins are omitted)', and l.351-353 have the 11-column header. It \\inputs outputs/gulls_transfer_table.tex, which now has 7 cells per row, and never \\inputs gulls_rho_table.tex. The committed draft_gulls_rendered.txt (l.341, 351-361) shows 7-cell rows under the 11-column header, and CI's cmp check enforces that rendering. Its caption also still says 'The last three rows also have the caustic-in-gap relabel off', which is correct for the draft but no longer in the paper. Minor."
+  },
+  {
+   "id": "records8-13",
+   "severity": "minor",
+   "file": "README.md",
+   "line": "245, 250-252; CHANGELOG.md 90-91",
+   "claim": "README: \"what six verification rounds corrected\"; README: \"the scan, sub-day, relabelling, floor, between-season, occupancy, noise-model, schedule and dataset-fact results need a rerun on the pinned release (paper, Data availability)\"; CHANGELOG: \"the paper now lists nine\".",
+   "evidence": "Seven rounds were run (the fourth addendum is the seventh check). The paper's Data availability (l.1097-1099) lists eight results. \"dataset facts\" was cut, although macros such as \\bmlGullsNcat, \\bmlGullsWidePass and \\bmlGullsBrightSingle still come from rmdc26_dataset_facts.json, which needs the release catalogue.",
+   "fix": "Say \"seven\", and restore \"and dataset facts\" in Data availability (or change README/CHANGELOG to eight).",
+   "verdict": "real",
+   "verdict_note": "README l.245 says 'six verification rounds', which already stood at 52e2d8c; 1631cb2 edited README but did not update it. Seven rounds ran: the CHANGELOG calls the seventh check 'the fourth addendum' of 09-12b. README l.250-252 lists nine results, including 'dataset-fact', and cites the paper, but the paper's Data availability (l.1097-1099) lists eight. CHANGELOG l.91 says 'the paper now lists nine'. bmlGullsNcat, bmlGullsWidePass and others come from rmdc26_dataset_facts.json (make_gulls_macros.py l.95-129), which needs the pinned release. Minor."
+  },
+  {
+   "id": "records8-14",
+   "severity": "minor",
+   "file": "paper/README.md",
+   "line": "15-36, 60-76",
+   "claim": "The build is described as five stages with make_macros.py the only macro generator. The Files table lists no RMDC26 generator or outputs, and \"Build products (paper.pdf, paper_macros.tex, outputs/, ...) are regenerated by build.sh and are gitignored.\" Stage 2 lists \"NonPSPL PR vs oracle Δχ² ceiling\".",
+   "evidence": "build.sh runs make_gulls_macros.py. gulls_macros.tex and outputs/gulls_{transfer,rho,gap,seed}_table.tex (gulls_rho_table.tex is new in f26e22a), draft_gulls_rendered.txt, latency_stats.json and figures/prob_evolution_confidence.json are committed and compared by CI, and render_draft.py and draft_gulls_section.tex are not listed. The paper calls the reference \"not an oracle upper bound\" (l.458-459). make_figures.py also produces prior_sensitivity.pdf and cascade_summary.pdf, which are unlisted. README.md l.206 calls paper/ a \"software paper\", whereas SUBMISSION_FIELDS says it is not one. Most of this predates the cut.",
+   "fix": "Add make_gulls_macros.py and render_draft.py and the committed outputs (including gulls_rho_table.tex) to the list, say which outputs are committed, replace \"oracle ceiling\" with \"truth-informed reference\", and call it a methods paper.",
+   "verdict": "real",
+   "verdict_note": "paper/README.md: 'five fail-fast stages' with make_macros.py as the only macro stage, but build.sh runs make_gulls_macros.py between stages 4 and 5. The Files table omits make_gulls_macros.py, render_draft.py, draft_gulls_section.tex and gulls_macros.tex. l.75-76 says outputs/ is gitignored, yet git ls-tree shows gulls_{transfer,rho,gap,seed}_table.tex, draft_gulls_rendered.txt, latency_stats.json and figures/prob_evolution_confidence.json tracked, and paper-build.yml l.101 cmp-checks them, including the new gulls_rho_table.tex. Stage 2 says 'oracle Δχ² ceiling', while the paper says 'not an oracle upper bound' (l.464, not 458-459). prior_sensitivity.pdf and cascade_summary.pdf are unlisted. README.md l.206 says 'software paper'. Mostly pre-existing, as the finding says. Minor."
+  },
+  {
+   "id": "records8-15",
+   "severity": "minor",
+   "file": "paper/SUBMISSION_FIELDS.txt",
+   "line": "abstract note; highlights; DATA AVAILABILITY field",
+   "claim": "The plain abstract, its note \"247 words\", highlight 3 \"89% of binaries alerted within the season\", and the Data availability field \"it can be regenerated from the released simulation code\".",
+   "evidence": "The plain abstract matches the rendered e65a510 PDF word for word (249 whitespace-separated words; CHANGELOG also says 249), so it inherits records8-04, 05 and 06. The 247 in the note counts the two arrows differently. The 89.0% is of eligible binaries (detectable anomaly, finite onset), not of binaries. The paper's Data availability adds that regenerated data are \"close but not identical\", and the field note says to keep them consistent. The article-type rationale lists \"the matched-detection comparison\" as a claim; the paper calls it exploratory and descriptive.",
+   "fix": "Regenerate the abstract after fixing records8-04 to 06. Use \"eligible binaries\" (shorten the line to fit 85 characters), add \"close but not identical\" to the Data availability field, and correct the word count.",
+   "verdict": "real",
+   "verdict_note": "This was true of the review-time file (untracked and gitignored, so it is not part of e65a510). Highlight 3 said '89% of binaries alerted', whereas 89.0% is of eligible binaries (paper l.33). The DATA AVAILABILITY field lacked 'close but not identical' (paper l.1101-1102). The rationale's 'matched-detection comparison' conflicts with the paper's 'exploratory ... descriptive, not confirmatory' (l.1027-1031). The word count is a convention, not an error: 249 tokens with the two arrows, 247 without. The abstract inherited 04 to 06. The on-disk file was rewritten during this check (note dated 2026-09-15). It now says 'eligible binaries' and 'close to, but not identical with', uses 'cross-simulator transfer' in the rationale, and regenerates the abstract with the fixes for 04 to 06. Verify the new version against the corrected paper.tex."
+  }
+ ],
+ "coverage": {
+  "prose8": {
+   "checked": [
+    "Read the new text of Secs. cascade, results, limits, gulls (all subsections), discussion/ablations, conclusion, data availability and Appendix A with every macro substituted, sentence by sentence against 52e2d8c and, for the probconf/matched-density/stratum wording, against 1631cb2",
+    "Regenerated figures_stats.json, paper_macros.tex, gulls_macros.tex and the four gulls tables in an export of e65a510: identical to the live and committed files",
+    "Recomputed the cascade primary numbers from validation/cascade_trace.npz: 89.0%, 110 censored, 1.6%/4.5%, lags +5.0/+4.5, 187 non-monotone, 3.7 d shift, three-band 1.0%/91.0%/+7.0, grid onset 31.4%",
+    "From paper/results/*.npy (test_idx, w=1/clip(kp)): recall by m_base and dchi2 (the 'slightly lower' wording holds), LongPeriodVar read as microlensing 0.009, the q<1e-3 slice 0.892, faint 0.943",
+    "figures_stats calibration split (mid-range share 64.5%, top bin 0.986 against 0.904)",
+    "prob_evolution_confidence.json band widths per class and kind",
+    "gap_matched_result.json (regular/uniform/nightly, full cadence 0.942, nightly empty bins at least 59%); cadence_local_result.json (AP, F1 and completeness)",
+    "stress_rescore_local.json subset versus set provenance of the sub-day demoted share",
+    "transfer_tradeoff_all.json at full precision: seed FA range 2.650 (weighted 3.918); pauses -2.731 (weighted -0.855); physics -1.517 (-0.980); training -5.283 (-4.934); Table gulls and Table seeds rows against the text",
+    "rmdc26_scores.csv.gz: q>1e-2 in 0.9% of scored planetary events, so 'about 1%' also holds for the scored set",
+    "cascade_gulls.json vs_inhouse: Fisher p, lag intervals and bootstrap share at or below zero for the recommended checkpoint",
+    "referee_round.json floor_overlap; the archive modes of referee_round_local.py and stress_rescore_local.py",
+    "Guards in make_gulls_macros.py (seed verdicts, stratum wording, burden), make_macros.py (matched density, calibration) and make_data_figures.py (probconf) against the new sentences",
+    "Records: CHANGELOG length-cut and seventh-check entries, REVISION rows 6/10/11, the seventh addendum of VERIFICATION_2026-09-12b, and the paper-build CI workflow"
+   ],
+   "not_checked": [
+    "Did not run make_data_figures.py (it simulates events and takes more than 2 minutes) or LaTeX, so figure pixels were not checked, e.g. the cascade-evolution control 'never acquires NonPSPL probability' and whether the marginal traces 'wander' before season end; only the JSON summary was checked",
+    "Did not rerun referee_round, cascade_gulls, the stress rescoring or the RMDC26 extraction scripts (they need work directories or release caches); relied on the committed JSON artifacts",
+    "pytest not run; whether CI completes within its 45-minute limit with the new figure not checked",
+    "Abstract, introduction, Secs. sims/model/eval and Appendix B beyond its captions are outside this slice (the abstract shares the three-band omission of prose8-16)"
+   ]
+  },
+  "front8": {
+   "checked": [
+    "Clean export of e65a510, run in scratchpad verify8/f8. validate_artifacts, make_figures, make_data_figures, make_macros, make_gulls_macros and render_draft all run. gulls_macros.tex, all four gulls tables and draft_gulls_rendered.txt are byte-identical to the committed files; prob_evolution_confidence.json and latency_stats.json regenerate identically.",
+    "PDF build: pdflatex, bibtex, then pdflatex until settled (3 passes). 21 pages. 0 overfull and 0 underfull boxes, no undefined references or citations, no LaTeX errors, all 474 used macros defined. No rotated tables. Page 7 is the only float-only page (Figure 4, full page).",
+    "Abstract has 249 whitespace tokens: 247 words without the two arrows, 257 if hyphenated compounds are split.",
+    "Abstract macros and populations: 87.9%/0.908 (final test, 5.6%); 89.0% and 1.6% (890/1000 and 16/1000 eligible, F146-only, first-detectable onset); +5.0 d (874 non-premature); 0.77/89% (three-band stream, 5.5%); 35.6% -> 6.3% (same 33,353 1S1L at frozen 0.904; 11877 and 2085); 0.214 -> 0.349-0.391 (R5.2 per event, three seeds).",
+    "'flat -> single lens -> anomaly' matches the truncation-label rule in Sec. cascade.",
+    "Introduction word-diff against 52e2d8c: unchanged. Four contributions and section pointers resolve.",
+    "Every caption diff old -> new. All 12 included figures rendered and compared with their captions and citing text.",
+    "gulls_rho_table.tex against transfer_tradeoff_all.json fa_1S1L_by_rho_over_u0: six bins, edges, k/n per event, 42/42 cells. Pooled k/n equals Table 8's FA column.",
+    "Seed-table rows against the COMP pairs in the generator; bold rule at full precision. Transfer and seed tables are unchanged in content from 52e2d8c apart from the column move.",
+    "make_gulls_macros.py diff; test OUTS; paper-build.yml cmp list (includes the rho table); paper/README, CHANGELOG, REVISION.",
+    "Tests: test_macros_fail_closed.py 50 passed; test_validation_and_invariants.py 17 passed, 3 skipped.",
+    "Macro usage: 764 at 52e2d8c, 474 now.",
+    "Appendix B's two sentences against Tables 9 and 10."
+   ],
+   "not_checked": [
+    "Full prose of Secs. sims, model, results, limits and gulls, except where a caption, table, the abstract or a guard depends on it.",
+    "Recomputing the upstream RMDC26 and stress artifacts from per-event data (no curve caches used), and the cascade_gulls.json bootstrap values beyond the recorded ones.",
+    "A&C's own word-count convention.",
+    "Bibliography entries.",
+    "The CHANGELOG's 15,200 -> 8,300 word counts.",
+    "Full pytest suite; CI behaviour on Linux."
+   ]
+  },
+  "records8": {
+   "checked": [
+    "The new paper.tex read in full (e65a510) and compared with the 52e2d8c text and 1631cb2 wherever a claim's origin or wording was unclear",
+    "Macros, \\input tables, figures and labels compared between 52e2d8c, 1631cb2, 22a80e8 and e65a510",
+    "The PDF (21 pages, built 21:34:54, one second before e65a510) rendered with pdftotext; its abstract compared word for word with the SUBMISSION_FIELDS plain abstract; highlight lengths counted",
+    "Every REVISION.md claim about paper content: the status table, §1 'What to say' / 'What NOT to claim' / 'Where it goes', ledger rows 1-23 and §2",
+    "The CHANGELOG length-cut and seventh-check entries; README, docs/model_card.md, docs/evaluation.md, docs/pipeline.md, validation/gulls/PROVENANCE.md and paper/README.md statements about paper structure, figures, outputs and Data availability",
+    "VERIFICATION_2026-09-12b.md addenda 2-4 and dispositions_2026_09_14.py, 14b.py and 14c.py checked against the current text",
+    "Seed table recomputed at full precision from validation/gulls/transfer_tradeoff_all.json (display ties; weighted physics FA -0.980 vs range 3.918)",
+    "Table gap rows against the relabel-on and relabel-off macros",
+    "The fraction of RMDC26 planetary events with q>1e-2 recomputed from rmdc26_scores.csv.gz: 0.90% unweighted, so the dropped 'cascade-eligible' qualifier is harmless and not reported",
+    "referee_round_local.py docstring and code checked for an archive-only reduction (none exists)",
+    "The draft's Table gulls header and caption against the new 7-column transfer table and the rendered draft",
+    "build.sh, the CI paper-build workflow's output list and test_macros_fail_closed OUTS against the new gulls_rho_table.tex output"
+   ],
+   "not_checked": [
+    "No rebuild of the paper or regeneration of macros or tables from a clean archive, and no pytest run: I assumed the PDF corresponds to e65a510 because the timestamps match",
+    "Did not recompute every numeric value in REVISION ledger rows against their artifacts (many need the GULLS curve and truth caches, which are outside the repo)",
+    "dispositions_2026_09_13*.py and the fourth addendum were only scanned for statements about paper text, not checked line by line",
+    "docs/leakage_audit.md, docs/training.md and docs/AUDIT_* not reviewed beyond grep",
+    "Guards in make_macros.py and make_gulls_macros.py that no longer match any sentence: only the ones tied to the findings above were checked; a full audit of the ~290 orphaned macros' guards belongs to the guards slice",
+    "The first-submission SUBMISSION_FIELDS file outside the repo was not compared"
+   ]
+  }
+ },
+ "gaps": [
+  {
+   "target": "paper/paper.tex:843-846 (Sec. gulls:results, 22a80e8): \"so in false alarms and at low budgets most of the gain is the extra training, while at higher budgets, in mean recall and in the two largest rho/|u0| bins (Table rho) it is the physics\"",
+   "why": "All three reviewers flagged this sentence, but their summaries quote only the weighting parenthetical after it. None checked the rho-bin clause, which rests on the new Table rho (outputs/gulls_rho_table.tex). In the cut, the old claim \"the physics lowers false alarms most in the two largest bins, beyond the seed noise\" (52e2d8c ll.1208-1210, 1286-1287) was merged with \"most of the gain is X\" into a single attribution.",
+   "result": "CONFIRMED DEFECT. Per-event single-lens false-alarm rates from transfer_tradeoff_all.json, gap-aug -> control -> finite source. Bin 1-3: 0.646 -> 0.410 -> 0.280, so the extra training gives 0.236 and the physics 0.130 (36% of the drop). Bin >3: 0.674 -> 0.513 -> 0.288, training 0.161, physics 0.225 (58%). In the 1-3 bin the extra training carries most of the drop. Both of its drops also exceed the three-seed range (0.083 and 0.071), so the paper's own 'resolved vs unresolved' reading cannot credit the physics alone either. The guard at make_gulls_macros.py:833-836 only checks that the physics' drop exceeds the seed spread in bins 4-5, not which change carries most of the gain, so it passes. Fix: 'and the physics lowers false alarms further in the two largest rho/|u0| bins (0.410->0.280, 0.513->0.288), beyond the seed spread'. Alternatively restrict 'it is the physics' to the >3 bin.",
+   "severity": "major"
+  },
+  {
+   "target": "paper/paper.tex:518-522 (Sec. results calibration; macros and guard added in 1631cb2, text cut in 22a80e8): \"above 0.9, where the threshold sits, score and frequency agree (0.99 against 0.90)\"; plus the removed stored-event comparison",
+   "why": "This paragraph was rewritten twice in the diff, and make_figures.py and make_macros.py gained new stats and guards for it. No reviewer finding covers it.",
+   "result": "CONFIRMED DEFECT (minor). Recomputed from paper/results with weighted frozen-test arrays. Above 0.9 the mean score is 0.9856 and the anomaly frequency 0.9037: a gap of 0.082, larger than the global ECE (0.053), in exactly the region where the threshold (0.904) sits. Unweighted it is 0.989 vs 0.980. The verified pre-cut word was 'close'; 'agree' overstates. The cut also deleted '0.16 at 0.29 among the stored events; weighting widens the gap'. Yet make_macros.py:716-726 still asserts 'more so under weighting', and the macros bmlCalibEceMidPct (64) and bmlCalibMidScoreStored (0.29) introduced by 1631cb2 are now used nowhere. Checked fine: 'most of it comes from 0.1-0.9' holds (64% with the figure's 12 bins, 57% with 0.1-aligned bins; the below-0.1 bulk carries 29-35%, above 0.9 carries 7-8%). Fix: 'are close (0.99 against 0.90)'. Either restore the one-clause unweighted comparison or drop that guard clause and the orphan macros.",
+   "severity": "minor"
+  },
+  {
+   "target": "paper/paper.tex:1019-1025 (Sec. ablations) + new macro bmlAbFineBeforePrevCutPct and its guards (make_macros.py:443-472), input validation/cascade_trace.npz newly hashed in MANIFEST.json",
+   "why": "This is a new number and new hedge wording from 1631cb2 that the cut kept. No reviewer finding mentions it.",
+   "result": "CHECKED, FINE. On cascade_trace.npz, t_anom_fine < t_anom_coarse - 7.2 for 73 of 1,000 binaries (7.3%, printed as 7). The file's sha256 deff0f04... matches MANIFEST. The augmented arm has 37 of 37 (threshold) and 102 of 111 (92%, argmax) premature alerts inside the grid window; alerts before it are 0 vs 32 and 9 vs 45, as printed. 'Almost all' and 'not established' are supported. The 7% applies to the in-house scan population, and the text says 'in-house binaries'.",
+   "severity": "none"
+  },
+  {
+   "target": "validation/gap_matched_density.py (_empty_bin_frac now bins as the model does; new full_cadence arm), validation/gap_matched_result.json, paper/paper.tex:700-706, new guards make_macros.py:369-375",
+   "why": "prose8-13 read the sentence only. The code change, the regenerated artifact and its provenance records (MANIFEST.json, PROVENANCE.md) were not checked against each other.",
+   "result": "CHECKED, FINE. The result's script_sha256 (3dedb06f...) equals the committed script. The MANIFEST sha (1cd0fc66...) matches the file. checkpoint_sha256 897a9aec... equals the stage-6 hash in paper/results/meta.json and binml/weights. The smallest nightly empty-bin fraction, 0.587, prints as 59. Full cadence gives 0.942 [0.884, 0.971], above every regular-arm CI upper bound (at most 0.699). tests/...::test_new_reduction_helpers passes in a clean export. Nit: the guard at make_macros.py:374-375 ('at the highest density the regular grid trails the random subsample': 0.617 vs 0.775) has no corresponding sentence in the paper any more.",
+   "severity": "none"
+  },
+  {
+   "target": "paper/make_data_figures.py fig_prob_confidence + tracked output paper/outputs/figures/prob_evolution_confidence.json (1631cb2)",
+   "why": "The prose and front reviewers checked only the caption and text against the committed JSON. Nobody reran the generator; prose listed it as not run.",
+   "result": "CHECKED, FINE. Rerun in a clean export of e65a510: 252 s on this machine, all four fail-closed caption checks pass, and the JSON is byte-identical to the committed one (deterministic). Not a defect, but untested: CI's compare step (paper-build.yml) does not include this tracked JSON, so a platform-dependent change would go unnoticed. Runtime on a GitHub runner, within the 45-minute limit, was not measured.",
+   "severity": "none"
+  },
+  {
+   "target": "Clean-export regeneration after the table split: make_gulls_macros.py (new gulls_rho_table.tex, relabelled seed rows), make_figures.py (new calibration stats), make_macros.py; paper-build.yml compare list; pipeline/cache.py _ABSENT attribute dates",
+   "why": "All three reviewers relied on the committed outputs, and none regenerated them. The records reviewer assumed the PDF matches e65a510. The cache.py provenance strings were not examined.",
+   "result": "CHECKED, FINE. From git archive e65a510, make_gulls_macros.py reproduces gulls_macros.tex, all four gulls_*_table.tex and draft_gulls_rendered.txt byte-for-byte. make_figures.py plus make_macros.py reproduce the local paper_macros.tex exactly (457 macros). The rho table has six populated bins per row, and the CI compare list includes it. Each attribute in cache.py (onset/noise/regime at 580e172, espl_function at 3703e43, min_amplitude_mag/band_set at f2b4a21, legacy flags at 6865de1) is present in run_shard.py at the named commit and absent in its parent. Not checked: LaTeX build, full pytest, CI on Linux, exact word counts (a crude count gives about 9,400 vs 16,600 words, consistent with the claimed ratio).",
+   "severity": "none"
+  }
+ ]
+}

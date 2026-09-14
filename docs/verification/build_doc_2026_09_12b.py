@@ -177,6 +177,32 @@ for f in sorted(R7["findings"], key=lambda f: (("critical", "major", "minor").in
 L += ["", "### Completeness critic (seventh check)", "", "| # | severity | target | disposition |", "|---|---|---|---|"]
 for i, g in enumerate(R7["gaps"]):
     L.append(f"| {i + 1} | {g['severity']} | {g['target'][:160].replace('|', '/')} | {D7.GAPS7[i]} |")
+# ---- fifth addendum: the eighth check (2026-09-15) -----------------------------------------------------------------
+import dispositions_2026_09_15 as D8                                    # noqa: E402
+R8 = json.load(open(os.path.join(HERE, "2026-09-15_eighth_findings.json")))
+ids8 = [f["id"] for f in R8["findings"]]
+assert set(ids8) == set(D8.DISPO) and len(ids8) == len(set(ids8)), "every eighth-check finding needs one disposition"
+assert len(R8["gaps"]) == len(D8.GAPS8)
+c8 = {s_: sum(1 for f in R8["findings"] if f["severity"] == s_) for s_ in ("critical", "major", "minor")}
+v8 = {v: sum(1 for f in R8["findings"] if f["verdict"] == v) for v in ("real", "partly", "refuted")}
+L += ["", "## Addendum 5: eighth check (2026-09-15)", "",
+      "A narrow check of the commits no round had read (52e2d8c..e65a510: the seventh-round fixes, the 2026-09-14 length cut,",
+      "the new abstract and Appendix B): prose, front-matter/captions/tables and records slices, a refuter per slice and a",
+      "narrow critic. Raw record: `docs/verification/2026-09-15_eighth_findings.json`; dispositions:",
+      "`docs/verification/dispositions_2026_09_15.py`.", "",
+      f"**{len(ids8)} findings: {c8['critical']} critical, {c8['major']} major, {c8['minor']} minor; adversarial verdicts "
+      f"{v8['real']} real, {v8['partly']} partly, {v8['refuted']} refuted; the critic confirmed "
+      f"{sum(1 for g in R8['gaps'] if g['severity'] in ('major', 'minor'))} of {len(R8['gaps'])} targets.**", "",
+      "The main finding: the length cut had removed hedges earlier rounds established and the data still require, and the",
+      "new abstract overclaimed. Among the seventh round's fixes the cut had undone paper7-01 (thinning and visit arrangement),",
+      "paper7-04 ('nominally resolved'), paper7-05 ('at the edge of resolution') and paper7-06 ('dataset facts'); the eighth",
+      "check restored them, so their dispositions in Addendum 4 describe the current text again.", "",
+      "| id | severity | verdict | finding | disposition |", "|---|---|---|---|---|"]
+for f in sorted(R8["findings"], key=lambda f: (("critical", "major", "minor").index(f["severity"]), f["id"])):
+    L.append(f"| {f['id']} | {f['severity']} | {f['verdict']} | {f['claim'][:200].replace('|', '/').replace(chr(10), ' ')} | {D8.DISPO[f['id']]} |")
+L += ["", "### Completeness critic (eighth check)", "", "| # | severity | target | disposition |", "|---|---|---|---|"]
+for i, g in enumerate(R8["gaps"]):
+    L.append(f"| {i + 1} | {g['severity']} | {g['target'][:160].replace('|', '/')} | {D8.GAPS8[i]} |")
 out = os.path.join(os.path.dirname(os.path.dirname(HERE)), "docs", "VERIFICATION_2026-09-12b.md")
 open(out, "w").write("\n".join(L) + "\n")
 print(f"wrote {os.path.relpath(out)}")
