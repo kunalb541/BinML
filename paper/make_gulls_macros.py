@@ -557,12 +557,10 @@ if CG:
         cmd(f"bmlCgIn{nm}PremK", str(_k(ih[st]["premature_rate_of_eligible"], ih[st]["n_eligible"])))
         cmd(f"bmlCgRm{nm}PremThreeK", str(_k(rs3[st]["premature_frac"], rs3[st]["n_eligible"])))
         cmd(f"bmlCgIn{nm}PremThreeK", str(_k(ih3[st]["premature_rate_of_eligible"], ih3[st]["n_eligible"])))
-    # pooled over the two planetary strata (detection is additive over strata; medians are not, so the lag is not pooled)
-    npool_rm = sum(rs1[st]["n_eligible"] for st in ("giant", "neptune")); npool_in = sum(ih[st]["n_eligible"] for st in ("giant", "neptune"))
-    det_rm = sum(rs1[st]["detected_frac"] * rs1[st]["n_eligible"] for st in ("giant", "neptune")) / npool_rm
-    det_in = sum(ih[st]["detection_fraction"] * ih[st]["n_eligible"] for st in ("giant", "neptune")) / npool_in
-    cmd("bmlCgRmPoolDet", pct0(det_rm)); cmd("bmlCgInPoolDet", pct0(det_in))
-    need(det_rm < det_in - 0.1, "pooled over the planetary strata, RMDC26 detection is no longer clearly lower")
+    # detection stratum by stratum (not pooled: the two sets' mass-ratio compositions differ, 85% against 26% at
+    # intermediate ratios, so a pooled rate would confound composition with the simulators; fifth verification)
+    need(all(rs1[st]["detected_frac"] < ih[st]["detection_fraction"] for st in ("giant", "neptune")),
+         "RMDC26 detection is no longer lower in both strata")
     need(rs1["neptune"]["median_lag_nonpremature_days"] - ih["neptune"]["median_lag_non_premature_days"] >= 1.0
          and abs(rs1["giant"]["median_lag_nonpremature_days"] - ih["giant"]["median_lag_non_premature_days"]) <= 0.5,
          "Neptune alerts come later while the giant lags differ by one half-day step")

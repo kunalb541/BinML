@@ -39,8 +39,9 @@ set, which is on S3 and not on this machine; it is not run here.
 
 With --archive DIR the per-event inputs of every reported number (stream traces, per-arm scores, labels,
 weights, logits, the stream set's labels and onsets, and the two fine-tuned checkpoints) are copied there with
-their hashes. The event parameters are not archived, so the overlap statistics (floor_overlap,
-threshold_selection_overlap) still need the regenerated shards in the work directory.
+their hashes, so the inputs are preserved and checkable; the reduction itself still reads the work directory (a
+reduction from the archive alone is not implemented), and the event parameters behind the overlap statistics
+(floor_overlap, threshold_selection_overlap) are not archived.
 
 Usage:  python validation/referee_round_local.py [--workers 6] [--finetune] [--archive DIR]
 """

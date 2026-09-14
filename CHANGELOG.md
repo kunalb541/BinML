@@ -18,7 +18,8 @@ second addendum of `docs/VERIFICATION_2026-09-12b.md`). What changed:
   (`validation/stress_rescore_archive/`, `--from-archive`, tested); the legacy switches are pinned against the July
   shard; tier stamps can no longer be invented.
 - **RMDC26 cascade:** the burden's optimism compared like for like (F146 alone: 4.8% vs 5.8%, not vs the three-band
-  6.3%); the stratum comparison states counts and what is resolved (pooled detection 68% vs 85%; premature counts
+  6.3%); the stratum comparison states counts and what is resolved (detection lower in both strata, the intermediate-ratio
+  difference unresolved; not pooled, because the compositions differ; premature counts
   2 of 149 vs 2 of 138 and 21 of 826 vs 2 of 48; RMDC26 higher with three bands); strata named by mass ratio; 1% of
   RMDC26's eligible anomalies have q > 1e-2; the artifact records its code.
 - **Appendix and Data availability:** the cause of non-identical regeneration is the unpinned cloud environment, not

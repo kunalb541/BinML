@@ -110,12 +110,46 @@ CASES = {
                                       "slightly fewer"),
     "planetary classes scanned unequally": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["n_scanned"].update(RMDC26_2S2L_ML=900)),
                                             "'the first N of each planetary class'"),
-    "pooled detection not lower": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
-                                                   ["timing_by_mass_ratio"]["neptune"].update(detected_frac=0.83)),
-                                   "pooled over the planetary strata"),
+    "detection not lower in a stratum": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                         ["timing_by_mass_ratio"]["neptune"].update(detected_frac=0.83)),
+                                         "RMDC26 detection is no longer lower in both strata"),
     "three-band premature not higher": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|threeband|frozen"]
                                                         ["timing_by_mass_ratio"]["giant"].update(premature_frac=0.0)),
                                         "premature rates are no longer the higher ones"),
+    # the remaining directional guards added by the fourth and fifth verifications
+    "detection does not fall with mass ratio": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                                ["timing_by_mass_ratio"]["lowmass"].update(detected_frac=0.9)),
+                                                "falls with mass ratio"),
+    "in-house samples low q": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["inhouse_reference"]["n_by_mass_ratio"].update(lowmass=50)),
+                               "'barely samples' q < 1e-4"),
+    "premature alerts not rare": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                  ["timing"].update(premature_ci95=[0.01, 0.06])),
+                                  "premature alerts 'stay rare'"),
+    "three bands raise premature alerts": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|threeband|frozen"]
+                                                           ["timing"].update(premature_frac=0.05)),
+                                           "three bands 'lower premature alerts"),
+    "recalibration raises single-lens alerts": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|calibrated_seasons_fullpool"]
+                                                                ["burden"]["RMDC26_1S1L_ML"].update(alert_frac_per_season=0.09)),
+                                                "recalibrated single-lens alerts 'fall'"),
+    "in-house single lenses alert as often": (lambda t: _edit(t, "../referee_round.json",
+                                                              lambda d: d["single_lens_stream_recommended_f146"].update(alert_frac_frozen=0.05)),
+                                              "several times as often"),
+    "coarse onset advances labels": (lambda t: _edit(t, "../truth_relabel_impact.json", lambda d: d["results"]["refit_reference"]["truncation"]
+                                                     ["counts"].update({"legacy NonPSPL / refit PSPL": 80})),
+                                     "'usually delays'"),
+    "gap losses go to PeriodicVar": (lambda t: _edit(t, "gap_sensitivity.json", lambda d: d["single_gap_by_length_h"]["1.0"]["PSPL"].update(
+                                         argmax={"PSPL": 86, "PeriodicVar": 11, "Eruptive": 3})),
+                                     "lost single lenses no longer go"),
+    "RMDC26 sub-day not shorter": (lambda t: _edit(t, "transfer_subday.json", lambda d: d["te_days"].update(median=0.3)),
+                                   "no longer mostly shorter than 0.2 d"),
+    "sub-day flagged more than in-support": (lambda t: _edit(t, "transfer_subday.json", lambda d: d["models"]["fspl5s_seasons_g08"]["fa_at"]
+                                                             ["frozen"].update(fa=0.2)),
+                                             "no longer flagged less often than in-support"),
+    "sub-day not mostly PeriodicVar": (lambda t: _edit(t, "transfer_subday.json", lambda d: d["models"]["shipped"]["argmax_distribution"].update(PeriodicVar=0.3)),
+                                       "no longer mostly PeriodicVar"),
+    "regeneration reproduces every event": (lambda t: _edit(t, "../referee_round.json",
+                                                            lambda d: d["threshold_selection_overlap"].update(n_matched_to_pool=15016)),
+                                            "reproduce 'most' (not all)"),
     "RMDC26 sub-day like our sweep": (lambda t: _edit(t, "transfer_subday.json", lambda d: [b.update(fa=0.9) for b in d["models"]["shipped"]["fa_frozen_by_te"]]),
                                       "no longer cross the threshold far less often than our sweep's"),
 }

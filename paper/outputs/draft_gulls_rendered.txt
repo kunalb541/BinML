@@ -461,9 +461,9 @@ season; for intermediate ratios ($10^{-4} < q \le 10^{-3}$; $826$ against $48$) 
 $2.5\%$ against $4.2\%$, $+6.5$ against $+4.5$~d,
 and $66\%$ against $73\%$. The in-house strata are small, so only some of these
 differences are resolved: premature alerts are about as frequent ($2$ of $149$ against $2$ of
-$138$, and $21$ of $826$ against $2$ of $48$); detection pooled over the two strata is lower
-($68\%$ against $85\%$); at intermediate ratios alerts come later, while at high ratios the lags differ by
-one half-day step (a different checkpoint on a different simulator, so the differences mix the two). $40\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
+$138$, and $21$ of $826$ against $2$ of $48$); detection is lower in both strata, though the
+difference at intermediate ratios rests on $48$ in-house events and is not resolved; the median lag is 2~d
+longer at intermediate ratios and one half-day step longer at high ratios (a different checkpoint on a different simulator, so the differences mix the two). $40\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
 scan barely samples ($9$ events); there detection falls to $51\%$ (the remaining
 $1\%$ have $q > 10^{-2}$). Over all
 $1,667$ eligible events $61\%$ ($59$--$64\%$) are flagged by the end of the season,
