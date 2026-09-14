@@ -75,7 +75,8 @@ GAPS6 = [
     "Confirmed and fixed. cascade_reduce.alert_times now anchors strided grids at the season's end (1, 2, ..., 72 d); daily: "
     "1.2% premature at 88.7% detection, two-day 1.0% at 88.4% (was 1.6% at 86.4%, the grid had skipped the 72 d cut); the "
     "text says a coarser grid lowers the premature rate at almost unchanged detection, guarded; every other number unchanged.",
-    "Confirmed and fixed. The ablation paragraph says its premature rates use the 7.2 d generator onset grid; all 37 of the "
+    "Confirmed and fixed (wording made exact by the seventh check). The ablation paragraph says its premature rates use "
+    "the 7.2 d generator onset grid; all 37 of the "
     "augmented arm's premature alerts at the threshold and 102 of its 111 under argmax fall in the 7.2 d before the grid onset; "
     "alerts earlier than that number 0 vs 32 and 9 vs 45, so the argmax reversal is not established. Computed from the "
     "artifact's per-event lists and guarded.",

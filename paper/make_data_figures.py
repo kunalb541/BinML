@@ -461,8 +461,8 @@ def fig_prob_confidence(K=30, n_steps=144):
         picks.append((c, "clear", *_pick_clear(c, range(1, 2000))))
         picks.append((c, "marginal", *_pick_marginal(c, range(5000, 20000))))
     record = {"K": K, "n_steps": n_steps, "threshold": thr, "events": []}
-    fig = plt.figure(figsize=(7.4, 11.0))
-    gs = fig.add_gridspec(6, 5, width_ratios=[1, 1.2, 0.12, 1, 1.2], hspace=0.62, wspace=0.42)
+    fig = plt.figure(figsize=(7.4, 8.6))
+    gs = fig.add_gridspec(6, 5, width_ratios=[1, 1.2, 0.12, 1, 1.2], hspace=0.58, wspace=0.42)
     for n, (c, kind, seed, ev) in enumerate(picks):
         row, col0 = n // 2, (0 if kind == "clear" else 3)
         Ps, flips = [], 0
@@ -519,7 +519,7 @@ def fig_prob_confidence(K=30, n_steps=144):
     handles += [plt.Line2D([], [], marker="o", ls="", ms=3, color=BAND_COL[b], label=b) for b in BANDS]
     handles += [plt.Line2D([], [], color=COL["NonPSPL"], lw=0.8, ls=":", label="NonPSPL threshold"),
                 plt.Line2D([], [], color=COL["NonPSPL"], lw=0.8, ls="--", label="anomaly onset")]
-    fig.legend(handles=handles, loc="lower center", ncol=6, frameon=False, fontsize=6.4, bbox_to_anchor=(0.5, 0.045))
+    fig.legend(handles=handles, loc="lower center", ncol=6, frameon=False, fontsize=6.4, bbox_to_anchor=(0.5, 0.02))
     fig.savefig(os.path.join(OUT, "prob_evolution_confidence.pdf"))
     plt.close(fig)
     json.dump(record, open(os.path.join(OUT, "prob_evolution_confidence.json"), "w"), indent=1)

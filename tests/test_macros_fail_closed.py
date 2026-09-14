@@ -159,7 +159,8 @@ CASES = {
     "detection does not fall with mass ratio": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
                                                                 ["timing_by_mass_ratio"]["lowmass"].update(detected_frac=0.9)),
                                                 "falls with mass ratio"),
-    "in-house samples low q": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["inhouse_reference"]["n_by_mass_ratio"].update(lowmass=50)),
+    "in-house samples low q": (lambda t: (_edit(t, "cascade_gulls.json", lambda d: d["inhouse_reference"]["n_by_mass_ratio"].update(lowmass=50)),
+                                          _edit(t, "../cascade_reproduce_result.json", lambda d: d["stratified"]["n_by_mass_ratio"].update(lowmass=50))),
                                "'barely samples' q < 1e-4"),
     "premature alerts not rare": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
                                                   ["timing"].update(premature_ci95=[0.01, 0.06])),

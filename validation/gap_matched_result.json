@@ -1,9 +1,9 @@
 {
   "n_events": 120,
   "night_fraction": 0.3333333333333333,
-  "code": "submitted-ac-2026-08-15-70-ge5cb41f88ca8",
+  "code": "submitted-ac-2026-08-15-71-g4b04e10ed794",
   "checkpoint_sha256": "897a9aec1785dc15664ae5a3c7183c46f13fb4332cb20414d013860ef5c41c34",
-  "script_sha256": "8fd0cf6c0784efdd31233aa154dfa63266c47803ed4a5563b62d121db535d60b",
+  "script_sha256": "3dedb06f09041c130ea45fb0d3906909853db8b1b760d9da725ac8efc73e4830",
   "empty_bin_days": 0.08333333333333333,
   "arms": [
     {
@@ -26,8 +26,8 @@
         0.699
       ],
       "empty_bin_frac": {
-        "uniform": 0.04,
-        "nightly": 0.604,
+        "uniform": 0.039,
+        "nightly": 0.587,
         "regular": 0.0
       }
     },
@@ -51,8 +51,8 @@
         0.675
       ],
       "empty_bin_frac": {
-        "uniform": 0.091,
-        "nightly": 0.617,
+        "uniform": 0.09,
+        "nightly": 0.604,
         "regular": 0.0
       }
     },
@@ -76,8 +76,8 @@
         0.652
       ],
       "empty_bin_frac": {
-        "uniform": 0.164,
-        "nightly": 0.628,
+        "uniform": 0.163,
+        "nightly": 0.618,
         "regular": 0.0
       }
     }

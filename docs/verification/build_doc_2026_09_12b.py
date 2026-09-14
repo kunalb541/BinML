@@ -150,6 +150,33 @@ L += ["", "Left open after the sixth check: per-directory stamps in the stress r
       "referee round from its archive alone; per-event recomputation of the labelling ablation (its shards and checkpoints",
       "are on the Modal volume); the stage-5 weights and the stress suite's per-event predictions (not distributed);",
       "AUDIT finding 14 (S3); rewriting published git history (I54), the author's call."]
+# ---- fourth addendum: the seventh check (2026-09-14) ----------------------------------------------------------------
+import dispositions_2026_09_14c as D7                                   # noqa: E402
+R7 = json.load(open(os.path.join(HERE, "2026-09-14_seventh_findings.json")))
+ids7 = [f["id"] for f in R7["findings"]]
+assert set(ids7) == set(D7.DISPO) and len(ids7) == len(set(ids7)), "every seventh-check finding needs one disposition"
+assert len(R7["gaps"]) == len(D7.GAPS7)
+c7 = {s_: sum(1 for f in R7["findings"] if f["severity"] == s_) for s_ in ("critical", "major", "minor")}
+v7 = {v: sum(1 for f in R7["findings"] if f["verdict"] == v) for v in ("real", "partly", "refuted")}
+L += ["", "## Addendum 4: seventh check (2026-09-14)", "",
+      "A narrow check of the sixth check's fixes (2133a41..52e2d8c): paper, code and docs reviewers, one adversarial",
+      "checker per slice and a completeness critic limited to those changes. The first launch stalled; the relaunch lost",
+      "four agents to a usage limit and was resumed. Raw record: `docs/verification/2026-09-14_seventh_findings.json`;",
+      "dispositions: `docs/verification/dispositions_2026_09_14c.py`.", "",
+      f"**{len(ids7)} findings: {c7['critical']} critical, {c7['major']} major, {c7['minor']} minor; adversarial verdicts "
+      f"{v7['real']} real, {v7['partly']} partly, {v7['refuted']} refuted; the critic found {len(R7['gaps'])} targets, one "
+      "with a guard gap.**", "",
+      "The main corrections: the ablation paragraph had claimed more than the 7.2 d onset grid records (the first-detectable",
+      "onset can lie before the previous grid cut); the matched-density test's regular grid still loses a third of recall",
+      "to thinning (full cadence 0.94), so empty bins explain the collapse to zero but not everything; the calibration's",
+      "error comes mostly from the over-confident mid-range; one stratum difference is only nominally resolved; empty bins",
+      "are now counted with the model's own binning; several docs and records repeated superseded claims.", "",
+      "| id | severity | verdict | finding | disposition |", "|---|---|---|---|---|"]
+for f in sorted(R7["findings"], key=lambda f: (("critical", "major", "minor").index(f["severity"]), f["id"])):
+    L.append(f"| {f['id']} | {f['severity']} | {f['verdict']} | {f['claim'][:200].replace('|', '/')} | {D7.DISPO[f['id']]} |")
+L += ["", "### Completeness critic (seventh check)", "", "| # | severity | target | disposition |", "|---|---|---|---|"]
+for i, g in enumerate(R7["gaps"]):
+    L.append(f"| {i + 1} | {g['severity']} | {g['target'][:160].replace('|', '/')} | {D7.GAPS7[i]} |")
 out = os.path.join(os.path.dirname(os.path.dirname(HERE)), "docs", "VERIFICATION_2026-09-12b.md")
 open(out, "w").write("\n".join(L) + "\n")
 print(f"wrote {os.path.relpath(out)}")

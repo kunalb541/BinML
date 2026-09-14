@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased — seventh check and per-class probability figure (2026-09-14)
+
+- **New Figure (Sec. cascade): class probability at every half-day cut for a clear and a marginal event of each class,**
+  with the 16-84% band over 30 re-observations of the same event with fresh photometric noise
+  (`paper/make_data_figures.py`, which checks the caption's statements on the events it draws). The clear events
+  settle once their evidence appears; the marginal ones wander, and the noise draw alone moves their calls.
+- **Seventh check** of the sixth check's fixes (record: the fourth addendum of `docs/VERIFICATION_2026-09-12b.md`; 22
+  findings, none refuted). The ablation paragraph now says only what the 7.2 d onset grid records; the matched-density
+  test gained a full-cadence arm (0.94: thinning costs recall even without empty bins) and counts empty bins with the
+  model's own binning; the calibration paragraph attributes the error to the over-confident mid-range; one stratum
+  difference is "nominally" resolved; more RMDC26 results are listed as needing the extracted caches; guards for "at
+  the edge of resolution", "later alerts", the plane minimum's location and a stale in-house copy; unit tests for the
+  new reduction helpers; docs and records corrected.
+
 ## Unreleased — sixth check (2026-09-14)
 
 Three reviewers of the fifth round's fixes, their adversarial checkers and the re-run completeness critic (record: the

@@ -1,0 +1,363 @@
+{
+ "_note": "Seventh check (2026-09-14) of the sixth check's fixes (2133a41..52e2d8c): paper, code and docs slices, one adversarial checker per slice, and a narrow completeness critic. The first launch stalled; the relaunch lost four agents to a usage limit and was resumed.",
+ "findings": [
+  {
+   "id": "docs7-01",
+   "severity": "major",
+   "file": "paper/SUBMISSION_FIELDS.txt (untracked) and paper/paper.pdf (untracked build product in the repository directory)",
+   "line": "FILES TO UPLOAD block",
+   "claim": "\"paper/paper.pdf  the manuscript (30 pages at the revision, line numbers already on)\"",
+   "evidence": "The paper/paper.pdf, paper_macros.tex, outputs/figures_stats.json and outputs/cascade_policy_table.tex in the repository directory all date from 2026-09-13 11:42, before 2133a41..52e2d8c. pdfinfo gives 29 pages. pdftotext of that PDF still has the withdrawn text: 'the model scores 359 pre-tokenised' (l.790), 'costs detection (86.4%)' (l.1243), 'density sparsity alone dominates' (l.2662). I rebuilt 52e2d8c in scratch (make_figures, make_macros, make_gulls_macros, pdflatex/bibtex): 30 pages, no undefined references. The regenerated paper_macros.tex differs from the local one (for example CascGridOnePct 1.2 vs 1.6, CascGridOneDet 88.7 vs 86.4; NonpsplDemoted is still defined in the local file). The plain abstract (247 words) and the five highlights (all 85 characters or fewer) do match the rendered abstract at 52e2d8c, macro by macro.",
+   "fix": "Run paper/build.sh in the repository before uploading. Add a line to SUBMISSION_FIELDS saying the PDF must be rebuilt at the submitted commit, so a stale build cannot be uploaded.",
+   "verdict": "partly",
+   "verdict_note": "Confirmed the local files are stale: paper/paper.pdf and paper/paper_macros.tex are dated Sep 13 11:42, while 2133a41 and 52e2d8c were committed on Sep 14. pdfinfo gives 29 pages. pdftotext still shows '359 pre-tokenised' (l.790), 'costs detection (86.4%)' (l.1243) and 'sparsity alone' (l.2662). The local macros still hold CascGridOnePct 1.6, CascGridOneDet 86.4 and NonpsplDemoted 94.7, and paper.tex at 52e2d8c no longer uses NonpsplDemoted. SUBMISSION_FIELDS.txt:132 names paper/paper.pdf and has no build or commit instruction. All three files are gitignored (paper/.gitignore:2-3, .gitignore:133), though. So this is a stale local build, not a defect in the committed fixes, and its '30 pages at the revision' is right for a fresh build. Severity should be minor (a pre-upload action item), not major. The fix is right: run build.sh and add a rebuild-at-commit line."
+  },
+  {
+   "id": "docs7-02",
+   "severity": "minor",
+   "file": "paper/REVISION.md",
+   "line": "438 (row 6); disposition docs6-03 in docs/verification/dispositions_2026_09_14b.py",
+   "claim": "\"against 33% of the detectable single lenses of our corrected stress sweep at the same 0.25-1 d (35% over its full 0.2-1 d range, row 23)\"; disposition docs6-03: \"Fixed. REVISION row 6 quotes 33% ... (35% over 0.2-1 d)\"",
+   "evidence": "In validation/stress_rescore_local.json the corrected tier oor_pspl_shortte_current/released has single_lens_above_frozen_tE_0p25_1.frac = 0.334 (33%, right) but pspl_label_by_generator_class.single_lenses.frac_above_frozen_threshold = 0.366, which is 37%. The 35% (0.353) belongs to the legacy tier oor_pspl_shortte. Row 23 itself says 'corrected generator 0.274, 71%, 37%'. The error was copied from the sixth finding's own proposed wording.",
+   "fix": "Write '(37% over its full 0.2-1 d range; 35% in the legacy tier, row 23)' and correct the docs6-03 disposition.",
+   "verdict": "real",
+   "verdict_note": "The text is at REVISION.md:441, not 438. In stress_rescore_local.json, oor_pspl_shortte_current/released has single_lens_above_frozen_tE_0p25_1.frac 0.334 (33%, correct) and single_lenses.frac_above_frozen_threshold 0.366 (37%). The 0.353 (35%) is the legacy tier oor_pspl_shortte/released. Row 23 (line 458) says '35% above the frozen threshold; corrected generator 0.274, 71%, 37%; at 0.25-1 d, 33%'. So row 6's '(35% over its full 0.2-1 d range)' for the corrected sweep contradicts row 23. The docs6-03 disposition (dispositions_2026_09_14b.py:58) repeats the 35%. Minor; the fix is right."
+  },
+  {
+   "id": "docs7-03",
+   "severity": "minor",
+   "file": "paper/canonical_numbers.json",
+   "line": "255 (_inference_note)",
+   "claim": "\"The previous hand-entered 1,224 events/s could not be reproduced on the recorded hardware (measured 359/s at 10 threads) and was withdrawn.\"",
+   "evidence": "The sixth check superseded this: validation/inference_benchmark_result.json now gives 1,015/s on an otherwise idle machine, and the paper dropped 'could not reproduce' (paper.tex:315-318). The same file's _retired block was edited in this range for gap_matched, but this note was left as it was.",
+   "fix": "Reword it: the 1,224/s had no retained script or hardware record; the idle-machine benchmark gives 1,015/s; the 359/s run was under load.",
+   "verdict": "real",
+   "verdict_note": "canonical_numbers.json:255 at 52e2d8c still says the 1,224/s 'could not be reproduced on the recorded hardware (measured 359/s at 10 threads)'. The committed benchmark result is 1,015/s on an idle machine with load recorded. paper.tex:314-318 now says only that the earlier figure's hardware and script were not retained. The file was edited in this range (26 lines changed) but this note was not. 'Recorded hardware' is also wrong: the hardware was never recorded. Minor; the fix is right."
+  },
+  {
+   "id": "docs7-04",
+   "severity": "minor",
+   "file": "validation/inference_benchmark.py; paper/make_macros.py",
+   "line": "inference_benchmark.py:15-17; make_macros.py:547-549",
+   "claim": "\"on an idle one the same script gives about 1,040/s, within 15% of the withdrawn 1,224/s\"; make_macros comment: \"the benchmark on an idle machine comes within 15% of it\"",
+   "evidence": "The committed artifact gives events_per_sec = 1015. That is (1224-1015)/1224 = 17.1% below 1,224, and 1,224 is 20.6% above 1,015. The 1,040/s is the sixth-check critic's run, not the recorded result. Even 1,040 is exactly 15.0% below 1,224.",
+   "fix": "Quote the recorded 1,015/s and say 'about 17% below' (or 'within about 20%') in both places.",
+   "verdict": "real",
+   "verdict_note": "inference_benchmark.py:15-17 says 'about 1,040/s, within 15% of the withdrawn 1,224/s'. The make_macros.py comment (around l.547) says the idle benchmark 'comes within 15% of it'. The committed result is events_per_sec 1015 (1024/1.0089 = 1014.97). (1224-1015)/1224 = 17.1%, and 1224/1015-1 = 20.6%. Even 1,040 is 15.03% below. The 1,040 is not the recorded run. Minor; the fix is right."
+  },
+  {
+   "id": "docs7-05",
+   "severity": "minor",
+   "file": "validation/gulls/PROVENANCE.md",
+   "line": "63-66",
+   "claim": "\"The pre-RMDC26 artifacts that record no checkpoint hash (`baselines_result.json`, `gap_matched_result.json`, `latency_gaps_result.json`, ...)\"",
+   "evidence": "Since 6cc9fd6, validation/gap_matched_result.json records checkpoint_sha256 897a9aec..., code and script_sha256. The MANIFEST note and GAPS6 #4 both say so ('code and checkpoint recorded'). PROVENANCE was edited in this range but this sentence was not. Side note: the recorded code string ends in '-dirty' (f33288f); script_sha256 matches the committed script.",
+   "fix": "Remove gap_matched_result.json from the list. Optionally say it was rerun at f33288f with the shipped checkpoint (897a9aec).",
+   "verdict": "real",
+   "verdict_note": "PROVENANCE.md:63-64 at 52e2d8c lists gap_matched_result.json among artifacts that 'record no checkpoint hash'. At 52e2d8c, gap_matched_result.json lines 4-6 record code 'submitted-ac-2026-08-15-66-gf33288f1cbbc-dirty', checkpoint_sha256 897a9aec... and script_sha256. Both files were edited in this range. Minor; the fix is right."
+  },
+  {
+   "id": "docs7-06",
+   "severity": "minor",
+   "file": "CHANGELOG.md",
+   "line": "55-58 (fifth-verification entry)",
+   "claim": "\"the cause of non-identical regeneration is the unpinned cloud environment, not code (the generator gives the same shards at every commit since July 21)\"; \"the three RMDC26 and the referee-overlap exceptions named\"",
+   "evidence": "The sixth check found both claims wrong: paper6-02/docs6-08/code6-08 (the out-of-range sweeps changed after July and come back only with --legacy-oor-mix --legacy-t0-pad) and docs6-07 (seven RMDC26 results need the caches, not three). The paper was corrected (paper.tex:1781-1783, 1764-1772). In the same fifth-round entry this range annotated the equally wrong '22-30%' in place ('the sixth check found ...'), but these two superseded statements were left unannotated. The whole-tree grep finds no other live copy of 'every commit since July 21' outside the verification records.",
+   "fix": "Annotate them the way the 22-30% line was, e.g. '(sixth check: true only for a held-out shard at three commits; the out-of-range sweeps need the legacy switches)' and '(sixth check: seven RMDC26 results)'.",
+   "verdict": "real",
+   "verdict_note": "CHANGELOG.md:55-58 (fifth-verification entry) still says 'the generator gives the same shards at every commit since July 21' and 'the three RMDC26 ... exceptions named'. Sixth-check findings paper6-02, docs6-08 and code6-08 flag the first claim, and docs6-07 flags the 'three'. paper.tex:1764-1783 now names seven cache-dependent results and says the out-of-range sweeps changed after July. The same entry's line 37-39 was annotated in place ('26-30% ... the sixth check found ...'), so there is a precedent. git grep finds no other live copy outside the verification records. Minor, since it is a historical changelog entry; the fix is right."
+  },
+  {
+   "id": "docs7-07",
+   "severity": "minor",
+   "file": "README.md",
+   "line": "248-250",
+   "claim": "\"every number regenerates from the scripts under `validation/gulls/` (from a clone, without the curve cache: the `command_from_clone` field ... is the exact `gulls_summary_tables.py --scores` invocation)\"",
+   "evidence": "Data availability now says the partial-season scan, the sub-day single lenses, the relabelling, the floor sensitivity, the between-season combiner, bin occupancy and the noise model regenerate only by rerunning scripts on the pinned release with extracted caches (paper.tex:1764-1772; docs6-07). The README line was edited in this range ('six verification rounds', 'three addenda') but still reads as if every RMDC26 number comes from a clone without caches. Only the tables do (REVISION.md:398: 'from a clone: no caches needed' for the tables).",
+   "fix": "Scope it: 'every table regenerates from a clone without the curve cache (...); the scan, sub-day, relabelling, floor, between-season, occupancy and noise-model results need the extracted caches (paper, Data availability)'.",
+   "verdict": "real",
+   "verdict_note": "README.md:248-250 says 'every number regenerates from the scripts under validation/gulls/ (from a clone, without the curve cache: the command_from_clone field ... is the exact gulls_summary_tables.py --scores invocation)'. paper.tex:1764-1772 says only the RMDC26 tables regenerate from the score CSV alone. Seven other results need per-event data extracted from the pinned release. One of them uses validation/gulls_transfer.py, which is not under validation/gulls/. The README was edited in this range. Minor; the fix is right."
+  },
+  {
+   "id": "docs7-08",
+   "severity": "minor",
+   "file": "paper/make_macros.py (feeds paper.tex:316)",
+   "line": "make_macros.py:46 two(); cmd('bmlInferMs', two(inf['ms_per_event']))",
+   "claim": "\"... scores 1,015 pre-tokenised light curves per second (0.98 ms per event)\"",
+   "evidence": "The artifact's median is 1.0089 s per 1024-event batch: 1000*1.0089/1024 = 0.98525 ms, and 1000/1015 = 0.9852 ms, both 0.99 at two decimals. The benchmark stores ms_per_event rounded to 0.985, and f'{0.985:.2f}' gives '0.98' (0.985 is 0.98499999... in binary), so the value is rounded twice and comes out low.",
+   "fix": "Emit the macro from the unrounded quantity (1000/events_per_sec, or seconds_per_batch.median/batch) or use decimal rounding, so it reads 0.99 ms.",
+   "verdict": "real",
+   "verdict_note": "inference_benchmark.py:101 stores round(1000*med/batch, 3) = round(0.98525, 3) = 0.985. make_macros two() gives format(0.985, '.2f') = '0.98' because of binary representation. The unrounded values are 0.98525 (median batch time) and 1000/1015 = 0.98522, both 0.99 at two decimals. The paper prints 0.98 ms. A 0.005 ms double-rounding artefact, trivial but real. Minor; the fix is right."
+  },
+  {
+   "id": "paper7-01",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "888-894",
+   "claim": "At 19 visits/day the uniform arm fails too, \"but not for lack of visits ... What the shipped model cannot handle is empty bins, and the nightly window leaves at least 60% of them empty (next paragraph).\" (CHANGELOG, dispositions GAPS6[3] and the gap_matched_density.py docstring say the same: \"empty bins, not sparsity\".)",
+   "evidence": "I reran validation/gap_matched_density.py in the export and it reproduces the artifact exactly (uniform 0.775/0.308/0.000, regular 0.617/0.592/0.567, empty bins 4/9/16%, nightly 60-63%). The same 120 events at full cadence (6912 epochs), scored with the same classifier, give recall 0.942 (my script gap2.py). So the gap-free regular grid, with no empty bins, already loses about a third of recall to thinning (0.94 down to 0.57-0.62). At 32/day the regular grid does worse than the random subsample that leaves 4% of bins empty: 0.617 against 0.775; paired on the same events, 23 are recovered only by the uniform arm and 4 only by the regular arm (McNemar p = 3e-4). The data support 'empty bins, not visit count, explain the collapse to zero at 19/day'. They do not support 'the model cannot handle empty bins' as the whole story, nor the implication that sparsity is harmless. The guard (make_macros.py:371-374) requires only regular > 0.4, so it cannot catch this. '(next paragraph)' points to the GBTDS paragraph, which says nothing about the nightly window's empty bins; the 60% comes from this test.",
+   "fix": "Reword: 'the uniform arm's collapse to zero at 19 per day is caused by empty bins: a gap-free regular grid with the same visits keeps 0.57-0.62, though thinning alone already lowers recall from 0.94 at full cadence.' Add a full-cadence arm to gap_matched_result.json and quote it. Drop 'not sparsity' in the CHANGELOG, the dispositions and the script docstring. Replace '(next paragraph)' with the correct pointer, or delete it.",
+   "verdict": "partly",
+   "verdict_note": "The evidence reproduces. I exported 52e2d8c and reran the same 120 events (seeds 900001+, the same rng 10000+i), using scratchpad/verify7/adv_gapfull.py. Full cadence (6912 epochs) gives recall 0.942; at 32/day the uniform arm gives 0.775 and the regular arm 0.617. 23 events are recovered only by the uniform arm and 4 only by the regular arm (exact McNemar p = 3.1e-4). gap_matched_result.json matches the finding: regular 0.617/0.592/0.567, uniform empty-bin fractions 4/9/16%, nightly 60-63%. The make_macros.py:370-374 guard checks only regular > 0.4 and 'uniform upper CI < regular lower CI at 19/day', so it cannot catch the thinning loss. The '(next paragraph)' pointer is also wrong: the next paragraph (paper.tex:896) is the GBTDS schedule and never mentions empty bins; the empty-token argument comes later, at line 941. I downgrade the severity to minor. The sentence the paper leans on, that the uniform arm's collapse to zero is not caused by visit count, is supported (0.000 against 0.567 with the same visits). What is wrong is the overreach ('cannot handle is empty bins', 'not sparsity' in the CHANGELOG, disposition and docstring) and the missing full-cadence reference. That the regular arm trails the uniform arm at 32/day does show that something other than empty bins matters. The fix is right: add the full-cadence arm, soften the wording, correct the pointer."
+  },
+  {
+   "id": "paper7-02",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1610-1616",
+   "claim": "The augmented arm's premature alerts \"fall in the 7.2 days before the grid onset, where the true onset lies. Alerts earlier than that, premature under any onset, number 0 against 32 ... and 9 against 45\". The make_macros.py:434-435 comment and the CHANGELOG repeat this.",
+   "evidence": "The counts are right. I recomputed 37/0, 111/9/102, 58/32 and 82/45 from the per-event lists in ablations_result.json. The premise is wrong, though. pipeline/assemble.py _anomaly_onset_day (legacy mode) returns the first 7.2 d grid point at which the anomaly is detectable. The statistic is not monotone (the paper itself counts 187/1000 such events), so the first-detectable onset can lie well before the previous grid point. In validation/cascade_trace.npz, built by the same generator: 73 of 1,000 eligible binaries have t_anom_fine < t_anom_coarse - 7.2 (median 11.9 d earlier, up to 62 d), and 25 have t_anom_fine > t_anom_coarse (by 0.1-1.3 d). For about 7% of events, an alert more than 7.2 d before the grid onset is therefore on time under the first-detectable onset. The true onset lies inside the window for about 90% of events, not all. The conclusion ('argmax reversal not established') survives, but the stated rule does not.",
+   "fix": "Say that the first-detectable onset lies in the 7.2 d window for about 90% of eligible binaries (in-house trace: 73 of 1,000 earlier, 25 later). Call alerts before the window 'premature under the grid and persistent onsets and, for most events, the first-detectable one' instead of 'under any onset'. Correct the make_macros comment, the CHANGELOG and disposition GAPS6[1] to match.",
+   "verdict": "partly",
+   "verdict_note": "The defect exists. pipeline/assemble.py:247ff in legacy mode returns the first detectable point on the 7.2 d grid, and its docstring says the statistic is not monotone. In validation/cascade_trace.npz, 73 of 1000 events have t_anom_fine < t_anom_coarse - 7.2 (median 11.9 d, max 62 d), 25 have fine > coarse (0.1-1.3 d) and 902 lie inside the window. All of these reproduce exactly. So 'where the true onset lies' and 'premature under any onset' (paper.tex:1612-1613; comment at make_macros.py:433-434; CHANGELOG:10-11) are false for about 10% of events. The severity should be minor, not major. The counts are correct, and a roughly 7% contamination cannot plausibly reverse 0 vs 32 or 9 vs 45, so the paragraph's conclusion ('argmax reversal not established') and every reported number stand. Also, the 7% rate comes from the in-house cascade sample, not the ablation population itself, so it should be quoted as an estimate. The fix is as proposed."
+  },
+  {
+   "id": "paper7-03",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "604-609",
+   "claim": "\"The small error mostly reflects the 81% of the population weight scored below 0.1. In the mid-range the weighted score is over-confident: events scored 0.1-0.9 (mean score 0.26) are anomalies only 0.041 of the time under population weighting (0.16 of the stored events), because the down-sampled single lenses and demoted binaries there count several times each\"",
+   "evidence": "All six numbers reproduce from paper/results/*.npy (final-test rows, w = 1/clip(keep_prob)): 80.6%, 0.259, 0.041, 0.160, 0.986, 0.904. Splitting the 12-bin ECE of 0.0533: the bin below 0.083 contributes 0.0153 (29%), the bins from 0.083 to 0.917 contribute 0.0343 (64%), and the top bin 0.0036 (7%). So most of the error comes from the mid-range, and 'mostly reflects the 81% below 0.1' holds only as a dilution argument. The stored (unweighted) mid-range events are over-confident too: their mean score is 0.292 against a frequency of 0.160. Weighting widens the over-confidence but does not create it. The parenthesis also sets a weighted mean score (0.26) beside a stored frequency (0.16).",
+   "fix": "Rewrite as: 'The error is small because 81% of the weight sits below 0.1, where score and frequency are both near zero; most of it comes from 0.1-0.9, where the score is over-confident (weighted mean 0.26 vs frequency 0.041; stored 0.29 vs 0.16), more so under weighting because down-sampled single lenses and demoted binaries count several times each.'",
+   "verdict": "real",
+   "verdict_note": "Recomputed from paper/results (test_idx rows, w = 1/clip(keep_prob)): ECE 0.0533, of which the lowest bin contributes 0.0153, bins 2-11 contribute 0.0344 (64%) and the top bin 0.0036. Also 80.6% of the weight lies below 0.1; the mid-range weighted mean score is 0.259 against a weighted frequency of 0.041; stored events show 0.160 frequency against a 0.292 unweighted mean score. So most of the ECE comes from the mid-range, and the stored events are over-confident too, which means weighting widens the over-confidence but does not cause it. The make_figures.py:563 comment ('the small ECE is dominated by the low-score bulk') is wrong outright. Minor. The fix is fine; also correct that comment."
+  },
+  {
+   "id": "paper7-04",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1450-1452 (draft_gulls_section.tex 443-445)",
+   "claim": "Detection is lower in both strata, \"resolved at high ratios (p = 0.035)\".",
+   "evidence": "From the cascade_gulls.json counts and my own in-house strata from cascade_trace.npz (138/2/123 and 48/2/35, lags identical to the recorded lists), the Fisher two-sided p is 0.0351, which matches. It is one of six stratum comparisons in the same sentence (2 strata x premature/detection/lag). A Bonferroni or Holm threshold is 0.0083, and Barnard's exact test on the same table gives p = 0.069. 'Resolved' is nominal only.",
+   "fix": "Write 'nominally resolved at high ratios (Fisher p = 0.035, one of six comparisons)', or give the corrected threshold.",
+   "verdict": "real",
+   "verdict_note": "Recomputed from cascade_gulls.json: the RMDC26 giant stratum is 119/149 detected against 123/138 in-house, Fisher p = 0.0351, and the sentence makes six stratum comparisons. The only p below 0.05 among them is 0.035, which fails a Holm or Bonferroni threshold of 0.0083. The Barnard p = 0.068 reproduces, but it is weak support: Boschloo's test, which is more powerful, gives 0.032. Drop the Barnard argument and keep the multiplicity one. Minor wording, and the fix is appropriate. Note that the guard at make_gulls_macros.py:576 hard-codes the same nominal 0.05."
+  },
+  {
+   "id": "paper7-05",
+   "severity": "minor",
+   "file": "paper/make_gulls_macros.py",
+   "line": "578-581; make_macros.py 141-146",
+   "claim": "The guards back 'at the edge of resolution' (Neptune lag interval) and the policy-grid sentence '... at the price of later alerts'.",
+   "evidence": "The Neptune guard requires only median_lag_diff_ci95[0] >= 0. An interval of, say, [1.5, 5] would pass while the text says 'at the edge of resolution'. The guard cannot fire in the direction that would make the wording wrong. For the grid sentence, make_macros.py checks the premature ordering and the detection change (under 1 point), but nothing checks 'later alerts'. The data do support it (non-premature median lag 5.0 -> 5.5 -> 6.0 d, which I recomputed from cascade_trace.npz).",
+   "fix": "Guard 'edge of resolution' as lower bound == 0 (or frac_boot_diff_le_0 between 0.01 and 0.1). Add need(lag_1d >= lag_0.5d and lag_2d >= lag_0.5d) for 'at the price of later alerts'.",
+   "verdict": "real",
+   "verdict_note": "make_gulls_macros.py:578-581 requires only neptune median_lag_diff_ci95[0] >= 0, so an interval clearly above zero would pass while the text says 'at the edge of resolution'. The recorded values are CI [0, 4.5] and frac_boot_diff_le_0 = 0.049, so the text is currently true. make_macros.py:141-146 guards the premature ordering and the <1-point detection change but nothing guards 'at the price of later alerts' (paper.tex:432). The data support it: cascade_reproduce_result.json sensitivity.evaluation_grid_days gives non-premature median lag 5.0/5.5/6.0 d for the 0.5/1/2 d grids. Minor. The fix is as proposed."
+  },
+  {
+   "id": "paper7-06",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1764-1772",
+   "claim": "\"Other RMDC26 results rest on per-event data extracted from the release and not distributed, and regenerate only by rerunning a script on the pinned release: [scan, sub-day, relabelling, floor, combiner, occupancy, noise model]\". Disposition docs6-07 says this now lists 'every RMDC26 result that needs the extracted caches'.",
+   "evidence": "validation/gulls/rmdc26_schedule.py reads /tmp/rmdc26_epoch.parquet and /tmp/rmdc26_meta.parquet. It produces the measured pauses (43-44 h per 70.7-d season, their phases) and the masks behind Table tab:gap. validation/gulls/rmdc26_dataset_facts.py reads /tmp/rmdc26_meta.parquet and produces the q KS p ~ 1e-18, the 55% binary-source flag and the detection-statistic cut of 60. Neither is in the list, and neither can be rederived from rmdc26_scores.csv.gz.",
+   "fix": "Add the schedule measurement (rmdc26_schedule.py) and the dataset facts (rmdc26_dataset_facts.py) to the list, and correct the disposition.",
+   "verdict": "real",
+   "verdict_note": "validation/gulls/rmdc26_schedule.py:42-43 reads /tmp/rmdc26_epoch.parquet and /tmp/rmdc26_meta.parquet. rmdc26_dataset_facts.py:28,47-49 reads /tmp/rmdc26_meta.parquet and extracted curve rows. make_gulls_macros.py:95ff builds many paper macros from rmdc26_dataset_facts.json: catalogue counts, the selection outcome, the q KS exponent, the binary-source fraction, the detection cut, and the bright/low-fs fractions. None of this can be rederived from rmdc26_scores.csv.gz, yet paper.tex:1764-1772 omits both scripts. It also says (1739-1740) that everything else rederives from reduction scripts alone. Disposition docs6-07 ('lists every RMDC26 result that needs the extracted caches') is therefore inaccurate. Minor. The fix is as proposed."
+  },
+  {
+   "id": "paper7-07",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "1740; paper/canonical_numbers.json 255",
+   "claim": "\"the full stress set's column, whose 14.9 million per-event predictions are not distributed\" (typed literal); canonical_numbers.json _inference_note: \"The previous hand-entered 1,224 events/s could not be reproduced on the recorded hardware (measured 359/s at 10 threads) and was withdrawn.\"",
+   "evidence": "The literal 14.9 is typed although \\bmlStressN (make_macros.py:202, 14.9) exists and is used at lines 115/773/835, so it would not follow a change in stress_report.json. The _inference_note contradicts the new benchmark (1,015/s idle, within about 17-20% of 1,224/s) and the new paper text, which no longer says 'could not reproduce'.",
+   "fix": "Use $\\bmlStressN$ million. Update _inference_note to say that 359/s was measured under load, that an idle machine gives 1,015/s, and that the result is read from inference_benchmark_result.json.",
+   "verdict": "real",
+   "verdict_note": "paper.tex:1740 types the literal '14.9 million', while \\bmlStressN (make_macros.py:202, value 14.9) is used at lines 115/773/835. One correction: the macro reads canonical_numbers.json['stress']['n_events_millions'], not stress_report.json, whose n_events_millions field is absent. The finding's point that the literal would not follow the source still holds. canonical_numbers.json:255 _inference_note was left unchanged by the diff. It still says 1,224/s 'could not be reproduced (measured 359/s)'. That contradicts the idle rerun (inference_benchmark_result.json: 1,015/s, load recorded), the paper text at paper.tex:314-318 and VERIFICATION_2026-09-12b.md:373, which say the 359/s was measured under load. Minor. The fix is as proposed, except the macro source is canonical_numbers.json."
+  },
+  {
+   "id": "code7-01",
+   "severity": "major",
+   "file": "paper/paper.tex",
+   "line": "1611-1614 (also paper/make_macros.py:432-434 comment and guard wording; CHANGELOG.md:10-12; dispositions_2026_09_14b.py GAPS6[1])",
+   "claim": "The augmented arm's premature alerts \"fall in the 7.2 days before the grid onset, where the true onset lies. Alerts earlier than that, premature under any onset, number 0 against 32 ... and 9 against 45\"",
+   "evidence": "The generator's 7.2 d onset is the first detectable 7.2 d cut. Detectability is not monotone (assemble.py:258-262), so the onset is not simply rounded up by at most 7.2 d. Checked on validation/cascade_trace.npz (same generator, 1,000 events): the first-detectable onset is more than 7.2 d before t_anom_coarse for 73/1000 events (max 62 d) and after it for 25/1000 (min -1.3 d). Of the 14 in-house alerts at or before t_anom_coarse - 7.2 (alerts the paper's logic calls premature under any onset), 6 are on time under the first-detectable onset. So 'where the true onset lies' and 'premature under any onset' do not hold, and the 0/32 and 9/45 counts are not unambiguous. The conclusion 'argmax reversal not established' still stands.",
+   "fix": "Drop 'where the true onset lies' and 'premature under any onset'. Say the window contains the onset only when detectability is monotone, and call the counts 'more than 7.2 d before the grid onset'. Better: recompute the ablation's premature rates with 0.5 d first-detectable onsets (matched_traces.npz has them for the same two checkpoints). Reword the make_macros guard messages and the CHANGELOG/disposition to match.",
+   "verdict": "real",
+   "verdict_note": "Reproduced on validation/cascade_trace.npz. The 0.5 d first-detectable onset (t_anom_fine) is more than 7.2 d before t_anom_coarse for 73/1000 events (max 62.0 d) and after it for 25/1000 (min -1.3 d). pipeline/assemble.py _anomaly_onset_day returns the first detectable 7.2 d cut, and its own docstring says the statistic is not monotone. Shipped-model threshold alerts (cascade_reduce.alert_times) at or before coarse-7.2: 14, and 6 of these are at or after the first-detectable onset, so they are on time. 'where the true onset lies' and 'premature under any onset' (paper.tex:1611-1614, make_macros.py:433-434) are therefore false as stated. The conclusion that the argmax reversal is not established still stands, which puts this at the low end of major. On the fix: matched_traces.npz uses the same two checkpoints but a different event sample (400 events, seed_base 770000), not the ablation's 300 eligible events, so the recount would be on a new sample."
+  },
+  {
+   "id": "code7-02",
+   "severity": "minor",
+   "file": "paper/paper.tex",
+   "line": "888-893",
+   "claim": "\"the uniform arm fails too (0.000), but not for lack of visits ... a gap-free regular grid with the same visits recovers 0.617, 0.592 and 0.567. What the shipped model cannot handle is empty bins\"",
+   "evidence": "I reran gap_matched_density.py in the copy and it reproduces the artifact exactly. On the same 120 events, recall at full cadence is 0.942. The regular grid, which has zero empty bins, reaches only 0.567-0.617. At 32 visits/day it does significantly WORSE than the random 'uniform' arm, which has 4% empty bins: 0.617 vs 0.775, discordant pairs 4 vs 23, McNemar p = 3e-4. So thinning costs about a third of recall even without empty bins, and empty bins are not the only factor. The make_macros.py:370-373 guard never compares regular with uniform at the highest density.",
+   "fix": "Qualify the sentence. Empty bins explain the collapse to zero, but thinning alone lowers recall from 0.94 (full cadence) to about 0.6, and at 32/day the regular grid is below the random subsample. Or guard the stated relation.",
+   "verdict": "real",
+   "verdict_note": "Reran in an export (120 events, seeds and indices as in gap_matched_density.py). Recall at full cadence is 0.942. At 2300 visits: uniform 0.775, regular 0.617. Discordant pairs: 23 uniform-only against 4 regular-only, exact McNemar p = 3.1e-4. So the gap-free regular grid (0% empty bins) is significantly worse than the random subsample (4% empty) at 32/day, and thinning without empty bins costs about a third of recall. 'Not for lack of visits' holds for the collapse to 0.000 at 19/day, but 'what the shipped model cannot handle is empty bins' overstates it as the whole explanation. The make_macros.py guard (lines ~370-373) never compares regular with uniform at the highest density. Minor is right."
+  },
+  {
+   "id": "code7-03",
+   "severity": "minor",
+   "file": "validation/gap_matched_density.py",
+   "line": "41-46",
+   "claim": "empty_bin_frac is 'the fraction of the model's 2 h F146 bins' left empty; paper: 'the nightly window leaves at least 60% of them empty'",
+   "evidence": "_empty_bin_frac uses floor(t/BIN_DAYS) on float times. The model instead rounds each time to a 15-min epoch and takes epoch//8 (binml/preprocess.py:86-102), and float floor puts boundary epochs in the wrong bin (the preprocess comment warns about exactly this). On the 120 events with the model's bin_band (frac==0), nightly empty is 0.587/0.604/0.618 and uniform 0.039/0.090/0.163, against the script's 0.604/0.617/0.628 and 0.040/0.091/0.164. So the model's minimum nightly empty fraction is 59%, not 'at least 60%'. (The pool (t%1)<1/3 is also 33 epochs per night, which touches 5 bins.)",
+   "fix": "Compute empty bins from binml.preprocess.bin_band (frac == 0) or from integer epoch indices, rerun, and let \\bmlGapEmptyNightly follow.",
+   "verdict": "real",
+   "verdict_note": "Recomputed with binml.preprocess.bin_band (frac==0) on the same 120 events. Nightly: 0.587/0.604/0.618; uniform: 0.039/0.090/0.163. The script's float floor gives 0.604/0.617/0.628 and 0.040/0.091/0.164, so the model's minimum nightly empty fraction rounds to 59%, not the 'at least 60%' printed by bmlGapEmptyNightly. The pool (t%1)<1/3 holds 2375 epochs, about 33 per night, and touches 359 model bins against 344 by float floor, which confirms the boundary-epoch mechanism. Minor."
+  },
+  {
+   "id": "code7-04",
+   "severity": "minor",
+   "file": "paper/make_gulls_macros.py",
+   "line": "579-581 (and paper/paper.tex:432)",
+   "claim": "Neptune lag difference 'at the edge of resolution'; Sec. cascade 'at the price of later alerts'",
+   "evidence": "The guard tests only median_lag_diff_ci95[0] >= 0 for the Neptune stratum, so it would still pass with an interval of, say, [3, 6] d, which is clearly resolved while the text says 'at the edge'. The committed values are lo=0, frac_boot_diff_le_0=0.049. 'at the price of later alerts' (grid lags 5.0 -> 5.5 -> 6.0 d) has no guard in the new make_macros.py:141-146 block.",
+   "fix": "Bound the edge claim on both sides (for example lo <= 0.5 d, or 0.01 < frac_boot_diff_le_0 < 0.1). Add a guard that the non-premature median lag rises on the 1 d and 2 d grids.",
+   "verdict": "real",
+   "verdict_note": "make_gulls_macros.py:579-581 tests only v1['neptune']['median_lag_diff_ci95'][0] >= 0, so an interval such as [3, 6] d would pass while the text (paper.tex:1453, draft_gulls_section.tex:446) says 'at the edge of resolution'. Committed values: ci [0.0, 4.5], frac_boot_diff_le_0 = 0.049, so the text is true today. 'at the price of later alerts' (paper.tex:432) rests on non-premature median lags of 5.0/5.5/6.0 d on the 0.5/1/2 d grids, and make_macros.py:128-150 has guards on premature rate and detection only, none on lag. Minor."
+  },
+  {
+   "id": "code7-05",
+   "severity": "minor",
+   "file": "validation/inference_benchmark.py",
+   "line": "15-18 (also paper/make_macros.py:547-549; paper/canonical_numbers.json:255)",
+   "claim": "'on an idle one the same script gives about 1,040/s, within 15% of the withdrawn 1,224/s'; make_macros: 'comes within 15% of it'",
+   "evidence": "The committed result is 1,015/s, 17.1% below 1,224. The canonical_numbers.json _inference_note, which was edited in this range, still says 1,224/s 'could not be reproduced ... (measured 359/s at 10 threads) and was withdrawn'. That contradicts the new record.",
+   "fix": "Quote 1,015/s and 'about 17% below', or drop the percentage. Update _inference_note (and its MANIFEST hash).",
+   "verdict": "real",
+   "verdict_note": "inference_benchmark_result.json gives events_per_sec = 1015, which is 17.1% below 1,224. The docstring (lines 15-17) says 'about 1,040/s, within 15%', and the make_macros.py comment (~547) says 'within 15%'. The paper does not print the percentage (grep), so this is confined to code comments and the docstring. paper/canonical_numbers.json was edited in this range (gap_matched block removed, _retired entry added), but _inference_note still says 1,224/s 'could not be reproduced ... (measured 359/s at 10 threads) and was withdrawn', which contradicts the new record that says 359/s was measured under load. Minor."
+  },
+  {
+   "id": "code7-06",
+   "severity": "minor",
+   "file": "pipeline/cache.py",
+   "line": "72-74",
+   "claim": "A shard without an attribute is 'dated by the commit that first wrote them' (disposition code6-11); the generic default is 'absent (shard written before 2026-09-11)'",
+   "evidence": "git log -S on pipeline/run_shard.py: espl_function was first written at 3703e43 (2026-09-12), and min_amplitude_mag and band_set at f2b4a21 (2026-09-12). A shard from 2026-09-11 therefore lacks them but is labelled 'written before 2026-09-11'. The fix corrected only the two legacy attributes.",
+   "fix": "Give espl_function, min_amplitude_mag and band_set their own dates (before 3703e43 / f2b4a21, 2026-09-12) in _ABSENT.",
+   "verdict": "real",
+   "verdict_note": "git log -S on pipeline/run_shard.py: onset_resolution_days, noise_mult, bkg_mult and regime_priors first appear at 580e172 (2026-09-11 16:48). espl_function first appears at 3703e43 (2026-09-12 01:55), and min_amplitude_mag and band_set at f2b4a21 (2026-09-12 08:55); git show confirms each is absent at the earlier commit. A shard written on 2026-09-11 after 580e172 lacks these three attributes but would be labelled 'absent (shard written before 2026-09-11)' by pipeline/cache.py:72. The code6-11 fix re-dated only the two legacy attributes. Minor."
+  },
+  {
+   "id": "code7-07",
+   "severity": "minor",
+   "file": "paper/make_gulls_macros.py",
+   "line": "510-527, 566-583",
+   "claim": "The RMDC26 stratum comparison (vs_inhouse Fisher tests and bootstrap) rests on the in-house strata",
+   "evidence": "cascade_gulls.py copies the in-house strata into inhouse_reference and computes vs_inhouse from validation/cascade_reproduce_result.json when --reduce runs. No guard checks that the copy still equals the current in-house artifact, so a rerun of cascade_reduce.py would leave stale Fisher/bootstrap numbers without failing. They agree today: I reran both reducers and they match the committed JSON exactly. There are also no unit tests for alert_times' new end-anchored stride, _vs_inhouse, or _empty_bin_frac (grep tests/ finds none).",
+   "fix": "In make_gulls_macros, check that CG['inhouse_reference'] strata equal cascade_reproduce_result.json['stratified'] (or compare a recorded input sha256). Add small unit tests for the three helpers.",
+   "verdict": "real",
+   "verdict_note": "validation/gulls/cascade_gulls.py:423-432 copies the in-house strata into inhouse_reference when --reduce runs. make_gulls_macros.py reads CG['inhouse_reference'] (lines 510, 527) and the vs_inhouse blocks, with no comparison against the current validation/cascade_reproduce_result.json['stratified'] and no input hash; reducer_sha256 hashes the code, not cascade_reproduce_result.json. Today the copy equals the artifact (checked by_mass_ratio == stratified.by_mass_ratio: True), so this is a latent drift risk. grep of tests/ finds no test that references alert_times, _vs_inhouse or _empty_bin_frac. Minor."
+  }
+ ],
+ "coverage": {
+  "docs7": {
+   "checked": [
+    "Exported 52e2d8c to a scratch folder (verify7/docs7_q9x) and ran make_figures.py, make_macros.py (453 macros), make_gulls_macros.py (735 macros) and render_draft.py there. gulls_macros.tex and draft_gulls_rendered.txt are byte-identical to the committed files. Also built the PDF: 30 pages, no undefined references.",
+    "docs/VERIFICATION_2026-09-12b.md regenerated with build_doc_2026_09_12b.py is byte-identical to the committed file. The third-addendum counts (36 findings: 2 major, 34 minor; 33 real, 2 partly, 1 refuted; 8 gaps, 3 major) match the sixth findings JSON.",
+    "CHANGELOG sixth-check entry against the macros and artifacts: grid 1.2%/88.7% and 1.0%/88.4%, was 1.6%/86.4%, lags 5.0/5.5/6.0 d; ablation 37/37 and 102/111 in window, 0 vs 32 and 9 vs 45, recomputed from the per-event lists in ablations_result.json; 1,015/s and the load record; regular arm 0.617/0.592/0.567 and empty bins 4/9/16% and >=60%; 26-30% up to dchi2=1e6, 14% above, 19% of wide detectable anomalies; Fisher p >= 0.36 (F146) and >= 0.62 (three bands); detection p = 0.035 and 0.35; lag-difference intervals 0 to 4.5 d and -0.5 to +2 d.",
+    "README, model_card, evaluation.md: wide-binary numbers (11%, 55%, 0.744/0.974, 0.602/0.913, 0.698/0.952); detectable sub-day 0.29/69%/35% (legacy tier) and 71%/37% (corrected); wide caustics 0.33 on 64 and the 27% deficit.",
+    "PROVENANCE: 64 against 87.5 expected (27%); 296/438 (32%); z = -2.88 (natural) and -2.52 (wide) against the |z| < 2.5 bound, recomputed from stress_rescore_local.json; every other checked tier has |z| < 1.5.",
+    "REVISION section 1.5 intro and row 10 against the vs_inhouse blocks of cascade_gulls.json, and row 6 (docs7-02).",
+    "canonical_numbers.json: the gap_matched block is removed and no code still reads it; the _retired note is accurate.",
+    "MANIFEST.json: all 44 recorded sha256 values match the files at 52e2d8c.",
+    "Sixth-check dispositions (dispositions_2026_09_14b.py), each against the paper, code, tests and docs diff: paper6-01 to 11, code6-01 to 12, docs6-01 to 13 and GAPS6 1-8. All landed as described except docs6-03 (wrong 35%). test_macros_fail_closed has 37 cases at 2133a41 and 45 at 52e2d8c, so the '37 cases' correction is right. The eight new cases and the test_validation_and_invariants cases cover every new directional guard; unguarded additions are only schema and consistency checks.",
+    "The edited entries of dispositions_2026_09_14.py (results-02, code-04, code-08) against the tests and code.",
+    "Baselines mixture claim: baselines.py draws NonPSPL for 40% forced plus 10% via CLASSES[s%6], so half the draws are binaries; 4.1% prevalence confirmed.",
+    "Whole-tree grep (docs, code, tests, notebooks, experimental) for 86.4 / costs detection, sparsity floor, 359/s, could not reproduce, opposite directions, flags almost every event, 22-30, every commit since July 21, a fifth of all events, |z| < 4.5, alerts come later, three verification passes. Outside dated verification records the only remaining live hits are docs7-03, docs7-04 and docs7-06. The 4.5 SE and 22-30% text survives only in the dated second-addendum dispositions, which were accurate for that round.",
+    "SUBMISSION_FIELDS: plain abstract equals the paper abstract with macros substituted (247 words); highlights consistent; page count 30 matches a fresh build."
+   ],
+   "not_checked": [
+    "Did not run pytest. Guard cases were read, not executed; the code slice covers that.",
+    "The generator-identity claim (same labels and parameters for a held-out shard at July 21, July 28 and September 13): needs regeneration at three commits.",
+    "test_stress_legacy's '159 fewer Flat / 137 more PSPL' figures without the switches: needs a generator run.",
+    "Did not rerun inference_benchmark.py or gap_matched_density.py. Whether a 1-minute load average of 2.0 on 10 cores counts as 'otherwise idle' is left to the paper and code slices.",
+    "The labelling-ablation per-event values and the stress suite's full-set column (Modal and S3 data, not used).",
+    "Rendered figures were not inspected visually.",
+    "The two data figures (lightcurve_gallery, cascade_evolution) in the scratch build were copied from the working directory rather than regenerated with make_data_figures.py."
+   ]
+  },
+  "paper7": {
+   "checked": [
+    "Rendered every changed sentence of paper.tex and draft_gulls_section.tex (2133a41..52e2d8c) with the macros regenerated in a git-archive copy. make_figures.py, make_macros.py and make_gulls_macros.py reproduce the committed figures_stats.json, paper_macros.tex and gulls_macros.tex byte for byte. The draft mirrors the paper's two RMDC26 changes exactly.",
+    "(2a) Policy table, recomputed independently from cascade_trace.npz (threshold 0.9042405486106873, F146, first-detectable onset): daily 1.2% [0.7,2.1] at 88.7%, lag +5.5; two-day 1.0% [0.5,1.8] at 88.4%, lag +6.0; 2- and 3-crossing rows 1.2%/86.1% and 1.0%/84.3%. All match. The old start-anchored grids give 1.6%/86.4% and 1.0%/83.0%, so the anchoring fix is real.",
+    "(2b) Ablation window counts 37/0, 111/9/102, 58/32, 82/45 recomputed from ablations_result.json. The generator rule was checked against pipeline/assemble.py and cascade_trace.npz (see paper7-02).",
+    "(2c) New figures_stats keys recomputed from paper/results/*.npy (test_idx rows, w = 1/clip(kp,1e-3,1)): wide miss rate 0.261-0.300 up to 1e6, 0.140 above, 19.1% of weight; miss_to_pspl 94.8%; low-q corner 7 cells, 0.514-0.914, Nd 35-130, median 0.974; calib 80.6%, 0.259, 0.041, 0.160, 0.986, 0.904; ECE decomposition.",
+    "(2d) RMDC26 stratum statistics: Fisher p for premature and detection (F146 and three-band) reproduced from the counts and my own in-house strata; the in-house per-event lag lists match cascade_trace.npz. Judged 'about as frequent', 'within counting noise', 'at the edge of resolution' and 'not resolved' fair; 'resolved' is questionable (paper7-04).",
+    "(2e) Reran gap_matched_density.py (identical to the artifact); added a full-cadence check and a paired uniform-vs-regular test.",
+    "(2f) Baselines mixture: the class draw in baselines.py gives exactly 50% NonPSPL generation, with no keep_prob subsampling; baseline_data.npz has 4.06% anomaly labels and 49% PSPL labels; 4.1% matches baselines_result.json.",
+    "Labelling-ablation wording: (1-0.102)/0.102 = 8.8 gives 'about 9'; 19.9% is of stored final-test rows and is half of 39.5%.",
+    "Throughput text against inference_benchmark_result.json (1,015/s, load 2.0 on 10 cores, spread 1.00-1.03 s) and its guard.",
+    "Removed guard: the 'slightly optimistic' single-lens guard still exists at make_gulls_macros.py:547.",
+    "tests/test_macros_fail_closed.py passes in the export (47 passed).",
+    "Data availability exception count (four) and the listed RMDC26 scripts exist."
+   ],
+   "not_checked": [
+    "The bootstrap median-lag-difference intervals themselves (0-4.5 d, -0.5 to +2 d): RMDC26 per-event lags are not distributed (they need the GULLS curve cache), so only the in-house side and the Fisher tests were recomputed.",
+    "The training-reproduction claim that the generator gave identical held-out shards at three commits (July 21, July 28, September 13), and the --legacy-oor-mix/--legacy-t0-pad statement (outside this slice; needs shard regeneration).",
+    "The inference benchmark was not rerun (the machine's load is currently about 2, from other processes).",
+    "The labelling-ablation per-event values (only aggregates are archived).",
+    "Rendered PDF layout and figure images were not inspected; text was read through macro substitution."
+   ]
+  },
+  "code7": {
+   "checked": [
+    "Reran validation/cascade_reduce.py in an exported copy (52e2d8c): output identical to committed cascade_reproduce_result.json (every key, including lags and reducer hash)",
+    "alert_times: 144 cuts, stride 2 -> 1..72 d (72 cuts), stride 4 -> 2..72 d (36); persistence is used only at stride 1; no event lacks an onset; stratum lag filter (finite & >=0) matches summarise's non-premature definition",
+    "Reran cascade_gulls.py --reduce with the local scan cache and meta cache (git describe stubbed): identical to committed cascade_gulls.json apart from the command string; reducer hashes match the 52e2d8c sources",
+    "_vs_inhouse: Fisher 2x2 orientation (two-sided, so orientation is irrelevant), bootstrap with replacement on non-premature lags on both sides, f146 vs by_mass_ratio and threeband vs by_mass_ratio_three_band, frozen threshold only; FROZEN equals metrics.json threshold; macros taken from REC=fspl5s_seasons_g08 (checked that 0.035/0.35 are that checkpoint's, not fspl5s_g08's)",
+    "Every RMDC26 stratum sentence vs the vs_inhouse numbers (premature Fisher p>=0.36, giant det p=0.035, Neptune det p=0.35, lag diffs 0.5 [-0.5,2] and 2 [0,4.5], three-band premature 3v1, 8v0 with p 0.62/1.0, stellar share 1.4%)",
+    "Reran gap_matched_density.py: arms, script sha and checkpoint sha reproduce the artifact; computed empty bins with the model's own bin_band; paired regular vs uniform and full-cadence recall",
+    "inference_benchmark.py recorded fields (load, code, checkpoint) and the idle guard; stress_rescore_local.py checkpoint-prefix check (meta.json stores 16 hex chars, so startswith is correct) and --from-archive refusal on the default path",
+    "Stress-tier z bound 2.5 against recomputed z for every tier (agreeing tiers max |z|=1.43; natural -2.88, widesep -2.52)",
+    "All new make_macros/make_gulls_macros guards read for direction and population; checked the ablation per-event counts (37/0, 111/9, 58/32, 82/45) and the labelling, baselines (50% generated binaries from the s%5/s%6 rule; 4.1% prevalence), calibration, wide-miss, low-q and miss-to-PSPL figures_stats values against the text",
+    "Full pytest in an exported copy: 139 passed, 4 skipped. Then in a git-initialised copy the 4 archive/referee tests passed, including test_stress_numbers_rederive_from_the_archive. Every new perturbation fragment names one guard; for the two fragments shared by two guards, the case fires the one it is named for",
+    "Float comparison in the archive test: rel 1e-9 is far below any one-event change (>=1e-6 relative), so it cannot hide a real difference; None/float mismatches fail loudly",
+    "test_stress_legacy platform branch (exact on Darwin arm64, +-3 elsewhere)",
+    "MANIFEST.json: all 44 hashes match the files; every --list-inputs entry of both generators is hashed except the generated figures_stats.json",
+    "paper/build.sh with PYTHON_BIN=python3: exit 0, 30 pages, regenerated gulls_macros.tex identical to committed. Final log has 3 'float is stuck' warnings (same count as an earlier build in the scratchpad) and a nameref warning; no undefined references",
+    "Git history of GEN_ATTRS first-write commits"
+   ],
+   "not_checked": [
+    "CI Linux behaviour of test_stress_legacy and the float-tolerance test",
+    "Visual inspection of the rendered PDF and the figures",
+    "draft_gulls_section.tex paragraph-by-paragraph mirroring, and the docs/VERIFICATION third addendum beyond the code dispositions (other slices)",
+    "Rerunning inference_benchmark.py (load-dependent; not rerun, to avoid measuring on a machine busy with other agents)",
+    "Recomputing the ablation with 0.5 d onsets (needs matched_traces or a rerun)",
+    "make_data_figures outputs beyond a successful build"
+   ]
+  }
+ },
+ "gaps": [
+  {
+   "target": "validation/cascade_reduce.py alert_times (stride anchored at season end), Table tab:policy daily/2-day rows and paper.tex l.429-432 'lowers the premature rate to 1.2% at almost unchanged detection (88.7%), and at two-day steps to 1.0% (88.4%), at the price of later alerts', with its make_macros guards",
+   "why": "No reviewer re-derived the table rows from the trace or checked the new slicing against the cut grid. They only examined the 'later alerts' guard wording.",
+   "result": "Checked and fine. The trace has 144 cuts (0.5 to 72 d), so stride 2 gives 1..72 and stride 4 gives 2..72, both ending at 72 d. Rerunning cascade_reduce.py on the committed trace into scratch reproduces cascade_reproduce_result.json exactly. Grid rows 0.5/1/2 d give premature 1.6/1.2/1.0%, detection 89.0/88.7/88.4% and median lag 5.0/5.5/6.0 d (the old rows were 1.6% at 86.4% and 1.0% at 83.0%). Both guards hold: 1.0 <= 1.2 < 1.6, and the largest detection change is 0.006, under 0.01. The persistence rows and the 0.5 d row are unchanged, which matches the MANIFEST note.",
+   "severity": "none"
+  },
+  {
+   "target": "paper.tex l.588-590 wide-binary miss rate '26-30% ... up to dchi2 = 1e6, and 14% above it (the strongest 19% of them)' (make_figures.py derived_prose_numbers); also '95% of them' (miss_to_pspl_pct)",
+   "why": "This was a new statistic and a new bin split, and no reviewer's summary covers it.",
+   "result": "Checked and fine. I recomputed from paper/results/*.npy on the frozen test rows, independently of make_figures.py. There are 4,733 wide detectable events and none has dchi2 < 160, so the bins lose nothing. Miss rates per bin are 0.261, 0.263, 0.265, 0.298 and 0.300 up to 1e6, then 0.183 for 1e6-1e7 and 0.066 above 1e7; 906 events lie above 1e6 (14.0% missed, 19.1% of wide detectable events). Argmax misses called PSPL: 94.8%. All wide events have weight 1, so weighting does not matter here.",
+   "severity": "none"
+  },
+  {
+   "target": "paper.tex l.728-731 low-q corner 'all 7 populated cells at log q < -4 lie below the median (0.51-0.91, with 35-130 effective detectable events each), the lowest at -5.5 < log q < -5' and its _needfs guard",
+   "why": "This was a new sentence and a new guard, and no reviewer's summary covers it.",
+   "result": "Numbers correct: I regenerated figures_stats.json at 52e2d8c and get eff_n_lowq_cells=7, lowq_hi=0.914 against a median of 0.974, Nd 35-130 against a populated median of 458, and a global minimum of 0.514 at [-5.5,-5]. One minor guard gap: the range's lower end is \\bmlEffMin, the plane-wide minimum, and no guard asserts that it lies in the log q < -4 corner (for example eff_cond_recall_min_logq_hi <= -4). If the minimum moved elsewhere, the quoted corner range and 'the lowest at' would go wrong silently. Fix: add that condition to the existing _needfs, or quote a corner-specific minimum (eff_cond_recall_lowq_lo).",
+   "severity": "minor"
+  },
+  {
+   "target": "paper.tex l.698-701 baselines mixture 'the script generates half of its events as binaries ... and subsamples nothing, so 4.1% of its events carry the anomaly label' (validation/baselines.py, bmlBasePrev guard)",
+   "why": "This was new descriptive text about the script, and no reviewer read baselines.py against it.",
+   "result": "Checked and fine. baselines.py l.97 picks 'NonPSPL' if s%5<2, else CLASSES[s%6]. Over one 30-seed period that gives 12 + 3 = 15 binaries, exactly half. It calls simulate_event directly, and simulate_event applies no keep_prob subsampling. baselines_result.json gives nonpspl_prevalence 0.041, which matches canonical_numbers and the macro. The docstring's new 'empty bins' rationale matches gap_matched_result.json: 400 random points fall below the 19.4/day arm, where 16% of bins are empty and uniform recall is 0.000.",
+   "severity": "none"
+  },
+  {
+   "target": "tests/test_stress_legacy.py docstring and tolerance ('without --legacy-t0-pad the shard has 159 fewer Flat and 137 more PSPL labels, without --legacy-oor-mix thousands more of each'; exact on macOS arm64, within 3 elsewhere) and disposition code6-03",
+   "why": "The docs reviewer listed this as not checked, since it needs a generator run.",
+   "result": "Checked and fine. I ran run_shard shard 0 of oor_pspl_shortte (seed base 931000000) in scratch. With both switches it reproduces JULY_SHORTTE_SHARD0 exactly on this arm64 Mac. Without --legacy-t0-pad: Flat 2278 (-159), PSPL 754 (+137), plus LPV +16 and PeriodicVar +10. Without --legacy-oor-mix: Flat 6090 and PSPL 4933 (thousands more). A tolerance of 3 per class therefore still pins both switches.",
+   "severity": "none"
+  },
+  {
+   "target": "In-house side of vs_inhouse (cascade_reduce strata n_detected/n_premature/lags_non_premature_days feeding cascade_gulls._vs_inhouse), Fisher p-values in paper l.1448-1454, and the stress agreement bound |z|<2.5 with its '|z| 2.9 natural, 2.5 wide-separation' rationale",
+   "why": "Reviewers could not check the RMDC26 side. The in-house inputs, the Fisher arithmetic and the z rationale were examined only against their own artifact.",
+   "result": "Checked and fine on the in-house side. The lag-list lengths equal n_detected - n_premature in every stratum (714/121/33 F146; 735/125/33 three-band), so non-premature (lag >= 0) is defined the same way on both sides. The three-band strata use the three-band alerts (a_multi). Recomputed Fisher p: giant detection 0.0351, Neptune 0.349, premature 1.0/0.364, three-band 0.623/1.0, all matching the artifact and the text. Label-fraction z from stress_rescore_local.json: natural NonPSPL -2.88 and wide-separation -2.52; the four agreeing tiers stay within |z| <= 1.43. Could not check: the RMDC26 per-event lags behind the bootstrap intervals (they need the GULLS curve cache). Also confirmed: the new stress_rescore checkpoint guard passes on the local eval dirs (recorded 897a9aec/4e7a5a85 match binml.pt and stage5), PROVENANCE's 64/88 = 27% and 296/438 = 32%, and the rebuilt VERIFICATION doc is byte-identical. Note: the working tree's paper_macros.tex and figures_stats.json (gitignored) are stale from Sep 13, so the build must be rerun before reading those local files.",
+   "severity": "none"
+  }
+ ]
+}

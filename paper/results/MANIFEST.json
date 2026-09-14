@@ -106,8 +106,8 @@
       "_note": "2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 30bd192b163e8a1e..."
     },
     "validation/gap_matched_result.json": {
-      "sha256": "20dd84148c6c711ad9d86f89405f59169b341255acdec6c402dfdd9d97c1bc5f",
-      "_note": "2026-09-14 (seventh check): full-cadence arm added (0.942); regenerated at e5cb41f, clean; other arms unchanged; previous sha 053eda43f7ef1470... | 2026-09-14 (sixth check): gap-free regular arm, empty-bin fractions, code and checkpoint recorded; uniform and nightly arms unchanged; previous sha ef11d729444b67fb..."
+      "sha256": "1cd0fc66ee9c5a8635c80067f044070ff7d0e31f7132e45ac478fcd56926f6bb",
+      "_note": "2026-09-14 (seventh check): empty bins counted with the model's own binning (nightly minimum 59%, was 60% with a float floor); regenerated at 4b04e10, clean; recalls unchanged; previous sha 20dd84148c6c711a... | 2026-09-14 (seventh check): full-cadence arm added (0.942); regenerated at e5cb41f, clean; other arms unchanged; previous sha 053eda43f7ef1470... | 2026-09-14 (sixth check): gap-free regular arm, empty-bin fractions, code and checkpoint recorded; uniform and nightly arms unchanged; previous sha ef11d729444b67fb..."
     },
     "validation/hardregime_result.json": {
       "sha256": "61e66cc5b2463853616aec65fd293533a7ed393d262aa1da60e969b3e78acd9f"
