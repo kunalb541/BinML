@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — length cut (2026-09-14)
+
+The revision had doubled the manuscript (7,900 to 15,200 words of prose; 25 to 32 pages): every verification round
+closed findings by adding hedges, disclosures and sensitivity prose and never removed any. Eight sections were
+rewritten to 8,300 words and 22 pages with every result, macro, table and figure kept: one statement of each result in
+the section that owns it, one hedge per result, provenance only in Data availability, and no restating of tables in
+prose. The RMDC26 section went from 3,600 to 1,600 words, Sec. limits from 3,150 to 1,180, Data availability from
+870 to 280. `paper/draft_gulls_section.tex` is no longer a block-by-block mirror of the paper; it stays as the
+long-form record behind `paper/REVISION.md`. Guards in the macro generators were left in place (they check the
+artifacts and the docs, not only the paper).
+
 ## Unreleased — seventh check and per-class probability figure (2026-09-14)
 
 - **New Figure (Sec. cascade): class probability at every half-day cut for a clear and a marginal event of each class,**
