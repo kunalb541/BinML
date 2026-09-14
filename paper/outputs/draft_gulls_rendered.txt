@@ -307,13 +307,13 @@ different pool, from the shipped weights). Generated from
            \colhead{R$_{11.7}$} & \colhead{mean} & \colhead{FA (w)} & \colhead{R$_{2.0}$ (w)} &
            \colhead{R$_{5.2}$ (w)} & \colhead{R$_{11.7}$ (w)} & \colhead{mean (w)}}
 \startdata
-seed range (three seeds) & 2.7 & 0.041 & 0.042 & 0.029 & 0.017 & 3.9 & 0.016 & 0.022 & 0.028 & 0.015 \\
-extra training (control $-$ gap aug.) & \textbf{-5.3} & \textbf{+0.059} & \textbf{+0.066} & +0.028 & +0.003 & \textbf{-4.9} & \textbf{+0.040} & \textbf{+0.038} & \textbf{+0.036} & +0.012 \\
+seed range & 2.7 & 0.041 & 0.042 & 0.029 & 0.017 & 3.9 & 0.016 & 0.022 & 0.028 & 0.015 \\
+training (control $-$ gap aug.) & \textbf{-5.3} & \textbf{+0.059} & \textbf{+0.066} & +0.028 & +0.003 & \textbf{-4.9} & \textbf{+0.040} & \textbf{+0.038} & \textbf{+0.036} & +0.012 \\
 finite source $-$ control & -1.5 & +0.021 & +0.030 & \textbf{+0.048} & \textbf{+0.049} & -1.0 & -0.015 & +0.010 & +0.012 & +0.015 \\
 measured pauses $-$ random gaps & \textbf{-2.7} & \textbf{+0.058} & \textbf{+0.072} & \textbf{+0.058} & \textbf{+0.046} & -0.9 & \textbf{+0.038} & \textbf{+0.048} & \textbf{+0.034} & \textbf{+0.028} \\
-recommended recipe, seed 1 $-$ finite source & +1.4 & +0.008 & +0.001 & -0.001 & -0.002 & +0.8 & \textbf{+0.024} & \textbf{+0.024} & +0.017 & \textbf{+0.016} \\
-recommended recipe, seed 2 $-$ finite source & -0.2 & -0.033 & -0.041 & \textbf{-0.030} & \textbf{-0.019} & -1.7 & +0.008 & +0.002 & -0.011 & +0.000 \\
-recommended recipe, seed 3 $-$ finite source & +2.5 & -0.032 & -0.032 & -0.019 & -0.010 & +2.2 & +0.012 & +0.002 & -0.004 & +0.007 \\
+rec.\ seed 1 $-$ finite source & +1.4 & +0.008 & +0.001 & -0.001 & -0.002 & +0.8 & \textbf{+0.024} & \textbf{+0.024} & +0.017 & \textbf{+0.016} \\
+rec.\ seed 2 $-$ finite source & -0.2 & -0.033 & -0.041 & \textbf{-0.030} & \textbf{-0.019} & -1.7 & +0.008 & +0.002 & -0.011 & +0.000 \\
+rec.\ seed 3 $-$ finite source & +2.5 & -0.032 & -0.032 & -0.019 & -0.010 & +2.2 & +0.012 & +0.002 & -0.004 & +0.007 \\
 
 \enddata
 \end{deluxetable*}
@@ -352,13 +352,13 @@ and a finite-source magnification without hand-off steps (\S\ref{sec:gulls:resul
            \colhead{R$_{5.2}$} & \colhead{R$_{11.7}$} & \colhead{R$_{5.2}$ (w)} &
            \colhead{$<0.03$} & \colhead{0.3--1} & \colhead{1--3} & \colhead{$> 3$}}
 \startdata
-shipped & 35.6 & 38.3 & 0.122 & 0.214 & 0.313 & 0.144 & 0.402 & 0.262 & 0.271 & 0.258 \\
-gap augmentation (g08e12) & 11.6 & 13.5 & 0.185 & 0.295 & 0.457 & 0.336 & 0.046 & 0.429 & 0.646 & 0.674 \\
-\quad + point-source control & 6.4 & 8.6 & 0.244 & 0.361 & 0.485 & 0.374 & 0.036 & 0.208 & 0.410 & 0.513 \\
-\quad + finite source & 4.8 & 7.6 & 0.265 & 0.390 & 0.533 & 0.383 & 0.031 & 0.154 & 0.280 & 0.288 \\
-\quad + finite source, pauses (rec.) & 6.3 & 8.4 & 0.273 & 0.391 & 0.531 & 0.407 & 0.033 & 0.224 & 0.330 & 0.333 \\
-\qquad same recipe, seed 2 & 4.7 & 5.8 & 0.232 & 0.349 & 0.503 & 0.386 & 0.021 & 0.213 & 0.332 & 0.303 \\
-\qquad same recipe, seed 3 & 7.3 & 9.7 & 0.233 & 0.358 & 0.514 & 0.385 & 0.034 & 0.276 & 0.414 & 0.375 \\
+shipped & 35.6 & 38.3 & 0.122 & 0.214 & 0.313 & 0.144 \\
+gap augmentation (g08e12) & 11.6 & 13.5 & 0.185 & 0.295 & 0.457 & 0.336 \\
+\quad + point-source control & 6.4 & 8.6 & 0.244 & 0.361 & 0.485 & 0.374 \\
+\quad + finite source & 4.8 & 7.6 & 0.265 & 0.390 & 0.533 & 0.383 \\
+\quad + finite source, pauses (rec.) & 6.3 & 8.4 & 0.273 & 0.391 & 0.531 & 0.407 \\
+\qquad same recipe, seed 2 & 4.7 & 5.8 & 0.232 & 0.349 & 0.503 & 0.386 \\
+\qquad same recipe, seed 3 & 7.3 & 9.7 & 0.233 & 0.358 & 0.514 & 0.385 \\
 % achieved single-lens false-alarm rate within 0.05 points of each budget
 
 \enddata

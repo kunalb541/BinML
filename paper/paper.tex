@@ -22,27 +22,24 @@
 \email{kunal29bhatia@gmail.com}
 
 \begin{abstract}
-The Nancy Grace \Rom{} Space Telescope will yield more microlensing light curves than anyone can
-inspect. We present \textbf{BinML}, a compact ($\bmlNparams$-parameter) network that sorts synthetic
-\Rom{}-like light curves into six classes, among them detectable binary-lens anomalies (\texttt{NonPSPL}),
-with labels conditioned on detectability thresholds and on the revealed part of the season. On
-complete 72-day seasons BinML recovers $\bmlCompletenessPct\%$ of detectable anomalies at purity
-$\bmlPurity$ in a held-out test set with a $\bmlPriorPiZero\%$ anomaly prevalence (purity
-$\bmlPurityOnePct$ at 1\%). Beyond the natural priors it flags
-$\bmlStressRelShortteSingleAlert$--$\bmlStressRelShortteCurSingleAlert\%$ of detectable sub-day single lenses and
-$\bmlStressRelFaintMlAlert\%$ of detectable faint microlensing events without an anomaly ($\bmlStressRelNatMlAlert\%$ in
-distribution). Revealed in half-day steps, $\bmlCascDetFrac\%$ of eligible
-binaries alert within the season, $\bmlCascPrematurePct\%$ before a truth-informed onset and the rest a median
-$\bmlCascMedianLagNonPrem$~days after it; scanning every class with all three bands gives
-$\bmlRefStreamAlertsDay$ alerts per 1,000 events per day, $\bmlRefStreamPurity\%$ of them detectable anomalies
-($\bmlRefStreamPurOne\%$ at 1\% prevalence). These are synthetic benchmarks (continuous 15-minute
-cadence, $0.02$~mag detectability floor), not yield forecasts. On RMDC26, an independent GULLS
-simulation of the survey, the shipped checkpoint flags $\bmlGullsFaShipped\%$ of single lenses as anomalous,
-mostly because our training seasons lack the survey's observing pauses. Fine-tuning with gap augmentation,
-finite-source single lenses and the measured pauses raises planetary recall at a $\bmlGullsBudgetMid\%$
-false-alarm budget from $\bmlGullsRecShipped$ to $\bmlSeedRecLo$--$\bmlSeedRecHi$ per simulated event across
-three seeds ($\bmlGullsRecWShipped$ to $\bmlSeedRecWLo$--$\bmlSeedRecWHi$ rate-weighted); RMDC26
-also guided the checkpoint choice, so these values are optimistic. Code, weights and artifacts are public.
+\Rom{}'s Galactic Bulge Time-Domain Survey will deliver tens of thousands of microlensing light curves at 15-minute
+cadence, whose planetary and binary anomalies must be found while the events are in progress. We present
+\textbf{BinML}, a $\bmlNparams$-parameter network that classifies partial \Rom{}-like light curves in three bands
+into six classes, among them detectable binary-lens anomalies. Two choices make the task well posed: labels are
+conditioned on an explicit detectability policy, so a binary whose perturbation no survey could claim is labelled a
+single lens, and on the revealed part of the season, so the label follows the cascade flat $\rightarrow$ single
+lens $\rightarrow$ anomaly as evidence arrives. On complete synthetic seasons BinML recovers
+$\bmlCompletenessPct\%$ of detectable anomalies at purity $\bmlPurity$. Revealed in
+half-day steps, it flags $\bmlCascDetFrac\%$ of eligible binaries within the season, only $\bmlCascPrematurePct\%$
+before the anomaly is detectable and the rest a median $\bmlCascMedianLagNonPrem$~days after it; a stream of every
+class yields $\bmlRefStreamAlertsDay$ alerts per 1,000 events per day, $\bmlRefStreamPurity\%$ of them detectable
+anomalies. On RMDC26, an independent GULLS simulation of the survey, the shipped model fails, flagging
+$\bmlGullsFaShipped\%$ of single lenses, because our training seasons lack the survey's F146 observing pauses.
+Fine-tuning on the measured pauses with finite-source single lenses brings that to $\bmlGullsFaCombined\%$ and
+raises planetary recall at a $\bmlGullsBudgetMid\%$ false-alarm budget from $\bmlGullsRecShipped$ to
+$\bmlSeedRecLo$--$\bmlSeedRecHi$ (three seeds). These are synthetic benchmarks at a $0.02$~mag detectability floor
+and $\bmlPriorPiZero\%$ anomaly prevalence, not yield forecasts. Code, weights and the artifact behind every number
+are public.
 \end{abstract}
 
 \keywords{Gravitational microlensing (672) --- Exoplanet detection methods (489) ---
@@ -845,7 +842,7 @@ largest-ratio bin to $\bmlGullsRhoHiFspl$, and raises planetary recall at the $\
 $\bmlGullsRecGapaware$ to $\bmlGullsRecFspl$. A control with the same pool shape, recipe and epochs but
 point-source single lenses separates the physics from the extra training: the training alone reaches
 $\bmlGullsFaCtrl\%$ and $\bmlGullsRecCtrl$, so in false alarms and at low budgets most of the gain is the extra
-training, while at higher budgets, in mean recall and in the two largest $\rho/|u_0|$ bins it is the physics (per
+training, while at higher budgets, in mean recall and in the two largest $\rho/|u_0|$ bins (Table~\ref{tab:rho}) it is the physics (per
 simulated event; weighted by event rate the physics resolves nothing beyond the false-alarm drop). Training on
 the measured per-season pauses instead of random gaps also transfers, under both weightings: on one pool it
 lowers false alarms from $\bmlGullsFaRandNorelabel\%$ to $\bmlGullsFaSeasons\%$ and raises recall at the budget
@@ -862,7 +859,8 @@ weighted by event rate it is ahead at every budget, by $\bmlDiffCombRecWMin$--$\
 it is better on our own held-out seasons with the pauses imposed (average precision $\bmlSidecarHeldAp$ against
 $\bmlFsplHeldAp$). Two further seeds of the recipe, trained after the choice (the last rows of the table), trail
 the finite-source checkpoint per event and tie it weighted, so RMDC26 does not separate the two recipes; the three
-seeds give the scale of the training noise behind every comparison here (Table~\ref{tab:seeds}): planetary recall
+seeds give the scale of the training noise behind every comparison here (Table~\ref{tab:seeds},
+Appendix~\ref{app:rmdc26}): planetary recall
 $\bmlSeedRecLo$--$\bmlSeedRecHi$ at the $\bmlGullsBudgetMid\%$ budget and false alarms
 $\bmlSeedFaLo$--$\bmlSeedFaHi\%$. We read a difference between single runs as unresolved when it is smaller than
 that range at the same budget and weighting. On that reading the measured pauses lead random gaps in both
@@ -874,36 +872,21 @@ $\bmlGullsColourGainLo$--$\bmlGullsColourGainHi$, but most of the gain is on eve
 $\bmlGullsColDetThree$ on those with one), so this is not evidence that the colour bands carry anomaly
 information across simulators.
 
-\begin{deluxetable*}{lcccccccccc}
-\tabletypesize{\scriptsize}
-\tablecaption{Differences between single training runs on RMDC26 against the spread of three seeds of the
-recommended recipe: FA is the change in single-lens false-alarm rate at the frozen threshold (points), R$_x$ the
-change in 1S2L recall at a single-lens budget of $x\%$, ``mean'' the change in mean recall over budgets up to
-30\%; (w) columns weight by event rate. The first row is the three-seed range; bold entries exceed it at the same
-budget and weighting. Generated from \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:seeds}}
-\tablehead{\colhead{comparison} & \colhead{FA} & \colhead{R$_{\bmlGullsBudgetLo}$} & \colhead{R$_{\bmlGullsBudgetMid}$} &
-           \colhead{R$_{\bmlGullsBudgetHi}$} & \colhead{mean} & \colhead{FA (w)} & \colhead{R$_{\bmlGullsBudgetLo}$ (w)} &
-           \colhead{R$_{\bmlGullsBudgetMid}$ (w)} & \colhead{R$_{\bmlGullsBudgetHi}$ (w)} & \colhead{mean (w)}}
-\startdata
-\input{outputs/gulls_seed_table.tex}
-\enddata
-\end{deluxetable*}
 
-\begin{deluxetable*}{lcccccccccc}
-\tabletypesize{\scriptsize}
+\begin{deluxetable*}{lcccccc}
 \tablecaption{Cross-simulator transfer on $\bmlGullsN$ RMDC26 events ($\bmlGullsNSingle$ 1S1L, $\bmlGullsNPlanet$
 1S2L, $\bmlGullsNPlanetBin$ 2S2L), identical inputs for every row. FA: percentage of single lenses over the frozen
 threshold $\bmlThreshold$. R$_x$: 1S2L recall at the threshold that yields a single-lens false-alarm rate of $x\%$
 on this population (the $\bmlGullsBudgetMid\%$ and $\bmlGullsBudgetHi\%$ budgets are the frozen-threshold rates of
 two earlier checkpoints, chosen after seeing the results). Columns marked (w) weight each event by its RMDC26 event
-rate (effective sample sizes $\bmlGullsNeffSingle$ single lenses, $\bmlGullsNeffPlanet$ 1S2L). The last four
-columns are the false-alarm rate in four bins of $\rho/|u_0|$. Rows below gap augmentation add 12 epochs from it
-with point-source single lenses (control), finite-source single lenses, and finite sources plus the measured
-pauses (recommended); the last two rows repeat the recommended recipe with two other seeds, trained after the
-choice. One seed each otherwise. Generated from \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:gulls}}
+rate (effective sample sizes $\bmlGullsNeffSingle$ single lenses, $\bmlGullsNeffPlanet$ 1S2L). Rows below gap
+augmentation add 12 epochs from it with point-source single lenses (control), finite-source single lenses, and
+finite sources plus the measured pauses (recommended); the last two rows repeat the recommended recipe with two
+other seeds, trained after the choice. One seed each otherwise. The false-alarm rate by source size and the
+seed spread are in Appendix~\ref{app:rmdc26}. Generated from
+\code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:gulls}}
 \tablehead{\colhead{checkpoint} & \colhead{FA} & \colhead{FA (w)} & \colhead{R$_{\bmlGullsBudgetLo}$} &
-           \colhead{R$_{\bmlGullsBudgetMid}$} & \colhead{R$_{\bmlGullsBudgetHi}$} & \colhead{R$_{\bmlGullsBudgetMid}$ (w)} &
-           \colhead{$<0.03$} & \colhead{0.3--1} & \colhead{1--3} & \colhead{$> 3$}}
+           \colhead{R$_{\bmlGullsBudgetMid}$} & \colhead{R$_{\bmlGullsBudgetHi}$} & \colhead{R$_{\bmlGullsBudgetMid}$ (w)}}
 \startdata
 \input{outputs/gulls_transfer_table.tex}
 \enddata
@@ -1153,6 +1136,39 @@ $5\times10^{-5}$ (colour calibration) and $10^{-4}$ (RMDC26). Every stage was tr
 augmentation and the validation pass; the $\bmlTrainStages$ stages took about $\bmlTrainHoursTypical$~hours
 ($\bmlTrainHours$ including one epoch stretched by a system sleep). The compactness of the network is what keeps
 training and survey-scale inference within reach of a single workstation.
+
+
+\section{Training-seed spread and source-size dependence on RMDC26}\label{app:rmdc26}
+
+Table~\ref{tab:rho} gives the single-lens false-alarm rate of every checkpoint of Table~\ref{tab:gulls} in six bins
+of $\rho/|u_0|$, the ratio of source radius to impact parameter, which the finite-source fine-tunes of
+\S\ref{sec:gulls:results} were designed to lower; Table~\ref{tab:seeds} gives the spread of three training seeds of
+the recommended recipe, against which every difference between single runs in \S\ref{sec:gulls} is read.
+
+\begin{deluxetable*}{lcccccc}
+\tablecaption{Single-lens false-alarm rate at the frozen threshold by $\rho/|u_0|$ bin, per simulated event, for the
+checkpoints of Table~\ref{tab:gulls}. Generated from \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:rho}}
+\tablehead{\colhead{checkpoint} & \colhead{$<0.03$} & \colhead{0.03--0.1} & \colhead{0.1--0.3} & \colhead{0.3--1} &
+           \colhead{1--3} & \colhead{$> 3$}}
+\startdata
+\input{outputs/gulls_rho_table.tex}
+\enddata
+\end{deluxetable*}
+
+\begin{deluxetable*}{lcccccccccc}
+\tabletypesize{\scriptsize}
+\tablecaption{Differences between single training runs on RMDC26 against the spread of three seeds of the
+recommended recipe: FA is the change in single-lens false-alarm rate at the frozen threshold (points), R$_x$ the
+change in 1S2L recall at a single-lens budget of $x\%$, ``mean'' the change in mean recall over budgets up to
+30\%; (w) columns weight by event rate; ``rec.'' is the recommended recipe. The first row is the range over its
+three seeds; bold entries exceed it at the same budget and weighting. Generated from \code{validation/gulls/transfer\_tradeoff\_all.json}.\label{tab:seeds}}
+\tablehead{\colhead{comparison} & \colhead{FA} & \colhead{R$_{\bmlGullsBudgetLo}$} & \colhead{R$_{\bmlGullsBudgetMid}$} &
+           \colhead{R$_{\bmlGullsBudgetHi}$} & \colhead{mean} & \colhead{FA (w)} & \colhead{R$_{\bmlGullsBudgetLo}$ (w)} &
+           \colhead{R$_{\bmlGullsBudgetMid}$ (w)} & \colhead{R$_{\bmlGullsBudgetHi}$ (w)} & \colhead{mean (w)}}
+\startdata
+\input{outputs/gulls_seed_table.tex}
+\enddata
+\end{deluxetable*}
 
 \bibliographystyle{aasjournalv7}
 \bibliography{refs}

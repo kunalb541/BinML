@@ -14,7 +14,7 @@ import pytest
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTS = ("paper/gulls_macros.tex", "paper/outputs/gulls_transfer_table.tex", "paper/outputs/gulls_gap_table.tex",
-        "paper/outputs/gulls_seed_table.tex")
+        "paper/outputs/gulls_seed_table.tex", "paper/outputs/gulls_rho_table.tex")
 
 
 def _tree(tmp):

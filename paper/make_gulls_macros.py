@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""RMDC26 / follow-up artifacts -> gulls_macros.tex + outputs/gulls_{transfer,gap}_table.tex.
+"""RMDC26 / follow-up artifacts -> gulls_macros.tex + outputs/gulls_{transfer,rho,gap,seed}_table.tex.
 
 Every number in paper/draft_gulls_section.tex is a \\bmlGulls* / \\bmlGap* / \\bmlSidecar* macro defined
 here from a committed artifact, rounded ONCE from exact counts where the artifact has them, so the text
@@ -275,18 +275,23 @@ if T:
         cmd("bmlSeedSpreadLo", three(min(d_))); cmd("bmlSeedSpreadHi", three(max(d_)))
     elif not ALLOW:
         raise SystemExit("FATAL: sched_rand missing from transfer_tradeoff_all.json (seed-spread estimate)")
-    lines = []
+    lines, rho_lines = [], []
     for m, label in ROWS:
         if not need(m in M, f"table row {m} missing"):
             continue
         b = M[m]["fa_1S1L_by_rho_over_u0"]; W_ = M[m]["weighted"]
         wat = next(a for a in W_["recall_at_matched_fa"] if abs(a["fa_target"] - mid) < 1e-9)
         cells = ([pct(fa(m)), pct(W_["frozen_threshold"]["fa_1S1L"])] + [three(rec(m, t)) for t in (budgets[0], mid, budgets[3])]
-                 + [three(wat["recall_1S2L"])] + [three(x["k"] / x["n"]) for x in (b[0], b[3], b[4], b[5])])
+                 + [three(wat["recall_1S2L"])])
         lines.append(label + " & " + " & ".join(cells) + " \\\\")
+        # the single-lens false-alarm rate by rho/|u0| bin: its own table in the appendix (all six bins), so that the
+        # transfer table fits upright in the body
+        need(len(b) == 6 and all(x["n"] > 0 for x in b), f"{m}: expected six populated rho/|u0| bins")
+        rho_lines.append(label + " & " + " & ".join(three(x["k"] / x["n"]) for x in b) + " \\\\")
     ach = {t: max(abs(at(m, t)["fa_achieved_exact"] - t) for m, _ in ROWS if m in M) for t in (budgets[0], mid, budgets[3])}
     lines.append(f"% achieved single-lens false-alarm rate within {100 * max(ach.values()):.2f} points of each budget")
     TABLES["gulls_transfer_table.tex"] = "\n".join(lines) + "\n"
+    TABLES["gulls_rho_table.tex"] = "\n".join(rho_lines) + "\n"
     cmd("bmlGullsBudgetSlack", f"{100 * max(ach.values()):.2f}")
     achw = max(abs(next(a for a in M[m]["weighted"]["recall_at_matched_fa"] if abs(a["fa_target"] - mid) < 1e-9)["fa"] - mid) for m, _ in ROWS if m in M)
     cmd("bmlGullsBudgetSlackW", f"{100 * achw:.2f}")
@@ -786,12 +791,12 @@ if need(T and all(m in T["models"] for m in SEEDS), f"seed replicates {SEEDS} mi
     V = {m: row(m) for m in SEEDS + ["ft_g08e12", "pspl5s_ctrl_g08", R3, "sched_rand_norelabel", "sched_sched_seasons"]}
     RNG = [max(V[m][i] for m in SEEDS) - min(V[m][i] for m in SEEDS) for i in range(10)]
     D = lambda a_, b_: [V[a_][i] - V[b_][i] for i in range(10)]
-    COMP = [("extra training (control $-$ gap aug.)", "pspl5s_ctrl_g08", "ft_g08e12"),
+    COMP = [("training (control $-$ gap aug.)", "pspl5s_ctrl_g08", "ft_g08e12"),
             ("finite source $-$ control", R3, "pspl5s_ctrl_g08"),
             ("measured pauses $-$ random gaps", "sched_sched_seasons", "sched_rand_norelabel")] + \
-           [(f"recommended recipe, seed {k + 1} $-$ finite source", m, R3) for k, m in enumerate(SEEDS)]
+           [(f"rec.\\ seed {k + 1} $-$ finite source", m, R3) for k, m in enumerate(SEEDS)]
     fmt = lambda i, v: (f"{v:+.1f}" if i in (0, 5) else f"{v:+.3f}")
-    lines = ["seed range (three seeds) & " + " & ".join((f"{v:.1f}" if i in (0, 5) else f"{v:.3f}") for i, v in enumerate(RNG)) + " \\\\"]
+    lines = ["seed range & " + " & ".join((f"{v:.1f}" if i in (0, 5) else f"{v:.3f}") for i, v in enumerate(RNG)) + " \\\\"]
     for lab_, a_, b_ in COMP:
         d = D(a_, b_)
         lines.append(lab_ + " & " + " & ".join(("\\textbf{%s}" % fmt(i, v)) if abs(v) > RNG[i] else fmt(i, v) for i, v in enumerate(d)) + " \\\\")

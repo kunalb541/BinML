@@ -98,7 +98,7 @@ jobs:
         working-directory: ${{ runner.temp }}/clean/paper
         run: |
           python render_draft.py
-          for f in gulls_macros.tex outputs/gulls_transfer_table.tex outputs/gulls_gap_table.tex outputs/gulls_seed_table.tex outputs/draft_gulls_rendered.txt; do
+          for f in gulls_macros.tex outputs/gulls_transfer_table.tex outputs/gulls_rho_table.tex outputs/gulls_gap_table.tex outputs/gulls_seed_table.tex outputs/draft_gulls_rendered.txt; do
             cmp "$f" "$GITHUB_WORKSPACE/paper/$f" || { echo "regenerated paper/$f differs from the committed file"; exit 1; }
           done
 
