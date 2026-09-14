@@ -353,8 +353,9 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
     perturbed(lambda d: sub(d, "oor_flat_faint").update(pspl_label_above_frozen_w=sub(d, "natural")["pspl_label_above_frozen_w"]),
               "rises' well above")
     perturbed(lambda d: d["quoted"]["natural_macro_f1"].update(subset_released=0.8), "reproduces' its held-out macro-F1")
-    perturbed(lambda d: sub(d, "oor_flat_faint")["true_class_fractions_w"].update(NonPSPL=0.6),
-              "set 'mostly' by its class mix")
+    perturbed(lambda d: d["precision_counterfactual"]["released"].update(faint_at_natural_mix=0.7),
+              "faint photometry, not the sweep's class mix")
+    perturbed(lambda d: d["suite_label_fractions"]["oor_pspl_shortte"].update(PSPL=0.30), "oor_pspl_shortte tier's PSPL fraction differs")
     perturbed(lambda d: d["precision_at_natural_prevalence"]["planetary"].update(released=0.1), "only through prevalence")
     stress.write_text(stress_text)
     assert run().returncode == 0
@@ -570,3 +571,18 @@ def test_referee_round_archive_is_committed_and_matches_its_hashes():
         path = f"{rr['dir']}/{name}"
         assert path in tracked, f"{path} is not committed"
         assert hashlib.sha256(open(os.path.join(REPO, path), "rb").read()).hexdigest() == sha, path
+
+
+def test_stress_numbers_rederive_from_the_archive(tmp_path):
+    """Every number of validation/stress_rescore_local.json recomputes from validation/stress_rescore_archive/ alone
+    (fifth verification: the per-event evaluations had lived only in a local work directory)."""
+    import subprocess
+    out = tmp_path / "stress.json"
+    r = subprocess.run([sys.executable, "validation/stress_rescore_local.py", "--from-archive", "--out", str(out)],
+                       cwd=REPO, capture_output=True, text=True, env=dict(os.environ, PYTHONPATH=REPO))
+    assert r.returncode == 0, r.stdout + r.stderr
+    committed = json.load(open(os.path.join(REPO, "validation", "stress_rescore_local.json")))
+    rebuilt = json.load(open(out))
+    for k in ("subset", "quoted", "single_lens_recall", "precision_at_natural_prevalence", "precision_counterfactual",
+              "suite_label_fractions"):
+        assert rebuilt[k] == committed[k], k

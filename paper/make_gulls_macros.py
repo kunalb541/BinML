@@ -362,15 +362,16 @@ if SD and need(REC in SD["models"], f"transfer_subday.json lacks {REC}"):
     pv = [SD["models"][k]["argmax_distribution"].get("PeriodicVar", 0) for k in SD["models"]]
     cmd("bmlGullsSubdayPerLo", pct0(min(pv))); cmd("bmlGullsSubdayPerHi", pct0(max(pv)))
     ad_ = m5["argmax_distribution"]; cmd("bmlGullsSubdayMl", pct0(ad_.get("NonPSPL", 0) + ad_.get("PSPL", 0)))
-    # the RELEASED model on RMDC26's sub-day single lenses at the timescales of our own sweep (0.2-1 d): the in-house
-    # failure (validation/stress_rescore_local.json) does not carry over, so timescale alone does not explain it
+    # the RELEASED model on RMDC26's sub-day single lenses at 0.25-1 d, against our own corrected sweep at the same
+    # timescales (validation/stress_rescore_local.json): the in-house failure does not carry over, so timescale alone
+    # does not explain it
     sh = [b for b in SD["models"]["shipped"]["fa_frozen_by_te"] if b["te_bin"][0] >= 0.25 - 1e-9]
     n_sh = sum(b["n"] for b in sh); fa_sh = sum(b["fa"] * b["n"] for b in sh) / n_sh
     cmd("bmlGullsSubdayShippedMatchedN", str(n_sh)); cmd("bmlGullsSubdayShippedMatchedFa", pct(fa_sh))
     _srl = load(os.path.join(os.pardir, "stress_rescore_local.json"))
     if _srl:
-        _in = _srl["subset"]["oor_pspl_shortte"]["released"]["pspl_label_by_generator_class"]["single_lenses"]["frac_above_frozen_threshold"]
-        need(fa_sh < _in / 3, "RMDC26's 0.25-1 d single lenses no longer cross the threshold far less often than our sweep's")
+        _in = _srl["subset"]["oor_pspl_shortte_current"]["released"]["single_lens_above_frozen_tE_0p25_1"]["frac"]
+        need(fa_sh < _in / 3, "RMDC26's 0.25-1 d single lenses no longer cross the threshold far less often than our sweep's at 0.25-1 d")
     need(SD["te_days"]["median"] < 0.2, "RMDC26's sub-day single lenses are no longer mostly shorter than 0.2 d")
     need(m5["fa_at"]["frozen"]["fa"] < fa(REC) and m5["fa_at"]["frozen"]["fa_weighted"] < M[REC]["weighted"]["frozen_threshold"]["fa_1S1L"],
          "sub-day single lenses are no longer flagged less often than in-support ones (both weightings)")

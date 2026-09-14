@@ -119,7 +119,7 @@ distributions, KS $p \sim 10^{\bmlGullsQksExp}$), the source is flagged binary i
 of scored 2S2L events, and both planetary classes are pre-selected by GULLS' own detection statistic
 ($\bmlGullsDetCut$ or more for every such event). RMDC26 ships no pure binary-source class, so the
 \citet{Gaudi1998} degeneracy of \S\ref{sec:sims} remains untested, and a \texttt{NonPSPL} call on a 2S2L
-event may respond to its second source rather than its planet. RMDC26's anomalies are all planetary,
+event may respond to its second source rather than its planet. RMDC26's anomalies are planetary (only $\bmlCgRmStellarFrac\%$ of the eligible ones have $q > 10^{-2}$),
 whereas $\bmlDetStellarPct\%$ of the detectable anomalies of our test set are
 stellar-mass-ratio binaries (median $q = \bmlDetQmed$), so transfer recall is not comparable to
 the in-distribution completeness of \S\ref{sec:results}.
@@ -432,16 +432,16 @@ selected on the model's output.
 
 Premature alerts stay rare: $\bmlCgPrem\%$ of the eligible events are flagged before the onset (95\%
 interval $\bmlCgPremLo$--$\bmlCgPremHi\%$). We compare stratum by stratum with the in-house scan (shipped
-model, our simulator), split by the same planet mass ratios. For giant planets ($10^{-3} < q \le 10^{-2}$;
+model, our simulator), split by the same planet mass ratios. For high planet-like mass ratios ($10^{-3} < q \le 10^{-2}$;
 $\bmlCgRmGiantN$ RMDC26 events against $\bmlCgInGiantN$ in-house) premature alerts are $\bmlCgRmGiantPrem\%$
 against $\bmlCgInGiantPrem\%$, the median lag of the other alerts is $\bmlCgRmGiantLag$~d against
 $\bmlCgInGiantLag$~d, and $\bmlCgRmGiantDet\%$ against $\bmlCgInGiantDet\%$ are flagged by the end of the
-season; for Neptunes ($10^{-4} < q \le 10^{-3}$; $\bmlCgRmNeptuneN$ against $\bmlCgInNeptuneN$) the figures are
+season; for intermediate ratios ($10^{-4} < q \le 10^{-3}$; $\bmlCgRmNeptuneN$ against $\bmlCgInNeptuneN$) the figures are
 $\bmlCgRmNeptunePrem\%$ against $\bmlCgInNeptunePrem\%$, $\bmlCgRmNeptuneLag$ against $\bmlCgInNeptuneLag$~d,
 and $\bmlCgRmNeptuneDet\%$ against $\bmlCgInNeptuneDet\%$. The in-house strata are small, so only some of these
 differences are resolved: premature alerts are about as frequent ($\bmlCgRmGiantPremK$ of $\bmlCgRmGiantN$ against $\bmlCgInGiantPremK$ of
 $\bmlCgInGiantN$, and $\bmlCgRmNeptunePremK$ of $\bmlCgRmNeptuneN$ against $\bmlCgInNeptunePremK$ of $\bmlCgInNeptuneN$); detection pooled over the two strata is lower
-($\bmlCgRmPoolDet\%$ against $\bmlCgInPoolDet\%$); Neptune alerts come later, while the giant-planet lags differ by
+($\bmlCgRmPoolDet\%$ against $\bmlCgInPoolDet\%$); at intermediate ratios alerts come later, while at high ratios the lags differ by
 one half-day step (a different checkpoint on a different simulator, so the differences mix the two). $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
 scan barely samples ($\bmlCgInLowmassN$ events); there detection falls to $\bmlCgRmLowmassDet\%$ (the remaining
 $\bmlCgRmStellarFrac\%$ have $q > 10^{-2}$). Over all
@@ -449,7 +449,7 @@ $\bmlCgElig$ eligible events $\bmlCgDet\%$ ($\bmlCgDetLo$--$\bmlCgDetHi\%$) are 
 in line with the full-season recall on claimable anomalies ($\bmlGullsRecDetPlanet$ and
 $\bmlGullsRecDetPlanetBin$, \S\ref{sec:gulls:labels}), and the median lag is $\bmlCgLag$~d. Revealing all three
 bands lowers premature alerts to $\bmlCgPremThree\%$, lengthens the lag to $\bmlCgLagThree$~d and lowers detection
-to $\bmlCgDetThree\%$; with three bands the in-house giant and Neptune strata flag $\bmlCgInGiantDetThree\%$ and
+to $\bmlCgDetThree\%$; with three bands the two in-house strata flag $\bmlCgInGiantDetThree\%$ and
 $\bmlCgInNeptuneDetThree\%$ ($\bmlCgInGiantPremThree\%$ and $\bmlCgInNeptunePremThree\%$ premature), against
 $\bmlCgRmGiantDetThree\%$ and $\bmlCgRmNeptuneDetThree\%$ on RMDC26, whose premature rates are the higher ones there
 ($\bmlCgRmGiantPremThreeK$ against $\bmlCgInGiantPremThreeK$ and $\bmlCgRmNeptunePremThreeK$ against
@@ -501,7 +501,8 @@ $\bmlGullsSubdayMl\%$ read as microlensing of either kind. They are mostly short
 own sweep (median $t_{\rm E}$ $\bmlGullsSubdayTe$~d), but timescale alone does not explain why that sweep fails
 (\S\ref{sec:limits}): at $0.25$--$1$~d the released model sends $\bmlGullsSubdayShippedMatchedFa\%$ of RMDC26's
 single lenses ($\bmlGullsSubdayShippedMatchedN$) above its frozen threshold, against
-$\bmlStressRelShortteSingleAlert\%$ in our sweep, whose schedule, source brightness and blending all differ; a model for free-floating planets needs sub-day timescales in its prior, not a
+$\bmlStressShortteCurMatchedAlert\%$ of the detectable ones in our corrected sweep at the same timescales (the two simulations
+differ in schedule, source brightness and blending); a model for free-floating planets needs sub-day timescales in its prior, not a
 threshold change.
 
 % ---------------------------------------------------------------- [D] Discussion paragraph

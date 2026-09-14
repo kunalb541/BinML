@@ -95,15 +95,16 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   of argmax misses on the final test; argmax recall 0.744 against 0.974 elsewhere (completeness at the operating
   threshold 0.602 against 0.913). The weakness is at q >= 0.1 (recall 0.698, against 0.952 at smaller q). At
   smaller separations the misses concentrate at weak anomalies near the detectability floor.
-- **Faint sources (m = 25-27.5):** noise-dominated; among microlensing events without a detectable anomaly the
-  false-anomaly rate rises from 3.3% to 26% (0.9% to 12% above the operating threshold). The sweep's NonPSPL
-  precision (0.026) is set mostly by its class mix (4% binaries by weight); at the natural prevalence the same rates
-  would give 0.44.
+- **Faint sources (m = 25-27.5):** noise-dominated; among detectable microlensing events without an anomaly the
+  false-anomaly rate rises from 3.3% to 26% (0.85% to 12% above the operating threshold). The sweep's NonPSPL
+  precision (0.026) falls mostly through faint photometry: at the natural class mix the same events give 0.15
+  (natural 0.73), while the natural population at the sweep's flat-heavy mix would give 0.64.
 - **Sub-day single lenses (tE 0.2-1 d):** only 0.29 of the detectable ones are classified PSPL; 69% are called
   anomalies (35% above the operating threshold; 71% and 37% with the corrected peak-time draw). The suite's
   per-label 0.52 mixed in demoted binaries (43% of the weighted PSPL labels). Stage 6 had trained on tE down to 0.3 d.
 - **Wide caustics (s = 5-12):** anomaly recall 0.33 on the 64 detectable ones in the regenerated subset (stage 5:
-  0.28 on the same events).
+  0.28 on the same events); the regenerated sweep labels 27% fewer detectable anomalies than the suite, so this
+  is a somewhat different detectable population.
 - **Cadence:** trained on a legacy one-season Roman-like schedule; not validated on the current
   multi-season survey design or sparse ground-survey sampling.
 - **Oracle baseline:** evaluation supplies the true simulated baseline magnitude; performance with

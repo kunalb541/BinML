@@ -304,8 +304,9 @@ for _t in ("oor_pspl_shortte", "oor_pspl_shortte_current"):
 _rn, _rf = _sub["natural"]["released"], _sub["oor_flat_faint"]["released"]
 _need(_rf["pspl_label_false_anomaly_w"] > 3 * _rn["pspl_label_false_anomaly_w"] and _rf["pspl_label_above_frozen_w"] > 5 * _rn["pspl_label_above_frozen_w"],
       "the false-anomaly rate among faint microlensing events 'rises' well above the natural population's")
-_need(_sub["oor_pspl_shortte"]["released"]["pspl_label_by_generator_class"]["single_lenses"]["frac_above_frozen_threshold"] > 5 * _rn["pspl_label_above_frozen_w"],
-      "sub-day single lenses cross the threshold far more often than natural microlensing events")
+for _t in ("oor_pspl_shortte", "oor_pspl_shortte_current"):
+    _need(_sub[_t]["released"]["pspl_label_by_generator_class"]["single_lenses"]["frac_above_frozen_threshold"] > 5 * _rn["pspl_label_above_frozen_w"],
+          f"{_t}: sub-day single lenses cross the threshold far more often than natural microlensing events")
 _need(_srl["subset"]["oor_flat_faint"]["released"]["nonpspl_rates"]["prevalence_w"] < 0.1 * _srl["subset"]["natural"]["released"]["nonpspl_rates"]["prevalence_w"],
       "the faint tier's anomaly prevalence is far below the natural one")
 _need(_pn["planetary"]["released"] >= _rel("natural_np_prec"), "low-q precision falls 'only through prevalence'")

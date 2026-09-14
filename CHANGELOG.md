@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased — fifth verification (2026-09-14)
+
+Six verifiers, their adversarial checkers and a completeness critic checked the fourth round's fixes (record: the
+second addendum of `docs/VERIFICATION_2026-09-12b.md`). What changed:
+- **Sec. results, where the misses sit, corrected again.** The fourth round's "not concentrated at the weakest
+  anomalies" was wrong: there are two sources. Wide binaries (s > 2.9, 11% of detectable anomalies, 56% of the
+  NonPSPL-to-PSPL confusions) are missed 22-30% of the time at every evidence strength, almost all at q >= 0.1; at
+  smaller separations the misses concentrate at weak anomalies (dchi2 < 2000: 19% of those anomalies, 56% of their
+  misses). The labelling-surgery numbers are now derived on the final test (stored and weighted: 37.4% of stored
+  generated binaries keep an anomaly, 8.2% of all generated ones); the false-positive diagnostic is 94.4% (was 94.7%,
+  the whole pool's any-label share). New guards, each with a perturbation test.
+- **Faint-sweep precision re-attributed.** Faint photometry, not the sweep's class mix, drives the fall (0.15 at the
+  natural class mix against 0.73; the natural population at the sweep's mix 0.64); the 0.44 prior shift is no longer
+  quoted. The regenerated wide-separation sweep labels 27% fewer detectable anomalies than the suite (disclosed; the
+  other tiers are checked to agree). The stress numbers now re-derive from an archive of their per-event inputs
+  (`validation/stress_rescore_archive/`, `--from-archive`, tested); the legacy switches are pinned against the July
+  shard; tier stamps can no longer be invented.
+- **RMDC26 cascade:** the burden's optimism compared like for like (F146 alone: 4.8% vs 5.8%, not vs the three-band
+  6.3%); the stratum comparison states counts and what is resolved (pooled detection 68% vs 85%; premature counts
+  2 of 149 vs 2 of 138 and 21 of 826 vs 2 of 48; RMDC26 higher with three bands); strata named by mass ratio; 1% of
+  RMDC26's eligible anomalies have q > 1e-2; the artifact records its code.
+- **Appendix and Data availability:** the cause of non-identical regeneration is the unpinned cloud environment, not
+  code (the generator gives the same shards at every commit since July 21); the v5 fleet's region and instance size
+  sourced from its launch scripts; class-balanced loss stated; throughput and hours on one basis (22 h including a
+  stretched epoch, about 17 without); training-configuration values exempted from the "every number" statement; the
+  three RMDC26 and the referee-overlap exceptions named.
+- **Abstract** cut to 247 words (Astronomy and Computing's limit is 250). **F087/F213 constants** checked against
+  Roman's published tables (2024-03-01 zeropoints, 2024-06-03 thermal backgrounds): the audited values match; the
+  F087 saturation offset is 1.3 mag, not 1.2.
+
 ## Unreleased — fourth verification of the final state (2026-09-13)
 
 Six verifiers, six adversarial checkers and a completeness critic checked the state after the third round's fixes
@@ -9,7 +39,8 @@ Six verifiers, six adversarial checkers and a completeness critic checked the st
   long-period and sub-day tiers were regenerated with it (the corrected sub-day tier is kept as a second row). The
   subset is a new realisation of the suite's populations, not its events (the fleet's software was not pinned):
   checkpoints are compared within it. Each tier records the commit that generated it. The faint sweep's anomaly
-  precision is attributed to its class mix, and the paper quotes mix-independent false-anomaly rates instead; the
+  precision was first attributed to its class mix (withdrawn by the fifth verification: faint photometry drives it), and the
+  paper quotes the false-anomaly rates among microlensing events instead; the
   abstract quotes the operating-threshold rates (35% of sub-day single lenses, 12% of faint microlensing events
   without an anomaly, 0.9% in the natural population). Stage-4/6 training coverage of the regimes stated correctly.
 - **RMDC26 cascade compared stratum by stratum** with the in-house scan (giant planets and Neptunes, F146 and three
@@ -66,8 +97,8 @@ pass (record: `docs/VERIFICATION_2026-09-12b.md`). What changed:
   says which model scored the suite. The released model reproduces its held-out macro-F1 there (0.919). The suite's
   sub-day "PSPL recall 0.524" mixed in demoted binaries: the sub-day single lenses are classified PSPL 0.285 and
   called anomalies 69% of the time (35% above the frozen threshold). The faint sweep's anomaly precision (0.026) is
-  set mostly by its class mix; among faint microlensing events without an anomaly the false-anomaly rate is 26%
-  (3.3% natural). The low-q and faint regimes were stage-4 training pools and stage 6 added pools overlapping two
+  driven mostly by faint photometry (0.15 at the natural class mix); among faint microlensing events without an anomaly the false-anomaly rate is 26%
+  (3.3% natural). The low-q regime and faint sources at m 23.5-25 were stage-4 training pools and stage 6 added pools overlapping two
   sweeps; the text says so. The "10.4M out-of-distribution" figure of earlier entries counts 8.7M events in enriched
   in-prior regimes and 1.7M in out-of-range sweeps. (2) The appendix training recipe described the base run's
   values not from the stage logs (batch 256 and 3e-4 are train.py defaults; 5 epochs matched no stage) and an earlier

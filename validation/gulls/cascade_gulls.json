@@ -1152,5 +1152,10 @@
   },
   "note": "in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; compare stratum by stratum with results[...]['timing_by_mass_ratio']"
  },
- "command": "validation/gulls/cascade_gulls.py --reduce --ckpt fspl5s_seasons_g08=validation/gulls/weights/ft_fspl5s_seasons_g08.pt fspl5s_g08=validation/gulls/weights/ft_fspl5s_g08.pt --meta-cache /Users/kunalbhatia/.cache/binml/rmdc26/rmdc26_meta_a338d5ba.parquet"
+ "command": "validation/gulls/cascade_gulls.py --reduce --ckpt fspl5s_seasons_g08=validation/gulls/weights/ft_fspl5s_seasons_g08.pt fspl5s_g08=validation/gulls/weights/ft_fspl5s_g08.pt --meta-cache /Users/kunalbhatia/.cache/binml/rmdc26/rmdc26_meta_a338d5ba.parquet",
+ "code": "submitted-ac-2026-08-15-63-g358fa7b83688",
+ "reducer_sha256": {
+  "cascade_gulls.py": "adc7c963dea5c1750658e2cec0ad045891216ed83f54bf7bd68e0f08e4f4c92a",
+  "cascade_reduce.py": "ba30eb7ce059434d5c10583da0668f74d5e31360764866a93f657b053334944f"
+ }
 }

@@ -186,8 +186,8 @@
       "_note": "2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/gulls/cascade_gulls.json": {
-      "sha256": "8908d2a424c5b3bc2dee4cfca459e083ea4363b9fce059ca83ff4385d4ef486d",
-      "_note": "2026-09-13 (fourth verification): RMDC26 timing by mass-ratio stratum, single-lens alert CI and full-window flag rate (all earlier values unchanged); previous sha 9538e729f70e9e7b... | 2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
+      "sha256": "1486c6205fd227f8311cacc1412e64e01878f453d4074a39ec2a5fc966b346c9",
+      "_note": "2026-09-14 (fifth verification): records its code (358fa7b) and reducer hashes; numbers unchanged; previous sha 8908d2a424c5b3bc... | 2026-09-13 (fourth verification): RMDC26 timing by mass-ratio stratum, single-lens alert CI and full-window flag rate (all earlier values unchanged); previous sha 9538e729f70e9e7b... | 2026-09-12: input of paper/make_gulls_macros.py (RMDC26 section, referee round, truth-label impact)"
     },
     "validation/referee_round.json": {
       "sha256": "ee79bc215878efbd5789512cbb31b4d91ec8ef91aec86dc478de46a114622bb5",
@@ -214,8 +214,8 @@
       "_note": "2026-09-12: recommended gap-aware checkpoint (byte-identical to validation/gulls/weights/ft_fspl5s_seasons_g08.pt)"
     },
     "validation/stress_rescore_local.json": {
-      "sha256": "cc2d06f50811f0f58a8f4a9b19b5b8a1d88468f43e2cade89a0285e1bcb49a1f",
-      "_note": "2026-09-13 (fourth verification): regenerated at 6a912f4 with the package environment recorded; 2026-09-13 (fourth verification): sweeps regenerated with --legacy-t0-pad, corrected sub-day tier, per-tier stamps, mix-independent rates; previous sha a4b715a9b565c918... | 2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
+      "sha256": "43dd36ef55e7499a999206c62406d1280d9c1edc7ecadd7955a55fc8cd91e4be",
+      "_note": "2026-09-14 (fifth verification): regenerated at cb093a3 with the per-event archive (validation/stress_rescore_archive/, hashed inside), class-mix counterfactuals and the 0.25-1 d sub-day rate; previous sha cc2d06f50811f0f5... | 2026-09-13 (fourth verification): regenerated at 6a912f4 with the package environment recorded; 2026-09-13 (fourth verification): sweeps regenerated with --legacy-t0-pad, corrected sub-day tier, per-tier stamps, mix-independent rates; previous sha a4b715a9b565c918... | 2026-09-13: input of paper/make_macros.py (the released checkpoint's stress numbers on a regenerated subset; the suite was scored with stage 5)"
     },
     "validation/inference_benchmark_result.json": {
       "sha256": "da148cd004933ba5e2dd710cab5ea86d43a19901d1fabb5fa6e4cf853126d4db",

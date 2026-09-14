@@ -106,8 +106,8 @@ Per-class F1 (population-weighted, selection-corrected):
   released model's predecessor. Its first shards per quoted regime were regenerated with the same seeds, class mix
   and peak-time draw (a new realisation, not the same events: the cloud fleet's software was not pinned) and
   scored with both (`validation/stress_rescore_local.json`, paper Table `tab:stress`): on the same-prior part the
-  released model reproduces its held-out macro-F1 (0.919 vs 0.919). The out-of-range arms expose failures; the
-  low-q and faint-source regimes were training pools from stage 4, and stage 6 added pools overlapping the
+  released model reproduces its held-out macro-F1 (0.919 vs 0.919). The out-of-range sweeps expose failures; the
+  low-q regime and faint sources at m 23.5-25 (below the sweep's 25-27.5) were training pools from stage 4, and stage 6 added pools overlapping the
   wide-separation and sub-day sweeps, so they are diagnostics of how far targeted coverage carries, not evidence of
   broad population validity.
 

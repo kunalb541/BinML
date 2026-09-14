@@ -43,17 +43,20 @@ Which checkpoint scored what (2026-09-13, from the third verification): the 14.9
 (`paper/results/stress_report.json`) was scored with the stage-5 checkpoint (`aws/ud_bineval.sh`,
 `v5runs/binml_v5_stage5.pt`, sha256 4e7a5a85...), not the released `binml.pt` (= stage 6, 897a9aec...);
 `validation/stress_rescore_local.py` re-scores regenerated shards of the quoted tiers with both
-(`validation/stress_rescore_local.json`). Each tier records the commit that generated and scored it
-(`tiers[...].code_generation_and_scoring`: natural, planetary, faint and the corrected sub-day tier at 6016bc6; the
+(`validation/stress_rescore_local.json`; its per-event inputs are archived in `validation/stress_rescore_archive/` and every
+number recomputes from them with `--from-archive`; the stage-5 weights are not distributed, sha256 recorded). Each tier records the commit that generated and scored it
+(`tiers[...].code_generation_and_scoring`: natural, planetary, faint and the corrected sub-day tier at 6016bc6, stamps written
+by hand on 2026-09-13 from the first artifact's record and the file times; the
 wide-separation, long-period and sub-day sweeps regenerated at 6865de1 with `run_shard --legacy-t0-pad`, the July
 generator's peak-time draw); metrics are recomputed at the commit in `code`. The raw shards were deleted after
 caching and regenerate from the seeds. The subset is a new realisation, not the suite's events: the suite's fleet
 installed its Python packages unversioned (aws/ud_gentest2.sh; the local versions are recorded in the artifact's `environment`), and locally the same code labels 2.3% fewer
-detectable anomalies in the natural tier and fewer retained wide-separation binaries (even with the July generator).
-Stage 5 gives the suite's macro-F1 on the subset (0.927 vs 0.927) and differs from its other quoted numbers by 0.007
-at the median, at most 0.060 (wide-separation and faint-source recalls); checkpoint comparisons are made within the
+detectable anomalies in the natural tier and 27% fewer in the wide-separation sweep (296 vs 438 over all 20 of its
+shards, with the July generator; fifth verification); the other tiers agree within binomial noise (checked in
+make_macros.py). Stage 5 gives the suite's macro-F1 on the subset (0.927 vs 0.927) and differs from its other quoted
+numbers by 0.008 at the median, at most 0.060 (wide-separation and faint-source recalls); checkpoint comparisons are made within the
 subset. The suite's PSPL recalls are per label: in `oor_pspl_shortte` 43% of the weighted PSPL-labelled events are
-demoted binaries of natural timescale; the sub-day single lenses themselves are classified PSPL 0.230 (stage 5) /
+demoted binaries of natural timescale in the regenerated tier (42% over all 20 suite shards); the sub-day single lenses themselves are classified PSPL 0.230 (stage 5) /
 0.285 (released) and called anomalies 53% / 69% (20% / 35% above the frozen threshold). The frozen
 evaluation arrays (`paper/results/`) are stage 6 (`meta.json`). The pre-RMDC26 artifacts that record no checkpoint
 hash (`baselines_result.json`, `gap_matched_result.json`, `latency_gaps_result.json`, `prevalence_result.json`,

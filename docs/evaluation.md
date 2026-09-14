@@ -142,17 +142,18 @@ sweeps. It was scored in July 2026 with the **stage-5 checkpoint**, the released
 `validation/stress_rescore_local.py` regenerates the first shards of each quoted regime with the suite's seeds,
 class mix and (for the sweeps) its generator's peak-time draw, and scores the same events with both checkpoints.
 The regenerated events are a new realisation, not the suite's own: the suite's cloud fleet ran an unpinned
-software environment, and the regenerated natural tier labels 2.3% fewer detectable anomalies. Stage 5 gives the
-suite's macro-F1 on the subset (0.927 vs 0.927) and differs from its other quoted numbers by 0.007 at the median
+software environment, and the regenerated natural tier labels 2.3% fewer detectable anomalies and the wide-separation sweep 27% fewer. Stage 5 gives the
+suite's macro-F1 on the subset (0.927 vs 0.927) and differs from its other quoted numbers by 0.008 at the median
 (at most 0.060, for the wide-separation and faint-source recalls); checkpoint comparisons are made within the
 subset. The released model reproduces its held-out macro-F1 on the same-prior part (0.919 vs 0.919).
 
-The targeted arms expose failures at faint magnitudes, wide separations, long periods and sub-day timescales:
+The out-of-range sweeps expose failures at faint magnitudes, wide separations, long periods and sub-day timescales:
 sub-day single lenses (tE 0.2-1 d) are classified PSPL only 0.29 of the time and called anomalies 69% of the time
 (35% above the frozen threshold); the suite's per-label PSPL recall (0.52) mixed in binaries of natural timescale
 demoted to PSPL. Among faint microlensing events without a detectable anomaly the false-anomaly rate rises from
-3.3% to 26%; the faint sweep's anomaly precision (0.026) is set mostly by its class mix. The low-q and faint-source
-regimes were training pools from stage 4, and stage 6 added pools overlapping the wide-separation and sub-day
+3.3% to 26%; the faint sweep's anomaly precision (0.026) falls mostly through faint photometry, not its flat-heavy class mix (0.15 at the natural
+class mix, against 0.73; the natural population at the sweep's mix would give 0.64). The low-q regime and faint sources at m 23.5-25 (below the
+sweep's 25-27.5) were training pools from stage 4, and stage 6 added pools overlapping the wide-separation and sub-day
 sweeps (s 3-8, tE 0.3-10 d), so for the released model these measure how far targeted coverage carries. They test
 sensitivity to chosen stressors; they do not define their prevalence in the Roman population.
 
