@@ -1,9 +1,9 @@
 {
   "n_events": 120,
   "night_fraction": 0.3333333333333333,
-  "code": "submitted-ac-2026-08-15-66-gf33288f1cbbc-dirty",
+  "code": "submitted-ac-2026-08-15-70-ge5cb41f88ca8",
   "checkpoint_sha256": "897a9aec1785dc15664ae5a3c7183c46f13fb4332cb20414d013860ef5c41c34",
-  "script_sha256": "359c6da07530a340b2a692ed32136db79618480cd13685a2dfb2149761e24b16",
+  "script_sha256": "8fd0cf6c0784efdd31233aa154dfa63266c47803ed4a5563b62d121db535d60b",
   "empty_bin_days": 0.08333333333333333,
   "arms": [
     {
@@ -81,5 +81,13 @@
         "regular": 0.0
       }
     }
-  ]
+  ],
+  "full_cadence": {
+    "recall": 0.942,
+    "ci": [
+      0.884,
+      0.971
+    ],
+    "visits": 6912
+  }
 }

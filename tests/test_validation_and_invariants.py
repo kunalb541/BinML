@@ -684,3 +684,33 @@ def test_stress_numbers_rederive_from_the_archive(tmp_path):
     for k in ("subset", "quoted", "single_lens_recall", "precision_at_natural_prevalence", "precision_counterfactual",
               "suite_label_fractions"):
         close(rebuilt[k], committed[k], k)
+
+
+def test_new_reduction_helpers():
+    """Unit tests for the helpers the sixth and seventh checks added (seventh check: none had a direct test)."""
+    import importlib.util
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(REPO, "validation"))
+    import cascade_reduce as cr
+    # alert_times: strided grids end at the season's end, and an event whose only crossing is the last cut is kept
+    cuts = np.arange(1, 145) * 0.5
+    P = np.zeros((2, 144)); P[0, -1] = 1.0; P[1, 10] = 1.0          # event 0 crosses only at 72.0 d
+    for stride in (1, 2, 4):
+        a = cr.alert_times(P, cuts, 0.5, stride=stride)
+        assert a[0] == 72.0, (stride, a)
+    assert cr.alert_times(P, cuts, 0.5, stride=1)[1] == 5.5 and cr.alert_times(P, cuts, 0.5, stride=2)[1] != 5.5   # 5.5 d is off the 1 d grid
+    # _vs_inhouse: Fisher p on the counts and a lag difference equal to the difference of medians
+    spec = importlib.util.spec_from_file_location("cascade_gulls", os.path.join(REPO, "validation", "gulls", "cascade_gulls.py"))
+    try:
+        cg = importlib.util.module_from_spec(spec); spec.loader.exec_module(cg)
+    except Exception as exc:                                        # optional RMDC26 dependencies
+        pytest.skip(f"cascade_gulls imports unavailable: {exc}")
+    ref = {"n_eligible": 50, "n_premature": 2, "n_detected": 40, "lags_non_premature_days": [4.0, 4.5, 5.0]}
+    v = cg._vs_inhouse(2, 45, 50, np.array([5.0, 5.5, 6.0]), ref, n_boot=200)
+    assert v["fisher_p_premature"] == 1.0 and v["median_lag_diff_days"] == 1.0 and v["median_lag_diff_ci95"][0] <= 1.0
+    # _empty_bin_frac counts the model's empty F146 bins: every 15-min epoch fills every bin, every 16th leaves half empty
+    spec2 = importlib.util.spec_from_file_location("gmd", os.path.join(REPO, "validation", "gap_matched_density.py"))
+    gm = importlib.util.module_from_spec(spec2); spec2.loader.exec_module(gm)
+    t = np.arange(6912) * 72.0 / 6912
+    assert gm._empty_bin_frac(t, 72.0) == 0.0
+    assert abs(gm._empty_bin_frac(t[::16], 72.0) - 0.5) < 1e-9

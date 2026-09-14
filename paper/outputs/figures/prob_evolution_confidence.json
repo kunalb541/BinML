@@ -1,0 +1,151 @@
+{
+ "K": 30,
+ "n_steps": 144,
+ "threshold": 0.9042405486106873,
+ "events": [
+  {
+   "class": "Flat",
+   "kind": "clear",
+   "seed": 1,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.993,
+   "final_p_true_16_84": [
+    0.986,
+    0.997
+   ],
+   "frac_realisations_correct_at_day_72": 1.0
+  },
+  {
+   "class": "Flat",
+   "kind": "marginal",
+   "seed": 5114,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.991,
+   "final_p_true_16_84": [
+    0.954,
+    0.997
+   ],
+   "frac_realisations_correct_at_day_72": 1.0
+  },
+  {
+   "class": "PSPL",
+   "kind": "clear",
+   "seed": 11,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.955,
+   "final_p_true_16_84": [
+    0.95,
+    0.959
+   ],
+   "frac_realisations_correct_at_day_72": 1.0
+  },
+  {
+   "class": "PSPL",
+   "kind": "marginal",
+   "seed": 5253,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.585,
+   "final_p_true_16_84": [
+    0.398,
+    0.722
+   ],
+   "frac_realisations_correct_at_day_72": 0.767
+  },
+  {
+   "class": "NonPSPL",
+   "kind": "clear",
+   "seed": 7,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.988,
+   "final_p_true_16_84": [
+    0.986,
+    0.989
+   ],
+   "frac_realisations_correct_at_day_72": 1.0
+  },
+  {
+   "class": "NonPSPL",
+   "kind": "marginal",
+   "seed": 5629,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.589,
+   "final_p_true_16_84": [
+    0.546,
+    0.616
+   ],
+   "frac_realisations_correct_at_day_72": 0.967
+  },
+  {
+   "class": "PeriodicVar",
+   "kind": "clear",
+   "seed": 13,
+   "label_changed_in": 0,
+   "final_p_true_median": 1.0,
+   "final_p_true_16_84": [
+    1.0,
+    1.0
+   ],
+   "frac_realisations_correct_at_day_72": 1.0
+  },
+  {
+   "class": "PeriodicVar",
+   "kind": "marginal",
+   "seed": 5382,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.455,
+   "final_p_true_16_84": [
+    0.174,
+    0.804
+   ],
+   "frac_realisations_correct_at_day_72": 0.433
+  },
+  {
+   "class": "LongPeriodVar",
+   "kind": "clear",
+   "seed": 3,
+   "label_changed_in": 0,
+   "final_p_true_median": 1.0,
+   "final_p_true_16_84": [
+    1.0,
+    1.0
+   ],
+   "frac_realisations_correct_at_day_72": 1.0
+  },
+  {
+   "class": "LongPeriodVar",
+   "kind": "marginal",
+   "seed": 5654,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.739,
+   "final_p_true_16_84": [
+    0.297,
+    0.943
+   ],
+   "frac_realisations_correct_at_day_72": 0.733
+  },
+  {
+   "class": "Eruptive",
+   "kind": "clear",
+   "seed": 1,
+   "label_changed_in": 0,
+   "final_p_true_median": 1.0,
+   "final_p_true_16_84": [
+    1.0,
+    1.0
+   ],
+   "frac_realisations_correct_at_day_72": 1.0
+  },
+  {
+   "class": "Eruptive",
+   "kind": "marginal",
+   "seed": 5061,
+   "label_changed_in": 0,
+   "final_p_true_median": 0.383,
+   "final_p_true_16_84": [
+    0.103,
+    0.577
+   ],
+   "frac_realisations_correct_at_day_72": 0.467
+  }
+ ]
+}

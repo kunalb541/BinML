@@ -62,8 +62,8 @@
   },
   "files": {
     "paper/canonical_numbers.json": {
-      "sha256": "b0a3151129ed8715d6d540e57c6268225aad5d02929fc0983715ed8115697059",
-      "_note": "2026-09-14 (sixth check): hand-copied gap_matched block retired (read from its artifact); previous sha 597296b2727d95ab... | 2026-09-13 (fifth verification): v5 fleet and typical-hours fields; retired labelling block and nonpspl_demoted_fraction; previous sha 70749d76cd852cae... | 2026-09-13 (fourth verification): infra per-epoch training throughput; sim_* fields flagged as the v4 run; previous sha 1b92e0634c32e571... | 2026-09-13: infra training recipe corrected to the six-stage chain (third verification); previous sha d0a591adb6fdc40d... | hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67... | 2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 4c868405c630a120... | 2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 2cd1fa6b142372bb..."
+      "sha256": "76a7109f76e9e55ec10aadb12d68ccfaf75baf1fd693751e17f88f9f1e39011c",
+      "_note": "2026-09-14 (seventh check): _inference_note updated (idle-machine benchmark); previous sha b0a3151129ed8715... | 2026-09-14 (sixth check): hand-copied gap_matched block retired (read from its artifact); previous sha 597296b2727d95ab... | 2026-09-13 (fifth verification): v5 fleet and typical-hours fields; retired labelling block and nonpspl_demoted_fraction; previous sha 70749d76cd852cae... | 2026-09-13 (fourth verification): infra per-epoch training throughput; sim_* fields flagged as the v4 run; previous sha 1b92e0634c32e571... | 2026-09-13: infra training recipe corrected to the six-stage chain (third verification); previous sha d0a591adb6fdc40d... | hash updated after removing the unreproducible hand-entered inference block; throughput now comes from validation/inference_benchmark_result.json. Previous: aed8a58b77bd7b67... | 2026-09-09: PSPL residual baseline rescored at full cadence (ap_fitted_pspl 0.261 -> 0.545); previous sha 4c868405c630a120... | 2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 2cd1fa6b142372bb..."
     },
     "paper/results/metrics.json": {
       "sha256": "a69add24bfa5f3bda8d800269f541700ee7a18c749578935962124499a42c73c"
@@ -106,8 +106,8 @@
       "_note": "2026-09-09: cadence arms re-evaluated on held-out shards (cadence_local.py); previous sha 30bd192b163e8a1e..."
     },
     "validation/gap_matched_result.json": {
-      "sha256": "053eda43f7ef14707548b3d4144c02916abf236c31fb8d41ef79e2dc4aa44406",
-      "_note": "2026-09-14 (sixth check): gap-free regular arm, empty-bin fractions, code and checkpoint recorded; uniform and nightly arms unchanged; previous sha ef11d729444b67fb..."
+      "sha256": "20dd84148c6c711ad9d86f89405f59169b341255acdec6c402dfdd9d97c1bc5f",
+      "_note": "2026-09-14 (seventh check): full-cadence arm added (0.942); regenerated at e5cb41f, clean; other arms unchanged; previous sha 053eda43f7ef1470... | 2026-09-14 (sixth check): gap-free regular arm, empty-bin fractions, code and checkpoint recorded; uniform and nightly arms unchanged; previous sha ef11d729444b67fb..."
     },
     "validation/hardregime_result.json": {
       "sha256": "61e66cc5b2463853616aec65fd293533a7ed393d262aa1da60e969b3e78acd9f"

@@ -371,6 +371,8 @@ if "full_cadence" not in _gmr:
 cmd("bmlGapFull", three(_gmr["full_cadence"]["recall"]))
 if not _gmr["full_cadence"]["ci"][0] > max(a_["regular_ci"][1] for a_ in _ga):
     raise SystemExit("FATAL: 'thinning alone costs recall too' no longer holds (full cadence vs the regular grids)")
+if not _ga[0]["regular"] < _ga[0]["uniform"]:
+    raise SystemExit("FATAL: 'at the highest density the regular grid trails the random subsample' no longer holds")
 _emp = [a_["empty_bin_frac"]["uniform"] for a_ in _ga]
 if not (all(a_["nightly"] == 0 for a_ in _ga) and _ga[0]["uniform_ci"][0] > _ga[0]["nightly_ci"][1]
         and _ga[1]["uniform_ci"][0] > _ga[1]["nightly_ci"][1]):
@@ -570,7 +572,7 @@ if not os.path.exists(_inf_path):
     raise SystemExit(f"FATAL: {_inf_path} missing; run validation/inference_benchmark.py")
 inf = _jload(_inf_path)
 cmd("bmlInferEps", f"{inf['events_per_sec']:,}")
-cmd("bmlInferMs", two(inf["ms_per_event"]))
+cmd("bmlInferMs", two(1000 * inf["seconds_per_batch"]["median"] / inf["batch"]))   # unrounded (seventh check)
 cmd("bmlInferCores", str(inf["environment"]["logical_cores"]))
 cmd("bmlInferCpu", inf["environment"]["cpu"])
 cmd("bmlInferThreads", str(inf["environment"]["torch_threads"]))
@@ -712,7 +714,8 @@ _needfs(0.15 <= fs["wide_miss_rate_by_dchi2_lo"] and fs["wide_miss_rate_by_dchi2
 _needfs(fs["wide_miss_rate_above_1e6"] < fs["wide_miss_rate_by_dchi2_lo"] - 0.05,
         "the strongest wide anomalies (dchi2 > 1e6) are missed less often")
 _needfs(fs["miss_to_pspl_pct"] > 90, "a missed detectable binary is 'almost always called a single lens'")
-_needfs(fs["eff_cond_recall_lowq_hi"] < fs["eff_cond_recall_median"] and fs["eff_nd_lowq_hi"] < fs["eff_nd_median_populated"] / 2,
+_needfs(fs["eff_cond_recall_lowq_hi"] < fs["eff_cond_recall_median"] and fs["eff_nd_lowq_hi"] < fs["eff_nd_median_populated"] / 2
+        and fs["eff_cond_recall_min_logq_hi"] <= -4 + 1e-9,
         "every populated cell at log q < -4 lies below the plane's median, in thin support")
 _needfs(fs["calib_weight_below_0p1_pct"] > 70 and fs["calib_ece_mid_share_pct"] > 50
         and fs["calib_mid_anomaly_freq"] < fs["calib_mid_mean_score"] / 2

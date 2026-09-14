@@ -67,11 +67,15 @@ def bin_curve(mag: np.ndarray, factor: int) -> Tuple[np.ndarray, np.ndarray]:
 
 GEN_ATTRS = ("regime", "onset_resolution_days", "noise_mult", "bkg_mult", "regime_priors", "espl_function",
              "min_amplitude_mag", "band_set", "legacy_oor_mix", "legacy_t0_pad")
-# when run_shard started writing each attribute: a shard without it predates that commit (the legacy switches were
-# first recorded at 6865de1, 2026-09-13, although --legacy-oor-mix itself exists since 6016bc6)
+# when run_shard started writing each attribute: a shard without it predates that commit (onset/noise/regime at 580e172,
+# 2026-09-11; espl_function at 3703e43 and min_amplitude_mag/band_set at f2b4a21, 2026-09-12; the legacy switches at
+# 6865de1, 2026-09-13, although --legacy-oor-mix itself exists since 6016bc6)
 _ABSENT = {a: "absent (shard written before 2026-09-11)" for a in GEN_ATTRS}
 _ABSENT.update({"legacy_oor_mix": "absent (shard written before 6865de1, 2026-09-13)",
-                "legacy_t0_pad": "absent (shard written before 6865de1, 2026-09-13)"})
+                "legacy_t0_pad": "absent (shard written before 6865de1, 2026-09-13)",
+                "espl_function": "absent (shard written before 3703e43, 2026-09-12)",
+                "min_amplitude_mag": "absent (shard written before f2b4a21, 2026-09-12)",
+                "band_set": "absent (shard written before f2b4a21, 2026-09-12)"})
 
 
 def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:

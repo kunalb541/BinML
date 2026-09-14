@@ -65,7 +65,7 @@ provenance mechanism has not yet produced the artifact used by the manuscript.
 | `validate_artifacts.py` | integrity checks for frozen arrays, hashed result/source files, checkpoint identity, and deterministic reducers |
 | `make_macros.py` | JSON → `paper_macros.tex` |
 | `make_figures.py` | artifact → `outputs/figures/*.pdf` |
-| `make_data_figures.py` | simulated events → light-curve gallery + cascade evolution |
+| `make_data_figures.py` | simulated events → light-curve gallery + cascade evolution + per-class probability evolution with noise-realisation bands |
 | `refs.bib` | bibliography |
 | `build.sh` | one-command reproducible build |
 | `results/` | archived evaluation artifact (logits, labels, keep_prob, metrics.json, …) |

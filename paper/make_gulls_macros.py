@@ -508,6 +508,11 @@ if CG:
         cmd("bmlCgSingleAlertCal", pct(R_[k_cal]["burden"]["RMDC26_1S1L_ML"]["alert_frac_per_season"]))
         cmd("bmlCgPurOneCal", pct0(R_[k_cal]["streaming_purity"]["planetary_prevalence_0.01"]["purity_detectable_anomaly_alerts"]))
     ih = CG["inhouse_reference"]["by_mass_ratio"]
+    # the RMDC26 artifact carries a COPY of the in-house strata (and its vs_inhouse tests were computed from it):
+    # it must still equal the in-house artifact, or the comparison is stale (seventh check)
+    _ihr = load(os.path.join(os.pardir, "cascade_reproduce_result.json"))["stratified"]
+    need(all(CG["inhouse_reference"][k] == _ihr[k] for k in ("by_mass_ratio", "by_mass_ratio_three_band", "n_by_mass_ratio")),
+         "cascade_gulls.json's in-house strata differ from validation/cascade_reproduce_result.json (rerun cascade_gulls.py --reduce)")
     for st, nm in (("giant", "Giant"), ("neptune", "Neptune")):
         cmd(f"bmlCgIn{nm}N", str(ih[st]["n_eligible"])); cmd(f"bmlCgIn{nm}Det", pct0(ih[st]["detection_fraction"]))
         cmd(f"bmlCgIn{nm}Prem", pct(ih[st]["premature_rate_of_eligible"]))

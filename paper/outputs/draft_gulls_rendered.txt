@@ -462,8 +462,8 @@ $2.5\%$ against $4.2\%$, $+6.5$ against $+4.5$~d,
 and $66\%$ against $73\%$. The in-house strata are small, so only some of these
 differences are resolved: premature alerts are about as frequent ($2$ of $149$ against $2$ of
 $138$, and $21$ of $826$ against $2$ of $48$; Fisher $p \ge 0.36$); detection is lower in both strata,
-resolved at high ratios ($p = 0.035$) but not at intermediate ones, which rest on $48$ in-house events
-($p = 0.35$); and the median lag is $2$~d longer at intermediate ratios (bootstrap 95\% interval
+nominally resolved at high ratios ($p = 0.035$, one of six comparisons here) but not at intermediate ones, which rest on
+$48$ in-house events ($p = 0.35$); and the median lag is $2$~d longer at intermediate ratios (bootstrap 95\% interval
 $0$--$4.5$~d, at the edge of resolution) and $0.5$~d longer at high ratios
 ($-0.5$ to $+2$~d, not resolved). These are a different checkpoint on a different simulator, so the differences mix the two. $40\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
 scan barely samples ($9$ events); there detection falls to $51\%$ (the remaining

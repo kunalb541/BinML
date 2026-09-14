@@ -43,8 +43,11 @@ BIN_DAYS = 2.0 / 24.0                      # the model's F146 bin (864 bins over
 
 
 def _empty_bin_frac(t_sel, window_days):
-    n_bins = int(round(window_days / BIN_DAYS))
-    return 1.0 - len(np.unique(np.floor(t_sel / BIN_DAYS).astype(int))) / n_bins
+    """Share of the model's F146 bins with no observation, binned exactly as the model bins (seventh check: a float
+    floor put boundary epochs in the wrong bin). ``window_days`` is kept for the call signature."""
+    from binml.preprocess import bin_band
+    _, frac, _ = bin_band(t_sel, np.zeros_like(t_sel), "F146", 0.0, 0.0)
+    return float(np.mean(frac == 0))
 
 
 def main(n_events=120):

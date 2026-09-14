@@ -139,6 +139,9 @@ CASES = {
     "comparison used other in-house counts": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
                                                               ["timing_by_mass_ratio"]["neptune"]["vs_inhouse"].update(n_premature_inhouse=5)),
                                               "the exact premature counts disagree with the rounded fractions"),
+    "in-house strata copy stale": (lambda t: _edit(t, "../cascade_reproduce_result.json", lambda d: d["stratified"]["by_mass_ratio"]["giant"]
+                                                   .update(n_premature=3)),
+                                   "in-house strata differ from validation/cascade_reproduce_result.json"),
     "F146-only reference at another threshold": (lambda t: _edit(t, "transfer_full_fspl5s_seasons_g08_f146only.json", lambda d: d.update(threshold=0.95)),
                                                  "another threshold than the scan"),
     "cascade sample not optimistic": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]

@@ -7,6 +7,8 @@ events (deterministic seeds) run through the shipped model:
   lightcurve_gallery.pdf  -- one representative simulated event per class.
   cascade_evolution.pdf   -- the half-day cascade: class probability as the season is revealed,
                              for a clean binary, a subtle binary, and a single-lens control.
+  prob_evolution_confidence.pdf -- class probability at every half-day cut for a clear and a marginal event of
+                             each class, with the spread over photometric-noise re-draws of the same event.
 
 Needs the simulation stack (VBBinaryLensing, h5py, scipy) and the binml package. Run from paper/:
     python make_data_figures.py
@@ -373,8 +375,175 @@ def fig_prob_all(n_steps=30):
     print("prob_evolution_all.pdf")
 
 
+# ---------------------------------- probability evolution with a noise-realisation band, clear and marginal
+PC_WANT = {"Flat": None, "PSPL": 0.5, "NonPSPL": 0.7, "PeriodicVar": 0.4, "LongPeriodVar": 0.3, "Eruptive": 0.6}
+PC_PEAK_IN_SEASON = (5.0, 67.0)           # the clear PSPL example must peak inside the 72 d season
+
+
+def _simulate_noise(cls, seed, noise_seed=None):
+    """The event of ``seed``; with ``noise_seed``, the SAME event re-observed with fresh photometric noise.
+
+    The simulator draws every parameter before the noise, and the noise is drawn only in photometry.observe, so
+    swapping that call's random stream re-observes the same event: same parameters, same noise-free curve. Near the
+    detection limit the measured flux must also clear the SNR cut, so a few faint epochs (and in marginal cases
+    the label) can change with the draw; that is part of the photometric uncertainty being shown."""
+    import pipeline.assemble as asm
+    if noise_seed is None:
+        return asm.simulate_event(cls, np.random.default_rng(seed), CFG, _return_ref_truth=True)
+    orig = asm.observe
+    nrng = np.random.default_rng([seed, noise_seed])
+    asm.observe = lambda band, mag_true, rng, snr, nm: orig(band, mag_true, nrng, snr, nm)
+    try:
+        return asm.simulate_event(cls, np.random.default_rng(seed), CFG, _return_ref_truth=True)
+    finally:
+        asm.observe = orig
+
+
+def _noise_free_amp(ref, ev):
+    return (float(ref[1].max() - ref[1].min()) if ref is not None and len(ref[1])
+            else float(ev.bands["F146"].mag.max() - ev.bands["F146"].mag.min()))
+
+
+def _pick_clear(cls, seeds):
+    """The first event in seed order labelled as ``cls``, with a legible noise-free signal, classified correctly on
+    the complete season (and, for PSPL, peaking inside the season)."""
+    for s in seeds:
+        out = _simulate_noise(cls, s)
+        if out is None or out[0] is None:
+            continue
+        ev, ref = out
+        if "F146" not in ev.bands or len(ev.bands["F146"].t) < 50 or ev.label != cls:
+            continue
+        if PC_WANT[cls] is not None and _noise_free_amp(ref, ev) < PC_WANT[cls]:
+            continue
+        if cls == "PSPL" and not PC_PEAK_IN_SEASON[0] <= ev.params["t0"] <= PC_PEAK_IN_SEASON[1]:
+            continue
+        if predict(ev)[1] == cls:
+            return s, ev
+    raise SystemExit(f"FATAL: no clear {cls} example in the seed range")
+
+
+def _pick_marginal(cls, seeds, n_candidates=300, n_short=8, n_redraw=8):
+    """A robustly ambiguous event labelled as ``cls``: among the first ``n_candidates`` such events, the ``n_short``
+    whose complete-season probability of their own class is closest to 0.5 are re-observed ``n_redraw`` times with
+    fresh noise, and the one whose median probability is closest to 0.5 is kept (correct or not). The second stage
+    stops a single lucky noise draw from passing as an ambiguous event."""
+    cand, n = [], 0
+    for s in seeds:
+        out = _simulate_noise(cls, s)
+        if out is None or out[0] is None:
+            continue
+        ev, _ = out
+        if "F146" not in ev.bands or len(ev.bands["F146"].t) < 50 or ev.label != cls:
+            continue
+        n += 1
+        cand.append((abs(predict(ev)[0].get(cls, 0.0) - 0.5), s, ev))
+        if n >= n_candidates:
+            break
+    if not cand:
+        raise SystemExit(f"FATAL: no marginal {cls} example in the seed range")
+    best = None
+    for _, s, ev in sorted(cand, key=lambda x: x[0])[:n_short]:
+        p = [predict(_simulate_noise(cls, s, noise_seed=1000 + k)[0])[0].get(cls, 0.0) for k in range(n_redraw)]
+        score = abs(float(np.median(p)) - 0.5)
+        if best is None or score < best[0]:
+            best = (score, s, ev)
+    return best[1], best[2]
+
+
+def fig_prob_confidence(K=30, n_steps=144):
+    """For each class a clear and a marginal event: the light curve and the class probabilities at every half-day
+    cut, median and 16-84% band over K photometric-noise re-draws of the same event (the released model)."""
+    import json
+    thr = json.load(open(os.path.join(HERE, "results", "metrics.json")))["headline"]["threshold"]
+    picks = []
+    for c in CLASS_NAMES:
+        picks.append((c, "clear", *_pick_clear(c, range(1, 2000))))
+        picks.append((c, "marginal", *_pick_marginal(c, range(5000, 20000))))
+    record = {"K": K, "n_steps": n_steps, "threshold": thr, "events": []}
+    fig = plt.figure(figsize=(7.4, 11.0))
+    gs = fig.add_gridspec(6, 5, width_ratios=[1, 1.2, 0.12, 1, 1.2], hspace=0.62, wspace=0.42)
+    for n, (c, kind, seed, ev) in enumerate(picks):
+        row, col0 = n // 2, (0 if kind == "clear" else 3)
+        Ps, flips = [], 0
+        for k in range(K):
+            evk = _simulate_noise(c, seed, noise_seed=k)[0]
+            flips += evk.label != ev.label
+            days, P = _prob_evolution(evk, n_steps=n_steps)
+            Ps.append(P)
+        Ps = np.array(Ps); med = np.nanmedian(Ps, 0)
+        lo, hi = np.nanpercentile(Ps, 16, 0), np.nanpercentile(Ps, 84, 0)
+        i_c = CLASS_NAMES.index(c); fin = Ps[:, -1, i_c]
+        record["events"].append({"class": c, "kind": kind, "seed": int(seed), "label_changed_in": int(flips),
+                                 "final_p_true_median": round(float(np.median(fin)), 3),
+                                 "final_p_true_16_84": [round(float(np.percentile(fin, 16)), 3), round(float(np.percentile(fin, 84)), 3)],
+                                 "frac_realisations_correct_at_day_72": round(float(np.mean(np.argmax(Ps[:, -1, :], 1) == i_c)), 3)})
+        # light curve (with a phase-folded inset for the periodic variables)
+        axl = fig.add_subplot(gs[row, col0])
+        _plot_bands(axl, ev, thin_f146=700)
+        axl.set_title(f"{PRETTY[c]}: {kind}", fontsize=7.4, loc="left")
+        axl.tick_params(labelsize=6); axl.set_xlim(0, CFG.window_days)
+        if col0 == 0:
+            axl.set_ylabel("mag", fontsize=7)
+        if c == "PeriodicVar" and "P" in ev.params:
+            ins = axl.inset_axes([0.56, 0.30, 0.42, 0.42])
+            b = ev.bands["F146"]; ph = np.mod(b.t / ev.params["P"], 1.0)
+            ins.scatter(np.concatenate([ph, ph + 1]), np.concatenate([b.mag, b.mag]), s=0.3, color=BAND_COL["F146"], alpha=0.25, lw=0)
+            edges_ = np.linspace(0, 1, 41); idx_ = np.clip(np.digitize(ph, edges_) - 1, 0, 39)
+            med_ = np.array([np.median(b.mag[idx_ == j]) if np.any(idx_ == j) else np.nan for j in range(40)])
+            xc_ = 0.5 * (edges_[:-1] + edges_[1:])
+            ins.plot(np.concatenate([xc_, xc_ + 1]), np.concatenate([med_, med_]), color=COL["PeriodicVar"], lw=1.0)
+            ins.set_ylim(np.nanmax(med_) + 3 * np.nanstd(b.mag - np.interp(ph, xc_, med_)), np.nanmin(med_) - 3 * np.nanstd(b.mag - np.interp(ph, xc_, med_)))
+            ins.set_xticks([]); ins.set_yticks([])
+            ins.text(0.5, 0.02, f"folded, P = {ev.params['P']:.2f} d", transform=ins.transAxes, ha="center", va="bottom",
+                     fontsize=5.0, bbox=dict(fc="white", ec="none", alpha=0.8, pad=0.5))
+        # class probabilities
+        axp = fig.add_subplot(gs[row, col0 + 1])
+        for k_, name in enumerate(CLASS_NAMES):
+            if name != c and np.nanmax(hi[:, k_]) < 0.15:
+                continue
+            axp.fill_between(days, lo[:, k_], hi[:, k_], color=COL[name], alpha=0.25 if name == c else 0.15, lw=0)
+            axp.plot(days, med[:, k_], color=COL[name], lw=1.5 if name == c else 0.9)
+        axp.axhline(thr, color=COL["NonPSPL"], lw=0.6, ls=":")
+        ta = ev.params.get("t_anom")
+        if ta is not None and np.isfinite(ta):
+            for ax in (axl, axp):
+                ax.axvline(ta, color=COL["NonPSPL"], lw=0.8, ls="--")
+        axp.text(0.97, 0.05, f"day 72: {np.median(fin):.2f} [{np.percentile(fin, 16):.2f}, {np.percentile(fin, 84):.2f}]",
+                 transform=axp.transAxes, ha="right", va="bottom", fontsize=5.6,
+                 bbox=dict(fc="white", ec="none", alpha=0.85, pad=0.8))
+        axp.set_ylim(-0.02, 1.02); axp.set_xlim(0, CFG.window_days); axp.tick_params(labelsize=6)
+        if row == len(CLASS_NAMES) - 1:
+            axl.set_xlabel("day", fontsize=7); axp.set_xlabel("days revealed", fontsize=7)
+    handles = [plt.Line2D([], [], color=COL[k], lw=2, label=k) for k in CLASS_NAMES]
+    handles += [plt.Line2D([], [], marker="o", ls="", ms=3, color=BAND_COL[b], label=b) for b in BANDS]
+    handles += [plt.Line2D([], [], color=COL["NonPSPL"], lw=0.8, ls=":", label="NonPSPL threshold"),
+                plt.Line2D([], [], color=COL["NonPSPL"], lw=0.8, ls="--", label="anomaly onset")]
+    fig.legend(handles=handles, loc="lower center", ncol=6, frameon=False, fontsize=6.4, bbox_to_anchor=(0.5, 0.045))
+    fig.savefig(os.path.join(OUT, "prob_evolution_confidence.pdf"))
+    plt.close(fig)
+    json.dump(record, open(os.path.join(OUT, "prob_evolution_confidence.json"), "w"), indent=1)
+    # what the caption and Sec. cascade say about this figure, checked on the events actually drawn (fail-closed)
+    ev_ = {(e["class"], e["kind"]): e for e in record["events"]}
+    width = lambda e: e["final_p_true_16_84"][1] - e["final_p_true_16_84"][0]
+    marg = [ev_[(c, "marginal")] for c in CLASS_NAMES if c != "Flat"]
+    checks = [
+        (all(width(ev_[(c, "clear")]) < 0.05 and ev_[(c, "clear")]["frac_realisations_correct_at_day_72"] == 1.0 for c in CLASS_NAMES),
+         "the clear events' bands are narrow and every re-draw is called correctly"),
+        (ev_[("Flat", "marginal")]["final_p_true_median"] > 0.9 and width(ev_[("Flat", "marginal")]) < 0.1,
+         "even the most ambiguous flat source is called with probability near 1"),
+        (sum(width(e) >= 0.2 for e in marg) >= 3, "the noise draw alone moves the marginal events' calls by tens of points"),
+        (sum(e["frac_realisations_correct_at_day_72"] < 0.8 for e in marg) >= 3, "several marginal events are called wrongly in a good share of the draws"),
+    ]
+    for ok_, what in checks:
+        if not ok_:
+            raise SystemExit(f"FATAL: prob_evolution_confidence no longer supports: {what}")
+    print("prob_evolution_confidence.pdf")
+
+
 if __name__ == "__main__":
     fig_gallery()
     fig_cascade()
     fig_latency()
     fig_prob_all()
+    fig_prob_confidence()
