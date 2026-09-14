@@ -538,12 +538,36 @@ if CG:
     cmd("bmlCgNplanet", f"{CG['n_scanned']['RMDC26_1S2L_ML']:,}"); cmd("bmlCgNplanetBin", f"{CG['n_scanned']['RMDC26_2S2L_ML']:,}")
     cmd("bmlCgSingleAlertLo", pct(bu["alert_frac_ci95"][0])); cmd("bmlCgSingleAlertHi", pct(bu["alert_frac_ci95"][1]))
     cmd("bmlCgSingleFullWindow", pct(bu["full_window_flag_frac"]))
+    # like for like (fifth verification): the scan's last cut is F146 only, so compare with the F146-only full scoring
+    # of every scored single lens
+    FF = load(f"transfer_full_{REC}_f146only.json")
+    fa_f146_all = FF["by_class"]["RMDC26_1S1L_ML"]["frac_over_threshold"]
+    need(abs(float(FF["threshold"]) - float(pr["threshold"])) < 1e-9, "the F146-only full scoring used another threshold than the scan")
+    cmd("bmlCgSingleAllFone", pct(fa_f146_all))
+    need(0.7 * fa_f146_all < bu["full_window_flag_frac"] < fa_f146_all,
+         "the scanned single lenses no longer flag 'slightly fewer' than all scored ones (F146 alone, like for like)")
+    need(CG["n_scanned"]["RMDC26_1S2L_ML"] == CG["n_scanned"]["RMDC26_2S2L_ML"], "'the first N of each planetary class'")
+    cmd("bmlCgRmStellarFrac", pct0(rs1["stellar"]["frac_of_eligible"]))
+    # premature-alert COUNTS per stratum (the in-house fractions are rounded to 3 decimals; the counts are exact)
+    def _k(frac, n):
+        return int(round(frac * n))
+    for st, nm in (("giant", "Giant"), ("neptune", "Neptune")):
+        cmd(f"bmlCgRm{nm}PremK", str(_k(rs1[st]["premature_frac"], rs1[st]["n_eligible"])))
+        cmd(f"bmlCgIn{nm}PremK", str(_k(ih[st]["premature_rate_of_eligible"], ih[st]["n_eligible"])))
+        cmd(f"bmlCgRm{nm}PremThreeK", str(_k(rs3[st]["premature_frac"], rs3[st]["n_eligible"])))
+        cmd(f"bmlCgIn{nm}PremThreeK", str(_k(ih3[st]["premature_rate_of_eligible"], ih3[st]["n_eligible"])))
+    # pooled over the two planetary strata (detection is additive over strata; medians are not, so the lag is not pooled)
+    npool_rm = sum(rs1[st]["n_eligible"] for st in ("giant", "neptune")); npool_in = sum(ih[st]["n_eligible"] for st in ("giant", "neptune"))
+    det_rm = sum(rs1[st]["detected_frac"] * rs1[st]["n_eligible"] for st in ("giant", "neptune")) / npool_rm
+    det_in = sum(ih[st]["detection_fraction"] * ih[st]["n_eligible"] for st in ("giant", "neptune")) / npool_in
+    cmd("bmlCgRmPoolDet", pct0(det_rm)); cmd("bmlCgInPoolDet", pct0(det_in))
+    need(det_rm < det_in - 0.1, "pooled over the planetary strata, RMDC26 detection is no longer clearly lower")
+    need(rs1["neptune"]["median_lag_nonpremature_days"] - ih["neptune"]["median_lag_non_premature_days"] >= 1.0
+         and abs(rs1["giant"]["median_lag_nonpremature_days"] - ih["giant"]["median_lag_non_premature_days"]) <= 0.5,
+         "Neptune alerts come later while the giant lags differ by one half-day step")
+    need(all(rs3[st]["premature_frac"] > ih3[st]["premature_rate_of_eligible"] for st in ("giant", "neptune")),
+         "with three bands RMDC26's premature rates are no longer the higher ones in both strata")
     # directional sentences of Sec. gulls:cascade
-    for st in ("giant", "neptune"):
-        need(rs1[st]["median_lag_nonpremature_days"] > ih[st]["median_lag_non_premature_days"], f"RMDC26 alerts 'come later' in the {st} stratum")
-        need(rs1[st]["detected_frac"] < ih[st]["detection_fraction"], f"RMDC26 detection 'is lower' in the {st} stratum")
-        need(rs1[st]["premature_frac"] <= ih[st]["premature_rate_of_eligible"], f"RMDC26 premature alerts 'no more frequent' in the {st} stratum")
-        need(rs3[st]["detected_frac"] < ih3[st]["detection_fraction"], f"three-band RMDC26 detection 'lower' in the {st} stratum")
     need(rs1["lowmass"]["detected_frac"] < rs1["neptune"]["detected_frac"] < rs1["giant"]["detected_frac"], "detection 'falls with mass ratio'")
     need(ihn["lowmass"] < 20, "the in-house scan 'barely samples' q < 1e-4")
     need(t_["premature_ci95"][1] < 0.05, "premature alerts 'stay rare'")

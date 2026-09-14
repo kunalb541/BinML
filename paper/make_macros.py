@@ -67,18 +67,22 @@ for c, v in cn["per_class"].items():
     cmd(f"bml{c}F", three(v["f1"]))
 
 cmd("bmlNonpsplPhysP", three(cn["nonpspl_physical_precision"]))
-cmd("bmlNonpsplDemoted", pct(cn["nonpspl_demoted_fraction"]))
 cmd("bmlSliceStrongAnom", three(cn["nonpspl_recall_strong_anomaly"]))
 
 sup = cn["per_class_support"]
 for c in ["Flat", "PSPL", "NonPSPL", "PeriodicVar", "LongPeriodVar", "Eruptive"]:
     cmd(f"bmlSup{c}", f"{sup[c]:,}")
 
-lab = cn["labelling"]
-cmd("bmlRelabelled", f"{lab['overall_relabelled_pct']:.1f}")
-cmd("bmlNonpsplKept", f"{lab['nonpspl_kept_pct']:.1f}")
-cmd("bmlNonpsplToPspl", f"{lab['nonpspl_to_pspl_pct']:.1f}")
-cmd("bmlLpvToFlat", f"{lab['lpv_to_flat_pct']:.1f}")
+# The labelling surgery is derived on the final test by make_figures.py (fifth verification: the hand-copied
+# canonical block was the whole pool's, and unweighted over the subsampled stored events).
+for _k in ("relabelled_pct", "nonpspl_kept_pct", "nonpspl_to_pspl_pct", "lpv_to_flat_pct", "nonpspl_kept_pct_w", "nonpspl_to_pspl_pct_w"):
+    if _k not in fs:
+        raise SystemExit(f"FATAL: figures_stats lacks '{_k}'; rerun make_figures.py")
+cmd("bmlRelabelled", f"{fs['relabelled_pct']:.1f}")
+cmd("bmlNonpsplKept", f"{fs['nonpspl_kept_pct']:.1f}")
+cmd("bmlNonpsplToPspl", f"{fs['nonpspl_to_pspl_pct']:.1f}")
+cmd("bmlLpvToFlat", f"{fs['lpv_to_flat_pct']:.1f}")
+cmd("bmlNonpsplKeptW", f"{fs['nonpspl_kept_pct_w']:.1f}"); cmd("bmlNonpsplToPsplW", f"{fs['nonpspl_to_pspl_pct_w']:.1f}")
 
 # CASCADE: read straight from the tracked artifact, never from a hand-copied block. If the
 # artifact is missing or its schema changed, FAIL rather than emit stale numbers -- prose/artifact
@@ -227,11 +231,20 @@ for _k, _nm in (("natural_np_recall", "NatNp"), ("natural_np_prec", "NatNpPrec")
     cmd(f"bmlStressRel{_nm}N", f"{_q[_k]['n_subset']:,}")
 # how close the regenerated subset is to the suite: stage 5 on the subset vs stage 5 on the suite. The subset is a new
 # realisation (the suite's fleet ran an unpinned environment), so checkpoint comparisons are made within the subset.
-_dev = {k: abs(_q[k]["subset_stage5"] - _q[k]["suite_stage5"]) for k in _q}
+_dev = {k: abs(_q[k]["subset_stage5"] - _q[k]["suite_stage5"]) for k in _q if k != "natural_macro_f1"}   # 'its OTHER numbers'
 cmd("bmlStressSubDiffMax", three(max(_dev.values())))
 cmd("bmlStressSubDiffMed", three(float(np.median(list(_dev.values())))))
 _fr_sub, _fr_suite = _sub["natural"]["released"]["label_fractions"]["NonPSPL"], _srl["suite_label_fractions"]["natural"]["NonPSPL"]
 cmd("bmlStressNatAnomDeficit", f"{100 * (1 - _fr_sub / _fr_suite):.1f}")
+_fw_sub, _fw_suite = (_sub["oor_np_widesep"]["released"]["label_fractions"]["NonPSPL"],
+                      _srl["suite_label_fractions"]["oor_np_widesep"]["NonPSPL"])
+cmd("bmlStressWidesepAnomDeficit", f"{100 * (1 - _fw_sub / _fw_suite):.0f}")
+# the sub-day sweep at the timescales of the RMDC26 comparison (0.25-1 d), corrected generator
+_mt = _sub["oor_pspl_shortte_current"]["released"]["single_lens_above_frozen_tE_0p25_1"]
+cmd("bmlStressShortteCurMatchedAlert", f"{100 * _mt['frac']:.0f}"); cmd("bmlStressShortteCurMatchedN", f"{_mt['n']:,}")
+# faint photometry against the faint sweep's class mix (fifth verification: the mix does not explain the precision)
+_pc = _srl["precision_counterfactual"]["released"]
+cmd("bmlStressFaintPrecNatMix", three(_pc["faint_at_natural_mix"])); cmd("bmlStressNatPrecFaintMix", three(_pc["natural_at_faint_mix"]))
 # PSPL recall by generator class: the suite's per-label PSPL recalls mix swept single lenses with demoted binaries
 for _t, _nm in (("oor_pspl_shortte", "Shortte"), ("oor_pspl_shortte_current", "ShortteCur"), ("oor_flat_faint", "Faint")):
     _g = {c: _sub[_t][c]["pspl_label_by_generator_class"] for c in ("released", "stage5")}
@@ -252,7 +265,7 @@ for _t, _nm in (("natural", "Nat"), ("planetary", "Planet"), ("oor_flat_faint", 
     cmd(f"bmlStressRel{_nm}MlFa", f"{100 * _r['pspl_label_false_anomaly_w']:.2g}")        # microlensing without an anomaly
     cmd(f"bmlStressRel{_nm}MlAlert", f"{100 * _r['pspl_label_above_frozen_w']:.2g}")
     cmd(f"bmlStress{_nm}BinDet", f"{100 * _r['binary_detectable_fraction_w']:.1f}")
-    if _t in _pn:
+    if _t in _pn and _t != "oor_flat_faint":    # the faint sweep's prior shift keeps its mix-diluted FPR; not quoted
         cmd(f"bmlStressRel{_nm}PrecNat", three(_pn[_t]["released"]))
 cmd("bmlStressRelNatPsplN", f"{_sub['natural']['released']['per_class']['PSPL']['n']:,}")
 cmd("bmlStressFaintBinShare", f"{100 * _sub['oor_flat_faint']['released']['true_class_fractions_w']['NonPSPL']:.0f}")
@@ -267,6 +280,17 @@ _need(abs(_q["natural_macro_f1"]["subset_stage5"] - _q["natural_macro_f1"]["suit
       "stage 5 on the subset gives the full set's macro-F1")
 _need(set(sorted(_dev, key=_dev.get)[-2:]) == {"widesep_np_recall", "faint_pspl_recall"},
       "the two largest subset-vs-full-set differences are the wide-separation and faint-source recalls")
+_need(_fw_sub < 0.85 * _fw_suite, "the regenerated wide-separation sweep labels clearly fewer detectable anomalies than the set")
+# every other tier's label fractions agree with the set within binomial noise (the two deficits above are disclosed)
+for _t in ("planetary", "oor_per_longp", "oor_pspl_shortte", "oor_flat_faint"):
+    _n = _sub[_t]["released"]["n"]
+    for _c, _fs in _srl["suite_label_fractions"][_t].items():
+        _f = _sub[_t]["released"]["label_fractions"][_c]
+        _se = max(np.sqrt(_fs * (1 - _fs) / _n), 1e-9)
+        _need(abs(_f - _fs) / _se < 4.5, f"the regenerated {_t} tier's {_c} fraction differs from the set's ({_f:.4f} vs {_fs:.4f})")
+_need(_pc["faint_at_natural_mix"] < 0.5 * _pc["natural"] and _pc["natural_at_faint_mix"] > 0.8 * _pc["natural"],
+      "faint photometry, not the sweep's class mix, drives most of the fall in faint-sweep precision")
+_need(_mt["frac"] > 3 * _sub["natural"]["released"]["pspl_label_above_frozen_w"], "the matched-timescale sub-day rate is far above the natural one")
 _need(_q["natural_np_recall"]["subset_stage5"] - _q["natural_np_recall"]["suite_stage5"] > 0.005 and _fr_sub < _fr_suite,
       "the regenerated natural tier has fewer detectable anomalies and stage 5's recall on it differs from the full set's")
 _need(_rel("widesep_np_recall") < 0.5, "wide-separation anomaly recall 'falls'")
@@ -282,9 +306,6 @@ _need(_rf["pspl_label_false_anomaly_w"] > 3 * _rn["pspl_label_false_anomaly_w"] 
       "the false-anomaly rate among faint microlensing events 'rises' well above the natural population's")
 _need(_sub["oor_pspl_shortte"]["released"]["pspl_label_by_generator_class"]["single_lenses"]["frac_above_frozen_threshold"] > 5 * _rn["pspl_label_above_frozen_w"],
       "sub-day single lenses cross the threshold far more often than natural microlensing events")
-_mix = _rn["true_class_fractions_w"]["NonPSPL"] / _rf["true_class_fractions_w"]["NonPSPL"]
-_det = _rn["binary_detectable_fraction_w"] / _rf["binary_detectable_fraction_w"]
-_need(_mix > _det > 1, "the faint tier's low prevalence is set 'mostly' by its class mix; faintness lowers the detectable fraction 'only' a little")
 _need(_srl["subset"]["oor_flat_faint"]["released"]["nonpspl_rates"]["prevalence_w"] < 0.1 * _srl["subset"]["natural"]["released"]["nonpspl_rates"]["prevalence_w"],
       "the faint tier's anomaly prevalence is far below the natural one")
 _need(_pn["planetary"]["released"] >= _rel("natural_np_prec"), "low-q precision falls 'only through prevalence'")
@@ -478,14 +499,14 @@ for _k, _nm in (("missed_anomaly_rate", "MissedRate"), ("lpv_to_pspl_rate", "LPV
 ia = cn["infra"]
 cmd("bmlSimEvents", f"{ia['sim_events_millions']:.0f}")
 cmd("bmlSimInstances", str(ia["sim_instances"]))
-cmd("bmlSimVcpus", str(ia["sim_vcpus_each"]))
+cmd("bmlSimVcpus", str(ia["sim5_vcpus_each"]))          # the v5 fleets (sim_* is the earlier v4 run)
 cmd("bmlSimEps", str(ia["sim_events_per_sec"]))
 cmd("bmlSimHours", str(ia["sim_hours"]))
-cmd("bmlSimRegion", ia["sim_region"])
+cmd("bmlSimRegion", ia["sim5_region"])
 cmd("bmlTrainDevice", ia["train_device"])
 cmd("bmlTrainEps", f"{ia['train_events_per_sec']:,}")
 cmd("bmlTrainBatch", str(ia["train_batch"]))
-cmd("bmlTrainHours", str(ia["train_hours"]))
+cmd("bmlTrainHours", str(ia["train_hours"])); cmd("bmlTrainHoursTypical", str(ia["train_hours_typical"]))
 cmd("bmlTrainStages", str(ia["train_stages"]))
 cmd("bmlTrainFinalEvents", f"{ia['train_final_stage_events'] / 1e6:.1f}")
 cmd("bmlTrainBaseEvents", f"{ia['train_base_events']:,}")
@@ -494,6 +515,16 @@ cmd("bmlTrainEpsLo", str(ia["train_epoch_events_per_sec_lo"])); cmd("bmlTrainEps
 cmd("bmlTrainEpochs", str(ia["train_epochs_effective"]))
 
 sl = cn["slices"]
+# the slices are hand-copied into canonical_numbers.json; check them against the frozen metrics.json (the
+# no-blue-band slice can only be read there: the per-event band counts were not saved; fifth verification)
+_mj = _jload(os.path.join(HERE, "results", "metrics.json"))["slices"]
+for _cname, _mname in (("deep_planetary_q_lt_1e-3", "deep_planetary_q_lt_1e-3"), ("planetary_q_lt_1e-2", "planetary_q_lt_1e-2"),
+                       ("near_suzuki_break", "near_suzuki_break"), ("faint_mbase_gt_22p5", "faint_mbase_gt_22.5"),
+                       ("no_blue_band", "no_blue_band")):
+    if abs(sl[_cname]["recall"] - _mj[_mname]["recall"]) > 5e-4:
+        raise SystemExit(f"FATAL: canonical slice {_cname} ({sl[_cname]['recall']}) disagrees with metrics.json ({_mj[_mname]['recall']})")
+if sl["no_blue_band"]["n"] != _mj["no_blue_band"]["n_true_nonpspl"]:
+    raise SystemExit("FATAL: the no-blue-band slice count disagrees with metrics.json")
 cmd("bmlSliceDeepPlanet", three(sl["deep_planetary_q_lt_1e-3"]["recall"]))
 cmd("bmlSlicePlanet", three(sl["planetary_q_lt_1e-2"]["recall"]))
 cmd("bmlSliceSuzuki", three(sl["near_suzuki_break"]["recall"]))
@@ -548,12 +579,41 @@ cmd("bmlRecallWeakestNotWide", three(fs["recall_weakest_not_wide"]))
 cmd("bmlFpDemotedPct", f"{fs['fp_demoted_binary_pct']:.1f}"); cmd("bmlPsplToNpDemotedPct", f"{fs['pspl_to_np_demoted_pct']:.1f}")
 cmd("bmlDetQmed", f"{fs['det_q_median']:.2f}"); cmd("bmlDetStellarPct", f"{fs['det_stellar_pct']:.0f}")
 cmd("bmlEffWideStellarLo", f"{fs['eff_cond_recall_wide_stellar_lo']:.2f}"); cmd("bmlEffWideStellarHi", f"{fs['eff_cond_recall_wide_stellar_hi']:.2f}")
-cmd("bmlEffMin", f"{fs['eff_cond_recall_min']:.2f}"); cmd("bmlEffMinLogq", f"{fs['eff_cond_recall_min_logq_hi']:.0f}")
-if not (fs["miss_wide_pct"] > 50 and fs["det_wide_pct"] < 20 and fs["miss_dchi2_gt_1e4_pct"] > 30
-        and fs["recall_wide"] < fs["recall_not_wide"] - 0.1):
-    raise SystemExit("FATAL: the misses no longer sit mostly at wide separations, across evidence strengths")
-if not fs["eff_cond_recall_wide_stellar_lo"] < fs["eff_cond_recall_median"] - 0.15:
-    raise SystemExit("FATAL: the wide stellar-ratio cells are no longer clearly below the plane's median recall")
+cmd("bmlEffMin", f"{fs['eff_cond_recall_min']:.2f}")
+cmd("bmlEffMinLogqLo", f"{fs['eff_cond_recall_min_logq_lo']:g}"); cmd("bmlEffMinLogqHi", f"{fs['eff_cond_recall_min_logq_hi']:g}")
+for _k in ("wide_miss_rate_by_dchi2_lo", "wide_miss_rate_by_dchi2_hi", "notwide_weak_share_of_det_pct", "notwide_weak_share_of_miss_pct",
+           "notwide_miss_rate_weak", "notwide_miss_rate_strong", "recall_wide_bigq", "recall_wide_smallq", "wide_miss_bigq_pct",
+           "thr_miss_pct_of_det", "thr_miss_wide_pct", "eff_cond_recall_wide_bigq_lo", "eff_cond_recall_wide_bigq_hi",
+           "eff_nd_wide_bigq_min", "eff_nd_min_cell", "eff_nd_median_populated"):
+    if _k not in fs:
+        raise SystemExit(f"FATAL: figures_stats lacks '{_k}'; rerun make_figures.py")
+cmd("bmlWideMissLo", f"{100 * fs['wide_miss_rate_by_dchi2_lo']:.0f}"); cmd("bmlWideMissHi", f"{100 * fs['wide_miss_rate_by_dchi2_hi']:.0f}")
+cmd("bmlNotWideWeakDet", f"{fs['notwide_weak_share_of_det_pct']:.0f}"); cmd("bmlNotWideWeakMiss", f"{fs['notwide_weak_share_of_miss_pct']:.0f}")
+cmd("bmlNotWideMissWeak", three(fs["notwide_miss_rate_weak"])); cmd("bmlNotWideMissStrong", three(fs["notwide_miss_rate_strong"]))
+cmd("bmlRecallWideBigq", three(fs["recall_wide_bigq"])); cmd("bmlRecallWideSmallq", three(fs["recall_wide_smallq"]))
+cmd("bmlWideMissBigqPct", f"{fs['wide_miss_bigq_pct']:.0f}")
+cmd("bmlThrMissPct", f"{fs['thr_miss_pct_of_det']:.0f}"); cmd("bmlThrMissWidePct", f"{fs['thr_miss_wide_pct']:.0f}")
+cmd("bmlEffWideBigqLo", f"{fs['eff_cond_recall_wide_bigq_lo']:.2f}"); cmd("bmlEffWideBigqHi", f"{fs['eff_cond_recall_wide_bigq_hi']:.2f}")
+cmd("bmlEffWideBigqNd", f"{fs['eff_nd_wide_bigq_min']:,}"); cmd("bmlEffMinNd", str(fs["eff_nd_min_cell"]))
+# the directional sentences of Sec. results about where the misses sit (fourth and fifth verifications)
+def _needfs(ok, what):
+    if not ok:
+        raise SystemExit(f"FATAL: Sec. results sentence no longer holds: {what}")
+_needfs(fs["np_to_pspl_wide_pct"] > 50 and fs["miss_wide_pct"] > 50 and fs["det_wide_pct"] < 20,
+        "'most' NonPSPL->PSPL confusions and 'more than half' of argmax misses are wide binaries, a small share of anomalies")
+_needfs(0.15 <= fs["wide_miss_rate_by_dchi2_lo"] and fs["wide_miss_rate_by_dchi2_hi"] <= 0.35,
+        "wide binaries are missed 'about a quarter of the time at every evidence strength'")
+_needfs(fs["notwide_weak_share_of_miss_pct"] > 2 * fs["notwide_weak_share_of_det_pct"]
+        and fs["notwide_miss_rate_weak"] > 10 * fs["notwide_miss_rate_strong"],
+        "at smaller separations the misses 'concentrate at weak anomalies'")
+_needfs(fs["recall_wide_bigq"] < fs["recall_wide_smallq"] - 0.15 and fs["wide_miss_bigq_pct"] > 80,
+        "the wide-separation weakness is 'confined to q > 0.1'")
+_needfs(fs["eff_cond_recall_wide_bigq_hi"] < fs["eff_cond_recall_median"] - 0.15 and fs["eff_nd_wide_bigq_min"] > 2 * fs["eff_nd_median_populated"],
+        "the plane's wide q > 0.1 cells are 'well populated' and clearly below its median")
+_needfs(fs["eff_nd_min_cell"] < fs["eff_nd_median_populated"] / 4, "the plane's minimum sits in a 'low-support' cell")
+_needfs(fs["thr_miss_wide_pct"] < fs["miss_wide_pct"], "at the operating threshold a smaller share of the misses is wide")
+_needfs(fs["det_stellar_pct"] > 50 and fs["det_q_median"] > 1e-2, "our detectable anomalies are mostly stellar-mass-ratio binaries")
+_needfs(fs["nonpspl_kept_pct_w"] < fs["nonpspl_kept_pct"], "the stored-event fraction overstates the generated binaries' detectable fraction")
 if "nonpspl_ece_weighted" in fs:
     cmd("bmlECE", f"{fs['nonpspl_ece_weighted']:.3f}")
     cmd("bmlBrier", f"{fs['nonpspl_brier_weighted']:.3f}")

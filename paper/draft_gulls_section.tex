@@ -25,19 +25,14 @@
 % =====================================================================================
 
 % ---------------------------------------------------------------- [A] abstract (merged 2026-09-12: the abstract was condensed; these are its closing sentences)
-These are benchmark
-values for a continuous 15-minute schedule and an adopted $0.02$~mag detectability floor, not \Rom{}
-yield forecasts. On RMDC26, an independent GULLS simulation of the survey made for the Roman
-Microlensing Data Challenge 2026 ($\bmlGullsN$ selected events, none used for training), the shipped
-checkpoint flags $\bmlGullsFaShipped\%$ of single lenses per simulated event as anomalous, mostly because our training
-seasons lack the survey's F146 observing pauses. Fine-tuning on our own simulations with gap
-augmentation, finite-source single lenses and the measured pauses raises planetary recall at a
-$\bmlGullsBudgetMid\%$ single-lens false-alarm budget from $\bmlGullsRecShipped$ to
-$\bmlSeedRecLo$--$\bmlSeedRecHi$ per simulated event across three training seeds
-($\bmlGullsRecWShipped$ to $\bmlSeedRecWLo$--$\bmlSeedRecWHi$ weighted by event rate); RMDC26 also
-guided the diagnosis and the choice of checkpoint, so these values are optimistic, and
-$\bmlGullsUndetPlanet$--$\bmlGullsUndetPlanetBin\%$ of the planetary events we checked carry no anomaly our
-labelling policy would claim within one season. Code, weights, and reproducibility artifacts are released openly.
+These are synthetic benchmarks (continuous 15-minute
+cadence, $0.02$~mag detectability floor), not yield forecasts. On RMDC26, an independent GULLS
+simulation of the survey, the shipped checkpoint flags $\bmlGullsFaShipped\%$ of single lenses as anomalous,
+mostly because our training seasons lack the survey's observing pauses. Fine-tuning with gap augmentation,
+finite-source single lenses and the measured pauses raises planetary recall at a $\bmlGullsBudgetMid\%$
+false-alarm budget from $\bmlGullsRecShipped$ to $\bmlSeedRecLo$--$\bmlSeedRecHi$ per simulated event across
+three seeds ($\bmlGullsRecWShipped$ to $\bmlSeedRecWLo$--$\bmlSeedRecWHi$ rate-weighted); RMDC26
+also guided the checkpoint choice, so these values are optimistic. Code, weights and artifacts are public.
 
 % ---------------------------------------------------------------- [B] Sec. limits, replacement paragraph
 \paragraph{The schedule, not the sampling rate, is what the shipped model cannot survive.}
@@ -443,25 +438,29 @@ against $\bmlCgInGiantPrem\%$, the median lag of the other alerts is $\bmlCgRmGi
 $\bmlCgInGiantLag$~d, and $\bmlCgRmGiantDet\%$ against $\bmlCgInGiantDet\%$ are flagged by the end of the
 season; for Neptunes ($10^{-4} < q \le 10^{-3}$; $\bmlCgRmNeptuneN$ against $\bmlCgInNeptuneN$) the figures are
 $\bmlCgRmNeptunePrem\%$ against $\bmlCgInNeptunePrem\%$, $\bmlCgRmNeptuneLag$ against $\bmlCgInNeptuneLag$~d,
-and $\bmlCgRmNeptuneDet\%$ against $\bmlCgInNeptuneDet\%$. Premature alerts are therefore no more frequent,
-alerts come later and detection is lower (a different checkpoint on a different simulator, so the differences
-mix the two). $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
-scan barely samples ($\bmlCgInLowmassN$ events); there detection falls to $\bmlCgRmLowmassDet\%$. Over all
+and $\bmlCgRmNeptuneDet\%$ against $\bmlCgInNeptuneDet\%$. The in-house strata are small, so only some of these
+differences are resolved: premature alerts are about as frequent ($\bmlCgRmGiantPremK$ of $\bmlCgRmGiantN$ against $\bmlCgInGiantPremK$ of
+$\bmlCgInGiantN$, and $\bmlCgRmNeptunePremK$ of $\bmlCgRmNeptuneN$ against $\bmlCgInNeptunePremK$ of $\bmlCgInNeptuneN$); detection pooled over the two strata is lower
+($\bmlCgRmPoolDet\%$ against $\bmlCgInPoolDet\%$); Neptune alerts come later, while the giant-planet lags differ by
+one half-day step (a different checkpoint on a different simulator, so the differences mix the two). $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
+scan barely samples ($\bmlCgInLowmassN$ events); there detection falls to $\bmlCgRmLowmassDet\%$ (the remaining
+$\bmlCgRmStellarFrac\%$ have $q > 10^{-2}$). Over all
 $\bmlCgElig$ eligible events $\bmlCgDet\%$ ($\bmlCgDetLo$--$\bmlCgDetHi\%$) are flagged by the end of the season,
 in line with the full-season recall on claimable anomalies ($\bmlGullsRecDetPlanet$ and
 $\bmlGullsRecDetPlanetBin$, \S\ref{sec:gulls:labels}), and the median lag is $\bmlCgLag$~d. Revealing all three
 bands lowers premature alerts to $\bmlCgPremThree\%$, lengthens the lag to $\bmlCgLagThree$~d and lowers detection
 to $\bmlCgDetThree\%$; with three bands the in-house giant and Neptune strata flag $\bmlCgInGiantDetThree\%$ and
 $\bmlCgInNeptuneDetThree\%$ ($\bmlCgInGiantPremThree\%$ and $\bmlCgInNeptunePremThree\%$ premature), against
-$\bmlCgRmGiantDetThree\%$ and $\bmlCgRmNeptuneDetThree\%$ ($\bmlCgRmGiantPremThree\%$ and
-$\bmlCgRmNeptunePremThree\%$) on RMDC26.
+$\bmlCgRmGiantDetThree\%$ and $\bmlCgRmNeptuneDetThree\%$ on RMDC26, whose premature rates are the higher ones there
+($\bmlCgRmGiantPremThreeK$ against $\bmlCgInGiantPremThreeK$ and $\bmlCgRmNeptunePremThreeK$ against
+$\bmlCgInNeptunePremThreeK$ events, within counting noise).
 
 Scanning single lenses gives the alert burden on a second simulator. $\bmlCgSingleAlert\%$ of the
 scanned single lenses (95\% interval $\bmlCgSingleAlertLo$--$\bmlCgSingleAlertHi\%$; $\bmlCgSingleAlertW\%$
 weighted by event rate) raise an alert at some point in the season ($\bmlCgSingleAlertDay$ alerts per 1,000
-single lenses per day). On the complete season this sample flags slightly fewer single lenses than all scored
-ones ($\bmlCgSingleFullWindow\%$ against $\bmlGullsFaCombined\%$), so the burden and purity figures here are
-slightly optimistic. If 1\% of events were planetary
+single lenses per day). On the complete season, with F146 alone, this sample flags slightly fewer single lenses
+than all scored ones ($\bmlCgSingleFullWindow\%$ against $\bmlCgSingleAllFone\%$), so the burden and purity figures
+here are slightly optimistic. If 1\% of events were planetary
 binaries, $\bmlCgPurOne\%$ of alerts would come from a claimable anomaly, and $\bmlCgPurFive\%$ at 5\% (per
 simulated event). At RMDC26's own rate-weighted planetary fraction, which over-represents planets, the figure is
 $\bmlCgPurRmdc\%$. These count single-lens contamination only; RMDC26 contains no variable stars or flat

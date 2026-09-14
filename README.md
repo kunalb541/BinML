@@ -79,8 +79,8 @@ Per-class F1 (population-weighted, selection-corrected):
 |---|---|---|---|---|---|
 | 0.97 | 0.96 | 0.82 | 0.97 | 0.91 | 0.88 |
 
-> The NonPSPL F1 (0.82) is precision-limited; its recall is 0.95. Of its false positives, 94.7%
-> were generated as binaries but demoted to PSPL by the adopted detectability floor. They remain
+> The NonPSPL F1 (0.82) is precision-limited; its recall is 0.95. Of its false positives, 94.4%
+> (final test, argmax, weighted) were generated as binaries but demoted to PSPL by the adopted detectability floor. They remain
 > false positives for the stated observational task. This diagnostic may reflect sensitivity to
 > sub-threshold structure or correlated simulation properties and is not a second precision
 > estimate.
@@ -182,8 +182,8 @@ if you omit the bucket. Generation is embarrassingly parallel:
   (`--worker W --workers N`).
 - **`--seed-base` makes evaluation honest.** Train/val/test used base `20260720`; a far-off base
   (e.g. `900000000`) gives a different PCG64 stream — parameter tuples the model did not see in
-  training. The full stress suite has a 4.5M same-prior subset, 8.7M events in 12 targeted regimes (mostly enriched
-  pools also used in training) and 1.7M in 17 out-of-range sweeps (scored with stage 5; the released model's
+  training. The full stress suite has a 4.5M same-prior subset, 8.7M events in 12 targeted regimes (all of them
+  enriched pools also used in training) and 1.7M in 17 out-of-range sweeps (scored with stage 5; the released model's
   numbers come from a regenerated subset).
 - **Binning & inference run in-region.** Raw shards are ~312 MB each (~125 GB for a full run);
   binning them to compact caches (~46 MB) and running the model *in the S3 region* means the
@@ -248,7 +248,8 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   [`docs/VERIFICATION_2026-09-12b.md`](docs/VERIFICATION_2026-09-12b.md); every number regenerates
   from the scripts under `validation/gulls/` (from a clone, without the curve cache: the `command_from_clone` field of
   `validation/gulls/transfer_tradeoff_all.json` is the exact `gulls_summary_tables.py --scores` invocation).
-- **Known weak spots** (targeted out-of-range tests, documented in [`docs/model_card.md`](docs/model_card.md)):
+- **Known weak spots** (documented in [`docs/model_card.md`](docs/model_card.md)): within the training prior, wide
+  binaries at s > 2.9 and q >= 0.1 (argmax recall 0.70; over half of all argmax misses); in targeted out-of-range tests:
   faint sources m>25 (noise-dominated: 12% of faint microlensing events without a detectable anomaly exceed the
   operating threshold, against 0.9% in the natural population), sub-day single lenses tE 0.2-1 d (69% called
   anomalies, 35% above the operating threshold), wide caustics s>5 (anomaly recall 0.33 on 64 events).
@@ -259,7 +260,7 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
 - **Known colour-photometry mismatch.** Relative to the current Roman calibration, the released
   simulator's F087 and F213 zeropoints are optimistic by about 0.10 and 0.14 mag, respectively;
   its F087 saturation limit was carried from a longer exposure and is too faint (at equal exposure
-  F087 saturates ~1.2 mag brighter than F146, not fainter), and its colour-band
+  F087 saturates ~1.3 mag brighter than F146, not fainter), and its colour-band
   background ratios do not reproduce the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. Short fine-tunes on each calibration (one seed each) keep AP; the audited-calibration fine-tune falls to periodic-variable F1 0.750 on the old photometry (0.872 at its last epoch), against 0.961 (0.972) for the old-calibration fine-tune; on the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967). The released model has not been retrained with corrected values.
 - **Provide `m_base_ref`.** The model input is baseline-relative; give the F146 quiescent
   magnitude when you have it (a catalogue value). The faint-tail estimate is only reliable for

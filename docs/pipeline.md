@@ -159,7 +159,8 @@ python -m pipeline.plot_evolution_cloud --cache data/cache/shard_00000.h5 \
   exploratory risk–coverage comparison because it selects thresholds and evaluates outcomes on
   the same events; its conditional McNemar values are not confirmatory inference. The main prefix
   scan contains eligible binaries only and reuses a complete-season threshold, so it does not
-  measure streaming false alerts, purity, or workload on contaminant classes.
+  measure streaming false alerts, purity, or workload on contaminant classes; the every-class scan of two
+  held-out-pool shards does (paper Sec. cascade; `validation/referee_round.json`, `mixed_class_stream{,_f146}`).
 
 - **Simulation supports.** The distributions are broad analytic supports in the style of Zhang
   et al., not a measured Roman population model. The `tE` prior is an authored truncated
@@ -169,7 +170,7 @@ python -m pipeline.plot_evolution_cloud --cache data/cache/shard_00000.h5 \
 - **Legacy photometry.** The released model was trained with 46.8-s legacy exposures. Against the
   current Roman calibration, its F087/F213 zeropoints are optimistic by about 0.10/0.14 mag, its
   F087 saturation limit (13.9, carried from a 286-s exposure) is too faint for the shorter exposure --
-  at equal exposure and well depth F087 saturates about 1.2 mag brighter than F146, not fainter -- and its colour-band background ratios do
+  at equal exposure and well depth F087 saturates about 1.3 mag brighter than F146, not fainter -- and its colour-band background ratios do
   not match the published thermal backgrounds. Corrected constants are recorded in
   `photometry.py` (`ROMAN_BANDS_COLOUR_AUDITED`, `run_shard --band-set colour_audited`). Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. Short fine-tunes on each calibration (one seed each) keep AP; the audited-calibration fine-tune falls to periodic-variable F1 0.750 on the old photometry (0.872 at its last epoch), against 0.961 (0.972) for the old-calibration fine-tune; on the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967). The released model has not been retrained with corrected values.
 

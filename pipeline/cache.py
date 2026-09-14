@@ -66,7 +66,7 @@ def bin_curve(mag: np.ndarray, factor: int) -> Tuple[np.ndarray, np.ndarray]:
 
 
 GEN_ATTRS = ("regime", "onset_resolution_days", "noise_mult", "bkg_mult", "regime_priors", "espl_function",
-             "min_amplitude_mag", "band_set")
+             "min_amplitude_mag", "band_set", "legacy_oor_mix", "legacy_t0_pad")
 
 
 def build_cache(shard_paths, out_path: str, verbose: bool = True) -> dict:

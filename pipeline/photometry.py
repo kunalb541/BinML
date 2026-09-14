@@ -99,14 +99,16 @@ class Band:
 #                                                   SHORTER exposure fills the well only for a
 #                                                   BRIGHTER source, so a 46.8-66 s limit is
 #                                                   brighter than 13.9, not fainter; (2) at equal
-#                                                   exposure F087 collects 10^(-0.4*(27.6-26.3)) =
-#                                                   0.3x the electrons of F146 for the same AB mag,
-#                                                   so its equal-well limit is ~1.2 mag BRIGHTER
-#                                                   than F146's 14.8: 13.5-13.6 AB. F087's narrower
+#                                                   exposure F087 collects 10^(-0.4*(27.584-26.302))
+#                                                   = 0.31x the electrons of F146 for the same AB mag,
+#                                                   so its equal-well limit is ~1.28 mag BRIGHTER
+#                                                   than F146's 14.8: ~13.5 AB (checked against the
+#                                                   2024-03-01 table on 2026-09-13). F087's narrower
 #                                                   PSF concentrates ~2.8x more flux in the peak
 #                                                   pixel (~1.1 mag), which would move it back to
-#                                                   ~14.6 -- still not fainter than F146. 13.6 is
-#                                                   adopted as the equal-well value; no official
+#                                                   ~14.6 -- still not fainter than F146. 13.6 was
+#                                                   adopted (0.1 mag above the equal-well value,
+#                                                   toward the PSF-peak correction); no official
 #                                                   figure is published for the 66 s design.
 #   background ratios   F213/F146    F213/F146 ~3   internal_thermal_backgrounds.ecsv: F087 0.003,
 #                       = 1.24       F087 ~8x below F146 1.03, F213 4.38 e-/pix/s

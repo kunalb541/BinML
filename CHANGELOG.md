@@ -70,7 +70,8 @@ pass (record: `docs/VERIFICATION_2026-09-12b.md`). What changed:
   (3.3% natural). The low-q and faint regimes were stage-4 training pools and stage 6 added pools overlapping two
   sweeps; the text says so. The "10.4M out-of-distribution" figure of earlier entries counts 8.7M events in enriched
   in-prior regimes and 1.7M in out-of-range sweeps. (2) The appendix training recipe described the base run's
-  train.py defaults (batch 256, factor 2 on the anomaly class, 5 epochs) and an earlier 10M-event AWS run; it now
+  values not from the stage logs (batch 256 and 3e-4 are train.py defaults; 5 epochs matched no stage) and an earlier
+  10M-event AWS run; it now
   describes the six-stage chain from the stage logs and checkpoint optimizer states (`paper/canonical_numbers.json`).
 - CI and tooling: the paper-build workflow checks both macro files and compares the regenerated macros, tables and
   rendered draft with the committed ones; generator inputs all go through `load()` and are checked against the manifest

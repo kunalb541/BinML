@@ -49,10 +49,15 @@ Per-class recall / precision / F1 (population-weighted, selection-corrected argm
 
 Macro-F1 is 0.919. **Read NonPSPL carefully:** the class contains both stellar binaries and
 planetary-mass-ratio binary lenses; it is not a planet label. Its recall is 0.95 and its precision
-is 0.72. Of the false positives, 94.7% were generated as binaries but demoted to PSPL by the
+is 0.72. Of the false positives, 94.4% (final test, argmax, weighted) were generated as binaries but demoted to PSPL by the
 adopted detectability floor. They remain false positives for this task. The diagnostic could
 reflect sub-threshold structure or correlated simulation properties and is not a second, higher
 precision estimate.
+
+The recovery misses have two sources (paper Sec. results, `paper/outputs/figures_stats.json`): wide binaries
+(s > 2.9, 11% of detectable anomalies) hold 55% of the argmax misses and are missed 22-30% of the time at every
+evidence strength, almost all at q >= 0.1; at smaller separations the misses concentrate at weak anomalies
+(dchi2 < 2000: 19% of those anomalies, 56% of their misses).
 
 - **Completeness @ fixed purity: 0.879.** Average precision (population): 0.9515.
 - **Binary anomaly calibration:** weighted ECE 0.0533 and weighted Brier score 0.0209 for
@@ -131,7 +136,7 @@ lineage, not as a causal claim.
 ## 5. Stress testing — same-prior, targeted and out-of-range arms
 
 The full suite contains 14.9 million events: a 4.5-million-event same-prior subset, 8.7 million events in 12
-targeted regimes (mostly enriched pools also used in training, drawn afresh) and 1.7 million in 17 out-of-range
+targeted regimes (all of them enriched pools also used in training, drawn afresh) and 1.7 million in 17 out-of-range
 sweeps. It was scored in July 2026 with the **stage-5 checkpoint**, the released model's predecessor
 (`paper/results/stress_report.json`; its macro-F1 0.927 is stage 5's). For the released model,
 `validation/stress_rescore_local.py` regenerates the first shards of each quoted regime with the suite's seeds,
@@ -154,7 +159,7 @@ sensitivity to chosen stressors; they do not define their prevalence in the Roma
 ## 6. Baselines are sanity checks
 
 The classical and learned comparators are useful reference points, not matched contests. The
-neural model was trained on up to 1.9 million events per stage and receives the supplied true baseline magnitude;
+neural model was trained on up to 1.5 million events per stage (1.9 million in the final stage's data) and receives the supplied true baseline magnitude;
 the gradient-boosted and logistic baselines use a much smaller event set and eight summary
 features. Every method, the fitted-PSPL residual included, sees all 6,912 F146 epochs (the residual's AP is 0.545
 after the 2026-09-09 full-cadence rescore; an earlier version thinned it to 800 epochs). These differences

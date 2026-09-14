@@ -102,9 +102,20 @@ CASES = {
     "truncation errors not half late": (lambda t: _edit(t, "../truth_relabel_impact.json",
                                                         lambda d: d["results"]["refit_reference"]["truncation"]["counts"].update({"legacy PSPL / refit NonPSPL": 0})),
                                         "no longer 'about half' late PSPL labels"),
-    "RMDC26 alerts no later than in-house": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
-                                                             ["timing_by_mass_ratio"]["giant"].update(median_lag_nonpremature_days=1.0)),
-                                             "RMDC26 alerts 'come later' in the giant stratum"),
+    "RMDC26 Neptune alerts no later than in-house": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                                     ["timing_by_mass_ratio"]["neptune"].update(median_lag_nonpremature_days=4.5)),
+                                                     "Neptune alerts come later"),
+    "cascade sample not optimistic": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                      ["burden"]["RMDC26_1S1L_ML"].update(full_window_flag_frac=0.07)),
+                                      "slightly fewer"),
+    "planetary classes scanned unequally": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["n_scanned"].update(RMDC26_2S2L_ML=900)),
+                                            "'the first N of each planetary class'"),
+    "pooled detection not lower": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                   ["timing_by_mass_ratio"]["neptune"].update(detected_frac=0.83)),
+                                   "pooled over the planetary strata"),
+    "three-band premature not higher": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|threeband|frozen"]
+                                                        ["timing_by_mass_ratio"]["giant"].update(premature_frac=0.0)),
+                                        "premature rates are no longer the higher ones"),
     "RMDC26 sub-day like our sweep": (lambda t: _edit(t, "transfer_subday.json", lambda d: [b.update(fa=0.9) for b in d["models"]["shipped"]["fa_frozen_by_te"]]),
                                       "no longer cross the threshold far less often than our sweep's"),
 }

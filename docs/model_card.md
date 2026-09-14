@@ -31,7 +31,7 @@ The released simulation predates the current survey definition. Current GBTDS pl
 approximately 12-min F146 sampling, 66-s exposures, staggered colour visits, and multiple seasons.
 An audit against the current calibration also found F087/F213 zeropoints optimistic by about
 0.10/0.14 mag, an F087 saturation limit carried from a longer exposure (too faint: at equal
-exposure F087 saturates ~1.2 mag brighter than F146), and colour-band background
+exposure F087 saturates ~1.3 mag brighter than F146), and colour-band background
 ratios inconsistent with the published thermal backgrounds. Measured on our simulator (`validation/referee_round.json`, 15,016 events of two held-out-pool shards): with the audited colour photometry the shipped model's anomaly ranking is unchanged (AP 0.958 vs 0.957), but the variable classes lose precision (periodic 0.949 to 0.908, eruptive 0.806 to 0.776; F1 0.970 to 0.949 and 0.891 to 0.871) because more flat sources are called periodic and more single lenses eruptive; recall is unchanged. Short fine-tunes on each calibration (one seed each) keep AP; the audited-calibration fine-tune falls to periodic-variable F1 0.750 on the old photometry (0.872 at its last epoch), against 0.961 (0.972) for the old-calibration fine-tune; on the audited photometry the two differ at the kept epoch (0.957 vs 0.917) but not at the last (0.967 vs 0.967). The released model has not been retrained with corrected values.
 
 ## Evaluation
@@ -59,7 +59,7 @@ stream would be less pure.
 
 The 14.9-million-event stress suite (a 4.5-million-event same-prior subset, 8.7 million events in targeted regimes and 1.7 million in out-of-range sweeps) was
 scored with the stage-5 checkpoint, the released model's predecessor; its 0.927 macro-F1 is stage 5's. On the
-first shards of each quoted regime, regenerated with the same seeds (255,527 events), the released model reaches
+first shards of each quoted regime, regenerated with the same seeds (255,481 events; a new realisation of the suite's populations, not its events), the released model reaches
 macro-F1 0.919 on the same-prior part, equal to its held-out value
 (`validation/stress_rescore_local.json`). Full detail: [evaluation.md](evaluation.md).
 
@@ -91,6 +91,10 @@ Documented in targeted out-of-distribution tests (their population frequency is 
   (38% have t_E < 3 d, 16% weighted by event rate, against 1.8% of our prior's mass), and the gap-aware
   checkpoints' false-alarm rate rises with timescale, so per-event and rate-weighted rates differ
   (`validation/gulls/transfer_tradeoff_all.json`, `weighted` blocks).
+- **Wide binaries within the prior (s > 2.9, the top of the separation prior):** 11% of detectable anomalies but 55%
+  of argmax misses on the final test; argmax recall 0.744 against 0.974 elsewhere (completeness at the operating
+  threshold 0.602 against 0.913). The weakness is at q >= 0.1 (recall 0.698, against 0.952 at smaller q). At
+  smaller separations the misses concentrate at weak anomalies near the detectability floor.
 - **Faint sources (m = 25-27.5):** noise-dominated; among microlensing events without a detectable anomaly the
   false-anomaly rate rises from 3.3% to 26% (0.9% to 12% above the operating threshold). The sweep's NonPSPL
   precision (0.026) is set mostly by its class mix (4% binaries by weight); at the natural prevalence the same rates

@@ -65,6 +65,8 @@ env/
 # the referee round's per-event inputs and its two colour fine-tunes, hashed in validation/referee_round.json
 # ("archive"); the paper's Data availability section cites them (fourth verification: they had not been committed)
 !validation/referee_round_archive/*.npz
+# the stress re-scoring's per-event inputs (validation/stress_rescore_local.json, 'archive')
+!validation/stress_rescore_archive/*.npz
 
 # Model checkpoints (but allow best_model.pt in results)
 *.pth

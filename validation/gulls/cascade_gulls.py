@@ -401,6 +401,15 @@ def reduce(args):
                                     "note": ("in-house = the SHIPPED checkpoint on our simulator, 80% stellar-mass-ratio binaries; "
                                              "compare stratum by stratum with results[...]['timing_by_mass_ratio']")}
     out["command"] = " ".join(sys.argv)
+    # the code that produced this artifact (fifth verification: it recorded none)
+    import hashlib
+    import subprocess
+    out["code"] = subprocess.run(["git", "describe", "--always", "--dirty", "--abbrev=12"], cwd=REPO,
+                                 capture_output=True, text=True).stdout.strip()
+    if not out["code"]:
+        raise SystemExit("FATAL: git describe returned nothing; an artifact must record its code")
+    out["reducer_sha256"] = {os.path.basename(f): hashlib.sha256(open(f, "rb").read()).hexdigest()
+                             for f in (os.path.abspath(__file__), os.path.join(os.path.dirname(HERE), "cascade_reduce.py"))}
     json.dump(out, open(args.out, "w"), indent=1)
     print("scanned", out["n_scanned"])
     for key, res in out["results"].items():

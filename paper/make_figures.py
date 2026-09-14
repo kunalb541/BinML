@@ -187,8 +187,16 @@ def fig_efficiency_plane():
     stats["eff_cond_recall_wide_stellar_lo"] = round(float(min(wc)), 3)
     stats["eff_cond_recall_wide_stellar_hi"] = round(float(max(wc)), 3)
     stats["eff_nd_wide_stellar_min"] = int(min(Nd[i, n_s - 1] for i in stel if np.isfinite(Cc[i, n_s - 1])))
+    # fifth verification: the widest-column weakness is confined to q > 0.1 (its two best-populated cells)
+    big = [i for i in range(n_q) if qe[i] >= -1 - 1e-9 and np.isfinite(Cc[i, n_s - 1])]
+    stats["eff_cond_recall_wide_bigq_lo"] = round(float(min(Cc[i, n_s - 1] for i in big)), 3)
+    stats["eff_cond_recall_wide_bigq_hi"] = round(float(max(Cc[i, n_s - 1] for i in big)), 3)
+    stats["eff_nd_wide_bigq_min"] = int(min(Nd[i, n_s - 1] for i in big))
     imin = np.unravel_index(np.nanargmin(Cc), Cc.shape)
+    stats["eff_cond_recall_min_logq_lo"] = round(float(qe[imin[0]]), 1)
     stats["eff_cond_recall_min_logq_hi"] = round(float(qe[imin[0] + 1]), 1)
+    stats["eff_nd_min_cell"] = int(Nd[imin])
+    stats["eff_nd_median_populated"] = int(np.median(Nd[np.isfinite(Cc)]))
 
     fig, axes = plt.subplots(1, 3, figsize=(7.8, 2.9), sharey=True)
     logNd = np.log10(np.where(Nd > 0, Nd, np.nan))
@@ -404,6 +412,37 @@ def derived_prose_numbers():
     stats["comp_not_wide"] = round(wsum(det_ & ~wide & (sc_ >= thr_op)) / wsum(det_ & ~wide), 3)
     lo_ev = det_ & (dch < 500)
     stats["recall_weakest_not_wide"] = round(wsum(lo_ev & ~wide & (pred == NONP_)) / wsum(lo_ev & ~wide), 3)
+    # fifth verification: two sources of misses. Wide binaries are missed at a similar rate at every evidence
+    # strength; at smaller separations the misses concentrate at weak anomalies.
+    edges = (160, 500, 2000, 1e4, 1e5, np.inf)
+    wrate = []
+    for a_, b_ in zip(edges[:-1], edges[1:]):
+        m_ = det_ & wide & (dch >= a_) & (dch < b_)
+        if wsum(m_) > 0:
+            wrate.append(wsum(m_ & (pred != NONP_)) / wsum(m_))
+    stats["wide_miss_rate_by_dchi2_lo"] = round(min(wrate), 3); stats["wide_miss_rate_by_dchi2_hi"] = round(max(wrate), 3)
+    nw_det, nw_miss = det_ & ~wide, det_ & ~wide & (pred != NONP_)
+    stats["notwide_weak_share_of_det_pct"] = round(100 * wsum(nw_det & (dch < 2000)) / wsum(nw_det), 1)
+    stats["notwide_weak_share_of_miss_pct"] = round(100 * wsum(nw_miss & (dch < 2000)) / wsum(nw_miss), 1)
+    stats["notwide_miss_rate_weak"] = round(wsum(nw_miss & (dch < 500)) / wsum(nw_det & (dch < 500)), 3)
+    stats["notwide_miss_rate_strong"] = round(wsum(nw_miss & (dch >= 1e5)) / wsum(nw_det & (dch >= 1e5)), 3)
+    big_q = np.isfinite(q_) & (q_ >= 0.1)
+    stats["recall_wide_bigq"] = round(wsum(det_ & wide & big_q & (pred == NONP_)) / wsum(det_ & wide & big_q), 3)
+    stats["recall_wide_smallq"] = round(wsum(det_ & wide & ~big_q & (pred == NONP_)) / wsum(det_ & wide & ~big_q), 3)
+    stats["wide_miss_bigq_pct"] = round(100 * wsum(miss & wide & big_q) / wsum(miss & wide), 1)
+    tmiss = det_ & (sc_ < thr_op)                    # misses at the operating threshold
+    stats["thr_miss_pct_of_det"] = round(100 * wsum(tmiss) / wsum(det_), 1)
+    stats["thr_miss_wide_pct"] = round(100 * wsum(tmiss & wide) / wsum(tmiss), 1)
+    # the labelling surgery on the final test (stored events, and weighted by the inverse keep probability)
+    stored = np.ones_like(w)
+    for nm_, ww_ in (("", stored), ("_w", w)):
+        tot = lambda m: float(ww_[m].sum())
+        stats["relabelled_pct" + nm_] = round(100 * tot(y != tc) / tot(np.ones_like(y, bool)), 1)
+        gb_ = tc == NONP_
+        stats["nonpspl_kept_pct" + nm_] = round(100 * tot(gb_ & (y == NONP_)) / tot(gb_), 1)
+        stats["nonpspl_to_pspl_pct" + nm_] = round(100 * tot(gb_ & (y == PSPL_)) / tot(gb_), 1)
+        gl_ = tc == LPV_
+        stats["lpv_to_flat_pct" + nm_] = round(100 * tot(gl_ & (y == CLASSES.index("Flat"))) / tot(gl_), 1)
     # the two diagnostics of NonPSPL false positives, each with its own denominator
     fp = (pred == NONP_) & (y != NONP_)
     stats["fp_demoted_binary_pct"] = round(100 * wsum(fp & (y == PSPL_) & (tc == NONP_)) / wsum(fp), 1)

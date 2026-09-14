@@ -60,16 +60,7 @@
     "LongPeriodVar": 30584,
     "Eruptive": 34229
   },
-  "labelling": {
-    "_comment": "label surgery performed by detectability-conditioned labelling, vs generation class",
-    "overall_relabelled_pct": 39.5,
-    "nonpspl_kept_pct": 37.3,
-    "nonpspl_to_pspl_pct": 54.6,
-    "lpv_to_flat_pct": 63.6,
-    "pspl_to_flat_pct": 11.7
-  },
   "nonpspl_physical_precision": 0.985,
-  "nonpspl_demoted_fraction": 0.947,
   "nonpspl_recall_by_dchi2": {
     "160_2000": 0.904,
     "2000_10000": 0.944,
@@ -238,7 +229,7 @@
     "ap_fitted_pspl": 0.545
   },
   "infra": {
-    "_comment": "measured/recorded infrastructure numbers for the appendix. 2026-09-13 (third verification): the training fields now describe the released checkpoint's six-stage warm-start chain from the stage logs (base ... stage6_20260726_0025.log): final stage 1,906,329 events (1,525,063 train), batch 384, 6 epochs, released = zero-based epoch 4; base 540,952 training events at batch 512; about 22 h of epochs in total. They had described the base run's defaults (batch 256, 5 epochs). train_events_per_sec is a step benchmark at batch 256 (train_batch_benchmark). 2026-09-13 (fourth verification): the sim_* fields describe the 10M-event v4 AWS run of 2026-07-05, not the released model's data, and the paper no longer quotes them; the training fields were checked against the stage checkpoints' optimizer states (base peak lr 4e-4 of a one-cycle schedule, 18 epochs scheduled and stopped after 6). train_events_per_sec (958) was a hand-entered step benchmark with no artifact; the paper now quotes train_epoch_events_per_sec_lo/hi, the per-epoch throughput of the six stage logs (v5runs/*.log: epoch time and training-split size), excluding one stage-6 epoch stretched by a system sleep (21,366 s).",
+    "_comment": "measured/recorded infrastructure numbers for the appendix. 2026-09-13 (third verification): the training fields now describe the released checkpoint's six-stage warm-start chain from the stage logs (base ... stage6_20260726_0025.log): final stage 1,906,329 events (1,525,063 train), batch 384, 6 epochs, released = zero-based epoch 4; base 540,952 training events at batch 512; about 22 h of epochs in total. The earlier values were not from the stage logs (batch 256 and 3e-4 are train.py defaults; 5 epochs matched no stage). train_events_per_sec is a step benchmark at batch 256 (train_batch_benchmark). 2026-09-13 (fourth verification): the sim_* fields describe the 10M-event v4 AWS run of 2026-07-05, not the released model's data, and the paper no longer quotes them; the training fields were checked against the stage checkpoints' optimizer states (base peak lr 4e-4 of a one-cycle schedule, 18 epochs scheduled and stopped after 6). train_events_per_sec (958) was a hand-entered step benchmark with no artifact; the paper now quotes train_epoch_events_per_sec_lo/hi, the per-epoch throughput of the six stage logs (v5runs/*.log: epoch time and training-split size), excluding one stage-6 epoch stretched by a system sleep (21,366 s). 2026-09-13 (fifth verification): sim5_* give the v5 fleets' region and instance size from the launch scripts (aws/launch_*.sh, not distributed: m7i-flex.large, 2 vCPUs, eu-central-1; mostly Spot); train_hours (22) is the sum of the logged epoch times including the stretched stage-6 epoch, train_hours_typical (17) the same with that epoch replaced by the median of the other stage-6 epochs (3,573 s); the per-epoch rate includes the validation pass.",
     "sim_events_millions": 10.0,
     "sim_instances": 3,
     "sim_vcpus_each": 2,
@@ -255,7 +246,11 @@
     "train_base_events": 540952,
     "train_batch_benchmark": 256,
     "train_epoch_events_per_sec_lo": 376,
-    "train_epoch_events_per_sec_hi": 656
+    "train_epoch_events_per_sec_hi": 656,
+    "sim5_region": "eu-central-1",
+    "sim5_instance_type": "m7i-flex.large",
+    "sim5_vcpus_each": 2,
+    "train_hours_typical": 17
   },
   "model": {
     "n_params": 505479,
@@ -278,5 +273,8 @@
   "_prevalence_note": "prevalence-scenario thresholds and completeness are NOT stored here. They are computed by validation/prevalence_thresholds.py (threshold selected on the reserved validation rows, reported on the frozen final-test rows) and read directly from validation/prevalence_result.json by make_macros.py. An earlier revision hand-copied numbers that had been selected AND reported on the final-test rows.",
   "_ablations_note": "ablation numbers are NOT stored here; make_macros.py reads validation/ablations_result.json (cascade arm) and validation/labelling_ablation_result.json (label-only rerun with the loss weights held fixed) directly and fail-closed.",
   "_false_positive_note": "missed-anomaly and LongPeriodVar->PSPL rates are no longer stored here; they are computed from the frozen artifact in make_figures.py. The hand-copied values (0.048, 0.010) disagreed with the artifact (0.052, 0.009).",
-  "_inference_note": "throughput is no longer stored here. validation/inference_benchmark.py measures it reproducibly and records CPU, thread count and protocol; make_macros.py reads validation/inference_benchmark_result.json. The previous hand-entered 1,224 events/s could not be reproduced on the recorded hardware (measured 359/s at 10 threads) and was withdrawn."
+  "_inference_note": "throughput is no longer stored here. validation/inference_benchmark.py measures it reproducibly and records CPU, thread count and protocol; make_macros.py reads validation/inference_benchmark_result.json. The previous hand-entered 1,224 events/s could not be reproduced on the recorded hardware (measured 359/s at 10 threads) and was withdrawn.",
+  "_retired": {
+    "2026-09-13": "fifth verification: 'nonpspl_demoted_fraction' (0.947, the whole pool's any-label share, quoted as the demoted-to-PSPL share) and the hand-copied 'labelling' block (whole pool, unweighted) were removed; paper/make_figures.py derives both on the final test (figures_stats.json: fp_demoted_binary_pct, relabelled_pct, ...)."
+  }
 }

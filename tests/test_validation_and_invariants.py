@@ -359,6 +359,23 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
     stress.write_text(stress_text)
     assert run().returncode == 0
 
+    # the Sec. results guards on where the misses sit (fifth verification): each fires on its own sentence
+    fs_path = root / "paper" / "outputs" / "figures_stats.json"
+    fs_text = fs_path.read_text()
+    def fs_perturbed(key, value, expected):
+        d = _json.loads(fs_text); d[key] = value; fs_path.write_text(_json.dumps(d))
+        r = run(); out = r.stdout + r.stderr
+        assert r.returncode != 0 and expected in out, (key, expected, out[-400:])
+    fs_perturbed("np_to_pspl_wide_pct", 45.0, "'most' NonPSPL->PSPL confusions")
+    fs_perturbed("wide_miss_rate_by_dchi2_hi", 0.6, "about a quarter of the time")
+    fs_perturbed("notwide_weak_share_of_miss_pct", 20.0, "concentrate at weak anomalies")
+    fs_perturbed("recall_wide_smallq", 0.7, "confined to q > 0.1")
+    fs_perturbed("eff_cond_recall_wide_bigq_hi", 0.99, "clearly below its median")
+    fs_perturbed("eff_nd_min_cell", 1000, "low-support")
+    fs_perturbed("det_stellar_pct", 40.0, "mostly stellar-mass-ratio")
+    fs_path.write_text(fs_text)
+    assert run().returncode == 0
+
 
 def test_frozen_evaluation_manifest_is_enforced(tmp_path):
     """Reject array/file tampering and a result payload not emitted by its reducer."""

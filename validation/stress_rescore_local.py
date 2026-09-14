@@ -29,9 +29,20 @@ anomaly precision -- is set mostly by that mix; `pspl_label_false_anomaly_w` and
 mix-independent false-anomaly rates among microlensing events without a detectable anomaly.
 
 Each tier's shards, caches and evaluations are stamped with the code state that made them (WORK/stamp_<tier>.txt,
-written when the tier's first shard is generated) and reused when present.
+written when a new tier's first shard is generated) and reused when present; a tier whose outputs exist without a
+stamp is refused. The stamps of natural, planetary, oor_flat_faint and oor_pspl_shortte_current were written by hand
+on 2026-09-13 from the first artifact's record (6016bc6) and the file times, before this rule existed.
 
-Usage:  python validation/stress_rescore_local.py [--workers 4]
+`pspl_label_false_anomaly_w` and `pspl_label_above_frozen_w` do not depend on a tier's flat and variable-star share,
+but they do depend on its mix of single lenses and demoted binaries. `precision_counterfactual` separates the faint
+sweep's photometry from its class mix by reweighting generator classes to the other tier's composition.
+
+--archive writes the per-event inputs of every number (labels, generator classes, keep probabilities, argmax classes,
+anomaly scores, and t_E for the sub-day tiers) to validation/stress_rescore_archive/ with their hashes;
+--from-archive recomputes every block from those files alone (no work directory, simulator or checkpoint needed).
+
+Usage:  python validation/stress_rescore_local.py [--workers 4] [--archive]
+        python validation/stress_rescore_local.py --from-archive --out /tmp/check.json
 """
 from __future__ import annotations
 
@@ -79,20 +90,30 @@ def run(cmd):
     return r
 
 
-def stamp(tier, code):
-    """The code state that generated and scored a tier: written when its first shard is generated, read back after."""
+ARCHIVE = os.path.join(HERE, "stress_rescore_archive")
+
+
+def _has_outputs(tier):
+    return any(os.path.exists(os.path.join(WORK, f"{k}_{tier}")) for k in ("raw", "cache", "mm")) or \
+        any(os.path.exists(os.path.join(WORK, f"eval_{c}_{tier}")) for c in CKPTS)
+
+
+def stamp(tier, code, new_tier=False):
+    """The code state that generated and scored a tier: written when a NEW tier's first shard is generated, read back
+    after. A tier with outputs but no stamp is refused rather than stamped with whatever commit is current."""
     p = os.path.join(WORK, f"stamp_{tier}.txt")
     if not os.path.exists(p):
+        if not new_tier:
+            raise SystemExit(f"FATAL: {tier} has outputs in {WORK} but no stamp_{tier}.txt; record the commit that made them")
         open(p, "w").write(code + "\n")
     return open(p).read().strip()
 
 
-def gen(tier, shard, code):
+def gen(tier, shard, code):          # the tier's stamp is settled in main() before any shard is generated
     seed, regime, _, flags = TIERS[tier]
     d = os.path.join(WORK, f"raw_{tier}"); os.makedirs(d, exist_ok=True)
     out = os.path.join(d, f"shard_{shard:05d}.h5")
     if not os.path.exists(out):
-        stamp(tier, code)
         cmd = [sys.executable, "-m", "pipeline.run_shard", "--shard", str(shard), "--n-shards", "600", "--out", d, "--seed-base", str(seed)]
         if regime:
             cmd += ["--regime", regime]
@@ -122,14 +143,30 @@ def evaluate(name, tier):
     return ev
 
 
-def metrics(ev):
-    """pipeline.agg_stress's definitions on every event of the tier."""
+def _sha(path):
+    return hashlib.sha256(open(path, "rb").read()).hexdigest()
+
+
+def load_eval(ev):
+    """The per-event inputs of every number, read from a pipeline.evaluate output directory."""
+    d = {"label": np.load(os.path.join(ev, "label.npy")).astype(np.int8),
+         "true_class": np.load(os.path.join(ev, "true_class.npy")).astype(np.int8),
+         "keep_prob": np.load(os.path.join(ev, "keep_prob.npy")).astype(np.float32),
+         "pred": np.load(os.path.join(ev, "logits.npy")).argmax(1).astype(np.int8),
+         "score": np.load(os.path.join(ev, "score_nonpspl.npy")).astype(np.float32)}
+    pf = json.load(open(os.path.join(ev, "meta.json"))).get("param_fields") or []
+    if "tE" in pf:
+        d["tE"] = np.load(os.path.join(ev, "params.npy"))[:, pf.index("tE")].astype(np.float32)
+    return d
+
+
+def metrics(d):
+    """pipeline.agg_stress's definitions on every event of the tier (d: the arrays of load_eval or the archive)."""
     from pipeline.agg_stress import prf
     from pipeline.classes import CLASS_NAMES
-    y = np.load(os.path.join(ev, "label.npy")).astype(int); pred = np.load(os.path.join(ev, "logits.npy")).argmax(1)
-    score = np.load(os.path.join(ev, "score_nonpspl.npy")).astype(np.float64)
-    tc0 = np.load(os.path.join(ev, "true_class.npy")).astype(int)
-    w = 1.0 / np.clip(np.load(os.path.join(ev, "keep_prob.npy")).astype(np.float64), 1e-3, 1.0)
+    y = d["label"].astype(int); pred = d["pred"].astype(int); tc = d["true_class"].astype(int)
+    score = d["score"].astype(np.float64)
+    w = 1.0 / np.clip(d["keep_prob"].astype(np.float64), 1e-3, 1.0)
     cls = {}
     for c, name in enumerate(CLASS_NAMES):
         if (y == c).sum():
@@ -138,11 +175,10 @@ def metrics(ev):
     out = {"n": int(y.size), "per_class": cls,
            "label_fractions": {n: float((y == c).mean()) for c, n in enumerate(CLASS_NAMES)},
            "label_fractions_w": {n: float(w[y == c].sum() / w.sum()) for c, n in enumerate(CLASS_NAMES)},
-           "true_class_fractions_w": {n: float(w[tc0 == c].sum() / w.sum()) for c, n in enumerate(CLASS_NAMES)}}
+           "true_class_fractions_w": {n: float(w[tc == c].sum() / w.sum()) for c, n in enumerate(CLASS_NAMES)}}
     if len(cls) == len(CLASS_NAMES):
         out["macro_f1"] = float(np.mean([cls[n]["f1"] for n in CLASS_NAMES]))
     # PSPL-labelled events split by generator class (see the module docstring)
-    tc = np.load(os.path.join(ev, "true_class.npy")).astype(int)
     ip, inp = CLASS_NAMES.index("PSPL"), CLASS_NAMES.index("NonPSPL")
     lab = y == ip
     by_gen = {}
@@ -154,54 +190,43 @@ def metrics(ev):
                              "argmax_fractions": {n: float(w[m & (pred == c)].sum() / w[m].sum()) for c, n in enumerate(CLASS_NAMES)},
                              "frac_above_frozen_threshold": float(w[m & (score >= FROZEN)].sum() / w[m].sum())}
     out["pspl_label_by_generator_class"] = by_gen
-    # mix-independent false anomalies: microlensing events without a detectable anomaly (label PSPL) called anomalies
+    # microlensing events without a detectable anomaly (label PSPL) called anomalies: independent of the tier's flat
+    # and variable-star share, not of its single-lens / demoted-binary mix
     out["pspl_label_false_anomaly_w"] = float((w[lab] * (pred[lab] == inp)).sum() / w[lab].sum()) if lab.any() else None
     out["pspl_label_above_frozen_w"] = float((w[lab] * (score[lab] >= FROZEN)).sum() / w[lab].sum()) if lab.any() else None
-    tcls = np.load(os.path.join(ev, "true_class.npy")).astype(int)
-    gb = tcls == inp
+    gb = tc == inp
     out["binary_detectable_fraction_w"] = float((w[gb] * (y[gb] == inp)).sum() / w[gb].sum()) if gb.any() else None
     # anomaly-call rates, weighted: precision depends on the tier's anomaly prevalence, so keep the pieces
-    inon = CLASS_NAMES.index("NonPSPL")
-    pos, flag = y == inon, pred == inon
+    pos, flag = y == inp, pred == inp
     out["nonpspl_rates"] = {"prevalence_w": float(w[pos].sum() / w.sum()),
                             "tpr_w": float(w[pos & flag].sum() / max(w[pos].sum(), 1e-12)),
                             "fpr_w": float(w[~pos & flag].sum() / w[~pos].sum()),
                             "n_flagged": int(flag.sum()), "n_false_flags": int((flag & ~pos).sum())}
+    # the sub-day tiers at the timescales of RMDC26's matched comparison (0.25-1 d)
+    if "tE" in d:
+        m = lab & (tc == ip) & (d["tE"] >= 0.25) & (d["tE"] <= 1.0)
+        if m.any():
+            out["single_lens_above_frozen_tE_0p25_1"] = {"n": int(m.sum()), "frac": float(w[m & (score >= FROZEN)].sum() / w[m].sum())}
     return out
 
 
-def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--workers", type=int, default=4)
-    ap.add_argument("--out", default=os.path.join(HERE, "stress_rescore_local.json"))
-    args = ap.parse_args(argv)
-    code = subprocess.run(["git", "describe", "--always", "--dirty", "--abbrev=12"], cwd=REPO, capture_output=True, text=True).stdout.strip()
-    if not code:
-        raise SystemExit("FATAL: git describe returned nothing (disk stall?); rerun -- an artifact must record its code")
-    os.makedirs(WORK, exist_ok=True)
-    jobs = [(t, s) for t in TIERS for s in range(TIERS[t][2])]
-    log(f"generating {len(jobs)} shards with {args.workers} workers")
-    with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
-        list(ex.map(lambda x: gen(*x, code), jobs))
-    report = json.load(open(os.path.join(REPO, "paper", "results", "stress_report.json")))
-    # the suite's fleet did not record its package versions (it installed them unpinned); record ours
-    import importlib.metadata as _md
-    env = {"python": sys.version.split()[0]}
-    for _pkg in ("numpy", "scipy", "h5py", "VBBinaryLensing", "torch"):
-        try:
-            env[_pkg] = _md.version(_pkg)
-        except _md.PackageNotFoundError:
-            env[_pkg] = None
-    res = {"_doc": __doc__.split("\n")[0], "code": code, "command": " ".join(sys.argv), "environment": env,
-           "checkpoints": {k: {"path": os.path.relpath(v, REPO) if v.startswith(REPO) else v,
-                               "sha256": hashlib.sha256(open(v, "rb").read()).hexdigest()} for k, v in CKPTS.items()},
-           "tiers": {t: {"seed_base": TIERS[t][0], "regime": TIERS[t][1], "shards": list(range(TIERS[t][2])),
-                         "run_shard_flags": TIERS[t][3], "code_generation_and_scoring": stamp(t, code),
-                         "suite_n": report["regimes"][TIERS[t][1] or "natural"]["n"]} for t in TIERS},
-           "subset": {}, "quoted": {}}
-    for t in TIERS:
-        res["subset"][t] = {name: metrics(evaluate(name, t)) for name in CKPTS}
-        log(f"{t}: " + json.dumps({k: {c: round(v['per_class'][c]['recall'], 3) for c in v['per_class']} for k, v in res['subset'][t].items()}))
+def reweighted_precision(d, target):
+    """NonPSPL precision after reweighting each generator class to the share it has in `target` (weighted
+    true-class fractions of another tier): the class mix of one tier with the photometry of the other."""
+    from pipeline.classes import CLASS_NAMES
+    y = d["label"].astype(int); pred = d["pred"].astype(int); tc = d["true_class"].astype(int)
+    w = 1.0 / np.clip(d["keep_prob"].astype(np.float64), 1e-3, 1.0)
+    own = np.array([w[tc == c].sum() / w.sum() for c in range(len(CLASS_NAMES))])
+    tgt = np.array([target[n] for n in CLASS_NAMES])
+    f = np.divide(tgt, own, out=np.zeros_like(tgt), where=own > 0)
+    w2 = w * f[tc]
+    inp = CLASS_NAMES.index("NonPSPL"); flag = pred == inp
+    return float(w2[flag & (y == inp)].sum() / w2[flag].sum())
+
+
+def reduce(arrays, report):
+    """Every block of the artifact that is computed from the per-event arrays."""
+    res = {"subset": {t: {name: metrics(arrays[t][name]) for name in CKPTS} for t in TIERS}, "quoted": {}}
     suite_macro = report["natural_population"]["macro_f1"]
     res["quoted"]["natural_macro_f1"] = {"suite_stage5": suite_macro, "subset_stage5": res["subset"]["natural"]["stage5"]["macro_f1"],
                                          "subset_released": res["subset"]["natural"]["released"]["macro_f1"]}
@@ -220,9 +245,76 @@ def main(argv=None):
         for name in CKPTS:
             r = res["subset"][t][name]["nonpspl_rates"]
             res["precision_at_natural_prevalence"][t][name] = r["tpr_w"] * pi / (r["tpr_w"] * pi + r["fpr_w"] * (1 - pi))
+    # faint photometry vs the faint sweep's class mix (fifth verification): swap the generator-class mix between tiers
+    res["precision_counterfactual"] = {}
+    for name in CKPTS:
+        nat, fai = res["subset"]["natural"][name], res["subset"]["oor_flat_faint"][name]
+        res["precision_counterfactual"][name] = {
+            "natural": nat["per_class"]["NonPSPL"]["precision"], "faint": fai["per_class"]["NonPSPL"]["precision"],
+            "faint_at_natural_mix": reweighted_precision(arrays["oor_flat_faint"][name], nat["true_class_fractions_w"]),
+            "natural_at_faint_mix": reweighted_precision(arrays["natural"][name], fai["true_class_fractions_w"])}
     res["suite_label_fractions"] = {t: {c: v["n"] / report["regimes"][TIERS[t][1] or "natural"]["n"]
                                         for c, v in report["regimes"][TIERS[t][1] or "natural"]["per_class"].items()}
                                     for t in TIERS}
+    return res
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--out", default=os.path.join(HERE, "stress_rescore_local.json"))
+    ap.add_argument("--archive", action="store_true", help="write the per-event inputs to validation/stress_rescore_archive/")
+    ap.add_argument("--from-archive", action="store_true",
+                    help="recompute every block from the archive alone, keeping the committed artifact's metadata")
+    args = ap.parse_args(argv)
+    report = json.load(open(os.path.join(REPO, "paper", "results", "stress_report.json")))
+    if args.from_archive:
+        prev = json.load(open(os.path.join(HERE, "stress_rescore_local.json")))
+        for fn, sha in prev["archive"]["sha256"].items():
+            if _sha(os.path.join(ARCHIVE, fn)) != sha:
+                raise SystemExit(f"FATAL: {fn} does not match its hash in stress_rescore_local.json")
+        arrays = {t: {name: dict(np.load(os.path.join(ARCHIVE, f"{t}_{name}.npz"))) for name in CKPTS} for t in TIERS}
+        res = {k: prev[k] for k in ("_doc", "code", "command", "environment", "checkpoints", "tiers", "archive")}
+        res.update(reduce(arrays, report))
+        json.dump(res, open(args.out, "w"), indent=1)
+        log(f"wrote {args.out} from the archive")
+        return 0
+    code = subprocess.run(["git", "describe", "--always", "--dirty", "--abbrev=12"], cwd=REPO, capture_output=True, text=True).stdout.strip()
+    if not code:
+        raise SystemExit("FATAL: git describe returned nothing (disk stall?); rerun -- an artifact must record its code")
+    os.makedirs(WORK, exist_ok=True)
+    for t in TIERS:                           # settle every tier's stamp before anything is generated
+        stamp(t, code, new_tier=not _has_outputs(t))
+    jobs = [(t, s) for t in TIERS for s in range(TIERS[t][2])]
+    log(f"generating {len(jobs)} shards with {args.workers} workers")
+    with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
+        list(ex.map(lambda x: gen(*x, code), jobs))
+    # the suite's fleet did not record its package versions (it installed them unpinned); record ours
+    import importlib.metadata as _md
+    env = {"python": sys.version.split()[0]}
+    for _pkg in ("numpy", "scipy", "h5py", "VBBinaryLensing", "torch"):
+        try:
+            env[_pkg] = _md.version(_pkg)
+        except _md.PackageNotFoundError:
+            env[_pkg] = None
+    res = {"_doc": __doc__.split("\n")[0], "code": code, "command": " ".join(sys.argv), "environment": env,
+           "checkpoints": {k: {"path": os.path.relpath(v, REPO) if v.startswith(REPO) else v,
+                               "sha256": _sha(v)} for k, v in CKPTS.items()},
+           "tiers": {t: {"seed_base": TIERS[t][0], "regime": TIERS[t][1], "shards": list(range(TIERS[t][2])),
+                         "run_shard_flags": TIERS[t][3], "code_generation_and_scoring": stamp(t, code),
+                         "suite_n": report["regimes"][TIERS[t][1] or "natural"]["n"]} for t in TIERS}}
+    arrays = {t: {name: load_eval(evaluate(name, t)) for name in CKPTS} for t in TIERS}
+    if args.archive:
+        os.makedirs(ARCHIVE, exist_ok=True)
+        res["archive"] = {"dir": os.path.relpath(ARCHIVE, REPO), "sha256": {}}
+        for t in TIERS:
+            for name in CKPTS:
+                fn = f"{t}_{name}.npz"
+                np.savez_compressed(os.path.join(ARCHIVE, fn), **arrays[t][name])
+                res["archive"]["sha256"][fn] = _sha(os.path.join(ARCHIVE, fn))
+    res.update(reduce(arrays, report))
+    for t in TIERS:
+        log(f"{t}: " + json.dumps({k: {c: round(v['per_class'][c]['recall'], 3) for c in v['per_class']} for k, v in res['subset'][t].items()}))
     json.dump(res, open(args.out, "w"), indent=1)
     log(f"wrote {args.out}")
     print(json.dumps(res["quoted"], indent=1))
