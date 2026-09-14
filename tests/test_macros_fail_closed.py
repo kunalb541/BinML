@@ -55,6 +55,15 @@ def _seed2_ties_at_2pct(d):
     a["recall_1S2L_k_n"] = [k1 + 1, a["recall_1S2L_k_n"][1]]
 
 
+def _lag(t, st, median, diff):
+    """Move one RMDC26 stratum's median lag and its recorded difference from the in-house stratum together, so the
+    consistency check passes and the direction guard is the one that fires."""
+    def f(d):
+        s_ = d["results"]["fspl5s_seasons_g08|f146|frozen"]["timing_by_mass_ratio"][st]
+        s_["median_lag_nonpremature_days"] = median; s_["vs_inhouse"]["median_lag_diff_days"] = diff
+    return f
+
+
 # case -> (perturbation, a fragment of the FATAL message the case must trigger: the guard it is named for)
 CASES = {
     "missing artifact": (lambda t: os.remove(os.path.join(t, "validation/gulls/transfer_colour_ablation.json")),
@@ -102,9 +111,30 @@ CASES = {
     "truncation errors not half late": (lambda t: _edit(t, "../truth_relabel_impact.json",
                                                         lambda d: d["results"]["refit_reference"]["truncation"]["counts"].update({"legacy PSPL / refit NonPSPL": 0})),
                                         "no longer 'about half' late PSPL labels"),
-    "RMDC26 Neptune alerts no later than in-house": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
-                                                                     ["timing_by_mass_ratio"]["neptune"].update(median_lag_nonpremature_days=4.5)),
-                                                     "Neptune alerts come later"),
+    "RMDC26 Neptune alerts no later than in-house": (lambda t: _edit(t, "cascade_gulls.json", _lag(t, "neptune", 4.5, 0.0)),
+                                                     "the lag is 'longer' in both strata"),
+    "RMDC26 giant alerts no later than in-house": (lambda t: _edit(t, "cascade_gulls.json", _lag(t, "giant", 4.5, 0.0)),
+                                                   "the lag is 'longer' in both strata"),
+    "lag difference inconsistent with the medians": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                                     ["timing_by_mass_ratio"]["neptune"].update(median_lag_nonpremature_days=5.0)),
+                                                     "vs_inhouse disagrees with the stratum medians"),
+    "premature alerts not about as frequent": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                               ["timing_by_mass_ratio"]["giant"]["vs_inhouse"].update(fisher_p_premature=0.01)),
+                                               "'about as frequent'"),
+    "giant detection difference not resolved": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                                ["timing_by_mass_ratio"]["giant"]["vs_inhouse"].update(fisher_p_detection=0.2)),
+                                                "'resolved' at high ratios"),
+    "three-band premature beyond counting noise": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|threeband|frozen"]
+                                                                   ["timing_by_mass_ratio"]["neptune"]["vs_inhouse"].update(fisher_p_premature=0.01)),
+                                                   "'within counting noise'"),
+    "stellar share not about 1%": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                   ["timing_by_mass_ratio"]["stellar"].update(frac_of_eligible=0.2)),
+                                   "'about 1%'"),
+    "exact premature counts disagree": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                        ["timing_by_mass_ratio"]["giant"].update(n_premature=5)),
+                                        "premature count"),
+    "F146-only reference at another threshold": (lambda t: _edit(t, "transfer_full_fspl5s_seasons_g08_f146only.json", lambda d: d.update(threshold=0.95)),
+                                                 "another threshold than the scan"),
     "cascade sample not optimistic": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
                                                       ["burden"]["RMDC26_1S1L_ML"].update(full_window_flag_frac=0.07)),
                                       "slightly fewer"),

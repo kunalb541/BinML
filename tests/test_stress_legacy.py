@@ -5,7 +5,14 @@ discarded. The legacy switch must keep the pre-override t0 AND consume the same 
 stream is unchanged; the default must re-pad t0 to the overridden timescale. The shard-level test pins the July
 generator's output: shard 0 of oor_pspl_shortte (seed base 931000000) regenerated with e25e4d6's pipeline/sim_v5 has
 these label counts (checked by the fifth verification, 2026-09-13), and run_shard with both legacy switches must
-reproduce them through its own argument parsing."""
+reproduce them through its own argument parsing.
+
+The counts are exact on the platform that recorded them (macOS arm64). Elsewhere the single-lens refit that sets a
+few labels can differ in the last digits (a 1e-9 relative nudge of its starting point moves one or two labels), so
+other platforms, including CI's Linux runners, check them within 3 per class. That still pins both switches: without
+--legacy-t0-pad the shard has 159 fewer Flat and 137 more PSPL labels, without --legacy-oor-mix thousands more of each
+(sixth check, 2026-09-14)."""
+import platform
 import h5py
 import numpy as np
 import pytest
@@ -54,4 +61,7 @@ def test_legacy_switches_reproduce_the_july_shard(tmp_path):
         assert bool(f.attrs["legacy_oor_mix"]) and bool(f.attrs["legacy_t0_pad"])
         lab = f["label"][:] if "label" in f else f["meta/label"][:]
     counts = {CLASS_NAMES[c]: int((lab == c).sum()) for c in range(len(CLASS_NAMES))}
-    assert counts == JULY_SHORTTE_SHARD0, counts
+    if platform.system() == "Darwin" and platform.machine() == "arm64":
+        assert counts == JULY_SHORTTE_SHARD0, counts
+    else:
+        assert all(abs(counts[k] - v) <= 3 for k, v in JULY_SHORTTE_SHARD0.items()), counts

@@ -278,7 +278,7 @@ architecture that lets every part of the light curve ``attend to'' every other p
 can weigh, for example, a brief brightening against the overall trend around it. Together they
 come to just $\bmlNparams$ trainable numbers, which by the standards of modern deep learning is
 tiny. The small size is deliberate. We are not short of training data---we simulate millions of events
-(1.9 million in the final training stage alone)---so the pressure is not to build a larger model but to build one cheap enough to
+($\bmlTrainFinalEvents$ million in the final training stage alone)---so the pressure is not to build a larger model but to build one cheap enough to
 run on the entire survey, night after night. A compact network that classifies a light curve in a
 single pass is far more useful here than a heavy one applied only to a pre-selected handful of
 candidates.
@@ -312,11 +312,10 @@ uses only the binned brightnesses; it does not use the individual error bars.
 
 This compactness makes repeated survey-scale scoring practical. Classification is a single forward
 pass with no per-event fitting. On a $\bmlInferCores$-core \bmlInferCpu{} CPU with
-$\bmlInferThreads$ threads, the model scores $\bmlInferEps$ pre-tokenised light curves per second
-($\bmlInferMs$~ms per event) in batches of 1024. \code{validation/inference\_benchmark.py}
-regenerates this together with the processor, thread count and timing protocol; an earlier
-revision quoted a figure roughly three times larger whose hardware and script were not retained
-and which we could not reproduce, so it is withdrawn.
+$\bmlInferThreads$ threads and otherwise idle, the model scores $\bmlInferEps$ pre-tokenised light curves per second
+($\bmlInferMs$~ms per event) in batches of 1024; the rate falls when other work loads the machine.
+\code{validation/inference\_benchmark.py} regenerates this together with the processor, thread count, load average
+and timing protocol, and replaces the figure of an earlier revision, whose hardware and script were not retained.
 
 \section{Partial-light-curve evaluation}\label{sec:cascade}
 
@@ -428,9 +427,9 @@ also $\bmlCascMedianLagAll$~days.
 
 \paragraph{How the alert rule changes the answer.} Because the whole scan is stored, we can vary
 the decision rule on the same events. Coarsening the evaluation grid from half-daily to daily
-leaves the premature rate at $\bmlCascGridOnePct\%$ but costs detection
-($\bmlCascGridOneDet\%$); at two-day steps it falls to $\bmlCascGridTwoPct\%$, again with fewer
-detections. Requiring two consecutive crossings before alerting---one plausible debouncing
+(each grid ending at the season's end) lowers the premature rate to $\bmlCascGridOnePct\%$ at almost
+unchanged detection ($\bmlCascGridOneDet\%$), and at two-day steps to $\bmlCascGridTwoPct\%$
+($\bmlCascGridTwoDet\%$), at the price of later alerts. Requiring two consecutive crossings before alerting---one plausible debouncing
 rule---gives $\bmlCascPersistTwoPct\%$ premature at $\bmlCascPersistTwoDet\%$ detection.
 Revealing all three bands rather than F146 alone reduces the premature fraction to
 $\bmlCascMultibandPct\%$ and raises detection to $\bmlCascMultibandDet\%$, but worsens the median
@@ -544,7 +543,7 @@ We evaluate complete 72-day curves from a held-out pool of $\bmlNpool$ events, s
 validation set---on which the operating threshold is fixed---and a disjoint $\bmlNtest$-event
 final-test set on which the static artifact-derived results below are computed; separate stress,
 baseline, and ablation studies identify their own samples. No final-test figure or final-test headline number
-sees a threshold-selection row (the every-class scan of \S\ref{sec:cascade} does, below). On that final test set BinML reaches a completeness of
+sees a threshold-selection row (the every-class scan of \S\ref{sec:cascade} does, as disclosed there). On that final test set BinML reaches a completeness of
 $\bmlCompleteness$ (event-bootstrap 95\% CI $[\bmlCompletenessLo,\bmlCompletenessHi]$, 200
 resamples) at the fixed anomaly purity
 of $\bmlPurity$. Its anomaly average precision---a single-number summary of the whole
@@ -587,10 +586,11 @@ largest off-diagonal term is \texttt{NonPSPL}$\rightarrow$\texttt{PSPL} at $\bml
 anomaly row: these are genuine recovery misses of detectable anomalies, and they have two sources. Most are
 wide binaries: $\bmlNpToPsplWidePct\%$ have separations $s > \bmlSTopBin$, the top bin of the separation prior,
 which holds only $\bmlDetWidePct\%$ of the detectable anomalies (Figure~\ref{fig:plane}); these are missed
-$\bmlWideMissLo$--$\bmlWideMissHi\%$ of the time at every evidence strength. At smaller separations the misses
+$\bmlWideMissLo$--$\bmlWideMissHi\%$ of the time at every evidence strength up to $\Delta\chi^2 = 10^6$, and
+$\bmlWideMissTop\%$ of the time above it (the strongest $\bmlWideDetTopPct\%$ of them). At smaller separations the misses
 concentrate at weak anomalies: anomalies with $\Delta\chi^2 < 2000$ are $\bmlNotWideWeakDet\%$ of the detectable
 ones there but $\bmlNotWideWeakMiss\%$ of the misses, and the miss rate falls from $\bmlNotWideMissWeak$ below
-$\Delta\chi^2 = 500$ to $\bmlNotWideMissStrong$ above $10^5$ (Figure~\ref{fig:params}). The
+$\Delta\chi^2 = 500$ to $\bmlNotWideMissStrong$ above $10^5$. The
 complementary direction, \texttt{PSPL}$\rightarrow$%
 \texttt{NonPSPL}, is smaller ($\bmlConfPsplToNp\%$) but is what depresses \texttt{NonPSPL} precision; demoted
 binaries---generated as binary lenses, labelled \texttt{PSPL} because their anomaly falls below
@@ -601,7 +601,12 @@ confusion, a \texttt{LongPeriodVar} masquerading as microlensing, is rare.
 Because anomaly triage uses $P(\texttt{NonPSPL})$ directly, calibration is evaluated for that
 one-vs-rest probability rather than for whichever class has the largest score. On the frozen test
 the population-weighted expected calibration error is $\bmlECE$ and the Brier score is
-$\bmlBrier$ (Figure~\ref{fig:calibration}); no post-hoc temperature scaling is applied.
+$\bmlBrier$ (Figure~\ref{fig:calibration}); no post-hoc temperature scaling is applied. The small error mostly
+reflects the $\bmlCalibLowWeightPct\%$ of the population weight scored below 0.1. In the mid-range the weighted score
+is over-confident: events scored 0.1--0.9 (mean score $\bmlCalibMidScore$) are anomalies only $\bmlCalibMidFreq$ of
+the time under population weighting ($\bmlCalibMidFreqStored$ of the stored events), because the down-sampled single
+lenses and demoted binaries there count several times each (\S\ref{sec:eval}); above 0.9, where the operating
+threshold sits, score and frequency are close ($\bmlCalibTopScore$ against $\bmlCalibTopFreq$).
 
 \begin{figure*}[t]
 \centering
@@ -625,7 +630,7 @@ depresses \texttt{NonPSPL} precision (Table~\ref{tab:perclass}).}
 \end{figure}
 
 For a triage layer the two kinds of anomaly error carry very different costs. A false negative---a detectable binary not classified as an anomaly, almost always called a single
-lens---loses an anomaly candidate. On full-season curves these occur at a rate of $\bmlMissedRate$ (six-class
+lens ($\bmlMissToPsplPct\%$ of them)---loses an anomaly candidate. On full-season curves these occur at a rate of $\bmlMissedRate$ (six-class
 argmax), more than half of them at the widest separations, where argmax recall is $\bmlRecallWide$ against
 $\bmlRecallNotWide$ elsewhere; at the operating threshold $\bmlThrMissPct\%$ of detectable anomalies are missed,
 $\bmlThrMissWidePct\%$ of them wide, and completeness is $\bmlCompWide$ at the widest separations against
@@ -690,7 +695,10 @@ window in \emph{epochs} and thinning the input would change the timescale it int
 earlier version of this comparison thinned it to 800 epochs, which suppressed caustic-length
 residuals and understated the baseline). The training budgets are also unmatched: BinML's training
 stages used up to $\bmlTrainFinalEvents$ million simulated events (Appendix~\ref{app:infra}), whereas the feature classifiers use only the
-training split of this 9,000-event comparison set. BinML scores $\bmlBaseBinml$, compared with
+training split of this 9,000-event comparison set. That set has its own mixture: the script generates half of its
+events as binaries, so that enough detectable anomalies survive, and subsamples nothing, so $\bmlBasePrev\%$ of its
+events carry the anomaly label and many of the others are binaries whose anomaly falls below the detectability
+floor; the average precisions are per event at that prevalence. BinML scores $\bmlBaseBinml$, compared with
 $\bmlBaseGbt$ for gradient-boosted trees, $\bmlBaseLogistic$ for logistic regression, and
 $\bmlBasePspl$ for the fitted-residual statistic. None of the baselines approaches the network
 on this evaluation set, although the fairly scored fitted-residual statistic is a far stronger
@@ -717,10 +725,12 @@ separation--mass-ratio plane, in the spirit of the detection-efficiency maps com
 ground-based surveys \citep{Tsapras2016}. It separates two effects: whether the survey can detect
 the anomaly at all (left), and---conditional on it being detectable---how often BinML recovers it
 (centre). Conditional recall is high across most of the plane where a
-detectable anomaly exists, with a median of $\bmlEffMedian$ over populated cells. It falls to $\bmlEffMin$ in a
-low-support cell ($\bmlEffMinNd$ effective detectable events) at $\bmlEffMinLogqLo < \log q < \bmlEffMinLogqHi$, and
-to $\bmlEffWideBigqLo$--$\bmlEffWideBigqHi$ in the two widest-separation cells at $q > 0.1$, which are among the
-best populated (at least $\bmlEffWideBigqNd$ effective detectable events). The wide-separation weakness is
+detectable anomaly exists, with a median of $\bmlEffMedian$ over populated cells. It is lower toward the smallest
+mass ratios, where support is thin: all $\bmlEffNLowqCells$ populated cells at $\log q < -4$ lie below the median
+($\bmlEffMin$--$\bmlEffLowqHi$, with $\bmlEffLowqNdLo$--$\bmlEffLowqNdHi$ effective detectable events each), the lowest at
+$\bmlEffMinLogqLo < \log q < \bmlEffMinLogqHi$. It is also lower, $\bmlEffWideBigqLo$--$\bmlEffWideBigqHi$, in the two
+widest-separation cells at $q > 0.1$, which are among the best populated (at least $\bmlEffWideBigqNd$ effective
+detectable events). The wide-separation weakness is
 confined to large mass ratios: wide binaries with $q \ge 0.1$ are recovered at $\bmlRecallWideBigq$ (argmax)
 against $\bmlRecallWideSmallq$ at smaller $q$, and they hold $\bmlWideMissBigqPct\%$ of the wide misses. The
 strong gradient in the left panel---detectability collapsing toward small mass ratios---is therefore
@@ -875,11 +885,13 @@ matched-density test compares uniform sampling with an eight-hour nightly observ
 $\bmlGapN$ events is $\bmlGapUniformA$ (uniform; 95\% CI
 $[\bmlGapUniformALo,\bmlGapUniformAHi]$) versus $\bmlGapNightlyA$ (gapped; upper bound
 $\bmlGapNightlyAHi$) at $\bmlGapVisitsA$~visits per day, and $\bmlGapUniformB$ versus
-$\bmlGapNightlyA$ at $\bmlGapVisitsB$~per day; the intervals do not overlap. At
-$\bmlGapVisitsC$~visits per day both schedules fail ($\bmlGapUniformC$ uniform), so below that
-density sparsity alone dominates and the comparison is uninformative. In the regime where uniform
-sampling still works, the gapped schedule does not. This establishes gap sensitivity in the
-simulation, not the cause of any behaviour on real data.
+$\bmlGapNightlyB$ at $\bmlGapVisitsB$~per day; the intervals do not overlap. At
+$\bmlGapVisitsC$~visits per day the uniform arm fails too ($\bmlGapUniformC$), but not for lack of visits: it is a
+random subsample, which leaves $\bmlGapEmptyUniformA$, $\bmlGapEmptyUniformB$ and $\bmlGapEmptyUniformC\%$ of the model's
+two-hour bins empty at the three densities, while a gap-free regular grid with the same visits recovers
+$\bmlGapRegularA$, $\bmlGapRegularB$ and $\bmlGapRegularC$. What the shipped model cannot handle is empty bins, and the
+nightly window leaves at least $\bmlGapEmptyNightly\%$ of them empty (next paragraph). This establishes gap sensitivity in
+the simulation, not the cause of any behaviour on real data.
 
 Our hybrid schedule---$\sim$15-minute F146 sampling with 6-hour visits in each colour filter over
 a single 72-day season---is not an exact historical survey design. The current Galactic Bulge
@@ -1114,7 +1126,7 @@ distributions, KS $p \sim 10^{\bmlGullsQksExp}$), the source is flagged binary i
 of scored 2S2L events, and both planetary classes are pre-selected by GULLS' own detection statistic
 ($\bmlGullsDetCut$ or more for every such event). RMDC26 ships no pure binary-source class, so the
 \citet{Gaudi1998} degeneracy of \S\ref{sec:sims} remains untested, and a \texttt{NonPSPL} call on a 2S2L
-event may respond to its second source rather than its planet. RMDC26's anomalies are planetary (only $\bmlCgRmStellarFrac\%$ of the eligible ones have $q > 10^{-2}$),
+event may respond to its second source rather than its planet. RMDC26's anomalies are planetary (about $\bmlCgRmStellarFrac\%$ of the cascade-eligible ones, \S\ref{sec:gulls:cascade}, have $q > 10^{-2}$),
 whereas $\bmlDetStellarPct\%$ of the detectable anomalies of our test set are
 stellar-mass-ratio binaries (median $q = \bmlDetQmed$), so transfer recall is not comparable to
 the in-distribution completeness of \S\ref{sec:results}.
@@ -1435,9 +1447,11 @@ season; for intermediate ratios ($10^{-4} < q \le 10^{-3}$; $\bmlCgRmNeptuneN$ a
 $\bmlCgRmNeptunePrem\%$ against $\bmlCgInNeptunePrem\%$, $\bmlCgRmNeptuneLag$ against $\bmlCgInNeptuneLag$~d,
 and $\bmlCgRmNeptuneDet\%$ against $\bmlCgInNeptuneDet\%$. The in-house strata are small, so only some of these
 differences are resolved: premature alerts are about as frequent ($\bmlCgRmGiantPremK$ of $\bmlCgRmGiantN$ against $\bmlCgInGiantPremK$ of
-$\bmlCgInGiantN$, and $\bmlCgRmNeptunePremK$ of $\bmlCgRmNeptuneN$ against $\bmlCgInNeptunePremK$ of $\bmlCgInNeptuneN$); detection is lower in both strata, though the
-difference at intermediate ratios rests on $\bmlCgInNeptuneN$ in-house events and is not resolved; the median lag is 2~d
-longer at intermediate ratios and one half-day step longer at high ratios (a different checkpoint on a different simulator, so the differences mix the two). $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
+$\bmlCgInGiantN$, and $\bmlCgRmNeptunePremK$ of $\bmlCgRmNeptuneN$ against $\bmlCgInNeptunePremK$ of $\bmlCgInNeptuneN$; Fisher $p \ge \bmlCgPremFisherMin$); detection is lower in both strata,
+resolved at high ratios ($p = \bmlCgGiantDetFisher$) but not at intermediate ones, which rest on $\bmlCgInNeptuneN$ in-house events
+($p = \bmlCgNeptuneDetFisher$); and the median lag is $\bmlCgNeptuneLagDiff$~d longer at intermediate ratios (bootstrap 95\% interval
+$\bmlCgNeptuneLagDiffLo$--$\bmlCgNeptuneLagDiffHi$~d, at the edge of resolution) and $\bmlCgGiantLagDiff$~d longer at high ratios
+($\bmlCgGiantLagDiffLo$ to $\bmlCgGiantLagDiffHi$~d, not resolved). These are a different checkpoint on a different simulator, so the differences mix the two. $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
 scan barely samples ($\bmlCgInLowmassN$ events); there detection falls to $\bmlCgRmLowmassDet\%$ (the remaining
 $\bmlCgRmStellarFrac\%$ have $q > 10^{-2}$). Over all
 $\bmlCgElig$ eligible events $\bmlCgDet\%$ ($\bmlCgDetLo$--$\bmlCgDetHi\%$) are flagged by the end of the season,
@@ -1570,16 +1584,16 @@ policy-conditioned ontology is objectively correct.
 The damage concentrates where the relabelling acts: \texttt{PSPL} F1 moves from
 $\bmlAbLabelObsPsplFOne$ to $\bmlAbLabelGenPsplFOne$ and \texttt{NonPSPL} from
 $\bmlAbLabelObsNonpsplFOne$ to $\bmlAbLabelGenNonpsplFOne$. The generator-intent arm is not merely
-worse but differently behaved: at the frozen threshold it flags almost every event, reaching
-completeness $\bmlAbLabelGenComp$ at a purity of $\bmlAbLabelGenPur$, because it was trained to call
-sub-threshold binaries anomalous.
+worse but differently behaved: at the frozen threshold it reaches completeness $\bmlAbLabelGenComp$ at a
+purity of $\bmlAbLabelGenPur$, flagging about $\bmlAbLabelGenFalsePerTrue$ events without a detectable anomaly for
+every detectable one, because it was trained to call sub-threshold binaries anomalous.
 
 The label-derived-weight sensitivity arm scores $\bmlAbLabelGenOwnWMacroFOne$ against the
 policy-conditioned label, compared with $\bmlAbLabelGenMacroFOne$ when the weights are pinned. Weighting
 does affect the operating threshold: the sensitivity arm never crosses the frozen threshold.
 
 The mechanism is concrete. Across the final test split, $\bmlRelabelled\%$ of stored events carry a
-policy-conditioned label different from their generated class; a fifth of all events ($\bmlGenNpDemoted\%$,
+policy-conditioned label different from their generated class; a fifth of the stored events ($\bmlGenNpDemoted\%$,
 half of all disagreements) are generated binaries whose anomaly falls below the detection
 thresholds. A network trained on generator intent is asked to assign those binaries the anomalous
 label despite their perturbations falling below the adopted policy threshold.
@@ -1588,11 +1602,17 @@ Both arms are single training seeds, so the interval above covers evaluation noi
 initialisation noise; a seed sweep is the next step.
 
 \paragraph{The truncation augmentation: unresolved.} At a single threshold the second ablation
-does not identify a timing benefit. Removing the truncation augmentation changes
-the premature-alert rate in opposite directions depending on the decision rule: at the frozen
-operating threshold the augmented model is better ($\bmlAbCascOnPremThr$ versus
-$\bmlAbCascOffPremThr$), but under six-class argmax it is worse ($\bmlAbCascOnPremArgmax$ versus
-$\bmlAbCascOffPremArgmax$), on $N=\bmlAbCascN$ binaries. It is also expensive: within-season
+does not identify a timing benefit. Its premature alerts are counted against the generator's 7.2-day onset grid,
+the coarse definition of Table~\ref{tab:policy}, which rounds the onset up and so counts some on-time alerts as
+premature. On that grid, removing the truncation augmentation moves the premature-alert rate in opposite
+directions depending on the decision rule, on $N=\bmlAbCascN$ binaries: at the frozen operating threshold the
+augmented model is better ($\bmlAbCascOnPremThr$ versus $\bmlAbCascOffPremThr$), under six-class argmax worse
+($\bmlAbCascOnPremArgmax$ versus $\bmlAbCascOffPremArgmax$). The grid cannot decide most of these cases: all
+$\bmlAbCascOnPremKThr$ of the augmented arm's premature alerts at the threshold, and $\bmlAbCascOnInWinArgmax$ of its
+$\bmlAbCascOnPremKArgmax$ under argmax, fall in the 7.2 days before the grid onset, where the true onset lies. Alerts
+earlier than that, premature under any onset, number $\bmlAbCascOnUnambThr$ against $\bmlAbCascOffUnambThr$ at the
+threshold and $\bmlAbCascOnUnambArgmax$ against $\bmlAbCascOffUnambArgmax$ under argmax, so the argmax reversal is
+not established. The augmentation is also expensive: within-season
 detection at the same threshold falls from $\bmlAbCascOffDet$ to $\bmlAbCascOnDet$, and static
 macro-F1 from $\bmlAbCascOffMacroFOne$ to $\bmlAbCascOnMacroFOne$.
 
@@ -1695,9 +1715,9 @@ distinguish them because they are not equally cheap.
 
 \emph{Manuscript rebuild.} Every data-derived number, table and figure in this paper is generated by the build
 script from the artifacts distributed with a release, with no access to any local output directory. Method and
-configuration constants (thresholds, bin edges, parameter ranges and the training settings of
-Appendix~\ref{app:infra}) are typed; the training settings were read from the training logs and checkpoint states,
-which are not distributed.
+configuration constants (thresholds, bin edges, parameter ranges, and the training settings and measurements of
+Appendix~\ref{app:infra}: rates, batches, epochs, throughput and hours) are typed; those settings and measurements were
+read from the training logs and checkpoint states, which are not distributed.
 This runs in minutes on a laptop and is exercised in continuous integration from a clean
 \code{git archive} of the repository.
 
@@ -1713,10 +1733,12 @@ scores, labels, weights and the two colour fine-tunes) are archived with their h
 the archive alone is not implemented); the stress numbers of Table~\ref{tab:stress} from
 \code{validation/stress\_rescore\_local.json}, whose per-event inputs are archived in
 \code{validation/stress\_rescore\_archive/} (the stage-5 weights behind its predecessor columns are not distributed;
-their hash is recorded); the stored-truth label measurements from
+their hash is recorded), and the table's full-set column and event counts from \code{paper/results/stress\_report.json};
+the stored-truth label measurements from
 \code{validation/truth\_relabel\_impact.json}; and the other ablations and auxiliary experiments from their own
-archived JSON artifacts, each with the script that produced it. Re-deriving a reported statistic from these requires only the reduction scripts, with three exceptions: three
-RMDC26 results (below); the referee round, whose reduction reads the runner's work directory (its overlap
+archived JSON artifacts, each with the script that produced it. Re-deriving a reported statistic from these requires only the reduction scripts, with four exceptions: the
+RMDC26 results listed below; the full stress set's column, whose 14.9 million per-event predictions are not
+distributed; the referee round, whose reduction reads the runner's work directory (its overlap
 statistics, the floor arms' shared events and the regenerated shards' match to the held-out pool, also need the
 regenerated shards' parameters, which are not archived); and the slice of
 events without blue-band data (\S\ref{sec:model}, \S\ref{sec:limits}), read from the archived
@@ -1739,12 +1761,15 @@ Hub at \code{RGES-PIT/MachineLearning}; we pin revision \code{a338d5bab441b5caf5
 \code{validation/gulls/rmdc26\_scores.csv.gz} holds every scored event's anomaly probability for every
 checkpoint in \S\ref{sec:gulls}, with its class, season, event-rate weight and lens parameters, and the RMDC26
 tables of \S\ref{sec:gulls} regenerate from it alone; the recommended checkpoint of \S\ref{sec:gulls} is released as
-\code{binml/weights/binml-gapaware.pt}. Three RMDC26 results rest on per-event data that are not distributed and regenerate only by rerunning a
-script on the pinned release: the partial-season scan of \S\ref{sec:gulls:cascade} (per-cut probability traces;
-\code{validation/gulls/cascade\_gulls.py}), the sub-day single lenses (their scores;
-\code{validation/gulls\_transfer.py} with the sub-day timescale support, then
-\code{validation/gulls/subday\_summary.py}), and the claimable-anomaly relabelling (the noise-free curves;
-\code{validation/gulls/detectability\_relabel.py}).
+\code{binml/weights/binml-gapaware.pt}. Other RMDC26 results rest on per-event data extracted from the release and not
+distributed, and regenerate only by rerunning a script on the pinned release: the partial-season scan of
+\S\ref{sec:gulls:cascade} (per-cut probability traces; \code{validation/gulls/cascade\_gulls.py}), the sub-day single
+lenses (their scores; \code{validation/gulls\_transfer.py} with the sub-day timescale support, then
+\code{validation/gulls/subday\_summary.py}), the claimable-anomaly relabelling and the floor sensitivity (the
+noise-free curves; \code{validation/gulls/detectability\_relabel.py}, \code{validation/gulls/floor\_sensitivity.py}),
+the between-season combiner and the bin-occupancy test (the extracted light curves;
+\code{validation/gulls/multi\_season.py}, \code{validation/gulls/occupancy\_sensitivity.py}), and the noise-model
+comparison (per-epoch errors; \code{validation/gulls/gulls\_noise\_vs\_ours.py}).
 
 \emph{Training reproduction.} The multi-million-event training set is too large to host and is
 available on request; it can also be regenerated from the released simulation code, since each
@@ -1753,8 +1778,9 @@ pinned, the data are close to the originals but not identical: the single-lens r
 differs between environments, and each changed label shifts the random stream that keeps or drops events (for
 two held-out shards, $\bmlRefMatchPct\%$ of the events reproduce, \S\ref{sec:limits}; for the stress set, made by
 another unpinned fleet, the regenerated natural tier labels $\bmlStressNatAnomDeficit\%$ fewer detectable anomalies and
-the wide-separation sweep $\bmlStressWidesepAnomDeficit\%$ fewer; the generator code itself gives the same shards at
-every commit since 2026 July 21). Reproducing the released checkpoint, the ablation
+the wide-separation sweep $\bmlStressWidesepAnomDeficit\%$ fewer). The generator code gave the same labels and parameters for a
+held-out shard at the three commits we compared (2026 July 21, July 28 and September 13), but its out-of-range sweeps
+changed after July, and the stress set's sweeps come back only with \code{run\_shard --legacy-oor-mix --legacy-t0-pad}. Reproducing the released checkpoint, the ablation
 arms or the fine-tuning runs means rerunning that generation and the training described in
 Appendix~\ref{app:infra}, whose cost was not recorded. The build script does not do this, and no
 claim in this paper should be read as implying that it does.

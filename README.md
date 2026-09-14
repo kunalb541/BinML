@@ -251,8 +251,9 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
 - **Known weak spots** (documented in [`docs/model_card.md`](docs/model_card.md)): within the training prior, wide
   binaries at s > 2.9 and q >= 0.1 (argmax recall 0.70; over half of all argmax misses); in targeted out-of-range tests:
   faint sources m>25 (noise-dominated: 12% of faint microlensing events without a detectable anomaly exceed the
-  operating threshold, against 0.9% in the natural population), sub-day single lenses tE 0.2-1 d (69% called
-  anomalies, 35% above the operating threshold), wide caustics s>5 (anomaly recall 0.33 on 64 events).
+  operating threshold, against 0.9% in the natural population), detectable sub-day single lenses tE 0.2-1 d (69%
+  called anomalies, 35% above the operating threshold), wide caustics s>5 (anomaly recall 0.33 on 64 events, in a
+  regenerated sweep that labels 27% fewer detectable anomalies than the suite).
 - **Synthetic support, not a population forecast.** The simulator uses broad analytic training
   supports, including an authored truncated-lognormal timescale distribution anchored to a
   literature mean. Variable-star curves are analytic or phenomenological shapes, not sampled

@@ -137,6 +137,13 @@ cmd("bmlCascGridHalfPct", pct(_g["0.5"]["premature_rate_of_eligible"]))
 cmd("bmlCascGridOnePct", pct(_g["1.0"]["premature_rate_of_eligible"]))
 cmd("bmlCascGridTwoPct", pct(_g["2.0"]["premature_rate_of_eligible"]))
 cmd("bmlCascGridOneDet", pct(_g["1.0"]["detection_fraction"]))
+cmd("bmlCascGridTwoDet", pct(_g["2.0"]["detection_fraction"]))
+# "a coarser grid lowers the premature rate at almost unchanged detection" (grids end at the season's end)
+if not (_g["2.0"]["premature_rate_of_eligible"] <= _g["1.0"]["premature_rate_of_eligible"]
+        < _g["0.5"]["premature_rate_of_eligible"]):
+    raise SystemExit("FATAL: 'coarsening the grid lowers the premature rate' no longer holds")
+if max(abs(_g[k]["detection_fraction"] - _g["0.5"]["detection_fraction"]) for k in ("1.0", "2.0")) >= 0.01:
+    raise SystemExit("FATAL: 'at almost unchanged detection' no longer holds for the coarser grids")
 _p2 = _sen["persistence_consecutive_crossings"]["2"]
 cmd("bmlCascPersistTwoPct", pct(_p2["premature_rate_of_eligible"]))
 cmd("bmlCascPersistTwoDet", pct(_p2["detection_fraction"]))
@@ -287,10 +294,16 @@ for _t in ("planetary", "oor_per_longp", "oor_pspl_shortte", "oor_flat_faint"):
     for _c, _fs in _srl["suite_label_fractions"][_t].items():
         _f = _sub[_t]["released"]["label_fractions"][_c]
         _se = max(np.sqrt(_fs * (1 - _fs) / _n), 1e-9)
-        _need(abs(_f - _fs) / _se < 4.5, f"the regenerated {_t} tier's {_c} fraction differs from the set's ({_f:.4f} vs {_fs:.4f})")
+        # sixth check: the bound sits below the disclosed deficits (|z| 2.9 natural, 2.5 wide-separation), so a tier that
+        # deviated as much as those would not be called in agreement
+        _need(abs(_f - _fs) / _se < 2.5, f"the regenerated {_t} tier's {_c} fraction differs from the set's ({_f:.4f} vs {_fs:.4f})")
 _need(_pc["faint_at_natural_mix"] < 0.5 * _pc["natural"] and _pc["natural_at_faint_mix"] > 0.8 * _pc["natural"],
       "faint photometry, not the sweep's class mix, drives most of the fall in faint-sweep precision")
 _need(_mt["frac"] > 3 * _sub["natural"]["released"]["pspl_label_above_frozen_w"], "the matched-timescale sub-day rate is far above the natural one")
+# the abstract's range "legacy--corrected" is printed low to high (sixth check)
+_need(_sub["oor_pspl_shortte"]["released"]["pspl_label_by_generator_class"]["single_lenses"]["frac_above_frozen_threshold"]
+      <= _sub["oor_pspl_shortte_current"]["released"]["pspl_label_by_generator_class"]["single_lenses"]["frac_above_frozen_threshold"],
+      "the abstract's sub-day range runs from the legacy tier (low) to the corrected tier (high)")
 _need(_q["natural_np_recall"]["subset_stage5"] - _q["natural_np_recall"]["suite_stage5"] > 0.005 and _fr_sub < _fr_suite,
       "the regenerated natural tier has fewer detectable anomalies and stage 5's recall on it differs from the full set's")
 _need(_rel("widesep_np_recall") < 0.5, "wide-separation anomaly recall 'falls'")
@@ -332,18 +345,32 @@ if round(float(_regs["oor_np_widesep"]["per_class"]["NonPSPL"]["recall"]), 3) !=
     raise SystemExit("FATAL: canonical widesep recall no longer matches stress_report.json "
                      f"({sr['widesep_np_recall']} vs {_regs['oor_np_widesep']['per_class']['NonPSPL']['recall']})")
 
-gm = cn["gap_matched"]
-cmd("bmlGapN", str(gm["n_events"]))
-cmd("bmlGapVisitsA", f"{gm['visits_per_day_a']:.0f}")
-cmd("bmlGapUniformA", three(gm["uniform_a"]))
-cmd("bmlGapUniformALo", three(gm["uniform_a_ci"][0]))
-cmd("bmlGapUniformAHi", three(gm["uniform_a_ci"][1]))
-cmd("bmlGapNightlyA", three(gm["nightly_a"]))
-cmd("bmlGapNightlyAHi", three(gm["nightly_a_ci"][1]))
-cmd("bmlGapVisitsB", f"{gm['visits_per_day_b']:.0f}")
-cmd("bmlGapUniformB", three(gm["uniform_b"]))
-cmd("bmlGapVisitsC", f"{gm['visits_per_day_c']:.0f}")
-cmd("bmlGapUniformC", three(gm["uniform_c"]))
+# the matched-density test, read from its artifact (sixth check: it had been hand-copied into canonical_numbers.json,
+# and its uniform arm's collapse had been read as a sparsity floor; a gap-free regular arm and the empty-bin fractions
+# now separate empty bins from sparsity)
+_gmr = _jload(os.path.join(os.path.dirname(HERE), "validation", "gap_matched_result.json"))
+if not all(k in _gmr for k in ("code", "checkpoint_sha256")) or not all("regular" in a_ for a_ in _gmr["arms"]):
+    raise SystemExit("FATAL: gap_matched_result.json predates the regular arm; rerun validation/gap_matched_density.py")
+_ga = sorted(_gmr["arms"], key=lambda a_: -a_["visits"])
+if len(_ga) != 3:
+    raise SystemExit("FATAL: the matched-density text describes three visit counts")
+cmd("bmlGapN", str(_gmr["n_events"]))
+for _a, _nm in zip(_ga, "ABC"):
+    cmd(f"bmlGapVisits{_nm}", f"{_a['visits_per_day']:.0f}")
+    cmd(f"bmlGapUniform{_nm}", three(_a["uniform"])); cmd(f"bmlGapNightly{_nm}", three(_a["nightly"]))
+    cmd(f"bmlGapRegular{_nm}", three(_a["regular"]))
+    cmd(f"bmlGapEmptyUniform{_nm}", f"{100 * _a['empty_bin_frac']['uniform']:.0f}")
+cmd("bmlGapUniformALo", three(_ga[0]["uniform_ci"][0])); cmd("bmlGapUniformAHi", three(_ga[0]["uniform_ci"][1]))
+cmd("bmlGapNightlyAHi", three(_ga[0]["nightly_ci"][1]))
+cmd("bmlGapEmptyNightly", f"{100 * min(a_['empty_bin_frac']['nightly'] for a_ in _ga):.0f}")
+_emp = [a_["empty_bin_frac"]["uniform"] for a_ in _ga]
+if not (all(a_["nightly"] == 0 for a_ in _ga) and _ga[0]["uniform_ci"][0] > _ga[0]["nightly_ci"][1]
+        and _ga[1]["uniform_ci"][0] > _ga[1]["nightly_ci"][1]):
+    raise SystemExit("FATAL: 'the gapped schedule fails where uniform sampling works (intervals do not overlap)' no longer holds")
+if not (_emp[0] < _emp[1] < _emp[2] and max(a_["empty_bin_frac"]["regular"] for a_ in _ga) == 0
+        and _ga[2]["uniform_ci"][1] < _ga[2]["regular_ci"][0] and min(a_["regular"] for a_ in _ga) > 0.4
+        and min(a_["empty_bin_frac"]["nightly"] for a_ in _ga) > 0.5):
+    raise SystemExit("FATAL: 'empty two-hour bins, not sparsity, make the thinned schedules fail' no longer holds")
 
 mr = cn["mass_ratio_regimes"]
 for key, name in (("stellar", "Stellar"), ("giant", "Giant"),
@@ -403,6 +430,32 @@ for tag, nm in (("cascade_on", "CascOn"), ("cascade_off", "CascOff")):
     cmd(f"bmlAb{nm}PremArgmax", three(rt["premature_rate_argmax"]))
     cmd(f"bmlAb{nm}Det", three(rt["detection_fraction_thr"]))
     cmd(f"bmlAb{nm}MacroFOne", three(st["macro_f1"]))
+# sixth check: the ablation's onsets are the generator's 7.2 d grid (rounded UP), so the true onset lies in the 7.2 d
+# before t_anom and an alert there may be on time. Only alerts at or before t_anom - 7.2 are premature under any onset.
+_ab_unamb = {}
+for tag, nm in (("cascade_on", "CascOn"), ("cascade_off", "CascOff")):
+    _ev = abl[tag]["realtime"]["events"]
+    _ta = np.array([e["t_anom"] for e in _ev], float)
+    if not np.allclose(np.round(_ta / 7.2) * 7.2, _ta):
+        raise SystemExit("FATAL: the ablation's onsets are no longer on the 7.2 d generator grid; the text says they are")
+    for rule, rnm in (("thr", "Thr"), ("argmax", "Argmax")):
+        _f = np.array([np.nan if e[f"first_{rule}"] is None else e[f"first_{rule}"] for e in _ev], float)
+        _pm = np.array([bool(e[f"premature_{rule}"]) for e in _ev])
+        if not np.array_equal(_pm, np.isfinite(_f) & (_f < _ta)):
+            raise SystemExit("FATAL: the ablation's premature flags disagree with its alert and onset times")
+        _un = int((_pm & (_f <= _ta - 7.2 + 1e-9)).sum())
+        _ab_unamb[(tag, rule)] = (_un, int(_pm.sum()))
+        cmd(f"bmlAb{nm}PremK{rnm}", str(int(_pm.sum()))); cmd(f"bmlAb{nm}Unamb{rnm}", str(_un))
+        cmd(f"bmlAb{nm}InWin{rnm}", str(int(_pm.sum()) - _un))
+if not all(_ab_unamb[("cascade_on", r)][0] < _ab_unamb[("cascade_off", r)][0] for r in ("thr", "argmax")):
+    raise SystemExit("FATAL: 'alerts premature under any onset favour the augmented arm under both rules' no longer holds")
+if _ab_unamb[("cascade_on", "thr")][0] != 0:
+    raise SystemExit("FATAL: 'all of the augmented arm's premature alerts at the threshold fall inside the grid window' no longer holds")
+if not all(1 - _ab_unamb[("cascade_on", r)][0] / _ab_unamb[("cascade_on", r)][1] >= 0.9 for r in ("thr", "argmax")):
+    raise SystemExit("FATAL: 'almost all of the augmented arm's premature alerts fall inside the grid window' no longer holds")
+if not (abl["cascade_on"]["realtime"]["premature_rate_argmax"] > abl["cascade_off"]["realtime"]["premature_rate_argmax"]
+        and abl["cascade_on"]["realtime"]["premature_rate_thr"] < abl["cascade_off"]["realtime"]["premature_rate_thr"]):
+    raise SystemExit("FATAL: on the 7.2 d grid the two rules no longer move the premature rate in opposite directions")
 
 lab2 = _load("labelling_ablation_result.json", ("arms", "labels_observational"))
 for tag, nm in (("labels_observational", "LabelObs"), ("labels_generator", "LabelGen"),
@@ -414,6 +467,11 @@ for tag, nm in (("labels_observational", "LabelObs"), ("labels_generator", "Labe
         cmd(f"bmlAb{nm}{cnm}FOne", three(a["vs_observational"]["per_class_f1"][cls]))
     cmd(f"bmlAb{nm}Comp", three(a["anomaly_completeness_at_thr"]))
     cmd(f"bmlAb{nm}Pur", three(a["anomaly_purity_at_thr"]))
+# "about N non-anomalous flags for every detectable anomaly it flags" follows from the purity alone
+_pg = lab2["arms"]["labels_generator"]["anomaly_purity_at_thr"]
+if not 0 < _pg < 0.2:
+    raise SystemExit("FATAL: the generator-intent arm's purity no longer implies many false flags per true one")
+cmd("bmlAbLabelGenFalsePerTrue", f"{(1 - _pg) / _pg:.0f}")
 _gap = lab2["macro_f1_gap_vs_observational"]
 cmd("bmlAbLabelGap", three(_gap["point"]))
 cmd("bmlAbLabelGapLo", three(_gap["ci95"][0]))
@@ -479,9 +537,17 @@ cmd("bmlBaseGbt", three(bl["ap_gbt"]))
 cmd("bmlBaseLogistic", three(bl["ap_logistic"]))
 cmd("bmlBasePspl", three(bl["ap_fitted_pspl"]))
 cmd("bmlBaseNtest", f"{bl['n_test']:,}")
+# the comparison set's own anomaly prevalence (sixth check: its class mix was not described), cross-checked with the artifact
+_blr = _jload(os.path.join(os.path.dirname(HERE), "validation", "baselines_result.json"))
+if not (abs(_blr["nonpspl_prevalence"] - bl["prevalence"]) < 1e-9 and abs(_blr["ap_binml"] - bl["ap_binml"]) < 1e-9
+        and abs(_blr["ap_fitted_pspl_residual"] - bl["ap_fitted_pspl"]) < 1e-9 and _blr["n_test"] == bl["n_test"]):
+    raise SystemExit("FATAL: canonical baselines no longer match validation/baselines_result.json")
+cmd("bmlBasePrev", f"{100 * _blr['nonpspl_prevalence']:.1f}")
 
-# THROUGHPUT: read from the reproducible benchmark, never hand-entered. The previous value
-# (1,224 events/s) had no retained script or hardware record and could not be reproduced.
+# THROUGHPUT: read from the reproducible benchmark, never hand-entered. The 1,224 events/s of an earlier revision had
+# no retained script or hardware record; the benchmark on an idle machine comes within 15% of it, while its first
+# committed run (359/s) was taken under load (sixth check). The text calls the machine otherwise idle, so the repeats
+# must be tight and the load low.
 _inf_path = os.path.join(os.path.dirname(HERE), "validation", "inference_benchmark_result.json")
 if not os.path.exists(_inf_path):
     raise SystemExit(f"FATAL: {_inf_path} missing; run validation/inference_benchmark.py")
@@ -491,6 +557,10 @@ cmd("bmlInferMs", two(inf["ms_per_event"]))
 cmd("bmlInferCores", str(inf["environment"]["logical_cores"]))
 cmd("bmlInferCpu", inf["environment"]["cpu"])
 cmd("bmlInferThreads", str(inf["environment"]["torch_threads"]))
+_sb = inf["seconds_per_batch"]
+if not ("load_average_1_5_15_min_before" in inf and _sb["max"] / _sb["min"] < 1.2
+        and inf["load_average_1_5_15_min_before"][0] < inf["environment"]["logical_cores"] / 2):
+    raise SystemExit("FATAL: the throughput run was not on an otherwise idle machine (spread or load too high)")
 
 for _k, _nm in (("missed_anomaly_rate", "MissedRate"), ("lpv_to_pspl_rate", "LPVtoPSPL")):
     if _k not in fs:
@@ -564,7 +634,8 @@ for _k, _nm in (("conf_nonpspl_to_pspl_pct", "ConfNpToPspl"),
 
 if "eff_cond_recall_median" in fs:
     cmd("bmlEffMedian", three(fs["eff_cond_recall_median"]))
-# where the in-distribution misses sit (fourth verification): wide separations, not the weakest anomalies
+# where the in-distribution misses sit (fourth to sixth checks): wide binaries, at every evidence strength up to
+# dchi2 = 1e6, and weak anomalies at smaller separations
 for _k in ("miss_dchi2_gt_1e4_pct", "miss_dchi2_median", "miss_wide_pct", "np_to_pspl_wide_pct", "det_wide_pct", "recall_wide",
            "recall_not_wide", "comp_wide", "comp_not_wide", "recall_weakest_not_wide", "fp_demoted_binary_pct",
            "pspl_to_np_demoted_pct", "det_q_median", "det_stellar_pct", "s_top_bin", "eff_cond_recall_wide_stellar_lo",
@@ -596,14 +667,39 @@ cmd("bmlWideMissBigqPct", f"{fs['wide_miss_bigq_pct']:.0f}")
 cmd("bmlThrMissPct", f"{fs['thr_miss_pct_of_det']:.0f}"); cmd("bmlThrMissWidePct", f"{fs['thr_miss_wide_pct']:.0f}")
 cmd("bmlEffWideBigqLo", f"{fs['eff_cond_recall_wide_bigq_lo']:.2f}"); cmd("bmlEffWideBigqHi", f"{fs['eff_cond_recall_wide_bigq_hi']:.2f}")
 cmd("bmlEffWideBigqNd", f"{fs['eff_nd_wide_bigq_min']:,}"); cmd("bmlEffMinNd", str(fs["eff_nd_min_cell"]))
+# sixth check: the strongest wide anomalies, where the misses go, the low-q corner, and the weighted mid-range calibration
+for _k in ("wide_miss_rate_above_1e6", "wide_det_above_1e6_pct", "miss_to_pspl_pct", "eff_cond_recall_lowq_hi", "eff_nd_lowq_lo",
+           "eff_nd_lowq_hi", "eff_n_lowq_cells", "calib_weight_below_0p1_pct", "calib_mid_mean_score", "calib_mid_anomaly_freq",
+           "calib_mid_anomaly_freq_stored", "calib_top_mean_score", "calib_top_anomaly_freq"):
+    if _k not in fs:
+        raise SystemExit(f"FATAL: figures_stats lacks '{_k}'; rerun make_figures.py")
+cmd("bmlWideMissTop", f"{100 * fs['wide_miss_rate_above_1e6']:.0f}"); cmd("bmlWideDetTopPct", f"{fs['wide_det_above_1e6_pct']:.0f}")
+cmd("bmlMissToPsplPct", f"{fs['miss_to_pspl_pct']:.0f}")
+cmd("bmlEffLowqHi", f"{fs['eff_cond_recall_lowq_hi']:.2f}"); cmd("bmlEffNLowqCells", str(fs["eff_n_lowq_cells"]))
+cmd("bmlEffLowqNdLo", str(fs["eff_nd_lowq_lo"])); cmd("bmlEffLowqNdHi", str(fs["eff_nd_lowq_hi"]))
+cmd("bmlCalibLowWeightPct", f"{fs['calib_weight_below_0p1_pct']:.0f}")
+cmd("bmlCalibMidScore", f"{fs['calib_mid_mean_score']:.2f}"); cmd("bmlCalibMidFreq", f"{fs['calib_mid_anomaly_freq']:.3f}")
+cmd("bmlCalibMidFreqStored", f"{fs['calib_mid_anomaly_freq_stored']:.2f}")
+cmd("bmlCalibTopScore", f"{fs['calib_top_mean_score']:.2f}"); cmd("bmlCalibTopFreq", f"{fs['calib_top_anomaly_freq']:.2f}")
 # the directional sentences of Sec. results about where the misses sit (fourth and fifth verifications)
 def _needfs(ok, what):
     if not ok:
         raise SystemExit(f"FATAL: Sec. results sentence no longer holds: {what}")
 _needfs(fs["np_to_pspl_wide_pct"] > 50 and fs["miss_wide_pct"] > 50 and fs["det_wide_pct"] < 20,
         "'most' NonPSPL->PSPL confusions and 'more than half' of argmax misses are wide binaries, a small share of anomalies")
-_needfs(0.15 <= fs["wide_miss_rate_by_dchi2_lo"] and fs["wide_miss_rate_by_dchi2_hi"] <= 0.35,
-        "wide binaries are missed 'about a quarter of the time at every evidence strength'")
+_needfs(0.15 <= fs["wide_miss_rate_by_dchi2_lo"] and fs["wide_miss_rate_by_dchi2_hi"] <= 0.35
+        and fs["wide_miss_rate_by_dchi2_hi"] - fs["wide_miss_rate_by_dchi2_lo"] < 0.1,
+        "wide binaries are missed at a similar rate 'at every evidence strength up to dchi2 = 1e6'")
+_needfs(fs["wide_miss_rate_above_1e6"] < fs["wide_miss_rate_by_dchi2_lo"] - 0.05,
+        "the strongest wide anomalies (dchi2 > 1e6) are missed less often")
+_needfs(fs["miss_to_pspl_pct"] > 90, "a missed detectable binary is 'almost always called a single lens'")
+_needfs(fs["eff_cond_recall_lowq_hi"] < fs["eff_cond_recall_median"] and fs["eff_nd_lowq_hi"] < fs["eff_nd_median_populated"] / 2,
+        "every populated cell at log q < -4 lies below the plane's median, in thin support")
+_needfs(fs["calib_weight_below_0p1_pct"] > 70 and fs["calib_mid_anomaly_freq"] < fs["calib_mid_mean_score"] / 2
+        and fs["calib_mid_anomaly_freq_stored"] > 2 * fs["calib_mid_anomaly_freq"]
+        and abs(fs["calib_top_mean_score"] - fs["calib_top_anomaly_freq"]) < 0.1,
+        "the small ECE reflects the low-score bulk; the weighted mid-range is over-confident through the weights; "
+        "above 0.9 score and frequency are close")
 _needfs(fs["notwide_weak_share_of_miss_pct"] > 2 * fs["notwide_weak_share_of_det_pct"]
         and fs["notwide_miss_rate_weak"] > 10 * fs["notwide_miss_rate_strong"],
         "at smaller separations the misses 'concentrate at weak anomalies'")

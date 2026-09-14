@@ -221,7 +221,6 @@ if T:
             W_ = M[m]["weighted"]; wat = next(a for a in W_["recall_at_matched_fa"] if abs(a["fa_target"] - mid) < 1e-9)
             cmd(f"bmlGullsFaW{nm}", pct(W_["frozen_threshold"]["fa_1S1L"]))
             cmd(f"bmlGullsRecW{nm}", three(wat["recall_1S2L"])); cmd(f"bmlGullsRecBinW{nm}", three(wat["recall_2S2L"]))
-    FA_REC_FROZEN = fa(REC)          # all scored single lenses, frozen threshold (the cascade sample is compared with it)
     # every fine-tuned checkpoint scored on RMDC26 before the choice (the multiplicity behind "optimistic"); the seed
     # replicates of the recommended recipe (suffix _s2, _s3) were trained after the choice and are not candidates
     cmd("bmlGullsNcheckpoints", str(len([k for k in M if k != "shipped" and not re.search(r"_s\d+$", k)])))
@@ -553,19 +552,42 @@ if CG:
     def _k(frac, n):
         return int(round(frac * n))
     for st, nm in (("giant", "Giant"), ("neptune", "Neptune")):
-        cmd(f"bmlCgRm{nm}PremK", str(_k(rs1[st]["premature_frac"], rs1[st]["n_eligible"])))
-        cmd(f"bmlCgIn{nm}PremK", str(_k(ih[st]["premature_rate_of_eligible"], ih[st]["n_eligible"])))
-        cmd(f"bmlCgRm{nm}PremThreeK", str(_k(rs3[st]["premature_frac"], rs3[st]["n_eligible"])))
-        cmd(f"bmlCgIn{nm}PremThreeK", str(_k(ih3[st]["premature_rate_of_eligible"], ih3[st]["n_eligible"])))
+        # exact counts recorded by the reducers (sixth check), checked against the rounded fractions
+        for blk, frac_key in ((rs1[st], "premature_frac"), (rs3[st], "premature_frac"),
+                              (ih[st], "premature_rate_of_eligible"), (ih3[st], "premature_rate_of_eligible")):
+            need(blk["n_premature"] == _k(blk[frac_key], blk["n_eligible"]), f"{st}: an exact premature count disagrees with its fraction")
+        cmd(f"bmlCgRm{nm}PremK", str(rs1[st]["n_premature"])); cmd(f"bmlCgIn{nm}PremK", str(ih[st]["n_premature"]))
+        cmd(f"bmlCgRm{nm}PremThreeK", str(rs3[st]["n_premature"])); cmd(f"bmlCgIn{nm}PremThreeK", str(ih3[st]["n_premature"]))
     # detection stratum by stratum (not pooled: the two sets' mass-ratio compositions differ, 85% against 26% at
     # intermediate ratios, so a pooled rate would confound composition with the simulators; fifth verification)
     need(all(rs1[st]["detected_frac"] < ih[st]["detection_fraction"] for st in ("giant", "neptune")),
          "RMDC26 detection is no longer lower in both strata")
-    need(rs1["neptune"]["median_lag_nonpremature_days"] - ih["neptune"]["median_lag_non_premature_days"] >= 1.0
-         and abs(rs1["giant"]["median_lag_nonpremature_days"] - ih["giant"]["median_lag_non_premature_days"]) <= 0.5,
-         "Neptune alerts come later while the giant lags differ by one half-day step")
+    # sixth check: every stratum statement against counting noise (exact counts, Fisher tests, a bootstrap interval on
+    # the median-lag difference; cascade_gulls.py records them under vs_inhouse)
+    v1 = {st: rs1[st]["vs_inhouse"] for st in ("giant", "neptune")}
+    v3 = {st: rs3[st]["vs_inhouse"] for st in ("giant", "neptune")}
+    for st in ("giant", "neptune"):
+        need(abs(v1[st]["median_lag_diff_days"] - (rs1[st]["median_lag_nonpremature_days"] - ih[st]["median_lag_non_premature_days"])) < 1e-9,
+             f"{st}: vs_inhouse disagrees with the stratum medians")
+        need(v1[st]["n_premature_inhouse"] == int(round(ih[st]["premature_rate_of_eligible"] * ih[st]["n_eligible"]))
+             and rs1[st]["n_premature"] == int(round(rs1[st]["premature_frac"] * rs1[st]["n_eligible"])),
+             f"{st}: the exact premature counts disagree with the rounded fractions")
+    need(min(v1[st]["fisher_p_premature"] for st in v1) > 0.05, "premature alerts are 'about as frequent' (F146) in both strata")
+    need(v1["giant"]["fisher_p_detection"] < 0.05 < v1["neptune"]["fisher_p_detection"],
+         "detection is lower in both strata, 'resolved' at high ratios and 'not resolved' at intermediate ones")
+    dg, dn = v1["giant"]["median_lag_diff_days"], v1["neptune"]["median_lag_diff_days"]
+    need(0 < dg < dn and v1["giant"]["median_lag_diff_ci95"][0] < 0 < v1["giant"]["median_lag_diff_ci95"][1]
+         and v1["neptune"]["median_lag_diff_ci95"][0] >= 0,
+         "the lag is 'longer' in both strata, unresolved at high ratios and at the edge of resolution at intermediate ones")
+    cmd("bmlCgGiantLagDiff", f"{dg:g}"); cmd("bmlCgNeptuneLagDiff", f"{dn:g}")
+    cmd("bmlCgGiantLagDiffLo", f"{v1['giant']['median_lag_diff_ci95'][0]:+g}"); cmd("bmlCgGiantLagDiffHi", f"{v1['giant']['median_lag_diff_ci95'][1]:+g}")
+    cmd("bmlCgNeptuneLagDiffLo", f"{v1['neptune']['median_lag_diff_ci95'][0]:g}"); cmd("bmlCgNeptuneLagDiffHi", f"{v1['neptune']['median_lag_diff_ci95'][1]:g}")
+    cmd("bmlCgPremFisherMin", f"{min(v1[st]['fisher_p_premature'] for st in v1):.2f}")
+    cmd("bmlCgGiantDetFisher", f"{v1['giant']['fisher_p_detection']:.3f}"); cmd("bmlCgNeptuneDetFisher", f"{v1['neptune']['fisher_p_detection']:.2f}")
     need(all(rs3[st]["premature_frac"] > ih3[st]["premature_rate_of_eligible"] for st in ("giant", "neptune")),
          "with three bands RMDC26's premature rates are no longer the higher ones in both strata")
+    need(min(v3[st]["fisher_p_premature"] for st in v3) > 0.05, "the three-band premature differences are 'within counting noise'")
+    need(rs1["stellar"]["frac_of_eligible"] < 0.05, "'about 1%' of RMDC26's eligible anomalies have q > 1e-2")
     # directional sentences of Sec. gulls:cascade
     need(rs1["lowmass"]["detected_frac"] < rs1["neptune"]["detected_frac"] < rs1["giant"]["detected_frac"], "detection 'falls with mass ratio'")
     need(ihn["lowmass"] < 20, "the in-house scan 'barely samples' q < 1e-4")
@@ -580,7 +602,6 @@ if CG:
         need(tcal["timing"]["detected_frac"] < t_["detected_frac"] and tcal["timing"]["premature_frac"] < t_["premature_frac"]
              and tcal["timing"]["median_lag_nonpremature_days"] > t_["median_lag_nonpremature_days"],
              "recalibrated detection and premature alerts 'fall', lag 'grows'")
-    need(bu["full_window_flag_frac"] < FA_REC_FROZEN, "the scanned single lenses flag less often than all scored ones ('slightly optimistic')")
 # ------------------------------------------------------------------ referee-round items on our own simulator
 RR = load(os.path.join(os.pardir, "referee_round.json"))          # validation/referee_round.json (our simulator)
 if RR:
@@ -603,7 +624,7 @@ if RR:
     cmd("bmlRefFloorShareLo", pct0(ov["test_f001"]["frac_shared"])); cmd("bmlRefFloorShareHi", pct0(ov["test_f005"]["frac_shared"]))
     need(0 < ov["test_f005"]["frac_shared"] < ov["test_f001"]["frac_shared"] < 0.5, "the floor arms' overlap is no longer 'partly'")
     cmd("bmlRefValPct", pct0(RR["threshold_selection_overlap"]["frac_threshold_selection_rows"]))
-    _to = RR["threshold_selection_overlap"]            # regenerated at the current code: part of each shard is new draws
+    _to = RR["threshold_selection_overlap"]            # regenerated outside the original environment: part of each shard differs
     cmd("bmlRefMatchPct", pct0(_to["n_matched_to_pool"] / _to["n"]))
     cmd("bmlRefValPctMatched", pct0(_to["n_threshold_selection_rows"] / _to["n_matched_to_pool"]))
     need(0.5 < _to["n_matched_to_pool"] / _to["n"] < 1, "the regenerated shards reproduce 'most' (not all) held-out events")

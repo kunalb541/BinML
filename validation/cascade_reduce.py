@@ -75,13 +75,16 @@ def wilson(k, n, z=1.96):
 def alert_times(P, cuts, thr, stride=1, persist=1):
     """First alert day per event, or NaN if censored.
 
-    `stride` subsamples the evaluation grid (1 -> 0.5 d, 2 -> 1.0 d, ...).  `persist` requires that
-    many CONSECUTIVE crossings on the subsampled grid before an alert fires -- the debouncing a
-    real broker would apply.  The alert time is the day the requirement is met, which is when a
-    broker could actually send it.
+    `stride` subsamples the evaluation grid (1 -> 0.5 d, 2 -> 1.0 d, ...).  The subsampled grid is
+    anchored at the season's END (stride 2 -> 1, 2, ..., 72 d), so every grid evaluates the complete
+    season; anchoring at the first cut (0.5, 1.5, ..., 71.5 d) would drop the 72 d cut and with it
+    every event whose only crossing is there, which is a change of window, not of grid (sixth check).
+    `persist` requires that many CONSECUTIVE crossings on the subsampled grid before an alert fires --
+    the debouncing a real broker would apply.  The alert time is the day the requirement is met,
+    which is when a broker could actually send it.
     """
-    p = P[:, ::stride]
-    c = cuts[::stride]
+    p = P[:, stride - 1::stride]
+    c = cuts[stride - 1::stride]
     over = np.nan_to_num(p, nan=0.0) >= thr
     if persist > 1:
         run = np.zeros_like(over, dtype=np.int16)
@@ -314,7 +317,12 @@ def main(argv=None):
                 strat[key][name] = {k: s[k] for k in
                                     ("n_eligible", "detection_fraction",
                                      "premature_rate_of_eligible",
-                                     "median_lag_non_premature_days")}
+                                     "median_lag_non_premature_days", "n_detected", "n_premature")}
+                # the per-event lags, so the RMDC26 comparison can put an interval on the median-lag difference
+                # (validation/gulls/cascade_gulls.py; sixth check)
+                lag_m = alerts[m] - onset_first[m]
+                keep_m = np.isfinite(lag_m) & (lag_m >= 0)
+                strat[key][name]["lags_non_premature_days"] = [float(x) for x in np.sort(lag_m[keep_m])]
     edges = np.quantile(onset_first[np.isfinite(onset_first)], [0, 1 / 3, 2 / 3, 1])
     for i, name in enumerate(("early", "middle", "late")):
         m = ((onset_first >= edges[i]) & (onset_first <= edges[i + 1]) if i == 2 else

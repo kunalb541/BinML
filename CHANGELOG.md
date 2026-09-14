@@ -2,11 +2,13 @@
 
 ## Unreleased — fifth verification (2026-09-14)
 
-Six verifiers, their adversarial checkers and a completeness critic checked the fourth round's fixes (record: the
-second addendum of `docs/VERIFICATION_2026-09-12b.md`). What changed:
+Six verifiers and their adversarial checkers checked the fourth round's fixes; the round's completeness critic stalled
+and returned nothing, so a sixth check (three reviewers of these fixes, their checkers and the critic) followed (record:
+the second and third addenda of `docs/VERIFICATION_2026-09-12b.md`). What changed:
 - **Sec. results, where the misses sit, corrected again.** The fourth round's "not concentrated at the weakest
   anomalies" was wrong: there are two sources. Wide binaries (s > 2.9, 11% of detectable anomalies, 56% of the
-  NonPSPL-to-PSPL confusions) are missed 22-30% of the time at every evidence strength, almost all at q >= 0.1; at
+  NonPSPL-to-PSPL confusions) are missed 26-30% of the time at every evidence strength up to dchi2 = 1e6 (14% above it;
+  the sixth check found the open top bin had hidden that decline), almost all at q >= 0.1; at
   smaller separations the misses concentrate at weak anomalies (dchi2 < 2000: 19% of those anomalies, 56% of their
   misses). The labelling-surgery numbers are now derived on the final test (stored and weighted: 37.4% of stored
   generated binaries keep an anomaly, 8.2% of all generated ones); the false-positive diagnostic is 94.4% (was 94.7%,

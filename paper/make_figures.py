@@ -192,6 +192,12 @@ def fig_efficiency_plane():
     stats["eff_cond_recall_wide_bigq_lo"] = round(float(min(Cc[i, n_s - 1] for i in big)), 3)
     stats["eff_cond_recall_wide_bigq_hi"] = round(float(max(Cc[i, n_s - 1] for i in big)), 3)
     stats["eff_nd_wide_bigq_min"] = int(min(Nd[i, n_s - 1] for i in big))
+    # sixth check: the minimum is not an isolated cell; the whole low-support corner at log q < -4 is lower
+    lowq = [(Cc[i, j], Nd[i, j]) for i in range(n_q) if qe[i + 1] <= -4 + 1e-9 for j in range(n_s)
+            if np.isfinite(Cc[i, j])]
+    stats["eff_cond_recall_lowq_hi"] = round(float(max(c for c, _ in lowq)), 3)
+    stats["eff_nd_lowq_lo"] = int(min(n for _, n in lowq)); stats["eff_nd_lowq_hi"] = int(max(n for _, n in lowq))
+    stats["eff_n_lowq_cells"] = len(lowq)
     imin = np.unravel_index(np.nanargmin(Cc), Cc.shape)
     stats["eff_cond_recall_min_logq_lo"] = round(float(qe[imin[0]]), 1)
     stats["eff_cond_recall_min_logq_hi"] = round(float(qe[imin[0] + 1]), 1)
@@ -414,13 +420,20 @@ def derived_prose_numbers():
     stats["recall_weakest_not_wide"] = round(wsum(lo_ev & ~wide & (pred == NONP_)) / wsum(lo_ev & ~wide), 3)
     # fifth verification: two sources of misses. Wide binaries are missed at a similar rate at every evidence
     # strength; at smaller separations the misses concentrate at weak anomalies.
-    edges = (160, 500, 2000, 1e4, 1e5, np.inf)
+    # sixth check: an open top bin at 1e5 hid a decline among the strongest wide anomalies, so the similar rate is
+    # quoted up to 1e6 and the rate above 1e6 separately
+    edges = (160, 500, 2000, 1e4, 1e5, 1e6)
     wrate = []
     for a_, b_ in zip(edges[:-1], edges[1:]):
         m_ = det_ & wide & (dch >= a_) & (dch < b_)
         if wsum(m_) > 0:
             wrate.append(wsum(m_ & (pred != NONP_)) / wsum(m_))
     stats["wide_miss_rate_by_dchi2_lo"] = round(min(wrate), 3); stats["wide_miss_rate_by_dchi2_hi"] = round(max(wrate), 3)
+    top_ = det_ & wide & (dch >= 1e6)
+    stats["wide_miss_rate_above_1e6"] = round(wsum(top_ & (pred != NONP_)) / wsum(top_), 3)
+    stats["wide_det_above_1e6_pct"] = round(100 * wsum(top_) / wsum(det_ & wide), 1)
+    # "almost always called a single lens": where the argmax misses go
+    stats["miss_to_pspl_pct"] = round(100 * wsum(miss & (pred == PSPL_)) / wsum(miss), 1)
     nw_det, nw_miss = det_ & ~wide, det_ & ~wide & (pred != NONP_)
     stats["notwide_weak_share_of_det_pct"] = round(100 * wsum(nw_det & (dch < 2000)) / wsum(nw_det), 1)
     stats["notwide_weak_share_of_miss_pct"] = round(100 * wsum(nw_miss & (dch < 2000)) / wsum(nw_miss), 1)
@@ -547,6 +560,16 @@ def fig_calibration():
     brier = float((w * (conf - correct) ** 2).sum() / W)
     stats["nonpspl_ece_weighted"] = round(float(ece), 4)
     stats["nonpspl_brier_weighted"] = round(brier, 4)
+    # sixth check: the small ECE is dominated by the low-score bulk; under population weighting the mid-range is
+    # over-confident (the demoted binaries and single lenses there carry weight 1/keep_prob)
+    stats["calib_weight_below_0p1_pct"] = round(100 * float(w[conf < 0.1].sum() / W), 1)
+    mid = (conf >= 0.1) & (conf < 0.9)
+    stats["calib_mid_mean_score"] = round(float((w[mid] * conf[mid]).sum() / w[mid].sum()), 3)
+    stats["calib_mid_anomaly_freq"] = round(float((w[mid] * correct[mid]).sum() / w[mid].sum()), 3)
+    stats["calib_mid_anomaly_freq_stored"] = round(float(correct[mid].mean()), 3)      # unweighted, stored events
+    hi_ = conf >= 0.9
+    stats["calib_top_mean_score"] = round(float((w[hi_] * conf[hi_]).sum() / w[hi_].sum()), 3)
+    stats["calib_top_anomaly_freq"] = round(float((w[hi_] * correct[hi_]).sum() / w[hi_].sum()), 3)
 
     fig, (ax, zoom) = plt.subplots(1, 2, figsize=(6.8, 3.2))
     for panel in (ax, zoom):

@@ -55,8 +55,8 @@ reflect sub-threshold structure or correlated simulation properties and is not a
 precision estimate.
 
 The recovery misses have two sources (paper Sec. results, `paper/outputs/figures_stats.json`): wide binaries
-(s > 2.9, 11% of detectable anomalies) hold 55% of the argmax misses and are missed 22-30% of the time at every
-evidence strength, almost all at q >= 0.1; at smaller separations the misses concentrate at weak anomalies
+(s > 2.9, 11% of detectable anomalies) hold 55% of the argmax misses and are missed 26-30% of the time at every
+evidence strength up to dchi2 = 1e6 (14% above it, the strongest 19% of them), almost all at q >= 0.1; at smaller separations the misses concentrate at weak anomalies
 (dchi2 < 2000: 19% of those anomalies, 56% of their misses).
 
 - **Completeness @ fixed purity: 0.879.** Average precision (population): 0.9515.
@@ -148,8 +148,8 @@ suite's macro-F1 on the subset (0.927 vs 0.927) and differs from its other quote
 subset. The released model reproduces its held-out macro-F1 on the same-prior part (0.919 vs 0.919).
 
 The out-of-range sweeps expose failures at faint magnitudes, wide separations, long periods and sub-day timescales:
-sub-day single lenses (tE 0.2-1 d) are classified PSPL only 0.29 of the time and called anomalies 69% of the time
-(35% above the frozen threshold); the suite's per-label PSPL recall (0.52) mixed in binaries of natural timescale
+detectable sub-day single lenses (tE 0.2-1 d) are classified PSPL only 0.29 of the time and called anomalies 69% of
+the time (35% above the frozen threshold); the suite's per-label PSPL recall (0.52) mixed in binaries of natural timescale
 demoted to PSPL. Among faint microlensing events without a detectable anomaly the false-anomaly rate rises from
 3.3% to 26%; the faint sweep's anomaly precision (0.026) falls mostly through faint photometry, not its flat-heavy class mix (0.15 at the natural
 class mix, against 0.73; the natural population at the sweep's mix would give 0.64). The low-q regime and faint sources at m 23.5-25 (below the

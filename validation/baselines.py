@@ -4,8 +4,8 @@
 FAIRNESS: every method receives the SAME data -- one band (F146), all 6912 epochs -- including the PSPL residual fit, since 2026-09-09. An earlier
 version scored BinML on the full curve while the baselines saw a 400-point downsample, which
 confounded method with available information (an audit finding). Equalising downward instead was
-rejected: 400 points is ~5.5/day, below the sparsity floor where BinML fails outright, so that
-comparison would have been uninformative.
+rejected: 400 random points (~5.5/day) leave most of BinML's two-hour bins empty, where it fails outright
+(validation/gap_matched_density.py), so that comparison would have been uninformative.
 
 The manuscript otherwise compares BinML only with a truth-informed Delta-chi^2 reference (computed
 from noiseless generator information), which is not a fieldable method. This script adds baselines

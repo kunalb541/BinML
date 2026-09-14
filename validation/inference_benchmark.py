@@ -12,6 +12,11 @@ forward pass only -- that is what "inference throughput" should mean, and it is 
 scales when a survey pipeline batches work.  Tokenisation costs are reported separately rather
 than folded in, because they depend on the caller's I/O path rather than on the model.
 
+The rate depends on what else the machine is doing: the committed result of 2026-09-11 (359/s, repeats spread
+2.4-3.7 s) was taken on a loaded machine, and on an idle one the same script gives about 1,040/s, within 15% of the
+withdrawn 1,224/s (sixth check, 2026-09-14). The load average before the run, the spread of the repeats, the code and
+the checkpoint are therefore recorded with the number.
+
 Usage:  python validation/inference_benchmark.py [--batch 1024] [--repeats 7]
 """
 from __future__ import annotations
@@ -61,6 +66,13 @@ def main(argv=None):
     # torch's default thread count on this machine is 4, so pinning makes the reported figure a
     # property of the stated hardware rather than of an unstated default.
     torch.set_num_threads(args.threads or (os.cpu_count() or 1))
+    import hashlib
+    code = subprocess.run(["git", "describe", "--always", "--dirty", "--abbrev=12"], cwd=REPO,
+                          capture_output=True, text=True).stdout.strip()
+    if not code:
+        raise SystemExit("FATAL: git describe returned nothing; an artifact must record its code")
+    ckpt = os.path.join(REPO, "binml", "weights", "binml.pt")
+    load_before = [round(x, 2) for x in os.getloadavg()]
     clf = binml.Classifier(device="cpu")
     rng = np.random.default_rng(0)
     # Pre-tokenised inputs in the model's native layout: 5 channels per bin
@@ -94,6 +106,9 @@ def main(argv=None):
         "seconds_per_batch": {"median": round(med, 4),
                               "min": round(float(times.min()), 4),
                               "max": round(float(times.max()), 4)},
+        "load_average_1_5_15_min_before": load_before,
+        "code": code,
+        "checkpoint_sha256": hashlib.sha256(open(ckpt, "rb").read()).hexdigest(),
         "environment": {
             "cpu": _cpu_model(),
             "logical_cores": os.cpu_count(),

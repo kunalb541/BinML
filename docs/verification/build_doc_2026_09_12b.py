@@ -91,6 +91,32 @@ L += ["", "Left open after the fourth verification: the abstract's length (about
       "the untracked `paper/SUBMISSION_FIELDS.txt` (the author's, before resubmitting); AUDIT finding 14 (the stage-6 cache's",
       "shard indices, on S3); the audited F087/F213 constants against the current Roman tables (network); rewriting published",
       "git history (I54)."]
+# ---- second addendum: the fifth verification (2026-09-14) ---------------------------------------------------------
+import dispositions_2026_09_14 as D5                                    # noqa: E402
+R5 = json.load(open(os.path.join(HERE, "2026-09-14_fifth_findings.json")))
+ids5 = [f["id"] for f in R5["findings"]]
+assert set(ids5) == set(D5.DISPO) and len(ids5) == len(set(ids5)), "every fifth-verification finding needs one disposition"
+assert len(R5["gaps"]) == len(D5.GAPS5)
+c5 = {s_: sum(1 for f in R5["findings"] if f["severity"] == s_) for s_ in ("critical", "major", "minor")}
+v5 = {v: sum(1 for f in R5["findings"] if f["verdict"] == v) for v in ("real", "partly", "refuted")}
+L += ["", "## Addendum 2: fifth verification (2026-09-14)", "",
+      "Six verifiers (Sec. results, the RMDC26 cascade, the appendix and Data availability, the stress numbers, code and",
+      "tests, a whole-paper read) and one adversarial checker per slice checked the state after the fourth verification's",
+      "fixes (commit 9e95776). The completeness critic stalled on all six attempts and returned nothing; the sixth check",
+      "below re-ran it. Raw record: `docs/verification/2026-09-14_fifth_findings.json`; dispositions:",
+      "`docs/verification/dispositions_2026_09_14.py`.", "",
+      f"**{len(ids5)} findings: {c5['critical']} critical, {c5['major']} major, {c5['minor']} minor; adversarial verdicts "
+      f"{v5['real']} real, {v5['partly']} partly, {v5['refuted']} refuted.**", "",
+      "The main corrections: the fourth round's Sec. results rewrite had denied that misses concentrate at weak anomalies,",
+      "but at smaller separations they do (the paper now names two sources: wide binaries, missed at every evidence",
+      "strength, and near-floor anomalies); the faint sweep's precision is set by faint photometry, not by its class mix",
+      "(a natural-mix counterfactual gives 0.152 against 0.726); the regenerated wide-separation tier labels 27% fewer",
+      "detectable anomalies than the set; the RMDC26 cascade's optimism check compared an F146-only rate with a three-band",
+      "one; the stratum-wise cascade directions are stated with their counting noise; the appendix's regeneration cause,",
+      "throughput and loss description were corrected; the stress evaluations are now archived per event.", "",
+      "| id | severity | verdict | finding | disposition |", "|---|---|---|---|---|"]
+for f in sorted(R5["findings"], key=lambda f: (("critical", "major", "minor").index(f["severity"]), f["id"])):
+    L.append(f"| {f['id']} | {f['severity']} | {f['verdict']} | {f['claim'][:200].replace('|', '/')} | {D5.DISPO[f['id']]} |")
 out = os.path.join(os.path.dirname(os.path.dirname(HERE)), "docs", "VERIFICATION_2026-09-12b.md")
 open(out, "w").write("\n".join(L) + "\n")
 print(f"wrote {os.path.relpath(out)}")

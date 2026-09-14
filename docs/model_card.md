@@ -65,7 +65,8 @@ macro-F1 0.919 on the same-prior part, equal to its held-out value
 
 ## Limitations / known failure modes
 
-Documented in targeted out-of-distribution tests (their population frequency is not established):
+Documented in targeted tests (mostly out of distribution, where their population frequency is not established) and,
+for wide binaries, on the in-distribution final test:
 - **Continuous F146 required; a gapped schedule breaks the shipped checkpoint.** The training
   grid has no mid-season gaps. The RGES-PIT RMDC26 release (a GULLS simulation of the survey) pauses
   F146 for 43-44 h per season in six or seven pauses whose phases differ between seasons, and the

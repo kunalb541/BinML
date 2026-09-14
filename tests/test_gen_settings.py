@@ -44,3 +44,20 @@ def test_gen_settings_reach_the_memmap(tmp_path):
     meta = json.load(open(tmp_path / "mm" / "meta.json"))
     assert meta["gen_settings"]["espl_function"] == ["ESPLMag", "ESPLMag2 (legacy)"]
     assert meta["n_events"] == 7
+
+
+def test_legacy_switches_are_recorded_and_dated(tmp_path):
+    """The stress subset's legacy switches travel into the cache; a shard without them is dated by the commit that
+    first wrote them, not by the older generic date (sixth check)."""
+    _fake_shard(tmp_path / "a.h5", 2, "ESPLMag")
+    with h5py.File(tmp_path / "a.h5", "a") as f:
+        f.attrs["legacy_oor_mix"] = 1; f.attrs["legacy_t0_pad"] = 1
+    _fake_shard(tmp_path / "b.h5", 2, "ESPLMag")
+    build_cache([str(tmp_path / "a.h5")], str(tmp_path / "c.h5"), verbose=False)
+    build_cache([str(tmp_path / "b.h5")], str(tmp_path / "d.h5"), verbose=False)
+    with h5py.File(tmp_path / "c.h5", "r") as f:
+        g = json.loads(f.attrs["gen_settings"])
+    assert g["legacy_oor_mix"] == ["1"] and g["legacy_t0_pad"] == ["1"]
+    with h5py.File(tmp_path / "d.h5", "r") as f:
+        g = json.loads(f.attrs["gen_settings"])
+    assert g["legacy_t0_pad"] == ["absent (shard written before 6865de1, 2026-09-13)"]

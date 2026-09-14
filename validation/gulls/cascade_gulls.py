@@ -292,6 +292,30 @@ def scan(args):
 
 
 # ------------------------------------------------------------------ reduce
+def _inhouse_stratum(variant, qn):
+    """The in-house scan's stratum (validation/cascade_reduce.py) for this band set, or None."""
+    if not os.path.exists(INHOUSE):
+        return None
+    st = json.load(open(INHOUSE)).get("stratified", {})
+    return st.get("by_mass_ratio" if variant == "f146" else "by_mass_ratio_three_band", {}).get(qn)
+
+
+def _vs_inhouse(k_prem, k_det, n, lags, ref, n_boot=4000, seed=0):
+    from scipy.stats import fisher_exact
+    rn, rp, rd = ref["n_eligible"], ref["n_premature"], ref["n_detected"]
+    rl = np.asarray(ref["lags_non_premature_days"], float)
+    out = {"n_inhouse": rn, "n_premature_inhouse": rp, "n_detected_inhouse": rd,
+           "fisher_p_premature": round(float(fisher_exact([[k_prem, n - k_prem], [rp, rn - rp]])[1]), 4),
+           "fisher_p_detection": round(float(fisher_exact([[k_det, n - k_det], [rd, rn - rd]])[1]), 4)}
+    if lags.size and rl.size:
+        rng = np.random.default_rng(seed)
+        d = np.array([np.median(rng.choice(lags, lags.size)) - np.median(rng.choice(rl, rl.size)) for _ in range(n_boot)])
+        out["median_lag_diff_days"] = round(float(np.median(lags) - np.median(rl)), 2)
+        out["median_lag_diff_ci95"] = [round(float(np.percentile(d, 2.5)), 2), round(float(np.percentile(d, 97.5)), 2)]
+        out["frac_boot_diff_le_0"] = round(float((d <= 0).mean()), 3)
+    return out
+
+
 def reduce(args):
     import pyarrow.parquet as pq
     rows = {}
@@ -346,9 +370,17 @@ def reduce(args):
                     k = int(m.sum()); lag_m = first[m & det & ~prem] - onset[m & det & ~prem]
                     res["timing_by_mass_ratio"][qn] = {
                         "n_eligible": k, "frac_of_eligible": round(k / n, 4) if n else None,
+                        "n_detected": int(det[m].sum()), "n_premature": int(prem[m].sum()),
                         "detected_frac": round(float(det[m].mean()), 4) if k else None, "detected_ci95": wilson(int(det[m].sum()), k),
                         "premature_frac": round(float(prem[m].mean()), 4) if k else None, "premature_ci95": wilson(int(prem[m].sum()), k),
                         "median_lag_nonpremature_days": round(float(np.median(lag_m)), 2) if lag_m.size else None}
+                    # against the in-house stratum of the same band set (frozen threshold only): exact counts, Fisher tests
+                    # and a bootstrap interval on the median-lag difference, so the paper's "about as frequent", "lower"
+                    # and "longer" can be checked against counting noise (sixth check)
+                    ref = _inhouse_stratum(variant, qn) if tn == "frozen" else None
+                    if ref is not None and k:
+                        res["timing_by_mass_ratio"][qn]["vs_inhouse"] = _vs_inhouse(
+                            int(prem[m].sum()), int(det[m].sum()), k, np.asarray(lag_m, float), ref)
                 # burden per class: alerts per event per season, per 1,000 events per day; rate-weighted
                 burden = {}
                 for L in (L1, L2, L3):

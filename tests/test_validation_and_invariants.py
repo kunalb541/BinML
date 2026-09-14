@@ -357,8 +357,50 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
               "faint photometry, not the sweep's class mix")
     perturbed(lambda d: d["suite_label_fractions"]["oor_pspl_shortte"].update(PSPL=0.30), "oor_pspl_shortte tier's PSPL fraction differs")
     perturbed(lambda d: d["precision_at_natural_prevalence"]["planetary"].update(released=0.1), "only through prevalence")
+    # sixth check: the guards that had no case, and the tightened agreement bound
+    perturbed(lambda d: sub(d, "oor_np_widesep")["label_fractions"].update(NonPSPL=d["suite_label_fractions"]["oor_np_widesep"]["NonPSPL"]),
+              "labels clearly fewer detectable anomalies")
+    perturbed(lambda d: sub(d, "oor_pspl_shortte_current")["single_lens_above_frozen_tE_0p25_1"].update(frac=0.01),
+              "matched-timescale sub-day rate is far above")
+    perturbed(lambda d: sub(d, "oor_pspl_shortte")["pspl_label_by_generator_class"]["single_lenses"].update(frac_above_frozen_threshold=0.45),
+              "sub-day range runs from the legacy tier")
+    def _z3(d):                                     # a planetary-tier NonPSPL fraction 3 standard errors off the suite's
+        fs_ = d["suite_label_fractions"]["planetary"]["NonPSPL"]; n_ = sub(d, "planetary")["n"]
+        sub(d, "planetary")["label_fractions"]["NonPSPL"] = fs_ - 3 * (fs_ * (1 - fs_) / n_) ** 0.5
+    perturbed(_z3, "planetary tier's NonPSPL fraction differs")
     stress.write_text(stress_text)
     assert run().returncode == 0
+
+    # sixth check: guards on other artifacts, each fires on its own sentence
+    def art_perturbed(rel, edit, expected):
+        p_ = root / rel; t_ = p_.read_text(); d = _json.loads(t_); edit(d); p_.write_text(_json.dumps(d))
+        try:
+            r = run(); out = r.stdout + r.stderr
+            assert r.returncode != 0 and expected in out, (rel, expected, out[-400:])
+        finally:
+            p_.write_text(t_)
+    def _grid_worse(d):
+        g = d["sensitivity"]["evaluation_grid_days"]; g["1.0"]["premature_rate_of_eligible"] = g["0.5"]["premature_rate_of_eligible"]
+    art_perturbed("validation/cascade_reproduce_result.json", _grid_worse, "coarsening the grid lowers the premature rate")
+    art_perturbed("validation/cascade_reproduce_result.json",
+                  lambda d: d["sensitivity"]["evaluation_grid_days"]["2.0"].update(detection_fraction=0.83), "almost unchanged detection")
+    def _abl_unamb(d):                              # an augmented-arm alert far before its grid onset
+        e = next(e for e in d["cascade_on"]["realtime"]["events"] if e["first_thr"] is not None)
+        e["first_thr"] = e["t_anom"] - 10.0; e["premature_thr"] = True
+    art_perturbed("validation/ablations_result.json", _abl_unamb, "fall inside the grid window")
+    art_perturbed("validation/ablations_result.json", lambda d: d["cascade_on"]["realtime"].update(premature_rate_argmax=0.2),
+                  "opposite directions")
+    art_perturbed("validation/labelling_ablation_result.json", lambda d: d["arms"]["labels_generator"].update(anomaly_purity_at_thr=0.5),
+                  "many false flags per true one")
+    art_perturbed("validation/gap_matched_result.json", lambda d: d["arms"][-1].update(regular=0.0, regular_ci=[0.0, 0.031]),
+                  "empty two-hour bins, not sparsity")
+    art_perturbed("validation/gap_matched_result.json", lambda d: d["arms"][0].update(nightly=0.5, nightly_ci=[0.4, 0.6]),
+                  "the gapped schedule fails where uniform sampling works")
+    art_perturbed("validation/baselines_result.json", lambda d: d.update(nonpspl_prevalence=0.05), "canonical baselines no longer match")
+    art_perturbed("validation/inference_benchmark_result.json", lambda d: d["seconds_per_batch"].update(max=2 * d["seconds_per_batch"]["min"]),
+                  "otherwise idle machine")
+    art_perturbed("paper/results/metrics.json", lambda d: d["slices"]["no_blue_band"].update(recall=0.5),
+                  "canonical slice no_blue_band")
 
     # the Sec. results guards on where the misses sit (fifth verification): each fires on its own sentence
     fs_path = root / "paper" / "outputs" / "figures_stats.json"
@@ -368,7 +410,13 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
         r = run(); out = r.stdout + r.stderr
         assert r.returncode != 0 and expected in out, (key, expected, out[-400:])
     fs_perturbed("np_to_pspl_wide_pct", 45.0, "'most' NonPSPL->PSPL confusions")
-    fs_perturbed("wide_miss_rate_by_dchi2_hi", 0.6, "about a quarter of the time")
+    fs_perturbed("wide_miss_rate_by_dchi2_hi", 0.6, "at every evidence strength up to")
+    fs_perturbed("wide_miss_rate_above_1e6", 0.3, "strongest wide anomalies")
+    fs_perturbed("miss_to_pspl_pct", 80.0, "almost always called a single lens")
+    fs_perturbed("eff_cond_recall_lowq_hi", 0.99, "log q < -4 lies below the plane's median")
+    fs_perturbed("calib_mid_anomaly_freq_stored", 0.05, "the small ECE reflects the low-score bulk")
+    fs_perturbed("thr_miss_wide_pct", 60.0, "at the operating threshold a smaller share")
+    fs_perturbed("nonpspl_kept_pct_w", 50.0, "stored-event fraction overstates")
     fs_perturbed("notwide_weak_share_of_miss_pct", 20.0, "concentrate at weak anomalies")
     fs_perturbed("recall_wide_smallq", 0.7, "confined to q > 0.1")
     fs_perturbed("eff_cond_recall_wide_bigq_hi", 0.99, "clearly below its median")

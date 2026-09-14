@@ -259,7 +259,8 @@ def _config_for(regime: Optional[str], cfg: SurveyConfig):
             # original literal (first) and the context value (validation/stress_rescore_local.py). With
             # --legacy-t0-pad the July generator's t0 draw is reproduced as well. The suite's events are still
             # not reproduced exactly: its cloud fleet ran an unpinned software environment, and the same code
-            # locally labels ~2% fewer detectable anomalies in the natural tier (fourth verification, 2026-09-13).
+            # locally labels 2.3% fewer detectable anomalies in the natural tier and 27% fewer in the wide-separation
+            # sweep's first four shards (fourth and fifth verifications, 2026-09-13/14).
             legacy = {tgt: None}
             legacy.update(mix)
             mix = legacy
