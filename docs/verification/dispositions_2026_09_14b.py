@@ -50,17 +50,19 @@ DISPO = {
                 "covers both keys.",
     "code6-12": "Fixed. Cases added for the wide-separation deficit, the matched sub-day rate, the threshold-miss share, the weighted "
                 "kept fraction, the canonical-slice check, the F146-only threshold equality and both lag directions, plus every "
-                "guard the sixth check added; the fifth-round wording (39 cases) corrected to 37.",
+                "directional guard the sixth check added (its integrity checks, such as the ablation's grid alignment, have "
+                "none); the fifth-round wording (39 cases) corrected to 37.",
     # docs and records
     "docs6-01": "Fixed. The fifth findings, dispositions and second addendum are committed; the CHANGELOG says the critic stalled "
                 "and was re-run by this check.",
     "docs6-02": "Fixed with paper6-08.",
-    "docs6-03": "Fixed. REVISION row 6 quotes 33% of detectable single lenses at the same 0.25-1 d (35% over 0.2-1 d).",
+    "docs6-03": "Fixed. REVISION row 6 quotes 33% of detectable single lenses at the same 0.25-1 d (the seventh check "
+                "corrected the full-range figure to the corrected tier's 37%; 35% is the legacy tier).",
     "docs6-04": "Fixed ('detectable' in README and evaluation.md; README's wide-caustics clause names the 27% deficit).",
     "docs6-05": "Fixed with paper6-07; the make_macros and make_gulls_macros comments updated.",
     "docs6-06": "Fixed (the record regenerated from its generator).",
-    "docs6-07": "Fixed. Data availability lists every RMDC26 result that needs the extracted caches: scan, sub-day, relabelling, "
-                "floor, between-season combiner, bin occupancy, noise model.",
+    "docs6-07": "Fixed in the paper (scan, sub-day, relabelling, floor, between-season combiner, bin occupancy, noise model); "
+                "the seventh check added the schedule measurement and the dataset facts, and annotated the CHANGELOG.",
     "docs6-08": "Fixed with paper6-02.",
     "docs6-09": "Fixed with paper6-03/paper6-04 and code6-02.",
     "docs6-10": "Fixed (\\bmlTrainFinalEvents).",
@@ -81,8 +83,8 @@ GAPS6 = [
     "359/s had been taken under load) and now records the load average, code and checkpoint; the 'could not reproduce, "
     "withdrawn' sentence is replaced; guarded on spread and load.",
     "Confirmed and fixed. gap_matched_density.py has a gap-free regular arm and records empty-bin fractions (uniform 4/9/16%, "
-    "nightly >= 60%, regular 0); regular recall 0.617/0.592/0.567; the text says empty bins, not sparsity, make the thinned "
-    "schedules fail; macros read the artifact directly (the canonical copy is retired); artifact records code and checkpoint.",
+    "nightly >= 60%, regular 0); regular recall 0.617/0.592/0.567; the text says empty bins, not the visit count, make the "
+    "thinned schedules collapse (the seventh check added full cadence, 0.94: thinning also costs recall); macros read the artifact directly (the canonical copy is retired); artifact records code and checkpoint.",
     "Confirmed and fixed with paper6-02.",
     "Fixed: 'flags about 9 events without a detectable anomaly for every detectable one' (from the purity alone) and 'a fifth "
     "of the stored events'. Per-event recomputation of the labelling ablation needs the Modal volume (not used).",

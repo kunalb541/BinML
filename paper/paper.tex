@@ -601,12 +601,13 @@ confusion, a \texttt{LongPeriodVar} masquerading as microlensing, is rare.
 Because anomaly triage uses $P(\texttt{NonPSPL})$ directly, calibration is evaluated for that
 one-vs-rest probability rather than for whichever class has the largest score. On the frozen test
 the population-weighted expected calibration error is $\bmlECE$ and the Brier score is
-$\bmlBrier$ (Figure~\ref{fig:calibration}); no post-hoc temperature scaling is applied. The small error mostly
-reflects the $\bmlCalibLowWeightPct\%$ of the population weight scored below 0.1. In the mid-range the weighted score
-is over-confident: events scored 0.1--0.9 (mean score $\bmlCalibMidScore$) are anomalies only $\bmlCalibMidFreq$ of
-the time under population weighting ($\bmlCalibMidFreqStored$ of the stored events), because the down-sampled single
-lenses and demoted binaries there count several times each (\S\ref{sec:eval}); above 0.9, where the operating
-threshold sits, score and frequency are close ($\bmlCalibTopScore$ against $\bmlCalibTopFreq$).
+$\bmlBrier$ (Figure~\ref{fig:calibration}); no post-hoc temperature scaling is applied. The error is small because
+$\bmlCalibLowWeightPct\%$ of the population weight sits below 0.1, where score and frequency are both near zero; most of
+it ($\bmlCalibEceMidPct\%$) comes from scores of 0.1--0.9, where the model is over-confident: those events are anomalies
+$\bmlCalibMidFreq$ of the time at a mean score of $\bmlCalibMidScore$ under population weighting, and
+$\bmlCalibMidFreqStored$ at $\bmlCalibMidScoreStored$ among the stored events. Weighting widens the gap because the
+down-sampled single lenses and demoted binaries there count several times each (\S\ref{sec:eval}). Above 0.9, where the
+operating threshold sits, score and frequency are close ($\bmlCalibTopScore$ against $\bmlCalibTopFreq$).
 
 \begin{figure*}[t]
 \centering
@@ -886,12 +887,13 @@ $\bmlGapN$ events is $\bmlGapUniformA$ (uniform; 95\% CI
 $[\bmlGapUniformALo,\bmlGapUniformAHi]$) versus $\bmlGapNightlyA$ (gapped; upper bound
 $\bmlGapNightlyAHi$) at $\bmlGapVisitsA$~visits per day, and $\bmlGapUniformB$ versus
 $\bmlGapNightlyB$ at $\bmlGapVisitsB$~per day; the intervals do not overlap. At
-$\bmlGapVisitsC$~visits per day the uniform arm fails too ($\bmlGapUniformC$), but not for lack of visits: it is a
-random subsample, which leaves $\bmlGapEmptyUniformA$, $\bmlGapEmptyUniformB$ and $\bmlGapEmptyUniformC\%$ of the model's
-two-hour bins empty at the three densities, while a gap-free regular grid with the same visits recovers
-$\bmlGapRegularA$, $\bmlGapRegularB$ and $\bmlGapRegularC$. What the shipped model cannot handle is empty bins, and the
-nightly window leaves at least $\bmlGapEmptyNightly\%$ of them empty (next paragraph). This establishes gap sensitivity in
-the simulation, not the cause of any behaviour on real data.
+$\bmlGapVisitsC$~visits per day the uniform arm fails too ($\bmlGapUniformC$), but its collapse to zero comes from empty
+bins rather than from the number of visits: it is a random subsample, which leaves $\bmlGapEmptyUniformA$,
+$\bmlGapEmptyUniformB$ and $\bmlGapEmptyUniformC\%$ of the model's two-hour bins empty at the three densities, while a
+gap-free regular grid with the same visits still recovers $\bmlGapRegularA$, $\bmlGapRegularB$ and $\bmlGapRegularC$.
+Thinning alone costs recall too (the same events give $\bmlGapFull$ at full cadence), but empty bins are what make the
+shipped model fail outright, and the nightly window leaves at least $\bmlGapEmptyNightly\%$ of them empty. This
+establishes gap sensitivity in the simulation, not the cause of any behaviour on real data.
 
 Our hybrid schedule---$\sim$15-minute F146 sampling with 6-hour visits in each colour filter over
 a single 72-day season---is not an exact historical survey design. The current Galactic Bulge
@@ -1448,8 +1450,8 @@ $\bmlCgRmNeptunePrem\%$ against $\bmlCgInNeptunePrem\%$, $\bmlCgRmNeptuneLag$ ag
 and $\bmlCgRmNeptuneDet\%$ against $\bmlCgInNeptuneDet\%$. The in-house strata are small, so only some of these
 differences are resolved: premature alerts are about as frequent ($\bmlCgRmGiantPremK$ of $\bmlCgRmGiantN$ against $\bmlCgInGiantPremK$ of
 $\bmlCgInGiantN$, and $\bmlCgRmNeptunePremK$ of $\bmlCgRmNeptuneN$ against $\bmlCgInNeptunePremK$ of $\bmlCgInNeptuneN$; Fisher $p \ge \bmlCgPremFisherMin$); detection is lower in both strata,
-resolved at high ratios ($p = \bmlCgGiantDetFisher$) but not at intermediate ones, which rest on $\bmlCgInNeptuneN$ in-house events
-($p = \bmlCgNeptuneDetFisher$); and the median lag is $\bmlCgNeptuneLagDiff$~d longer at intermediate ratios (bootstrap 95\% interval
+nominally resolved at high ratios ($p = \bmlCgGiantDetFisher$, one of six comparisons here) but not at intermediate ones, which rest on
+$\bmlCgInNeptuneN$ in-house events ($p = \bmlCgNeptuneDetFisher$); and the median lag is $\bmlCgNeptuneLagDiff$~d longer at intermediate ratios (bootstrap 95\% interval
 $\bmlCgNeptuneLagDiffLo$--$\bmlCgNeptuneLagDiffHi$~d, at the edge of resolution) and $\bmlCgGiantLagDiff$~d longer at high ratios
 ($\bmlCgGiantLagDiffLo$ to $\bmlCgGiantLagDiffHi$~d, not resolved). These are a different checkpoint on a different simulator, so the differences mix the two. $\bmlCgRmLowmassFrac\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
 scan barely samples ($\bmlCgInLowmassN$ events); there detection falls to $\bmlCgRmLowmassDet\%$ (the remaining
@@ -1607,12 +1609,15 @@ the coarse definition of Table~\ref{tab:policy}, which rounds the onset up and s
 premature. On that grid, removing the truncation augmentation moves the premature-alert rate in opposite
 directions depending on the decision rule, on $N=\bmlAbCascN$ binaries: at the frozen operating threshold the
 augmented model is better ($\bmlAbCascOnPremThr$ versus $\bmlAbCascOffPremThr$), under six-class argmax worse
-($\bmlAbCascOnPremArgmax$ versus $\bmlAbCascOffPremArgmax$). The grid cannot decide most of these cases: all
-$\bmlAbCascOnPremKThr$ of the augmented arm's premature alerts at the threshold, and $\bmlAbCascOnInWinArgmax$ of its
-$\bmlAbCascOnPremKArgmax$ under argmax, fall in the 7.2 days before the grid onset, where the true onset lies. Alerts
-earlier than that, premature under any onset, number $\bmlAbCascOnUnambThr$ against $\bmlAbCascOffUnambThr$ at the
-threshold and $\bmlAbCascOnUnambArgmax$ against $\bmlAbCascOffUnambArgmax$ under argmax, so the argmax reversal is
-not established. The augmentation is also expensive: within-season
+($\bmlAbCascOnPremArgmax$ versus $\bmlAbCascOffPremArgmax$). The grid cannot decide most of these cases. It records
+only that the anomaly was undetectable at the cut before the grid onset and detectable at the grid onset, so an alert
+between the two may already be on time; all $\bmlAbCascOnPremKThr$ of the augmented arm's premature alerts at the
+threshold, and $\bmlAbCascOnInWinArgmax$ of its $\bmlAbCascOnPremKArgmax$ under argmax, fall there. Alerts at or before
+that earlier cut came before a point at which the anomaly was still undetectable; they number $\bmlAbCascOnUnambThr$
+against $\bmlAbCascOffUnambThr$ at the threshold and $\bmlAbCascOnUnambArgmax$ against $\bmlAbCascOffUnambArgmax$ under
+argmax. Because detectability is not monotone, the first-detectable onset can lie earlier still (for
+$\bmlAbFineBeforePrevCutPct\%$ of the binaries of the in-house scan, from the same generator), so these counts are not
+exact either; but they point the same way under both rules, and the argmax reversal is not established. The augmentation is also expensive: within-season
 detection at the same threshold falls from $\bmlAbCascOffDet$ to $\bmlAbCascOnDet$, and static
 macro-F1 from $\bmlAbCascOffMacroFOne$ to $\bmlAbCascOnMacroFOne$.
 
@@ -1737,7 +1742,7 @@ their hash is recorded), and the table's full-set column and event counts from \
 the stored-truth label measurements from
 \code{validation/truth\_relabel\_impact.json}; and the other ablations and auxiliary experiments from their own
 archived JSON artifacts, each with the script that produced it. Re-deriving a reported statistic from these requires only the reduction scripts, with four exceptions: the
-RMDC26 results listed below; the full stress set's column, whose 14.9 million per-event predictions are not
+RMDC26 results listed below; the full stress set's column, whose $\bmlStressN$ million per-event predictions are not
 distributed; the referee round, whose reduction reads the runner's work directory (its overlap
 statistics, the floor arms' shared events and the regenerated shards' match to the held-out pool, also need the
 regenerated shards' parameters, which are not archived); and the slice of
@@ -1768,8 +1773,10 @@ lenses (their scores; \code{validation/gulls\_transfer.py} with the sub-day time
 \code{validation/gulls/subday\_summary.py}), the claimable-anomaly relabelling and the floor sensitivity (the
 noise-free curves; \code{validation/gulls/detectability\_relabel.py}, \code{validation/gulls/floor\_sensitivity.py}),
 the between-season combiner and the bin-occupancy test (the extracted light curves;
-\code{validation/gulls/multi\_season.py}, \code{validation/gulls/occupancy\_sensitivity.py}), and the noise-model
-comparison (per-epoch errors; \code{validation/gulls/gulls\_noise\_vs\_ours.py}).
+\code{validation/gulls/multi\_season.py}, \code{validation/gulls/occupancy\_sensitivity.py}), the noise-model
+comparison (per-epoch errors; \code{validation/gulls/gulls\_noise\_vs\_ours.py}), and the measured survey schedule
+and dataset facts (the epoch and event tables; \code{validation/gulls/rmdc26\_schedule.py},
+\code{validation/gulls/rmdc26\_dataset\_facts.py}).
 
 \emph{Training reproduction.} The multi-million-event training set is too large to host and is
 available on request; it can also be regenerated from the released simulation code, since each

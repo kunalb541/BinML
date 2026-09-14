@@ -61,9 +61,10 @@ demoted binaries of natural timescale in the regenerated tier (42% over all 20 s
 verification, not archived); the sub-day single lenses themselves are classified PSPL 0.230 (stage 5) /
 0.285 (released) and called anomalies 53% / 69% (20% / 35% above the frozen threshold). The frozen
 evaluation arrays (`paper/results/`) are stage 6 (`meta.json`). The pre-RMDC26 artifacts that record no checkpoint
-hash (`baselines_result.json`, `gap_matched_result.json`, `latency_gaps_result.json`, `prevalence_result.json`,
+hash (`baselines_result.json`, `latency_gaps_result.json`, `prevalence_result.json`,
 `cadence_result.json`, `cascade_events.json`) were all committed on or after 2026-08-04, after stage 6 shipped
-(2026-07-26), so stage 6 is likely but not recorded; `prevalence_result.json` is computed from the stage-6 frozen
+(2026-07-26), so stage 6 is likely but not recorded (`gap_matched_result.json`, rerun by the sixth and seventh checks,
+now records the stage-6 hash and its code); `prevalence_result.json` is computed from the stage-6 frozen
 arrays.
 
 Label-policy fragility, measured (2026-09-13, `validation/truth_relabel_impact.json`): rebuilding the 858 binaries of

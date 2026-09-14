@@ -579,6 +579,9 @@ if CG:
     need(0 < dg < dn and v1["giant"]["median_lag_diff_ci95"][0] < 0 < v1["giant"]["median_lag_diff_ci95"][1]
          and v1["neptune"]["median_lag_diff_ci95"][0] >= 0,
          "the lag is 'longer' in both strata, unresolved at high ratios and at the edge of resolution at intermediate ones")
+    # "at the edge of resolution" (seventh check: the interval's lower bound alone could not fire the other way)
+    need(0.01 <= v1["neptune"]["frac_boot_diff_le_0"] <= 0.1,
+         "the intermediate-ratio lag difference is 'at the edge of resolution' (bootstrap share at or below zero 1-10%)")
     cmd("bmlCgGiantLagDiff", f"{dg:g}"); cmd("bmlCgNeptuneLagDiff", f"{dn:g}")
     cmd("bmlCgGiantLagDiffLo", f"{v1['giant']['median_lag_diff_ci95'][0]:+g}"); cmd("bmlCgGiantLagDiffHi", f"{v1['giant']['median_lag_diff_ci95'][1]:+g}")
     cmd("bmlCgNeptuneLagDiffLo", f"{v1['neptune']['median_lag_diff_ci95'][0]:g}"); cmd("bmlCgNeptuneLagDiffHi", f"{v1['neptune']['median_lag_diff_ci95'][1]:g}")

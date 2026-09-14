@@ -8,23 +8,24 @@ DISPO = {
     # Sec. results and the figures_stats diagnostics
     "results-01": "Fixed. Sec. results now names two sources of misses, both derived in make_figures.py from the frozen artifact "
                   "and guarded: wide binaries (s > 2.9; 11% of detectable anomalies, 56% of argmax misses, missed 22-30% of the "
-                  "time at every evidence strength) and weak anomalies at smaller separations (dchi2 < 2000: 19% of those "
+                  "time at every evidence strength; the sixth check corrected this to 26-30% up to dchi2 = 1e6 and 14% "
+                  "above) and weak anomalies at smaller separations (dchi2 < 2000: 19% of those "
                   "anomalies, 56% of their misses; miss rate 0.116 below 500 falling to 0.004 above 1e5).",
     "results-02": "Fixed. Guards added for every directional word (wide share of NonPSPL-to-PSPL > 50%, wide recall below the plane "
                   "median, the wide cells' support, the minimum cell below the support floor, stellar share and median q of the "
-                  "detectable anomalies), with perturbation cases in tests/test_validation_and_invariants.py (two guards lacked "
-                  "one until the sixth check added them).",
+                  "detectable anomalies), each with a perturbation case in tests/test_validation_and_invariants.py.",
     "results-03": "Fixed. The plane paragraph quotes the two best-populated widest-separation cells at q >= 0.1 (0.69 and 0.715, "
                   "Nd 1,298 and 2,595) and calls the minimum a low-support cell (Nd 35); both computed in make_figures.py.",
     "results-04": "Fixed. A false negative is 'a detectable binary not classified as an anomaly, almost always called a single lens'; "
                   "the rate keeps the six-class argmax definition.",
     "results-05": "Fixed. Argmax misses are labelled as such, and the threshold view is added: 12% of detectable anomalies are "
-                  "missed at the operating threshold, 36% of them wide.",
+                  "missed at the operating threshold, 36% of them wide (its guard gained a perturbation case in the sixth check).",
     "results-06": "Fixed. README and evaluation.md say 94.4% (final test, argmax, weighted, from figures_stats); "
                   "nonpspl_demoted_fraction is retired in canonical_numbers.json and the \\bmlNonpsplDemoted macro removed.",
     "results-07": "Fixed. The labelling block is computed on the final test split in make_figures.py and both passages say so.",
     "results-08": "Fixed. Both passages say 'stored events' and give the weighted fractions (8.2% keep the anomalous label, 79.9% "
-                  "become single lenses) with a pointer to the subsampling in Sec. eval.",
+                  "become single lenses) with a pointer to the subsampling in Sec. eval (its guard gained a perturbation case in "
+                  "the sixth check).",
     "results-09": "Fixed. The model card and evaluation.md list the in-distribution wide-separation failure; the CHANGELOG records "
                   "the Sec. results rewrite.",
     "results-10": "Fixed. The minimum cell's edges are printed with one decimal (-5.5 < log q < -5).",

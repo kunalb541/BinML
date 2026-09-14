@@ -8,12 +8,14 @@ third addendum of `docs/VERIFICATION_2026-09-12b.md`; 36 findings, 1 refuted, an
   never evaluated the 72 d cut. Anchored at the season's end they give 1.2% premature at 88.7% detection (daily) and
   1.0% at 88.4% (two-day), not 1.6% at 86.4%: a coarser grid lowers the premature rate at almost unchanged detection.
 - **Truncation-augmentation ablation.** Its premature rates use the generator's 7.2 d onset grid; almost all of the
-  augmented arm's premature alerts fall inside that window, and the alerts premature under any onset favour the
-  augmented arm under both rules (0 vs 32, 9 vs 45), so the argmax reversal is no longer claimed.
+  augmented arm's premature alerts fall between the grid onset and the cut before it, and the alerts at or before that
+  cut (premature on the grid and under the persistent onset) favour the augmented arm under both rules (0 vs 32, 9 vs
+  45), so the argmax reversal is no longer claimed.
 - **Throughput.** 1,015 light curves per second on an otherwise idle M5 (the committed 359/s had been measured under
   load); the benchmark now records the load average, code and checkpoint.
-- **Matched-density (KMTNet-style) test.** A gap-free regular arm shows the low-density failure is empty two-hour bins,
-  not sparsity (regular grid 0.62/0.59/0.57 where random thinning falls to 0); read from its artifact directly.
+- **Matched-density (KMTNet-style) test.** A gap-free regular arm shows that the collapse to zero at low density comes
+  from empty two-hour bins, not the visit count (regular grid 0.62/0.59/0.57 where random thinning falls to 0; the
+  seventh check added full cadence, 0.94, so thinning itself also costs recall); read from its artifact directly.
 - **Sec. results.** Wide binaries are missed at a similar rate only up to dchi2 = 1e6 (14% above); the low-q corner
   is described as a corner; the weighted calibration's mid-range over-confidence is stated; the false-negative
   definition, the labelling-ablation wording and the baselines' own class mix are made exact.
@@ -53,10 +55,12 @@ the second and third addenda of `docs/VERIFICATION_2026-09-12b.md`). What change
   2 of 149 vs 2 of 138 and 21 of 826 vs 2 of 48; RMDC26 higher with three bands); strata named by mass ratio; 1% of
   RMDC26's eligible anomalies have q > 1e-2; the artifact records its code.
 - **Appendix and Data availability:** the cause of non-identical regeneration is the unpinned cloud environment, not
-  code (the generator gives the same shards at every commit since July 21); the v5 fleet's region and instance size
+  code (the generator gives the same shards for a held-out shard at the commits compared; the sixth check found the
+  out-of-range sweeps did change after July); the v5 fleet's region and instance size
   sourced from its launch scripts; class-balanced loss stated; throughput and hours on one basis (22 h including a
   stretched epoch, about 17 without); training-configuration values exempted from the "every number" statement; the
-  three RMDC26 and the referee-overlap exceptions named.
+  three RMDC26 and the referee-overlap exceptions named [the sixth and seventh checks found more RMDC26 results that
+  need the extracted caches; the paper now lists nine].
 - **Abstract** cut to 247 words (Astronomy and Computing's limit is 250). **F087/F213 constants** checked against
   Roman's published tables (2024-03-01 zeropoints, 2024-06-03 thermal backgrounds): the audited values match; the
   F087 saturation offset is 1.3 mag, not 1.2.

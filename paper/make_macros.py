@@ -144,6 +144,9 @@ if not (_g["2.0"]["premature_rate_of_eligible"] <= _g["1.0"]["premature_rate_of_
     raise SystemExit("FATAL: 'coarsening the grid lowers the premature rate' no longer holds")
 if max(abs(_g[k]["detection_fraction"] - _g["0.5"]["detection_fraction"]) for k in ("1.0", "2.0")) >= 0.01:
     raise SystemExit("FATAL: 'at almost unchanged detection' no longer holds for the coarser grids")
+if not (_g["0.5"]["median_lag_non_premature_days"] < _g["1.0"]["median_lag_non_premature_days"]
+        <= _g["2.0"]["median_lag_non_premature_days"]):
+    raise SystemExit("FATAL: 'at the price of later alerts' no longer holds for the coarser grids")
 _p2 = _sen["persistence_consecutive_crossings"]["2"]
 cmd("bmlCascPersistTwoPct", pct(_p2["premature_rate_of_eligible"]))
 cmd("bmlCascPersistTwoDet", pct(_p2["detection_fraction"]))
@@ -363,6 +366,11 @@ for _a, _nm in zip(_ga, "ABC"):
 cmd("bmlGapUniformALo", three(_ga[0]["uniform_ci"][0])); cmd("bmlGapUniformAHi", three(_ga[0]["uniform_ci"][1]))
 cmd("bmlGapNightlyAHi", three(_ga[0]["nightly_ci"][1]))
 cmd("bmlGapEmptyNightly", f"{100 * min(a_['empty_bin_frac']['nightly'] for a_ in _ga):.0f}")
+if "full_cadence" not in _gmr:
+    raise SystemExit("FATAL: gap_matched_result.json lacks the full-cadence arm; rerun validation/gap_matched_density.py")
+cmd("bmlGapFull", three(_gmr["full_cadence"]["recall"]))
+if not _gmr["full_cadence"]["ci"][0] > max(a_["regular_ci"][1] for a_ in _ga):
+    raise SystemExit("FATAL: 'thinning alone costs recall too' no longer holds (full cadence vs the regular grids)")
 _emp = [a_["empty_bin_frac"]["uniform"] for a_ in _ga]
 if not (all(a_["nightly"] == 0 for a_ in _ga) and _ga[0]["uniform_ci"][0] > _ga[0]["nightly_ci"][1]
         and _ga[1]["uniform_ci"][0] > _ga[1]["nightly_ci"][1]):
@@ -430,8 +438,10 @@ for tag, nm in (("cascade_on", "CascOn"), ("cascade_off", "CascOff")):
     cmd(f"bmlAb{nm}PremArgmax", three(rt["premature_rate_argmax"]))
     cmd(f"bmlAb{nm}Det", three(rt["detection_fraction_thr"]))
     cmd(f"bmlAb{nm}MacroFOne", three(st["macro_f1"]))
-# sixth check: the ablation's onsets are the generator's 7.2 d grid (rounded UP), so the true onset lies in the 7.2 d
-# before t_anom and an alert there may be on time. Only alerts at or before t_anom - 7.2 are premature under any onset.
+# sixth check: the ablation's onsets are the generator's 7.2 d grid: t_anom is the first 7.2 d cut at which the anomaly is
+# detectable, so it was undetectable at t_anom - 7.2 and an alert between the two may be on time. An alert at or before
+# t_anom - 7.2 came before a point at which the anomaly was still undetectable. Detectability is not monotone, so the
+# first-detectable onset can lie earlier still; the in-house trace (same generator) measures how often (seventh check).
 _ab_unamb = {}
 for tag, nm in (("cascade_on", "CascOn"), ("cascade_off", "CascOff")):
     _ev = abl[tag]["realtime"]["events"]
@@ -448,7 +458,14 @@ for tag, nm in (("cascade_on", "CascOn"), ("cascade_off", "CascOff")):
         cmd(f"bmlAb{nm}PremK{rnm}", str(int(_pm.sum()))); cmd(f"bmlAb{nm}Unamb{rnm}", str(_un))
         cmd(f"bmlAb{nm}InWin{rnm}", str(int(_pm.sum()) - _un))
 if not all(_ab_unamb[("cascade_on", r)][0] < _ab_unamb[("cascade_off", r)][0] for r in ("thr", "argmax")):
-    raise SystemExit("FATAL: 'alerts premature under any onset favour the augmented arm under both rules' no longer holds")
+    raise SystemExit("FATAL: 'alerts at or before the cut before the grid onset favour the augmented arm under both rules' no longer holds")
+_tr = np.load(os.path.join(os.path.dirname(HERE), "validation", "cascade_trace.npz"))
+INPUTS.append(os.path.join(os.path.dirname(HERE), "validation", "cascade_trace.npz"))
+_tf, _tco = _tr["t_anom_fine"].astype(float), _tr["t_anom_coarse"].astype(float)
+_ok = np.isfinite(_tf) & np.isfinite(_tco)
+cmd("bmlAbFineBeforePrevCutPct", f"{100 * np.mean(_tf[_ok] < _tco[_ok] - 7.2 - 1e-9):.0f}")
+if not 0 < np.mean(_tf[_ok] < _tco[_ok] - 7.2 - 1e-9) < 0.15:
+    raise SystemExit("FATAL: 'the first-detectable onset precedes the previous grid cut for a minority of binaries' no longer holds")
 if _ab_unamb[("cascade_on", "thr")][0] != 0:
     raise SystemExit("FATAL: 'all of the augmented arm's premature alerts at the threshold fall inside the grid window' no longer holds")
 if not all(1 - _ab_unamb[("cascade_on", r)][0] / _ab_unamb[("cascade_on", r)][1] >= 0.9 for r in ("thr", "argmax")):
@@ -545,8 +562,8 @@ if not (abs(_blr["nonpspl_prevalence"] - bl["prevalence"]) < 1e-9 and abs(_blr["
 cmd("bmlBasePrev", f"{100 * _blr['nonpspl_prevalence']:.1f}")
 
 # THROUGHPUT: read from the reproducible benchmark, never hand-entered. The 1,224 events/s of an earlier revision had
-# no retained script or hardware record; the benchmark on an idle machine comes within 15% of it, while its first
-# committed run (359/s) was taken under load (sixth check). The text calls the machine otherwise idle, so the repeats
+# no retained script or hardware record; the benchmark on an idle machine gives 1,015/s, about 17% below it, while its
+# first committed run (359/s) was taken under load (sixth check). The text calls the machine otherwise idle, so the repeats
 # must be tight and the load low.
 _inf_path = os.path.join(os.path.dirname(HERE), "validation", "inference_benchmark_result.json")
 if not os.path.exists(_inf_path):
@@ -670,7 +687,8 @@ cmd("bmlEffWideBigqNd", f"{fs['eff_nd_wide_bigq_min']:,}"); cmd("bmlEffMinNd", s
 # sixth check: the strongest wide anomalies, where the misses go, the low-q corner, and the weighted mid-range calibration
 for _k in ("wide_miss_rate_above_1e6", "wide_det_above_1e6_pct", "miss_to_pspl_pct", "eff_cond_recall_lowq_hi", "eff_nd_lowq_lo",
            "eff_nd_lowq_hi", "eff_n_lowq_cells", "calib_weight_below_0p1_pct", "calib_mid_mean_score", "calib_mid_anomaly_freq",
-           "calib_mid_anomaly_freq_stored", "calib_top_mean_score", "calib_top_anomaly_freq"):
+           "calib_mid_anomaly_freq_stored", "calib_top_mean_score", "calib_top_anomaly_freq", "calib_mid_mean_score_stored",
+           "calib_ece_mid_share_pct"):
     if _k not in fs:
         raise SystemExit(f"FATAL: figures_stats lacks '{_k}'; rerun make_figures.py")
 cmd("bmlWideMissTop", f"{100 * fs['wide_miss_rate_above_1e6']:.0f}"); cmd("bmlWideDetTopPct", f"{fs['wide_det_above_1e6_pct']:.0f}")
@@ -680,6 +698,7 @@ cmd("bmlEffLowqNdLo", str(fs["eff_nd_lowq_lo"])); cmd("bmlEffLowqNdHi", str(fs["
 cmd("bmlCalibLowWeightPct", f"{fs['calib_weight_below_0p1_pct']:.0f}")
 cmd("bmlCalibMidScore", f"{fs['calib_mid_mean_score']:.2f}"); cmd("bmlCalibMidFreq", f"{fs['calib_mid_anomaly_freq']:.3f}")
 cmd("bmlCalibMidFreqStored", f"{fs['calib_mid_anomaly_freq_stored']:.2f}")
+cmd("bmlCalibMidScoreStored", f"{fs['calib_mid_mean_score_stored']:.2f}"); cmd("bmlCalibEceMidPct", f"{fs['calib_ece_mid_share_pct']:.0f}")
 cmd("bmlCalibTopScore", f"{fs['calib_top_mean_score']:.2f}"); cmd("bmlCalibTopFreq", f"{fs['calib_top_anomaly_freq']:.2f}")
 # the directional sentences of Sec. results about where the misses sit (fourth and fifth verifications)
 def _needfs(ok, what):
@@ -695,11 +714,13 @@ _needfs(fs["wide_miss_rate_above_1e6"] < fs["wide_miss_rate_by_dchi2_lo"] - 0.05
 _needfs(fs["miss_to_pspl_pct"] > 90, "a missed detectable binary is 'almost always called a single lens'")
 _needfs(fs["eff_cond_recall_lowq_hi"] < fs["eff_cond_recall_median"] and fs["eff_nd_lowq_hi"] < fs["eff_nd_median_populated"] / 2,
         "every populated cell at log q < -4 lies below the plane's median, in thin support")
-_needfs(fs["calib_weight_below_0p1_pct"] > 70 and fs["calib_mid_anomaly_freq"] < fs["calib_mid_mean_score"] / 2
-        and fs["calib_mid_anomaly_freq_stored"] > 2 * fs["calib_mid_anomaly_freq"]
+_needfs(fs["calib_weight_below_0p1_pct"] > 70 and fs["calib_ece_mid_share_pct"] > 50
+        and fs["calib_mid_anomaly_freq"] < fs["calib_mid_mean_score"] / 2
+        and fs["calib_mid_anomaly_freq_stored"] < fs["calib_mid_mean_score_stored"]
+        and fs["calib_mid_mean_score"] - fs["calib_mid_anomaly_freq"] > fs["calib_mid_mean_score_stored"] - fs["calib_mid_anomaly_freq_stored"]
         and abs(fs["calib_top_mean_score"] - fs["calib_top_anomaly_freq"]) < 0.1,
-        "the small ECE reflects the low-score bulk; the weighted mid-range is over-confident through the weights; "
-        "above 0.9 score and frequency are close")
+        "the ECE is small because most weight sits below 0.1 but most of it comes from the over-confident mid-range, "
+        "more so under weighting; above 0.9 score and frequency are close")
 _needfs(fs["notwide_weak_share_of_miss_pct"] > 2 * fs["notwide_weak_share_of_det_pct"]
         and fs["notwide_miss_rate_weak"] > 10 * fs["notwide_miss_rate_strong"],
         "at smaller separations the misses 'concentrate at weak anomalies'")

@@ -245,9 +245,11 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
   account, including what did not work and what six verification rounds corrected, in
   [`paper/REVISION.md`](paper/REVISION.md) §1½, [`docs/VERIFICATION_2026-09-11.md`](docs/VERIFICATION_2026-09-11.md)
   [`docs/VERIFICATION_2026-09-12.md`](docs/VERIFICATION_2026-09-12.md) and
-  [`docs/VERIFICATION_2026-09-12b.md`](docs/VERIFICATION_2026-09-12b.md) (with its three addenda); every number regenerates
-  from the scripts under `validation/gulls/` (from a clone, without the curve cache: the `command_from_clone` field of
-  `validation/gulls/transfer_tradeoff_all.json` is the exact `gulls_summary_tables.py --scores` invocation).
+  [`docs/VERIFICATION_2026-09-12b.md`](docs/VERIFICATION_2026-09-12b.md) (with its addenda). The RMDC26 tables regenerate
+  from a clone via `validation/gulls/rmdc26_scores.csv.gz` (the `command_from_clone` field of
+  `validation/gulls/transfer_tradeoff_all.json` is the exact `gulls_summary_tables.py --scores` invocation); the scan,
+  sub-day, relabelling, floor, between-season, occupancy, noise-model, schedule and dataset-fact results need a rerun on
+  the pinned release (paper, Data availability).
 - **Known weak spots** (documented in [`docs/model_card.md`](docs/model_card.md)): within the training prior, wide
   binaries at s > 2.9 and q >= 0.1 (argmax recall 0.70; over half of all argmax misses); in targeted out-of-range tests:
   faint sources m>25 (noise-dominated: 12% of faint microlensing events without a detectable anomaly exceed the

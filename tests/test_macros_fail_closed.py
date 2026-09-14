@@ -133,6 +133,12 @@ CASES = {
     "exact premature counts disagree": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
                                                         ["timing_by_mass_ratio"]["giant"].update(n_premature=5)),
                                         "premature count"),
+    "lag difference not at the edge of resolution": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                                     ["timing_by_mass_ratio"]["neptune"]["vs_inhouse"].update(frac_boot_diff_le_0=0.3)),
+                                                     "'at the edge of resolution'"),
+    "comparison used other in-house counts": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]
+                                                              ["timing_by_mass_ratio"]["neptune"]["vs_inhouse"].update(n_premature_inhouse=5)),
+                                              "the exact premature counts disagree with the rounded fractions"),
     "F146-only reference at another threshold": (lambda t: _edit(t, "transfer_full_fspl5s_seasons_g08_f146only.json", lambda d: d.update(threshold=0.95)),
                                                  "another threshold than the scan"),
     "cascade sample not optimistic": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]

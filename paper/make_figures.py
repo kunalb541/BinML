@@ -567,6 +567,14 @@ def fig_calibration():
     stats["calib_mid_mean_score"] = round(float((w[mid] * conf[mid]).sum() / w[mid].sum()), 3)
     stats["calib_mid_anomaly_freq"] = round(float((w[mid] * correct[mid]).sum() / w[mid].sum()), 3)
     stats["calib_mid_anomaly_freq_stored"] = round(float(correct[mid].mean()), 3)      # unweighted, stored events
+    stats["calib_mid_mean_score_stored"] = round(float(conf[mid].mean()), 3)
+    # seventh check: where the ECE comes from (the bins whose centres lie in the mid-range carry most of it)
+    ece_mid = 0.0
+    for b in range(nb):
+        m = bi == b
+        if m.any() and 0.1 <= 0.5 * (edges[b] + edges[b + 1]) < 0.9:
+            ww = w[m]; ece_mid += ww.sum() / W * abs((ww * correct[m]).sum() / ww.sum() - (ww * conf[m]).sum() / ww.sum())
+    stats["calib_ece_mid_share_pct"] = round(100 * ece_mid / ece, 1)
     hi_ = conf >= 0.9
     stats["calib_top_mean_score"] = round(float((w[hi_] * conf[hi_]).sum() / w[hi_].sum()), 3)
     stats["calib_top_anomaly_freq"] = round(float((w[hi_] * correct[hi_]).sum() / w[hi_].sum()), 3)

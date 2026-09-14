@@ -412,6 +412,27 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
                   "otherwise idle machine")
     art_perturbed("paper/results/metrics.json", lambda d: d["slices"]["no_blue_band"].update(recall=0.5),
                   "canonical slice no_blue_band")
+    # seventh check: the remaining new guards, including the integrity checks
+    art_perturbed("validation/cascade_reproduce_result.json",
+                  lambda d: d["sensitivity"]["evaluation_grid_days"]["1.0"].update(median_lag_non_premature_days=4.5), "later alerts")
+    art_perturbed("validation/ablations_result.json", lambda d: d["cascade_on"]["realtime"]["events"][0].update(t_anom=50.0),
+                  "no longer on the 7.2 d generator grid")
+    def _abl_flag(d):
+        e = next(e for e in d["cascade_on"]["realtime"]["events"] if not e["premature_thr"]); e["premature_thr"] = True
+    art_perturbed("validation/ablations_result.json", _abl_flag, "premature flags disagree")
+    art_perturbed("validation/inference_benchmark_result.json", lambda d: d.update(load_average_1_5_15_min_before=[9.0, 9.0, 9.0]),
+                  "otherwise idle machine")
+    art_perturbed("validation/gap_matched_result.json", lambda d: d["arms"][0].pop("regular"), "predates the regular arm")
+    art_perturbed("validation/gap_matched_result.json", lambda d: d["arms"].pop(), "three visit counts")
+    art_perturbed("validation/gap_matched_result.json", lambda d: d["full_cadence"].update(recall=0.6, ci=[0.5, 0.7]),
+                  "thinning alone costs recall too")
+    tr = root / "validation" / "cascade_trace.npz"; tr_bytes = tr.read_bytes()
+    try:
+        z = dict(np.load(tr)); z["t_anom_fine"] = z["t_anom_coarse"] - 10.0; np.savez(tr, **z)
+        r = run(); out = r.stdout + r.stderr
+        assert r.returncode != 0 and "precedes the previous grid cut" in out, out[-400:]
+    finally:
+        tr.write_bytes(tr_bytes)
 
     # the Sec. results guards on where the misses sit (fifth verification): each fires on its own sentence
     fs_path = root / "paper" / "outputs" / "figures_stats.json"
@@ -425,7 +446,8 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
     fs_perturbed("wide_miss_rate_above_1e6", 0.3, "strongest wide anomalies")
     fs_perturbed("miss_to_pspl_pct", 80.0, "almost always called a single lens")
     fs_perturbed("eff_cond_recall_lowq_hi", 0.99, "log q < -4 lies below the plane's median")
-    fs_perturbed("calib_mid_anomaly_freq_stored", 0.05, "the small ECE reflects the low-score bulk")
+    fs_perturbed("calib_mid_anomaly_freq_stored", 0.05, "the ECE is small because most weight sits below 0.1")
+    fs_perturbed("calib_ece_mid_share_pct", 40.0, "the ECE is small because most weight sits below 0.1")
     fs_perturbed("thr_miss_wide_pct", 60.0, "at the operating threshold a smaller share")
     fs_perturbed("nonpspl_kept_pct_w", 50.0, "stored-event fraction overstates")
     fs_perturbed("notwide_weak_share_of_miss_pct", 20.0, "concentrate at weak anomalies")

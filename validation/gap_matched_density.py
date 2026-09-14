@@ -12,8 +12,9 @@ matched count at roughly a third of the season's epochs.
 
 A third arm (sixth check, 2026-09-14) places the same number of visits on a gap-free REGULAR grid. The
 "uniform" arm is a random subsample, which leaves some of the model's 2 h F146 bins empty (the fraction is
-recorded per arm); the regular arm separates empty bins from sparsity. Without it, the uniform arm's collapse at
-low density was read as a sparsity floor, whereas the regular grid keeps working there.
+recorded per arm); the regular arm separates empty bins from the visit count. Without it, the uniform arm's collapse
+at low density was read as a sparsity floor, whereas the regular grid keeps working there. The same events at full
+cadence (seventh check) show what thinning itself costs.
 
 Usage:  python validation/gap_matched_density.py [n_events]
 """
@@ -66,6 +67,11 @@ def main(n_events=120):
            "checkpoint_sha256": hashlib.sha256(open(ckpt, "rb").read()).hexdigest(),
            "script_sha256": hashlib.sha256(open(os.path.abspath(__file__), "rb").read()).hexdigest(),
            "empty_bin_days": BIN_DAYS, "arms": []}
+    full = sum(clf.predict(ev.bands["F146"].t, ev.bands["F146"].mag, m_base_ref=ev.params["_m_base_ref"],
+                           t_start=0.0).label == "NonPSPL" for ev in evs)
+    out["full_cadence"] = {"recall": round(full / len(evs), 3), "ci": [round(x, 3) for x in wilson(full, len(evs))],
+                           "visits": int(np.median([len(ev.bands["F146"].t) for ev in evs]))}
+    print(f"  full cadence: {out['full_cadence']}")
     for V in VISIT_COUNTS:
         u = n = r = tot = 0
         eu, en, er = [], [], []

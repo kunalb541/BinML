@@ -13,8 +13,8 @@ scales when a survey pipeline batches work.  Tokenisation costs are reported sep
 than folded in, because they depend on the caller's I/O path rather than on the model.
 
 The rate depends on what else the machine is doing: the committed result of 2026-09-11 (359/s, repeats spread
-2.4-3.7 s) was taken on a loaded machine, and on an idle one the same script gives about 1,040/s, within 15% of the
-withdrawn 1,224/s (sixth check, 2026-09-14). The load average before the run, the spread of the repeats, the code and
+2.4-3.7 s) was taken on a loaded machine, and on an idle one the same script gives 1,015/s, about 17% below the
+earlier 1,224/s (sixth check, 2026-09-14). The load average before the run, the spread of the repeats, the code and
 the checkpoint are therefore recorded with the number.
 
 Usage:  python validation/inference_benchmark.py [--batch 1024] [--repeats 7]

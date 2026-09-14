@@ -225,6 +225,10 @@
     "validation/gulls/transfer_full_fspl5s_seasons_g08_f146only.json": {
       "sha256": "068e5e8578e1bacb7fe3ae75c2a7864cf79454192fb04c666839febc20a1c0a8",
       "_note": "2026-09-13 (fifth verification): input of make_gulls_macros.py (F146-only full scoring, the like-for-like reference of the cascade burden)"
+    },
+    "validation/cascade_trace.npz": {
+      "sha256": "deff0f0438dd7f9a118cb3651daec4061722b405e6448aa9abd7c3ba0d7dd2e6",
+      "_note": "2026-09-14 (seventh check): an input of make_macros.py (the share of binaries whose first-detectable onset precedes the previous 7.2 d grid cut); its hash is also recorded in cascade_reproduce_result.json"
     }
   }
 }
