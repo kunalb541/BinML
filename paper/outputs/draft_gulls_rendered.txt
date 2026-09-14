@@ -525,7 +525,7 @@ $15\%$ read as microlensing of either kind. They are mostly shorter than the $0.
 own sweep (median $t_{\rm E}$ $0.13$~d), but timescale alone does not explain why that sweep fails
 (\S\ref{sec:limits}): at $0.25$--$1$~d the released model sends $4.3\%$ of RMDC26's
 single lenses ($467$) above its frozen threshold, against
-$[[bmlStressShortteCurMatchedAlert?]]\%$ of the detectable ones in our corrected sweep at the same timescales (the two simulations
+$33\%$ of the detectable ones in our corrected sweep at the same timescales (the two simulations
 differ in schedule, source brightness and blending); a model for free-floating planets needs sub-day timescales in its prior, not a
 threshold change.
 
