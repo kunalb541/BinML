@@ -1,14 +1,21 @@
 {
   "_doc": "Reproducible CPU inference throughput for the shipped checkpoint.",
-  "events_per_sec": 359,
-  "ms_per_event": 2.788,
+  "events_per_sec": 1015,
+  "ms_per_event": 0.985,
   "batch": 1024,
   "protocol": "2 warmup + 7 timed forward passes on pre-tokenised inputs; median reported. Tokenisation is excluded and depends on the caller's I/O path.",
   "seconds_per_batch": {
-    "median": 2.855,
-    "min": 2.4273,
-    "max": 3.6773
+    "median": 1.0089,
+    "min": 0.9973,
+    "max": 1.0282
   },
+  "load_average_1_5_15_min_before": [
+    2.0,
+    2.45,
+    2.25
+  ],
+  "code": "submitted-ac-2026-08-15-66-gf33288f1cbbc",
+  "checkpoint_sha256": "897a9aec1785dc15664ae5a3c7183c46f13fb4332cb20414d013860ef5c41c34",
   "environment": {
     "cpu": "Apple M5",
     "logical_cores": 10,

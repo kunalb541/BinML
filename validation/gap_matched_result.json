@@ -1,6 +1,10 @@
 {
   "n_events": 120,
   "night_fraction": 0.3333333333333333,
+  "code": "submitted-ac-2026-08-15-66-gf33288f1cbbc-dirty",
+  "checkpoint_sha256": "897a9aec1785dc15664ae5a3c7183c46f13fb4332cb20414d013860ef5c41c34",
+  "script_sha256": "359c6da07530a340b2a692ed32136db79618480cd13685a2dfb2149761e24b16",
+  "empty_bin_days": 0.08333333333333333,
   "arms": [
     {
       "visits": 2300,
@@ -15,7 +19,17 @@
       "nightly_ci": [
         0.0,
         0.031
-      ]
+      ],
+      "regular": 0.617,
+      "regular_ci": [
+        0.527,
+        0.699
+      ],
+      "empty_bin_frac": {
+        "uniform": 0.04,
+        "nightly": 0.604,
+        "regular": 0.0
+      }
     },
     {
       "visits": 1800,
@@ -30,7 +44,17 @@
       "nightly_ci": [
         0.0,
         0.031
-      ]
+      ],
+      "regular": 0.592,
+      "regular_ci": [
+        0.502,
+        0.675
+      ],
+      "empty_bin_frac": {
+        "uniform": 0.091,
+        "nightly": 0.617,
+        "regular": 0.0
+      }
     },
     {
       "visits": 1400,
@@ -45,7 +69,17 @@
       "nightly_ci": [
         0.0,
         0.031
-      ]
+      ],
+      "regular": 0.567,
+      "regular_ci": [
+        0.477,
+        0.652
+      ],
+      "empty_bin_frac": {
+        "uniform": 0.164,
+        "nightly": 0.628,
+        "regular": 0.0
+      }
     }
   ]
 }
