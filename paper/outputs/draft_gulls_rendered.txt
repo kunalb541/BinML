@@ -1,6 +1,7 @@
 % =====================================================================================
 % DRAFT (rewritten 2026-09-11 after the triple check, docs/VERIFICATION_2026-09-11.md; merged into paper.tex
-% 2026-09-12, where the text is canonical and kept in sync with this file block by block) --
+% 2026-09-12; on 2026-09-14 paper.tex's Sec. gulls was condensed to about 40% of this length, so this file is now
+% the long-form record behind the referee reply, paper/REVISION.md, and no longer mirrors the paper block by block) --
 % cross-simulator validation on RMDC26 (GULLS) for the A&C revision.
 %
 % Every data-derived number is a macro from paper/gulls_macros.tex (paper/make_gulls_macros.py, fail-closed,
@@ -524,7 +525,7 @@ $15\%$ read as microlensing of either kind. They are mostly shorter than the $0.
 own sweep (median $t_{\rm E}$ $0.13$~d), but timescale alone does not explain why that sweep fails
 (\S\ref{sec:limits}): at $0.25$--$1$~d the released model sends $4.3\%$ of RMDC26's
 single lenses ($467$) above its frozen threshold, against
-$33\%$ of the detectable ones in our corrected sweep at the same timescales (the two simulations
+$[[bmlStressShortteCurMatchedAlert?]]\%$ of the detectable ones in our corrected sweep at the same timescales (the two simulations
 differ in schedule, source brightness and blending); a model for free-floating planets needs sub-day timescales in its prior, not a
 threshold change.
 
