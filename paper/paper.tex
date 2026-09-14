@@ -509,8 +509,8 @@ At smaller separations the misses concentrate at weak anomalies: those with $\De
 $\bmlNotWideWeakDet\%$ of the detectable anomalies there but $\bmlNotWideWeakMiss\%$ of the misses. The reverse
 confusion, \texttt{PSPL}$\rightarrow$\texttt{NonPSPL} ($\bmlConfPsplToNp\%$), is what depresses \texttt{NonPSPL}
 precision, and $\bmlPsplToNpDemotedPct\%$ of it is demoted binaries. Overall, a detectable binary is missed at a
-rate of $\bmlMissedRate$ under six-class argmax and $\bmlThrMissPct\%$ at the operating threshold, more than half
-of the misses at the widest separations; the most dangerous physical confusion, a \texttt{LongPeriodVar} read as
+rate of $\bmlMissedRate$ under six-class argmax (more than half of those misses at the widest separations) and
+$\bmlThrMissPct\%$ at the operating threshold; the most dangerous physical confusion, a \texttt{LongPeriodVar} read as
 microlensing, occurs at only $\bmlLPVtoPSPL$. The operating threshold is a free parameter, so a follow-up programme
 can set the balance between the two error types anywhere along Figure~\ref{fig:pr}.
 
@@ -565,7 +565,7 @@ $\bmlEffMin$--$\bmlEffLowqHi$ in the thinly populated cells at $\log q < -4$ and
 $\bmlEffWideBigqLo$--$\bmlEffWideBigqHi$ in the two well-populated widest-separation cells at $q > 0.1$. The
 strong gradient in detectability toward small $q$ is a property of the simulated survey, not of the classifier:
 low-$q$ events are recovered at $\bmlSliceDeepPlanet$ (argmax) where they are detectable. Along the individual
-axes (Figure~\ref{fig:params}) recall is lower toward faint baselines and weak anomalies, but argmax recall remains
+axes (Figure~\ref{fig:params}) recall is slightly lower toward faint baselines and weak anomalies; argmax recall remains
 $\bmlSliceFaint$ for $m_{\mathrm{base}}>22.5$.
 
 \begin{deluxetable}{lrc}
