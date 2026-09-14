@@ -117,6 +117,39 @@ L += ["", "## Addendum 2: fifth verification (2026-09-14)", "",
       "| id | severity | verdict | finding | disposition |", "|---|---|---|---|---|"]
 for f in sorted(R5["findings"], key=lambda f: (("critical", "major", "minor").index(f["severity"]), f["id"])):
     L.append(f"| {f['id']} | {f['severity']} | {f['verdict']} | {f['claim'][:200].replace('|', '/')} | {D5.DISPO[f['id']]} |")
+# ---- third addendum: the sixth check (2026-09-14) ------------------------------------------------------------------
+import dispositions_2026_09_14b as D6                                   # noqa: E402
+R6 = json.load(open(os.path.join(HERE, "2026-09-14_sixth_findings.json")))
+ids6 = [f["id"] for f in R6["findings"]]
+assert set(ids6) == set(D6.DISPO) and len(ids6) == len(set(ids6)), "every sixth-check finding needs one disposition"
+assert len(R6["gaps"]) == len(D6.GAPS6)
+c6 = {s_: sum(1 for f in R6["findings"] if f["severity"] == s_) for s_ in ("critical", "major", "minor")}
+v6 = {v: sum(1 for f in R6["findings"] if f["verdict"] == v) for v in ("real", "partly", "refuted")}
+L += ["", "## Addendum 3: sixth check (2026-09-14)", "",
+      "Three reviewers (paper text and numbers; code, artifacts and tests; docs and records) checked the fifth round's",
+      "fixes (9e95776..2133a41), one adversarial checker per slice judged their findings, and the completeness critic that",
+      "had stalled in the fifth verification was re-run with a compact summary of that round's coverage. Raw record:",
+      "`docs/verification/2026-09-14_sixth_findings.json`; dispositions: `docs/verification/dispositions_2026_09_14b.py`.", "",
+      f"**{len(ids6)} findings: {c6['critical']} critical, {c6['major']} major, {c6['minor']} minor; adversarial verdicts "
+      f"{v6['real']} real, {v6['partly']} partly, {v6['refuted']} refuted; the critic found {len(R6['gaps'])} gaps "
+      f"({sum(1 for g in R6['gaps'] if g['severity'] == 'major')} major).**", "",
+      "The main corrections: the in-house cascade's daily and two-day grid rows had skipped the season's last cut (a",
+      "coarser grid lowers the premature rate at almost unchanged detection, not the reverse); the truncation ablation's",
+      "argmax reversal rests on the coarse 7.2 d onset and is not established; the inference throughput of the previous",
+      "revision was measured under load (1,015 per second on an idle machine); the matched-density test's low-density",
+      "failure is empty two-hour bins, not sparsity (a regular grid keeps working); wide binaries are missed at a similar",
+      "rate only up to dchi2 = 1e6; the generator is not unchanged for the out-of-range sweeps; the RMDC26 stratum",
+      "statements now rest on Fisher tests and bootstrap intervals; the weighted calibration's mid-range is over-confident.", "",
+      "| id | severity | verdict | finding | disposition |", "|---|---|---|---|---|"]
+for f in sorted(R6["findings"], key=lambda f: (("critical", "major", "minor").index(f["severity"]), f["id"])):
+    L.append(f"| {f['id']} | {f['severity']} | {f['verdict']} | {f['claim'][:200].replace('|', '/')} | {D6.DISPO[f['id']]} |")
+L += ["", "### Completeness critic (re-run in the sixth check)", "", "| # | severity | target | disposition |", "|---|---|---|---|"]
+for i, g in enumerate(R6["gaps"]):
+    L.append(f"| {i + 1} | {g['severity']} | {g['target'][:160].replace('|', '/')} | {D6.GAPS6[i]} |")
+L += ["", "Left open after the sixth check: per-directory stamps in the stress re-scoring (code6-07); a reduction of the",
+      "referee round from its archive alone; per-event recomputation of the labelling ablation (its shards and checkpoints",
+      "are on the Modal volume); the stage-5 weights and the stress suite's per-event predictions (not distributed);",
+      "AUDIT finding 14 (S3); rewriting published git history (I54), the author's call."]
 out = os.path.join(os.path.dirname(os.path.dirname(HERE)), "docs", "VERIFICATION_2026-09-12b.md")
 open(out, "w").write("\n".join(L) + "\n")
 print(f"wrote {os.path.relpath(out)}")

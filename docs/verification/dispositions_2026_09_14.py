@@ -12,7 +12,8 @@ DISPO = {
                   "anomalies, 56% of their misses; miss rate 0.116 below 500 falling to 0.004 above 1e5).",
     "results-02": "Fixed. Guards added for every directional word (wide share of NonPSPL-to-PSPL > 50%, wide recall below the plane "
                   "median, the wide cells' support, the minimum cell below the support floor, stellar share and median q of the "
-                  "detectable anomalies), each with a perturbation case in tests/test_validation_and_invariants.py.",
+                  "detectable anomalies), with perturbation cases in tests/test_validation_and_invariants.py (two guards lacked "
+                  "one until the sixth check added them).",
     "results-03": "Fixed. The plane paragraph quotes the two best-populated widest-separation cells at q >= 0.1 (0.69 and 0.715, "
                   "Nd 1,298 and 2,595) and calls the minimum a low-support cell (Nd 35); both computed in make_figures.py.",
     "results-04": "Fixed. A false negative is 'a detectable binary not classified as an anomaly, almost always called a single lens'; "
@@ -102,12 +103,14 @@ DISPO = {
     "code-02": "Fixed with cascade-optimistic-mixed-protocol (F146-only comparison, 4.8% against 5.75%).",
     "code-03": "Fixed. Guards added for the four sentences; 'mostly by the class mix' is gone (stress-faint-precision-attribution), "
                   "so its guard became the faint-photometry guard.",
-    "code-04": "Fixed. Value cases added for the new directional guards in make_gulls_macros.py and make_macros.py; "
-                  "tests/test_macros_fail_closed.py asserts each case's specific guard message (39 cases).",
+    "code-04": "Fixed in part. Value cases added for most new directional guards in make_gulls_macros.py and make_macros.py; "
+                  "tests/test_macros_fail_closed.py asserts each case's specific guard message (37 cases at 2133a41). The "
+                  "sixth check found seven guards still without a case and added them.",
     "code-05": "Fixed with stress-tier-stamps-backfilled (stamps cannot be created for tiers with outputs; back-fill disclosed).",
     "code-06": "Fixed. legacy_oor_mix and legacy_t0_pad added to GEN_ATTRS.",
     "code-07": "Fixed with cascade-stratum-directions-unresolved.",
-    "code-08": "Fixed. 'RMDC26's anomalies are planetary (only 1% of the eligible ones have q > 10^-2)', guarded.",
+    "code-08": "Fixed. 'RMDC26's anomalies are planetary (only 1% of the eligible ones have q > 10^-2)'; the guard on the 1% was "
+               "added by the sixth check.",
     "code-09": "Fixed. The docstring and text call the rates independent of the flat and variable-star share, not of the mix as "
                   "a whole.",
     "code-10": "Fixed. The per-event stress evaluations are archived (validation/stress_rescore_archive/, 14 files, 3.4 MB) with "

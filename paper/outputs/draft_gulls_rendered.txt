@@ -125,7 +125,7 @@ distributions, KS $p \sim 10^{-18}$), the source is flagged binary in $55\%$
 of scored 2S2L events, and both planetary classes are pre-selected by GULLS' own detection statistic
 ($60$ or more for every such event). RMDC26 ships no pure binary-source class, so the
 \citet{Gaudi1998} degeneracy of \S\ref{sec:sims} remains untested, and a \texttt{NonPSPL} call on a 2S2L
-event may respond to its second source rather than its planet. RMDC26's anomalies are planetary (only $1\%$ of the eligible ones have $q > 10^{-2}$),
+event may respond to its second source rather than its planet. RMDC26's anomalies are planetary (about $1\%$ of the cascade-eligible ones, \S\ref{sec:gulls:cascade}, have $q > 10^{-2}$),
 whereas $82\%$ of the detectable anomalies of our test set are
 stellar-mass-ratio binaries (median $q = 0.13$), so transfer recall is not comparable to
 the in-distribution completeness of \S\ref{sec:results}.
@@ -461,9 +461,11 @@ season; for intermediate ratios ($10^{-4} < q \le 10^{-3}$; $826$ against $48$) 
 $2.5\%$ against $4.2\%$, $+6.5$ against $+4.5$~d,
 and $66\%$ against $73\%$. The in-house strata are small, so only some of these
 differences are resolved: premature alerts are about as frequent ($2$ of $149$ against $2$ of
-$138$, and $21$ of $826$ against $2$ of $48$); detection is lower in both strata, though the
-difference at intermediate ratios rests on $48$ in-house events and is not resolved; the median lag is 2~d
-longer at intermediate ratios and one half-day step longer at high ratios (a different checkpoint on a different simulator, so the differences mix the two). $40\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
+$138$, and $21$ of $826$ against $2$ of $48$; Fisher $p \ge 0.36$); detection is lower in both strata,
+resolved at high ratios ($p = 0.035$) but not at intermediate ones, which rest on $48$ in-house events
+($p = 0.35$); and the median lag is $2$~d longer at intermediate ratios (bootstrap 95\% interval
+$0$--$4.5$~d, at the edge of resolution) and $0.5$~d longer at high ratios
+($-0.5$ to $+2$~d, not resolved). These are a different checkpoint on a different simulator, so the differences mix the two. $40\%$ of RMDC26's eligible anomalies have $q \le 10^{-4}$, a regime the in-house
 scan barely samples ($9$ events); there detection falls to $51\%$ (the remaining
 $1\%$ have $q > 10^{-2}$). Over all
 $1,667$ eligible events $61\%$ ($59$--$64\%$) are flagged by the end of the season,

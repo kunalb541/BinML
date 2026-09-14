@@ -144,7 +144,7 @@ CASES = {
                                                          ["timing_by_mass_ratio"]["neptune"].update(detected_frac=0.83)),
                                          "RMDC26 detection is no longer lower in both strata"),
     "three-band premature not higher": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|threeband|frozen"]
-                                                        ["timing_by_mass_ratio"]["giant"].update(premature_frac=0.0)),
+                                                        ["timing_by_mass_ratio"]["giant"].update(premature_frac=0.0, n_premature=0)),
                                         "premature rates are no longer the higher ones"),
     # the remaining directional guards added by the fourth and fifth verifications
     "detection does not fall with mass ratio": (lambda t: _edit(t, "cascade_gulls.json", lambda d: d["results"]["fspl5s_seasons_g08|f146|frozen"]

@@ -388,6 +388,17 @@ def test_cascade_macros_fail_closed_without_the_artifact(tmp_path):
         e = next(e for e in d["cascade_on"]["realtime"]["events"] if e["first_thr"] is not None)
         e["first_thr"] = e["t_anom"] - 10.0; e["premature_thr"] = True
     art_perturbed("validation/ablations_result.json", _abl_unamb, "fall inside the grid window")
+    def _abl_off_ontime(d):                         # the unaugmented arm's early alerts moved inside the window
+        for e in d["cascade_off"]["realtime"]["events"]:
+            if e["premature_thr"] and e["first_thr"] <= e["t_anom"] - 7.2:
+                e["first_thr"] = e["t_anom"] - 1.0
+    art_perturbed("validation/ablations_result.json", _abl_off_ontime, "favour the augmented arm under both rules")
+    def _abl_on_early_argmax(d):                    # twenty of the augmented arm's argmax alerts moved before the window
+        k = 0
+        for e in d["cascade_on"]["realtime"]["events"]:
+            if k < 20 and e["premature_argmax"] and e["first_argmax"] > e["t_anom"] - 7.2:
+                e["first_argmax"] = e["t_anom"] - 10.0; k += 1
+    art_perturbed("validation/ablations_result.json", _abl_on_early_argmax, "'almost all of the augmented arm's premature alerts")
     art_perturbed("validation/ablations_result.json", lambda d: d["cascade_on"]["realtime"].update(premature_rate_argmax=0.2),
                   "opposite directions")
     art_perturbed("validation/labelling_ablation_result.json", lambda d: d["arms"]["labels_generator"].update(anomaly_purity_at_thr=0.5),

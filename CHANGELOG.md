@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased — sixth check (2026-09-14)
+
+Three reviewers of the fifth round's fixes, their adversarial checkers and the re-run completeness critic (record: the
+third addendum of `docs/VERIFICATION_2026-09-12b.md`; 36 findings, 1 refuted, and 8 critic gaps). What changed:
+- **In-house cascade, alert grids.** The daily and two-day grid rows of Table tab:policy had started at 0.5 d and so
+  never evaluated the 72 d cut. Anchored at the season's end they give 1.2% premature at 88.7% detection (daily) and
+  1.0% at 88.4% (two-day), not 1.6% at 86.4%: a coarser grid lowers the premature rate at almost unchanged detection.
+- **Truncation-augmentation ablation.** Its premature rates use the generator's 7.2 d onset grid; almost all of the
+  augmented arm's premature alerts fall inside that window, and the alerts premature under any onset favour the
+  augmented arm under both rules (0 vs 32, 9 vs 45), so the argmax reversal is no longer claimed.
+- **Throughput.** 1,015 light curves per second on an otherwise idle M5 (the committed 359/s had been measured under
+  load); the benchmark now records the load average, code and checkpoint.
+- **Matched-density (KMTNet-style) test.** A gap-free regular arm shows the low-density failure is empty two-hour bins,
+  not sparsity (regular grid 0.62/0.59/0.57 where random thinning falls to 0); read from its artifact directly.
+- **Sec. results.** Wide binaries are missed at a similar rate only up to dchi2 = 1e6 (14% above); the low-q corner
+  is described as a corner; the weighted calibration's mid-range over-confidence is stated; the false-negative
+  definition, the labelling-ablation wording and the baselines' own class mix are made exact.
+- **RMDC26 cascade strata.** Exact counts, Fisher tests and bootstrap lag-difference intervals are recorded and
+  guard the text (premature about as frequent, p >= 0.36; detection lower, resolved only at high ratios; lags +2 d at
+  the edge of resolution and +0.5 d unresolved).
+- **Data availability.** Every RMDC26 result that needs the extracted caches is listed; the full stress set's column
+  is an exception; the generator-identity claim is scoped to the commits compared, with the legacy switches named;
+  training measurements join the typed-constants exemption.
+- **Code and tests.** Reused stress evaluations must match their checkpoint; `--from-archive` no longer overwrites the
+  artifact; the July-shard test is exact on macOS arm64 and within 3 labels elsewhere; the legacy attributes are dated;
+  every new guard has a perturbation case, and seven older ones gained theirs.
+
 ## Unreleased — fifth verification (2026-09-14)
 
 Six verifiers and their adversarial checkers checked the fourth round's fixes; the round's completeness critic stalled

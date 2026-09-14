@@ -419,7 +419,9 @@ Rows 1-12 are the follow-ups proposed on 2026-09-09 and after; rows 13-17 were a
 2026-09-11 verification (`docs/VERIFICATION_2026-09-11.md`, 182 findings in 61 issues, none refuted), rows 18-19
 by the 2026-09-12 re-verification, rows 20-22 by the referee round and seed replicates of 2026-09-12 (checked
 by a third verification the same day, `docs/VERIFICATION_2026-09-12b.md`), and row 23 by that verification's
-completeness critic (corrected again by the fourth verification of 2026-09-13).
+completeness critic (corrected again by the fourth verification of 2026-09-13). The fourth (2026-09-13) and fifth
+(2026-09-14) verifications and the sixth check of the same day corrected several rows in place (records: the addenda
+of `docs/VERIFICATION_2026-09-12b.md`).
 Every number below is in the artifact named in its row; the manuscript draft
 (`paper/draft_gulls_section.tex`) takes them only through `paper/make_gulls_macros.py`. RMDC26 was used
 for diagnosis, for the upper end of the single-lens rho prior and for choosing among the fine-tuned
