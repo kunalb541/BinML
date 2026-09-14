@@ -1,7 +1,7 @@
 {
  "_doc": "The stress-test numbers for the RELEASED checkpoint -> validation/stress_rescore_local.json.",
- "code": "submitted-ac-2026-08-15-60-g6a912f428577",
- "command": "validation/stress_rescore_local.py --workers 4",
+ "code": "submitted-ac-2026-08-15-62-gcb093a3a1a6a",
+ "command": "validation/stress_rescore_local.py --workers 4 --archive",
  "environment": {
   "python": "3.11.8",
   "numpy": "2.2.6",
@@ -140,6 +140,25 @@
    ],
    "code_generation_and_scoring": "submitted-ac-2026-08-15-52-g6016bc6edb89",
    "suite_n": 82180
+  }
+ },
+ "archive": {
+  "dir": "validation/stress_rescore_archive",
+  "sha256": {
+   "natural_stage5.npz": "b0b6fea7b459a40a9f13e1d95acf94a5e91f94f219f63a8ac758633104ab6c38",
+   "natural_released.npz": "af259e861485bd07d5d675cbb243c4fdfe840df4561707ef7ae73e5d094903bb",
+   "planetary_stage5.npz": "5371bd9eb484500d06016b99db2eecfaca73c9578206af8d7125bc2240a13f34",
+   "planetary_released.npz": "0634e8108b5c41a4a3f66699d03964d5f37d3d116cb52da7ac9509750ca402f8",
+   "oor_np_widesep_stage5.npz": "c243903517969e7551eb5ac3136203b93d25911ba2ce4bbef6ac88f19e85d695",
+   "oor_np_widesep_released.npz": "049c131ea7f8deaef292af769e43c6e6027058d3075f68e7697c2d647accf0ea",
+   "oor_per_longp_stage5.npz": "063c7ba88f8a85ff0c589cce59052b9c41a6a7edc6b59f322a14495f9645d8d7",
+   "oor_per_longp_released.npz": "bcab5daeb1e606ffe6a9dfe5540345d1d72dbb43fec6c50aac5cc96d1bd8c04f",
+   "oor_pspl_shortte_stage5.npz": "ce7f0615995d323dab29703dfca806d63b497b3d779df379d7bb94eb500aa733",
+   "oor_pspl_shortte_released.npz": "a6965f7afcaa036296d101768d9fa3472c5e82d0be90e2c4fd1ad52259bd8113",
+   "oor_flat_faint_stage5.npz": "eea309de6550b4b70228f001287c53f98e544a90480056764dabb6dd188b00d7",
+   "oor_flat_faint_released.npz": "fef34d2285d49c3f389bf658af23581753f618be7abd2a7b67370047866e5d17",
+   "oor_pspl_shortte_current_stage5.npz": "ed6a7f90a3fd0324724f96d6526dc6a8fb08fda5ac6ba77c596aa5ff76b2566f",
+   "oor_pspl_shortte_current_released.npz": "aa696813a5cb104cbd5553e8aa5c96d67e71e606469faecd79c0709589a0bcd8"
   }
  },
  "subset": {
@@ -1104,6 +1123,10 @@
      "fpr_w": 0.06829177538553488,
      "n_flagged": 1329,
      "n_false_flags": 1178
+    },
+    "single_lens_above_frozen_tE_0p25_1": {
+     "n": 1912,
+     "frac": 0.20135983263598325
     }
    },
    "released": {
@@ -1210,6 +1233,10 @@
      "fpr_w": 0.09157052501913336,
      "n_flagged": 1747,
      "n_false_flags": 1595
+    },
+    "single_lens_above_frozen_tE_0p25_1": {
+     "n": 1912,
+     "frac": 0.3169456066945607
     }
    }
   },
@@ -1532,6 +1559,10 @@
      "fpr_w": 0.08772321452614756,
      "n_flagged": 1692,
      "n_false_flags": 1521
+    },
+    "single_lens_above_frozen_tE_0p25_1": {
+     "n": 2408,
+     "frac": 0.21553156146179403
     }
    },
    "released": {
@@ -1638,6 +1669,10 @@
      "fpr_w": 0.11722470273220462,
      "n_flagged": 2217,
      "n_false_flags": 2044
+    },
+    "single_lens_above_frozen_tE_0p25_1": {
+     "n": 2408,
+     "frac": 0.3338870431893688
     }
    }
   }
@@ -1838,6 +1873,20 @@
   "oor_flat_faint": {
    "stage5": 0.47351955562262543,
    "released": 0.4404350077721428
+  }
+ },
+ "precision_counterfactual": {
+  "stage5": {
+   "natural": 0.7577446109029529,
+   "faint": 0.0291715287504092,
+   "faint_at_natural_mix": 0.1457768942812947,
+   "natural_at_faint_mix": 0.6721810653833841
+  },
+  "released": {
+   "natural": 0.7261333456780058,
+   "faint": 0.025622387906889154,
+   "faint_at_natural_mix": 0.1515703352203736,
+   "natural_at_faint_mix": 0.6371820864788111
   }
  },
  "suite_label_fractions": {
