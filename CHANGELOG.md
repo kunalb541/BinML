@@ -25,7 +25,8 @@ third addendum of `docs/VERIFICATION_2026-09-12b.md`; 36 findings, 1 refuted, an
   training measurements join the typed-constants exemption.
 - **Code and tests.** Reused stress evaluations must match their checkpoint; `--from-archive` no longer overwrites the
   artifact; the July-shard test is exact on macOS arm64 and within 3 labels elsewhere; the legacy attributes are dated;
-  every new guard has a perturbation case, and seven older ones gained theirs.
+  every new guard has a perturbation case, and seven older ones gained theirs. The archive re-derivation test compares
+  at floating-point precision (CI's Linux Python 3.11 differs from macOS in the last bits of the unrounded sums).
 
 ## Unreleased — fifth verification (2026-09-14)
 

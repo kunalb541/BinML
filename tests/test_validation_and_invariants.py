@@ -642,6 +642,23 @@ def test_stress_numbers_rederive_from_the_archive(tmp_path):
     assert r.returncode == 0, r.stdout + r.stderr
     committed = json.load(open(os.path.join(REPO, "validation", "stress_rescore_local.json")))
     rebuilt = json.load(open(out))
+    # to floating-point precision: the artifact stores unrounded floats, and numpy's summation order differs between
+    # platforms in the last bits (CI's Linux runners, sixth check); integers, strings and structure must match exactly
+    import math
+
+    def close(a, b, path):
+        if isinstance(a, dict):
+            assert isinstance(b, dict) and a.keys() == b.keys(), path
+            for key in a:
+                close(a[key], b[key], f"{path}/{key}")
+        elif isinstance(a, list):
+            assert isinstance(b, list) and len(a) == len(b), path
+            for i, (x, y) in enumerate(zip(a, b)):
+                close(x, y, f"{path}[{i}]")
+        elif isinstance(a, float) or isinstance(b, float):
+            assert math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-12), (path, a, b)
+        else:
+            assert a == b, (path, a, b)
     for k in ("subset", "quoted", "single_lens_recall", "precision_at_natural_prevalence", "precision_counterfactual",
               "suite_label_fractions"):
-        assert rebuilt[k] == committed[k], k
+        close(rebuilt[k], committed[k], k)
