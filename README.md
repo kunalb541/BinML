@@ -278,6 +278,14 @@ aws/               (local, gitignored) account-specific fleet-launch scripts
 - [Evaluation](docs/evaluation.md) · [Data format](docs/data_format.md) · [Model card](docs/model_card.md)
 - [Glossary](docs/glossary.md) · [Leakage audit](docs/leakage_audit.md) · [Legacy 3-class model](docs/legacy_3class.md)
 - Runnable example: [`examples/quickstart.py`](examples/quickstart.py)
+- Notebooks (executed, with plots; run by the test suite):
+  - [`examples/00_quickstart_synthetic.ipynb`](examples/00_quickstart_synthetic.ipynb): offline, under a minute:
+    simulate events, classify them, and plot the class probabilities as a season is revealed.
+  - [`examples/01_classify_roman_event.ipynb`](examples/01_classify_roman_event.ipynb): fetch an event from the
+    RGES-PIT RMDC26 release (GULLS simulation of the Roman bulge survey, pinned Hugging Face revision; needs network
+    access), classify it with the gap-aware checkpoint at its own threshold, plot its light curve and P(NonPSPL) as
+    the season is revealed in half-day steps, score an event that peaks between seasons, and read the population
+    numbers from the committed artifacts.
 
 ## Citing
 
