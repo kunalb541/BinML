@@ -130,7 +130,7 @@ sources, the last two by producing false anomalies (\S\ref{sec:limits}).
 Two results are conditional. The fine-tuned checkpoint's RMDC26 numbers are optimistic, because RMDC26 guided its
 choice, and at a realistic prevalence its streaming alerts need a second stage that removes single-lens contaminants
 (\S\ref{sec:gulls}). Four are not established: a causal timing benefit of the truncation augmentation, a lead of the
-recommended recipe over its alternatives, anomaly information carried by the colour bands across simulators, and an
+recommended recipe over the finite-source recipe without the measured pauses, anomaly information carried by the colour bands across simulators, and an
 effect of the survey's 12-minute cadence (\S\ref{sec:limits}--\ref{sec:discussion}).
 
 \section{Simulated survey and labelling}\label{sec:sims}
@@ -635,8 +635,8 @@ targeted regimes and out-of-range sweeps that push one parameter beyond the natu
 the released model's predecessor; for the released model we regenerated and scored a subset (Table~\ref{tab:stress}).
 On the
 natural population the released model reproduces its held-out performance (macro-F1 $\bmlStressRelMacroF$ against
-$\bmlMacroF$). Its training was not blind to the targeted regimes, so for it these numbers measure how far that
-coverage carries.
+$\bmlMacroF$). Its training was not blind to the regimes tested below (Table~\ref{tab:stress}), so for it these numbers
+measure how far that coverage carries.
 
 The out-of-range sweeps expose four failures. Anomaly recall falls to $\bmlStressRelWidesep$ for very wide
 separations ($s = 5$--$12$), and periodic variables with periods comparable to or longer than the season are
@@ -1004,6 +1004,7 @@ the training of Appendix~\ref{app:infra}.
 \appendix
 
 \section{Simulation and training infrastructure}\label{app:infra}
+\sloppy     % two-column appendix; long numbers and \code{} paths
 
 The simulated data were generated on Amazon Web Services in the \texttt{\bmlSimRegion} region, mostly on
 transient (Spot) instances of $\bmlSimVcpus$ virtual CPUs; the generator is embarrassingly parallel, one process
@@ -1034,6 +1035,7 @@ range excludes). The compactness of the network is what keeps
 training and survey-scale inference within reach of a single workstation.
 
 
+\fussy
 \section{Training-seed spread and source-size dependence on RMDC26}\label{app:rmdc26}
 
 Table~\ref{tab:rho} gives the single-lens false-alarm rate of every checkpoint of Table~\ref{tab:gulls} in six bins

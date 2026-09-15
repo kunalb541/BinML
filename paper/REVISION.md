@@ -553,7 +553,7 @@ What changed (commit of 2026-09-15; `CHANGELOG.md` has the list):
   effect of the 12-minute cadence). The Conclusion points back to it and carries no numbers.
 - **Abstract:** six numerical values (was about twenty), 233 words.
 - **Second-order numbers:** Appendix C (seven tables) plus captions and notes; the two ablations are Table 8 in §9.
-- **§7-8:** 2,990 → 2,026 words of prose (−32%). §8.2 is now a four-step ladder of checkpoints; §8.5 keeps the
+- **§7-8:** 2,990 → 2,034 words of prose (−32%). §8.2 is now a four-step ladder of checkpoints; §8.5 keeps the
   headline scan numbers and moves the stratum tests (Fisher p, bootstrap lag intervals) to Table 15's note.
 
 Suggested reply for the response letter: "We thank the referee. The Introduction now ends with a short, ranked list

@@ -8,7 +8,7 @@ several numbers, qualifiers and cross-references, and the hedging hid which find
   followed by the two that are conditional and the four that are not established.
 - **Abstract:** six numerical values instead of about twenty (233 words); the hedges the eighth check restored are kept
   (F146 alone, truth-informed onset, "mostly" the pauses, per simulated event, optimistic, not yield forecasts).
-- **Sections 7-8 shortened by a third** (2,990 to 2,026 words of prose). The RMDC26 results are a four-step ladder of
+- **Sections 7-8 shortened by a third** (2,990 to 2,034 words of prose). The RMDC26 results are a four-step ladder of
   checkpoints; the stratum comparison of the RMDC26 cascade and the input, label, between-season and sub-day checks
   moved to tables with their hedges in the notes.
 - **New Appendix C** holds the second-order numbers: training-label fidelity, the every-class stream, the stress table
@@ -19,6 +19,9 @@ several numbers, qualifiers and cross-references, and the hedging hid which find
   "largely intact" (floor) and "mostly" (Conclusion) were restored during the audit.
 - **Layout:** `twocolappendix` and narrow-first table order keep the appendix tables from sitting one per page;
   24 pages (the main text ends a page earlier than before).
+- **Final check (same day):** clean rebuild from the committed tree, every table entry and label read against its
+  macro's definition, the efficiency-plane wording tested cell by cell, hedges re-audited; two wordings sharpened
+  ("regimes tested below", "the finite-source recipe without the measured pauses").
 - **Code:** a new fail-closed guard in `paper/make_gulls_macros.py` (long-period variables have the largest
   truncation-label disagreement, which the text now states) with a perturbation case in
   `tests/test_macros_fail_closed.py`.
