@@ -552,15 +552,16 @@ What changed (commit of 2026-09-15; `CHANGELOG.md` has the list):
   benefit of the truncation augmentation, a lead of the recommended recipe, colour information across simulators, an
   effect of the 12-minute cadence). The Conclusion points back to it and carries no numbers.
 - **Abstract:** six numerical values (was about twenty), 233 words.
-- **Second-order numbers:** Appendix C (seven tables) plus captions and notes; the two ablations are Table 8 in §9.
+- **Second-order numbers:** Appendix C (eight tables, including the alert-policy table from §4) plus captions and
+  notes; the two ablations are Table 7 in §9.
 - **§7-8:** 2,990 → 2,034 words of prose (−32%). §8.2 is now a four-step ladder of checkpoints; §8.5 keeps the
-  headline scan numbers and moves the stratum tests (Fisher p, bootstrap lag intervals) to Table 15's note.
+  headline scan numbers and moves the stratum tests (Fisher p, bootstrap lag intervals) to Table 14's note.
 
 Suggested reply for the response letter: "We thank the referee. The Introduction now ends with a short, ranked list
 of the findings that survive our checks, separated from the conditional ones and from those we do not establish. The
-abstract now carries six numbers. Second-order robustness numbers have moved to a new Appendix C (seven tables) and to
+abstract now carries six numbers. Second-order robustness numbers have moved to a new Appendix C (eight tables) and to
 figure captions and table notes, and the ablations are a single table. Sections 7 and 8 are about a third shorter;
-§8.2 now reads as a four-step sequence of checkpoints, and the stratum-level tests of §8.5 are in Table 15. No result
+§8.2 now reads as a four-step sequence of checkpoints, and the stratum-level tests of §8.5 are in Table 14. No result
 changed."
 
 ## 3. Administrative

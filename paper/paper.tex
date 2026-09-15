@@ -400,25 +400,11 @@ alerts as premature.
 the onset for $\bmlCascPrematurePct\%$ of eligible events (95\% CI $[\bmlCascPrematureLo,\bmlCascPrematureHi]\%$)
 under the first-detectable onset and for $\bmlCascPrematurePersistPct\%$ under the persistent one, and the other
 alerts come a median of $\bmlCascMedianLagNonPrem$ or $\bmlCascMedianLagPersist$~days after it
-(Figure~\ref{fig:cascade_summary}). The timing depends strongly on the alert policy (Table~\ref{tab:policy}).
+(Figure~\ref{fig:cascade_summary}). The timing depends strongly on the alert policy (Table~\ref{tab:policy}, Appendix~\ref{app:robust}).
 Coarser update grids, consecutive crossings and all three bands each lower the premature rate further and delay the
 alerts, and consecutive crossings also cost detection. Alerting on the argmax class instead of the threshold makes
 detection near-complete but premature for $\bmlCascArgmaxPct\%$ of eligible binaries. Whether the truncation
 augmentation \emph{causes} the intended ordering is tested in \S\ref{sec:ablations}.
-
-\begin{deluxetable*}{lcccc}
-\tablecaption{Premature-alert rate and within-season detection under different onset definitions and alert
-policies, on the same $\bmlCascN$ eligible binaries from one stored scan. Intervals are Wilson $95\%$ on the
-eligible denominator; ``median lag'' is over alerts that were not premature. Generated from
-\code{validation/cascade\_reproduce\_result.json}.\label{tab:policy}}
-\tablehead{\colhead{variation} & \colhead{premature (\% eligible)} & \colhead{95\% CI (\%)} &
-           \colhead{alerted (\%)} & \colhead{median lag (d)}}
-\startdata
-\input{outputs/cascade_policy_table.tex}
-\enddata
-\tablenotetext{a}{The primary protocol: F146 only, half-day grid, single threshold crossing, first-detectable onset.
-Every other row changes one of those choices.}
-\end{deluxetable*}
 
 \begin{figure}[tbp]
 \centering
@@ -1074,8 +1060,8 @@ compares the two schedule arms of Table~\ref{tab:gap} (another pool, from the sh
 This appendix holds the numbers behind the robustness statements of \S\ref{sec:cascade}--\ref{sec:gulls}: the fidelity
 of the approximate training labels (Table~\ref{tab:labelfid}), the every-class stream (Table~\ref{tab:stream}), the
 operating point under changed assumptions (Tables~\ref{tab:robust} and \ref{tab:density}), the cascade on RMDC26
-(Table~\ref{tab:cgstrata}), the stress set (Table~\ref{tab:stress}) and the other RMDC26 checks
-(Table~\ref{tab:rmdcchecks}). Every entry is a generated macro, like every number in the text.
+(Table~\ref{tab:cgstrata}), the alert policy (Table~\ref{tab:policy}), the stress set (Table~\ref{tab:stress}) and
+the other RMDC26 checks (Table~\ref{tab:rmdcchecks}). Every entry is a generated macro, like every number in the text.
 
 \begin{deluxetable}{lc}
 \tablecolumns{2}
@@ -1215,6 +1201,20 @@ same checkpoint: $\bmlRefRecSinglePct\%$ ($\bmlRefRecSingleK$ of $\bmlRefRecSing
 at a planetary prevalence of 1\%: $\bmlCgPurOne\%$ ($\bmlCgPurOneCal\%$ at threshold $\bmlSidecarThr$); 5\%:
 $\bmlCgPurFive\%$; RMDC26's rate-weighted planetary fraction: $\bmlCgPurRmdc\%$.}
 \end{deluxetable}
+
+\begin{deluxetable*}{lcccc}
+\tablecaption{Premature-alert rate and within-season detection under different onset definitions and alert
+policies, on the same $\bmlCascN$ eligible binaries from one stored scan. Intervals are Wilson $95\%$ on the
+eligible denominator; ``median lag'' is over alerts that were not premature. Generated from
+\code{validation/cascade\_reproduce\_result.json}.\label{tab:policy}}
+\tablehead{\colhead{variation} & \colhead{premature (\% eligible)} & \colhead{95\% CI (\%)} &
+           \colhead{alerted (\%)} & \colhead{median lag (d)}}
+\startdata
+\input{outputs/cascade_policy_table.tex}
+\enddata
+\tablenotetext{a}{The primary protocol: F146 only, half-day grid, single threshold crossing, first-detectable onset.
+Every other row changes one of those choices.}
+\end{deluxetable*}
 
 \begin{deluxetable*}{llcccc}
 \tabletypesize{\footnotesize}
