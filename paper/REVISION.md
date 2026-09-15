@@ -29,7 +29,7 @@ done until this table says so.
 | Round 3 `ft_fspl5s_g08.pt` (single-lens rho ≤ 5, binaries unchanged): best at matched budgets, tied by the combined arm (§1½ row 14) — FA 4.8%, recall 0.390 @ 5.2% FA, mean 0.539 | ✅ `fspl_finetune_fspl5s_g08.json`, `transfer_tradeoff_all.json` | ✅ Table gulls |
 | Colour ablation on GULLS (four checkpoints): removing colour costs 4–7 pts planetary recall at matched budget, mostly on events without a claimable anomaly; the reading that colour carries anomaly signal is withdrawn (§1½ row 7) | ✅ `transfer_colour_ablation.json` | ✅ §gulls |
 | Decision (revised 2026-09-12): gap-aware checkpoint = `ft_fspl5s_seasons_g08.pt` at 0.956 (`gapped_threshold_fspl5s_seasons_g08_seasons.json`) | **Recommended**: this training run matches or beats `ft_fspl5s_g08.pt` at every matched budget per event and rate-weighted and is better on our own held-out (§1½ row 14); two further seeds of the recipe do not all do so (§1½ row 20) — released as `binml/weights/binml-gapaware.pt` | ✅ §gulls (all subsections use it) |
-| Figures rebuilt through `build.sh` (weighted prevalence line) | ✅ 2026-09-12: `paper/build.sh` end to end (validate the hashed files → figures → both macro generators, fail-closed → LaTeX), no undefined references; 2026-09-14: 21 pages after the length cut (32 before it) | — |
+| Figures rebuilt through `build.sh` (weighted prevalence line) | ✅ 2026-09-12: `paper/build.sh` end to end (validate the hashed files → figures → both macro generators, fail-closed → LaTeX), no undefined references; 2026-09-14: 21 pages after the length cut (32 before it); 2026-09-15: 24 pages after the presentation revision (Appendix C tables; the main text ends a page earlier) | — |
 | Zenodo release + DOI in Data Availability, CITATION.cff, README | — dropped for this revision by the author (2026-09-12); the GitHub URL stays | — |
 | Bibliography: RGESPIT2026 (Roman Microlensing Data Challenge 2026, CC0 1.0, from the dataset card), Penny2013 (GULLS) and Kluter2025 (SynthPop, which the card asks users to cite) | ✅ `paper/refs.bib` (Crossref records) | ✅ cited in the draft |
 | `binml-gapaware.pt` (the recommended checkpoint under its release name) | ✅ `binml/weights/binml-gapaware.pt` (byte-identical to `ft_fspl5s_seasons_g08.pt`; `Classifier(weights="gapaware")`, `binml.GAPAWARE_THRESHOLD`, CLI `--weights gapaware`; `tests/test_gapaware_weights.py`) | [E] |
@@ -438,6 +438,10 @@ cover it.
 > the hedges the data require. Rows 6, 11, 20 and 23 are affected: the paper keeps 1.6% (not the weighted 5.7%), 37% and
 > 5 of 20 (not the 35-40% / 16-25% ranges), no longer states the seed-1 choice's per-budget ranking, and the abstract no
 > longer carries the stress numbers.
+> **2026-09-15 presentation revision.** Second-order numbers moved from the text into Appendix C (Tables labelfid,
+> stream, robust, density, cgstrata, stress and rmdcchecks) and into figure captions and table notes; the 35-40%
+> range of row 6 is back, in Table rmdcchecks. A row that says "in paper (Sec. X)" may now mean that section's
+> appendix table.
 
 
 | # | Experiment | Outcome (corrected where the verification required) | Artifacts | Status |
@@ -531,6 +535,33 @@ frozen threshold 0.904 was chosen on.
   S3 and AWS is unavailable (unpaid bill, 2026-09-12); regenerating it locally is days of compute. Seed spread is
   measured instead for the gap-aware recipe (three seeds of `fspl5s_seasons_g08`, §1½ row 20) and the paper says
   the shipped model's seed spread is unmeasured.
+
+## 2½. Presentation (referee item 8), answered 2026-09-15
+
+> The paper is very difficult to read. Nearly every sentence carries several numbers, parenthetical qualifiers, and
+> cross-references [...] The abstract alone contains roughly 20 numerical values. The hedging is honest, but it has
+> become so dense that it obscures which findings are robust. [Asks for] a short, prioritised statement of the
+> results that survive scrutiny; moving the second-order robustness numbers into tables or appendices; shortening
+> §7-8 by roughly a third.
+
+What changed (commit of 2026-09-15; `CHANGELOG.md` has the list):
+- **Prioritised statement:** "Principal results" at the end of §1 — five robust findings in order of priority
+  (complete-season performance, the labelling ablation, the observing-pause failure and its repair, rare premature
+  alerts, the out-of-range operating envelope), then two conditional ones (the RMDC26-chosen checkpoint is optimistic;
+  streaming alerts need a second stage at realistic prevalence) and four that are not established (a causal timing
+  benefit of the truncation augmentation, a lead of the recommended recipe, colour information across simulators, an
+  effect of the 12-minute cadence). The Conclusion points back to it and carries no numbers.
+- **Abstract:** six numerical values (was about twenty), 233 words.
+- **Second-order numbers:** Appendix C (seven tables) plus captions and notes; the two ablations are Table 8 in §9.
+- **§7-8:** 2,990 → 2,026 words of prose (−32%). §8.2 is now a four-step ladder of checkpoints; §8.5 keeps the
+  headline scan numbers and moves the stratum tests (Fisher p, bootstrap lag intervals) to Table 15's note.
+
+Suggested reply for the response letter: "We thank the referee. The Introduction now ends with a short, ranked list
+of the findings that survive our checks, separated from the conditional ones and from those we do not establish. The
+abstract now carries six numbers. Second-order robustness numbers have moved to a new Appendix C (seven tables) and to
+figure captions and table notes, and the ablations are a single table. Sections 7 and 8 are about a third shorter;
+§8.2 now reads as a four-step sequence of checkpoints, and the stratum-level tests of §8.5 are in Table 15. No result
+changed."
 
 ## 3. Administrative
 

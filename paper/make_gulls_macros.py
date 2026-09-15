@@ -746,6 +746,9 @@ if TI:
     tru = R_["truncation"]
     for c, nm in (("PSPL", "Pspl"), ("LongPeriodVar", "Lpv"), ("PeriodicVar", "Per"), ("Eruptive", "Erupt")):
         cmd(f"bmlTruthTrunc{nm}", pct(tru["disagree_k_by_class"][c] / tru["presentations"][c]))     # counts, rounded once
+    _tr = {c: tru["disagree_k_by_class"][c] / tru["presentations"][c] for c in ("PSPL", "LongPeriodVar", "PeriodicVar", "Eruptive")}
+    need(max(_tr, key=_tr.get) == "LongPeriodVar",       # Sec. cascade: "for up to X% of the other classes' (long-period variables)"
+         "long-period variables no longer have the largest truncation-label disagreement of the non-binary classes")
     if need("refit_reference" in R_, "truth_relabel_impact.json lacks the refit reference (rerun the script)"):
         RR_ = R_["refit_reference"]
         need(RR_["full_window_reference_not_binary"] == 0, "the rebuilt-curve refit no longer reproduces the stored binary labels")

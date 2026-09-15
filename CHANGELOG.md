@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased — presentation revision (2026-09-15)
+
+Answers the referee's presentation comment (item 8): the paper was hard to read because nearly every sentence carried
+several numbers, qualifiers and cross-references, and the hedging hid which findings are robust.
+- **Principal results:** the Introduction now ends with a ranked list of the five findings that survive our checks,
+  followed by the two that are conditional and the four that are not established.
+- **Abstract:** six numerical values instead of about twenty (233 words); the hedges the eighth check restored are kept
+  (F146 alone, truth-informed onset, "mostly" the pauses, per simulated event, optimistic, not yield forecasts).
+- **Sections 7-8 shortened by a third** (2,990 to 2,026 words of prose). The RMDC26 results are a four-step ladder of
+  checkpoints; the stratum comparison of the RMDC26 cascade and the input, label, between-season and sub-day checks
+  moved to tables with their hedges in the notes.
+- **New Appendix C** holds the second-order numbers: training-label fidelity, the every-class stream, the stress table
+  (moved from Sec. 7), the operating point under prevalence, floor, colour and cadence changes, the matched-density
+  cadence test, the RMDC26 cascade by stratum, and the other RMDC26 checks. The two ablations are a table in Sec. 9.
+  Sections 4, 6 and 9 lost 10-14% of their prose; the Conclusion carries no numbers.
+- **Hedge audit:** every hedged sentence of the previous text was checked against the new text and table notes;
+  "largely intact" (floor) and "mostly" (Conclusion) were restored during the audit.
+- **Layout:** `twocolappendix` and narrow-first table order keep the appendix tables from sitting one per page;
+  24 pages (the main text ends a page earlier than before).
+- **Code:** a new fail-closed guard in `paper/make_gulls_macros.py` (long-period variables have the largest
+  truncation-label disagreement, which the text now states) with a perturbation case in
+  `tests/test_macros_fail_closed.py`.
+
 ## Unreleased — eighth check of the cut and the new abstract (2026-09-15)
 
 A narrow check of the unreviewed commits 52e2d8c..e65a510 (the seventh-round fixes, the length cut, the new abstract
